@@ -179,9 +179,9 @@ static LogicalResult printCallOp(CppEmitter &emitter, emitc::CallOp callOp) {
     return emitter.emitAttribute(attr);
   };
 
-  if (callOp.argsAttr()) {
-    callOp.dump();
-  }
+  //if (callOp.argsAttr()) {
+  //  callOp.dump();
+  //}
   auto emittedArgs =
       callOp.args() ? interleaveCommaWithError(*callOp.args(), os, emitArgs)
                     : emitter.emitOperands(op);

@@ -1,4 +1,4 @@
-// RUN: mlir-translate -mlir-to-cpp %s | FileCheck %s --dump-input-on-failure
+// RUN: emitc-translate -mlir-to-cpp %s | FileCheck %s --dump-input-on-failure
 
 // CHECK: // Forward declare functions.
 // CHECK: void test_foo_print();

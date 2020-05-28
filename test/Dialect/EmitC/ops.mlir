@@ -1,4 +1,4 @@
-// RUN: mlir-opt -verify-diagnostics %s | FileCheck %s
+// RUN: emitc-opt -allow-unregistered-dialect -verify-diagnostics %s | FileCheck %s
 
 // CHECK-LABEL: func @f(%{{.*}}: i32, %{{.*}}: !emitc.int32_t) -> i1 {
 func @f(%arg0: i32, %f: !emitc<"int32_t">) -> i1 {

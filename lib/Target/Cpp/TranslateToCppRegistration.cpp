@@ -18,5 +18,9 @@ static LogicalResult MlirToCppTranslateFunction(ModuleOp module,
                                /*trailingSemiColon=*/false);
 }
 
-static TranslateFromMLIRRegistration reg("mlir-to-cpp",
-                                         MlirToCppTranslateFunction);
+namespace mlir {
+void registerMlirToCppTranslation() {
+  TranslateFromMLIRRegistration reg("mlir-to-cpp",
+                                     MlirToCppTranslateFunction);
+}
+} // namespace mlir

@@ -49,7 +49,6 @@ static llvm::cl::opt<bool> verifyDiagnostics(
 
 int main(int argc, char **argv) {
   registerAllDialects();
-  registerAllTranslations();
   llvm::InitLLVM y(argc, argv);
 
   // Add flags for all the registered translations.

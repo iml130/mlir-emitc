@@ -24,6 +24,7 @@ set(LIBS
   MLIRTransformUtils
   MLIRSupport
   MLIRIR
+  MLIREmitC
   )
 
 add_llvm_tool(emitc-opt

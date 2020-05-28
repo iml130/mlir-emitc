@@ -10,6 +10,7 @@
 //
 //===----------------------------------------------------------------------===//
 
+#include "emitc/InitDialect.h"
 #include "mlir/IR/AsmState.h"
 #include "mlir/IR/Dialect.h"
 #include "mlir/IR/MLIRContext.h"
@@ -62,6 +63,7 @@ static cl::opt<bool>
 
 int main(int argc, char **argv) {
   registerAllDialects();
+  registerEmitCDialect();
   registerAllPasses();
   InitLLVM y(argc, argv);
 

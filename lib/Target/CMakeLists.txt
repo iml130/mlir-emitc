@@ -2,22 +2,23 @@ add_mlir_library(MLIRTargetCpp
   Cpp/TranslateToCpp.cpp
 
   ADDITIONAL_HEADER_DIRS
-  ${MLIR_MAIN_INCLUDE_DIR}/mlir/Target/Cpp
-  )
-target_link_libraries(MLIRTargetCpp
-  PUBLIC
+  ${PROJECT_SOURCE_DIR}/mlir/Target/Cpp
+
+  LINK_COMPONENTS
+  Support
+
+  LINK_LIBS PUBLIC
   MLIREmitC
   MLIRIR
   MLIRStandardOps
-  LLVMSupport
   )
+
 add_mlir_library(MLIRTargetCppRegistration
   Cpp/TranslateToCppRegistration.cpp
 
   ADDITIONAL_HEADER_DIRS
-  ${MLIR_MAIN_INCLUDE_DIR}/mlir/Target/Cpp
-  )
-target_link_libraries(MLIRTargetCppRegistration
-  PUBLIC
+  ${PROJECT_SOURCE_DIR}/mlir/Target/Cpp
+
+  LINK_LIBS PUBLIC
   MLIRTargetCpp
   )

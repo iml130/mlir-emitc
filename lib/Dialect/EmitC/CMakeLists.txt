@@ -2,14 +2,15 @@ add_mlir_dialect_library(MLIREmitC
   IR/EmitCDialect.cpp
 
   ADDITIONAL_HEADER_DIRS
-  ${MLIR_MAIN_INCLUDE_DIR}/mlir/Dialect/EmitC
+  ${PROJECT_SOURCE_DIR}/mlir/Dialect/EmitC
 
   DEPENDS
   MLIREmitCIncGen
-  )
-target_link_libraries(MLIREmitC
-  PUBLIC
+
+  LINK_COMPONENTS
+  Support
+
+  LINK_LIBS PUBLIC
   MLIRIR
   MLIRSideEffects
-  LLVMSupport
   )

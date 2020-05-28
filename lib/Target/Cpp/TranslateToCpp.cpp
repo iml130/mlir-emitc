@@ -6,14 +6,14 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "mlir/Dialect/EmitC/EmitCDialect.h"
+#include "emitc/Dialect/EmitC/EmitCDialect.h"
+#include "emitc/Target/Cpp.h"
 #include "mlir/Dialect/StandardOps/IR/Ops.h"
 #include "mlir/IR/Dialect.h"
 #include "mlir/IR/Function.h"
 #include "mlir/IR/Module.h"
 #include "mlir/IR/Operation.h"
 #include "mlir/IR/StandardTypes.h"
-#include "mlir/Target/Cpp.h"
 #include "llvm/ADT/DenseMap.h"
 #include "llvm/ADT/ScopedHashTable.h"
 #include "llvm/ADT/StringExtras.h"

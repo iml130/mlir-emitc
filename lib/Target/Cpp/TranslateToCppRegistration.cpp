@@ -6,8 +6,8 @@
 //
 //===----------------------------------------------------------------------===//
 
+#include "emitc/Target/Cpp.h"
 #include "mlir/IR/Module.h"
-#include "mlir/Target/Cpp.h"
 #include "mlir/Translation.h"
 
 using namespace mlir;

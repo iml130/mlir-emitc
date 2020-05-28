@@ -10,7 +10,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "mlir/Dialect/EmitC/EmitCDialect.h"
+#include "emitc/Dialect/EmitC/EmitCDialect.h"
 #include "mlir/IR/Builders.h"
 #include "mlir/IR/OpImplementation.h"
 #include "mlir/IR/TypeUtilities.h"
@@ -21,7 +21,7 @@ emitc::EmitCDialect::EmitCDialect(MLIRContext *context)
     : Dialect(getDialectNamespace(), context) {
   addOperations<
 #define GET_OP_LIST
-#include "mlir/Dialect/EmitC/EmitC.cpp.inc"
+#include "emitc/Dialect/EmitC/EmitC.cpp.inc"
       >();
   allowUnknownTypes();
   allowUnknownOperations();
@@ -30,6 +30,6 @@ emitc::EmitCDialect::EmitCDialect(MLIRContext *context)
 namespace mlir {
 namespace emitc {
 #define GET_OP_CLASSES
-#include "mlir/Dialect/EmitC/EmitC.cpp.inc"
+#include "emitc/Dialect/EmitC/EmitC.cpp.inc"
 } // namespace emitc
 } // namespace mlir

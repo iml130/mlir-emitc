@@ -22,9 +22,9 @@ namespace mlir {
 namespace emitc {
 
 #define GET_OP_CLASSES
-#include "mlir/Dialect/EmitC/EmitC.h.inc"
+#include "emitc/Dialect/EmitC/EmitC.h.inc"
 
-#include "mlir/Dialect/EmitC/EmitCDialect.h.inc"
+#include "emitc/Dialect/EmitC/EmitCDialect.h.inc"
 
 } // namespace emitc
 } // namespace mlir

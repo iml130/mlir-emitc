@@ -11,11 +11,17 @@
 //===----------------------------------------------------------------------===//
 
 #include "emitc/InitDialect.h"
+#ifdef IREE_BUILD_EMITC
+#include "iree/tools/init_mlir_dialects.h"
+#include "iree/tools/init_mlir_passes.h"
+#endif
 #include "mlir/IR/AsmState.h"
 #include "mlir/IR/Dialect.h"
 #include "mlir/IR/MLIRContext.h"
+#ifndef IREE_BUILD_EMITC
 #include "mlir/InitAllDialects.h"
 #include "mlir/InitAllPasses.h"
+#endif
 #include "mlir/Pass/Pass.h"
 #include "mlir/Pass/PassManager.h"
 #include "mlir/Support/FileUtilities.h"
@@ -62,9 +68,14 @@ static cl::opt<bool>
                  cl::init(false));
 
 int main(int argc, char **argv) {
+#ifdef IREE_BUILD_EMITC
+  registerMlirDialects();
+  registerMlirPasses();
+#else
   registerAllDialects();
-  registerEmitCDialect();
   registerAllPasses();
+#endif
+  registerEmitCDialect();
   InitLLVM y(argc, argv);
 
   // Register any command line options.

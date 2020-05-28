@@ -2,8 +2,40 @@ set(LLVM_OPTIONAL_SOURCES
   null.cpp
 )
 
-get_property(dialect_libs GLOBAL PROPERTY MLIR_DIALECT_LIBS)
-get_property(conversion_libs GLOBAL PROPERTY MLIR_CONVERSION_LIBS)
+if(${IREE_ENABLE_EMITC})
+  # Dialects from iree::tools::init_mlir_passes_and_dialects
+  set(dialect_libs
+    MLIRAffineOps
+    MLIRAffineTransforms
+    MLIRGPU
+    MLIRIR
+    MLIRLLVMIR
+    MLIRLinalgOps
+    MLIRLinalgTransforms
+    MLIRQuant
+    MLIRSCF
+    MLIRSCFTransforms
+    MLIRSDBM
+    MLIRSPIRV
+    MLIRSPIRVTransforms
+    MLIRStandardOps
+    MLIRShape
+    MLIRTransforms
+    MLIRVector
+    )
+  # Passes from iree::tools::init_mlir_passes_and_dialects
+  set(conversion_libs
+    MLIRGPUtoSPIRVTransforms
+    MLIRLinalgToLLVM
+    MLIRLinalgToSPIRVTransforms
+    MLIRSCFToGPU
+    MLIRStandardToSPIRVTransforms
+    )
+else()
+  get_property(dialect_libs GLOBAL PROPERTY MLIR_DIALECT_LIBS)
+  get_property(conversion_libs GLOBAL PROPERTY MLIR_CONVERSION_LIBS)
+endif()
+
 set(LLVM_LINK_COMPONENTS
   Core
   Support

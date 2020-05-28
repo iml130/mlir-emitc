@@ -12,11 +12,16 @@
 //===----------------------------------------------------------------------===//
 
 #include "emitc/InitDialect.h"
+#ifdef IREE_BUILD_EMITC
+#include "iree/tools/init_mlir_dialects.h"
+#endif
 #include "mlir/IR/AsmState.h"
 #include "mlir/IR/Diagnostics.h"
 #include "mlir/IR/MLIRContext.h"
+#ifndef IREE_BUILD_EMITC
 #include "mlir/InitAllDialects.h"
 #include "mlir/InitAllTranslations.h"
+#endif
 #include "mlir/Support/FileUtilities.h"
 #include "mlir/Support/LogicalResult.h"
 #include "mlir/Support/ToolUtilities.h"
@@ -56,7 +61,11 @@ void registerMlirToCppTranslation();
 static void registerEmitCTranslation() { registerMlirToCppTranslation(); }
 
 int main(int argc, char **argv) {
+#ifdef IREE_BUILD_EMITC
+  registerMlirDialects();
+#else
   registerAllDialects();
+#endif
   registerEmitCDialect();
   registerEmitCTranslation();
   llvm::InitLLVM y(argc, argv);

@@ -27,44 +27,6 @@
 using namespace llvm;
 using namespace mlir;
 
-namespace mlir {
-// Defined in the test directory, no public header.
-void registerConvertToTargetEnvPass();
-void registerInliner();
-void registerMemRefBoundCheck();
-void registerPassManagerTestPass();
-void registerPatternsTestPass();
-void registerPrintOpAvailabilityPass();
-void registerSideEffectTestPasses();
-void registerSimpleParametricTilingPass();
-void registerSymbolTestPasses();
-void registerTestAffineDataCopyPass();
-void registerTestAllReduceLoweringPass();
-void registerTestAffineLoopUnswitchingPass();
-void registerTestBufferPlacementPreparationPass();
-void registerTestLoopPermutationPass();
-void registerTestCallGraphPass();
-void registerTestConstantFold();
-void registerTestConvertGPUKernelToCubinPass();
-void registerTestDominancePass();
-void registerTestFunc();
-void registerTestGpuMemoryPromotionPass();
-void registerTestLinalgTransforms();
-void registerTestLivenessPass();
-void registerTestLoopFusion();
-void registerTestLoopMappingPass();
-void registerTestLoopUnrollingPass();
-void registerTestMatchers();
-void registerTestMemRefDependenceCheck();
-void registerTestMemRefStrideCalculation();
-void registerTestOpaqueLoc();
-void registerTestParallelismDetection();
-void registerTestGpuParallelLoopMappingPass();
-void registerTestVectorConversions();
-void registerTestVectorToSCFPass();
-void registerVectorizerTestPass();
-} // namespace mlir
-
 static cl::opt<std::string>
     inputFilename(cl::Positional, cl::desc("<input file>"), cl::init("-"));
 
@@ -93,47 +55,6 @@ static cl::opt<bool> allowUnregisteredDialects(
     "allow-unregistered-dialect",
     cl::desc("Allow operation with no registered dialects"), cl::init(false));
 
-#ifdef MLIR_INCLUDE_TESTS
-void registerTestPasses() {
-  registerConvertToTargetEnvPass();
-  registerInliner();
-  registerMemRefBoundCheck();
-  registerPassManagerTestPass();
-  registerPatternsTestPass();
-  registerPrintOpAvailabilityPass();
-  registerSideEffectTestPasses();
-  registerSimpleParametricTilingPass();
-  registerSymbolTestPasses();
-  registerTestAffineDataCopyPass();
-  registerTestAllReduceLoweringPass();
-  registerTestAffineLoopUnswitchingPass();
-  registerTestLoopPermutationPass();
-  registerTestCallGraphPass();
-  registerTestConstantFold();
-#if MLIR_CUDA_CONVERSIONS_ENABLED
-  registerTestConvertGPUKernelToCubinPass();
-#endif
-  registerTestBufferPlacementPreparationPass();
-  registerTestDominancePass();
-  registerTestFunc();
-  registerTestGpuMemoryPromotionPass();
-  registerTestLinalgTransforms();
-  registerTestLivenessPass();
-  registerTestLoopFusion();
-  registerTestLoopMappingPass();
-  registerTestLoopUnrollingPass();
-  registerTestMatchers();
-  registerTestMemRefDependenceCheck();
-  registerTestMemRefStrideCalculation();
-  registerTestOpaqueLoc();
-  registerTestParallelismDetection();
-  registerTestGpuParallelLoopMappingPass();
-  registerTestVectorConversions();
-  registerTestVectorToSCFPass();
-  registerVectorizerTestPass();
-}
-#endif
-
 static cl::opt<bool>
     showDialects("show-dialects",
                  cl::desc("Print the list of registered dialects"),
@@ -142,9 +63,6 @@ static cl::opt<bool>
 int main(int argc, char **argv) {
   registerAllDialects();
   registerAllPasses();
-#ifdef MLIR_INCLUDE_TESTS
-  registerTestPasses();
-#endif
   InitLLVM y(argc, argv);
 
   // Register any command line options.

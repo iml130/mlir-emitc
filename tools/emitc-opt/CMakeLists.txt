@@ -10,21 +10,9 @@ set(LLVM_LINK_COMPONENTS
   AsmParser
   )
 
-if(MLIR_INCLUDE_TESTS)
-  set(test_libs
-    MLIRAffineTransformsTestPasses
-    MLIRSPIRVTestPasses
-    MLIRTestDialect
-    MLIRTestIR
-    MLIRTestPass
-    MLIRTestTransforms
-    )
-endif()
-
 set(LIBS
   ${dialect_libs}
   ${conversion_libs}
-  ${test_libs}
   MLIRLoopAnalysis
   MLIRAnalysis
   MLIRDialect

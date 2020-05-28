@@ -40,3 +40,4 @@ add_definitions(${LLVM_DEFINITIONS})
 
 add_subdirectory(include/emitc)
 add_subdirectory(lib)
+add_subdirectory(tools)

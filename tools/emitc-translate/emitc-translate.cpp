@@ -53,9 +53,7 @@ namespace mlir {
 void registerMlirToCppTranslation();
 } // namespace mlir
 
-static void registerEmitCTranslation() {
-  registerMlirToCppTranslation();
-}
+static void registerEmitCTranslation() { registerMlirToCppTranslation(); }
 
 int main(int argc, char **argv) {
   registerAllDialects();

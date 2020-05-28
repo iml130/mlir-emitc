@@ -20,7 +20,6 @@ static LogicalResult MlirToCppTranslateFunction(ModuleOp module,
 
 namespace mlir {
 void registerMlirToCppTranslation() {
-  TranslateFromMLIRRegistration reg("mlir-to-cpp",
-                                     MlirToCppTranslateFunction);
+  TranslateFromMLIRRegistration reg("mlir-to-cpp", MlirToCppTranslateFunction);
 }
 } // namespace mlir

@@ -1,4 +1,4 @@
-//===- AVX512Dialect.h - MLIR Dialect for AVX512 ----------------*- C++ -*-===//
+//===- EmitCDialect.h - MLIR Dialect to EmitC -------------------*- C++ -*-===//
 //
 // Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
 // See https://llvm.org/LICENSE.txt for license information.
@@ -6,7 +6,7 @@
 //
 //===----------------------------------------------------------------------===//
 //
-// This file declares the Target dialect for AVX512 in MLIR.
+// This file declares the EmitC in MLIR.
 //
 //===----------------------------------------------------------------------===//
 

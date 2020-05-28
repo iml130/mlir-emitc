@@ -17,6 +17,9 @@ target_link_libraries(emitc-translate
   MLIRSPIRV
   MLIRTranslation
   MLIRSupport
+  MLIREmitC
+  MLIRTargetCppRegistration
+  MLIRTargetCpp
   )
 
 mlir_check_link_libraries(emitc-translate)

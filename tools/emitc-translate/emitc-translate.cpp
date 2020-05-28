@@ -11,6 +11,7 @@
 //
 //===----------------------------------------------------------------------===//
 
+#include "emitc/InitDialect.h"
 #include "mlir/IR/AsmState.h"
 #include "mlir/IR/Diagnostics.h"
 #include "mlir/IR/MLIRContext.h"
@@ -47,8 +48,19 @@ static llvm::cl::opt<bool> verifyDiagnostics(
                    "expected-* lines on the corresponding line"),
     llvm::cl::init(false));
 
+namespace mlir {
+// Should be integrate into registerAllTranslations(), no public header.
+void registerMlirToCppTranslation();
+} // namespace mlir
+
+static void registerEmitCTranslation() {
+  registerMlirToCppTranslation();
+}
+
 int main(int argc, char **argv) {
   registerAllDialects();
+  registerEmitCDialect();
+  registerEmitCTranslation();
   llvm::InitLLVM y(argc, argv);
 
   // Add flags for all the registered translations.

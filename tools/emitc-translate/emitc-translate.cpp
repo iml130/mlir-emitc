@@ -47,21 +47,9 @@ static llvm::cl::opt<bool> verifyDiagnostics(
                    "expected-* lines on the corresponding line"),
     llvm::cl::init(false));
 
-namespace mlir {
-// Defined in the test directory, no public header.
-void registerTestRoundtripSPIRV();
-void registerTestRoundtripDebugSPIRV();
-} // namespace mlir
-
-static void registerTestTranslations() {
-  registerTestRoundtripSPIRV();
-  registerTestRoundtripDebugSPIRV();
-}
-
 int main(int argc, char **argv) {
   registerAllDialects();
   registerAllTranslations();
-  registerTestTranslations();
   llvm::InitLLVM y(argc, argv);
 
   // Add flags for all the registered translations.

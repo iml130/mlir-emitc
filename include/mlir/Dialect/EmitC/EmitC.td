@@ -13,7 +13,7 @@
 #ifndef EMITC_OPS
 #define EMITC_OPS
 
-include "mlir/Interfaces/SideEffects.td"
+include "mlir/Interfaces/SideEffectInterfaces.td"
 
 def EmitC_Dialect : Dialect {
   let name = "emitc";

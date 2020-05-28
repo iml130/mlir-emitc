@@ -12,5 +12,5 @@ add_mlir_dialect_library(MLIREmitC
 
   LINK_LIBS PUBLIC
   MLIRIR
-  MLIRSideEffects
+  MLIRSideEffectInterfaces
   )

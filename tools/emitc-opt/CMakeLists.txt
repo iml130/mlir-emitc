@@ -1,7 +1,3 @@
-set(LLVM_OPTIONAL_SOURCES
-  null.cpp
-)
-
 if(${IREE_ENABLE_EMITC})
   # Dialects from iree::tools::init_mlir_passes_and_dialects
   set(dialect_libs
@@ -59,7 +55,7 @@ set(LIBS
   MLIREmitC
   )
 
-add_llvm_tool(emitc-opt
+add_llvm_executable(emitc-opt
   emitc-opt.cpp
 
   DEPENDS

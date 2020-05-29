@@ -26,7 +26,7 @@ else()
   get_property(dialect_libs GLOBAL PROPERTY MLIR_DIALECT_LIBS)
 endif()
 
-add_llvm_tool(emitc-translate
+add_llvm_executable(emitc-translate
   emitc-translate.cpp
   )
 llvm_update_compile_flags(emitc-translate)

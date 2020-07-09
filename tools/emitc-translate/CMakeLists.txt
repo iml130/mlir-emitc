@@ -40,7 +40,6 @@ target_link_libraries(emitc-translate
   MLIRTranslation
   MLIRSupport
   MLIREmitC
-  MLIRTargetCppRegistration
   MLIRTargetCpp
   )
 

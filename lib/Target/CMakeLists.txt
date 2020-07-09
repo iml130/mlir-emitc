@@ -1,5 +1,6 @@
 add_mlir_library(MLIRTargetCpp
   Cpp/TranslateToCpp.cpp
+  Cpp/TranslateToCppRegistration.cpp
 
   ADDITIONAL_HEADER_DIRS
   ${PROJECT_SOURCE_DIR}/emitc/Target/Cpp
@@ -11,14 +12,4 @@ add_mlir_library(MLIRTargetCpp
   MLIREmitC
   MLIRIR
   MLIRStandardOps
-  )
-
-add_mlir_library(MLIRTargetCppRegistration
-  Cpp/TranslateToCppRegistration.cpp
-
-  ADDITIONAL_HEADER_DIRS
-  ${PROJECT_SOURCE_DIR}/emitc/Target/Cpp
-
-  LINK_LIBS PUBLIC
-  MLIRTargetCpp
   )

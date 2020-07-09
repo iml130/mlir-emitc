@@ -12,6 +12,7 @@
 //===----------------------------------------------------------------------===//
 
 #include "emitc/InitDialect.h"
+#include "emitc/InitTranslation.h"
 #ifdef IREE_BUILD_EMITC
 #include "iree/tools/init_mlir_dialects.h"
 #endif
@@ -52,13 +53,6 @@ static llvm::cl::opt<bool> verifyDiagnostics(
     llvm::cl::desc("Check that emitted diagnostics match "
                    "expected-* lines on the corresponding line"),
     llvm::cl::init(false));
-
-namespace mlir {
-// Should be integrate into registerAllTranslations(), no public header.
-void registerMlirToCppTranslation();
-} // namespace mlir
-
-static void registerEmitCTranslation() { registerMlirToCppTranslation(); }
 
 int main(int argc, char **argv) {
 #ifdef IREE_BUILD_EMITC

@@ -10,8 +10,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef MLIR_DIALECT_EMITC_EMITCDIALECT_H_
-#define MLIR_DIALECT_EMITC_EMITCDIALECT_H_
+#ifndef MLIR_DIALECT_EMITC_EMITCDIALECT_H
+#define MLIR_DIALECT_EMITC_EMITCDIALECT_H
 
 #include "mlir/IR/Dialect.h"
 #include "mlir/IR/OpDefinition.h"
@@ -29,4 +29,4 @@ namespace emitc {
 } // namespace emitc
 } // namespace mlir
 
-#endif // MLIR_DIALECT_EMITC_EMITCDIALECT_H_
+#endif // MLIR_DIALECT_EMITC_EMITCDIALECT_H

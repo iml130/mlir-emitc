@@ -11,8 +11,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef MLIR_INITDIALECT_H_
-#define MLIR_INITDIALECT_H_
+#ifndef MLIR_INITDIALECT_H
+#define MLIR_INITDIALECT_H
 
 #include "emitc/Dialect/EmitC/EmitCDialect.h"
 #include "mlir/IR/Dialect.h"
@@ -30,4 +30,4 @@ inline void registerEmitCDialect() {
 }
 } // namespace mlir
 
-#endif // MLIR_INITDIALECT_H_
+#endif // MLIR_INITDIALECT_H

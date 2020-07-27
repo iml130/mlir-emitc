@@ -13,6 +13,7 @@
 #ifndef EMITC_OPS
 #define EMITC_OPS
 
+include "mlir/Interfaces/ControlFlowInterfaces.td"
 include "mlir/Interfaces/SideEffectInterfaces.td"
 
 def EmitC_Dialect : Dialect {
@@ -41,6 +42,31 @@ def EmitC_CallOp : EmitC_Op<"call", []> {
   let assemblyFormat = [{
     $callee `(` $operands `)` attr-dict `:` functional-type($operands, results)
   }];
+}
+
+def EmitC_YieldOp : EmitC_Op<"yield", [NoSideEffect, ReturnLike, Terminator]> {
+//                               ParentOneOf<["IfOp, ForOp"]>]> {
+  let summary = "loop yield and termination operation";
+  let description = [{
+    "emitc.yield" yields an SSA value from the EmitC dialect op region and
+    terminates the regions. The semantics of how the values are yielded is
+    defined by the parent operation.
+    If "emitc.yield" has any operands, the operands must match the parent
+    operation's results.
+    If the parent operation defines no values, then the "emitc.yield" may be
+    left out in the custom syntax and the builders will insert one implicitly.
+    Otherwise, it has to be present in the syntax to indicate which values are
+    yielded.
+  }];
+
+  let arguments = (ins Variadic<AnyType>:$results);
+  let builders = [
+    OpBuilder<"OpBuilder &builder, OperationState &result",
+              [{ /* nothing to do */ }]>
+  ];
+  // Override default verifier (defined in SCF_Op), no custom verification
+  // needed.
+  //let verifier = ?;
 }
 
 #endif // EMITC_OPS

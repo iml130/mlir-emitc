@@ -15,12 +15,10 @@
 #include "mlir/IR/Operation.h"
 #include "mlir/IR/StandardTypes.h"
 #include "llvm/ADT/DenseMap.h"
-#include "llvm/ADT/ScopedHashTable.h"
 #include "llvm/ADT/StringExtras.h"
 #include "llvm/ADT/StringMap.h"
 #include "llvm/Support/Debug.h"
 #include "llvm/Support/FormatVariadic.h"
-#include <stack>
 
 #define DEBUG_TYPE "translate-to-cpp"
 
@@ -63,76 +61,7 @@ inline LogicalResult interleaveCommaWithError(const Container &c,
                              [&]() { os << ", "; });
 }
 
-namespace {
-/// Emitter that uses dialect specific emitters to emit C++ code.
-struct CppEmitter {
-  explicit CppEmitter(raw_ostream &os);
-
-  /// Emits attribute or returns failure.
-  LogicalResult emitAttribute(Attribute attr);
-
-  /// Emits operation 'op' with/without training semicolon or returns failure.
-  LogicalResult emitOperation(Operation &op, bool trailingSemicolon = true);
-
-  /// Emits type 'type' or returns failure.
-  LogicalResult emitType(Type type);
-
-  /// Emits array of types as a std::tuple of the emitted types.
-  LogicalResult emitTypes(ArrayRef<Type> types);
-
-  /// Emits the variable declaration and assignment prefix for 'op'.
-  /// - emits separate variable followed by std::tie for multi-valued operation;
-  /// - emits single type followed by variable for single result;
-  /// - emits nothing if no value produced by op;
-  /// Emits final '=' operator where a type is produced. Returns failure if
-  /// any result type could not be converted.
-  LogicalResult emitAssignPrefix(Operation &op);
-
-  /// Emits the operands and atttributes of the operation. All operands are
-  /// emitted first and then all attributes in alphabetical order.
-  LogicalResult emitOperandsAndAttributes(Operation &op,
-                                          ArrayRef<StringRef> exclude = {});
-
-  /// Emits the operands of the operation. All operands are emitted in order.
-  LogicalResult emitOperands(Operation &op);
-
-  /// Return the existing or a new name for a Value.
-  StringRef getOrCreateName(Value val);
-
-  /// RAII helper function to manage entering/exiting C++ scopes.
-  struct Scope {
-    Scope(CppEmitter &emitter) : mapperScope(emitter.mapper), emitter(emitter) {
-      emitter.valueInScopeCount.push(emitter.valueInScopeCount.top());
-    }
-    ~Scope() { emitter.valueInScopeCount.pop(); }
-
-  private:
-    llvm::ScopedHashTableScope<Value, std::string> mapperScope;
-    CppEmitter &emitter;
-  };
-
-  /// Returns wether the Value is assigned to a C++ variable in the scope.
-  bool hasValueInScope(Value val);
-
-  /// Returns the output stream.
-  raw_ostream &ostream() { return os; };
-
-private:
-  using ValMapper = llvm::ScopedHashTable<Value, std::string>;
-
-  /// Output stream to emit to.
-  raw_ostream &os;
-
-  /// Map from value to name of C++ variable that contain the name.
-  ValMapper mapper;
-
-  /// The number of values in the current scope. This is used to declare the
-  /// names of values in a scope.
-  std::stack<int64_t> valueInScopeCount;
-};
-} // namespace
-
-static LogicalResult printConstantOp(CppEmitter &emitter,
+static LogicalResult printConstantOp(emitc::CppEmitter &emitter,
                                      ConstantOp constantOp) {
   auto &os = emitter.ostream();
   emitter.emitType(constantOp.getType());
@@ -143,7 +72,7 @@ static LogicalResult printConstantOp(CppEmitter &emitter,
   return success();
 }
 
-static LogicalResult printCallOp(CppEmitter &emitter, CallOp callOp) {
+static LogicalResult printCallOp(emitc::CppEmitter &emitter, CallOp callOp) {
   if (failed(emitter.emitAssignPrefix(*callOp.getOperation())))
     return failure();
 
@@ -155,7 +84,8 @@ static LogicalResult printCallOp(CppEmitter &emitter, CallOp callOp) {
   return success();
 }
 
-static LogicalResult printCallOp(CppEmitter &emitter, emitc::CallOp callOp) {
+static LogicalResult printCallOp(emitc::CppEmitter &emitter,
+                                 emitc::CallOp callOp) {
   auto &os = emitter.ostream();
   auto &op = *callOp.getOperation();
   if (failed(emitter.emitAssignPrefix(op)))
@@ -179,7 +109,7 @@ static LogicalResult printCallOp(CppEmitter &emitter, emitc::CallOp callOp) {
     return emitter.emitAttribute(attr);
   };
 
-  //if (callOp.argsAttr()) {
+  // if (callOp.argsAttr()) {
   //  callOp.dump();
   //}
   auto emittedArgs =
@@ -191,7 +121,8 @@ static LogicalResult printCallOp(CppEmitter &emitter, emitc::CallOp callOp) {
   return success();
 }
 
-static LogicalResult printReturnOp(CppEmitter &emitter, ReturnOp returnOp) {
+static LogicalResult printReturnOp(emitc::CppEmitter &emitter,
+                                   ReturnOp returnOp) {
   auto &os = emitter.ostream();
   os << "return ";
   switch (returnOp.getNumOperands()) {
@@ -209,8 +140,9 @@ static LogicalResult printReturnOp(CppEmitter &emitter, ReturnOp returnOp) {
   }
 }
 
-static LogicalResult printModule(CppEmitter &emitter, ModuleOp moduleOp) {
-  CppEmitter::Scope scope(emitter);
+static LogicalResult printModule(emitc::CppEmitter &emitter,
+                                 ModuleOp moduleOp) {
+  emitc::CppEmitter::Scope scope(emitter);
   auto &os = emitter.ostream();
   os << "// Forward declare functions.\n";
   for (FuncOp funcOp : moduleOp.getOps<FuncOp>()) {
@@ -233,12 +165,13 @@ static LogicalResult printModule(CppEmitter &emitter, ModuleOp moduleOp) {
   return success();
 }
 
-static LogicalResult printFunction(CppEmitter &emitter, FuncOp functionOp) {
+static LogicalResult printFunction(emitc::CppEmitter &emitter,
+                                   FuncOp functionOp) {
   auto &blocks = functionOp.getBlocks();
   if (blocks.size() != 1)
     return functionOp.emitOpError() << "only single block functions supported";
 
-  CppEmitter::Scope scope(emitter);
+  emitc::CppEmitter::Scope scope(emitter);
   auto &os = emitter.ostream();
   if (failed(emitter.emitTypes(functionOp.getType().getResults())))
     return functionOp.emitError() << "unable to emit all types";
@@ -265,18 +198,20 @@ static LogicalResult printFunction(CppEmitter &emitter, FuncOp functionOp) {
   return success();
 }
 
-CppEmitter::CppEmitter(raw_ostream &os) : os(os) { valueInScopeCount.push(0); }
+emitc::CppEmitter::CppEmitter(raw_ostream &os) : os(os) {
+  valueInScopeCount.push(0);
+}
 
 /// Return the existing or a new name for a Value*.
-StringRef CppEmitter::getOrCreateName(Value val) {
+StringRef emitc::CppEmitter::getOrCreateName(Value val) {
   if (!mapper.count(val))
     mapper.insert(val, formatv("v{0}", ++valueInScopeCount.top()));
   return *mapper.begin(val);
 }
 
-bool CppEmitter::hasValueInScope(Value val) { return mapper.count(val); }
+bool emitc::CppEmitter::hasValueInScope(Value val) { return mapper.count(val); }
 
-LogicalResult CppEmitter::emitAttribute(Attribute attr) {
+LogicalResult emitc::CppEmitter::emitAttribute(Attribute attr) {
   if (auto iAttr = attr.dyn_cast<IntegerAttr>()) {
     os << iAttr.getValue();
     return success();
@@ -290,7 +225,7 @@ LogicalResult CppEmitter::emitAttribute(Attribute attr) {
   return failure();
 }
 
-LogicalResult CppEmitter::emitOperands(Operation &op) {
+LogicalResult emitc::CppEmitter::emitOperands(Operation &op) {
   auto emitOperandName = [&](Value result) -> LogicalResult {
     if (!hasValueInScope(result))
       return op.emitError() << "operand value not in scope";
@@ -301,8 +236,8 @@ LogicalResult CppEmitter::emitOperands(Operation &op) {
 }
 
 LogicalResult
-CppEmitter::emitOperandsAndAttributes(Operation &op,
-                                      ArrayRef<StringRef> exclude) {
+emitc::CppEmitter::emitOperandsAndAttributes(Operation &op,
+                                             ArrayRef<StringRef> exclude) {
   if (failed(emitOperands(op)))
     return failure();
   // Insert comma in between operands and non-filtered attributes if needed.
@@ -326,7 +261,7 @@ CppEmitter::emitOperandsAndAttributes(Operation &op,
   return interleaveCommaWithError(op.getAttrs(), os, emitNamedAttribute);
 }
 
-LogicalResult CppEmitter::emitAssignPrefix(Operation &op) {
+LogicalResult emitc::CppEmitter::emitAssignPrefix(Operation &op) {
   switch (op.getNumResults()) {
   case 0:
     break;
@@ -351,7 +286,7 @@ LogicalResult CppEmitter::emitAssignPrefix(Operation &op) {
   return success();
 }
 
-static LogicalResult printOperation(CppEmitter &emitter, Operation &op) {
+static LogicalResult printOperation(emitc::CppEmitter &emitter, Operation &op) {
   if (auto callOp = dyn_cast<CallOp>(op))
     return printCallOp(emitter, callOp);
   if (auto callOp = dyn_cast<emitc::CallOp>(op))
@@ -370,14 +305,15 @@ static LogicalResult printOperation(CppEmitter &emitter, Operation &op) {
   return op.emitOpError() << "unable to find printer for op";
 }
 
-LogicalResult CppEmitter::emitOperation(Operation &op, bool trailingSemicolon) {
+LogicalResult emitc::CppEmitter::emitOperation(Operation &op,
+                                               bool trailingSemicolon) {
   if (failed(printOperation(*this, op)))
     return failure();
   os << (trailingSemicolon ? ";\n" : "\n");
   return success();
 }
 
-LogicalResult CppEmitter::emitType(Type type) {
+LogicalResult emitc::CppEmitter::emitType(Type type) {
   if (auto itype = type.dyn_cast<IntegerType>()) {
     switch (itype.getWidth()) {
     case 1:
@@ -398,7 +334,7 @@ LogicalResult CppEmitter::emitType(Type type) {
   return failure();
 }
 
-LogicalResult CppEmitter::emitTypes(ArrayRef<Type> types) {
+LogicalResult emitc::CppEmitter::emitTypes(ArrayRef<Type> types) {
   switch (types.size()) {
   case 0:
     os << "void";

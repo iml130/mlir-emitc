@@ -23,6 +23,7 @@
 #define DEBUG_TYPE "translate-to-cpp"
 
 using namespace mlir;
+using namespace mlir::emitc;
 using llvm::formatv;
 
 /// Convenience functions to produce interleaved output with functions returning
@@ -61,7 +62,7 @@ inline LogicalResult interleaveCommaWithError(const Container &c,
                              [&]() { os << ", "; });
 }
 
-static LogicalResult printConstantOp(emitc::CppEmitter &emitter,
+static LogicalResult printConstantOp(CppEmitter &emitter,
                                      ConstantOp constantOp) {
   auto &os = emitter.ostream();
   emitter.emitType(constantOp.getType());
@@ -72,7 +73,7 @@ static LogicalResult printConstantOp(emitc::CppEmitter &emitter,
   return success();
 }
 
-static LogicalResult printCallOp(emitc::CppEmitter &emitter, CallOp callOp) {
+static LogicalResult printCallOp(CppEmitter &emitter, mlir::CallOp callOp) {
   if (failed(emitter.emitAssignPrefix(*callOp.getOperation())))
     return failure();
 
@@ -84,8 +85,7 @@ static LogicalResult printCallOp(emitc::CppEmitter &emitter, CallOp callOp) {
   return success();
 }
 
-static LogicalResult printCallOp(emitc::CppEmitter &emitter,
-                                 emitc::CallOp callOp) {
+static LogicalResult printCallOp(CppEmitter &emitter, emitc::CallOp callOp) {
   auto &os = emitter.ostream();
   auto &op = *callOp.getOperation();
   if (failed(emitter.emitAssignPrefix(op)))
@@ -121,8 +121,7 @@ static LogicalResult printCallOp(emitc::CppEmitter &emitter,
   return success();
 }
 
-static LogicalResult printReturnOp(emitc::CppEmitter &emitter,
-                                   ReturnOp returnOp) {
+static LogicalResult printReturnOp(CppEmitter &emitter, ReturnOp returnOp) {
   auto &os = emitter.ostream();
   os << "return ";
   switch (returnOp.getNumOperands()) {
@@ -140,9 +139,8 @@ static LogicalResult printReturnOp(emitc::CppEmitter &emitter,
   }
 }
 
-static LogicalResult printModule(emitc::CppEmitter &emitter,
-                                 ModuleOp moduleOp) {
-  emitc::CppEmitter::Scope scope(emitter);
+static LogicalResult printModule(CppEmitter &emitter, ModuleOp moduleOp) {
+  CppEmitter::Scope scope(emitter);
   auto &os = emitter.ostream();
   os << "// Forward declare functions.\n";
   for (FuncOp funcOp : moduleOp.getOps<FuncOp>()) {
@@ -165,13 +163,12 @@ static LogicalResult printModule(emitc::CppEmitter &emitter,
   return success();
 }
 
-static LogicalResult printFunction(emitc::CppEmitter &emitter,
-                                   FuncOp functionOp) {
+static LogicalResult printFunction(CppEmitter &emitter, FuncOp functionOp) {
   auto &blocks = functionOp.getBlocks();
   if (blocks.size() != 1)
     return functionOp.emitOpError() << "only single block functions supported";
 
-  emitc::CppEmitter::Scope scope(emitter);
+  CppEmitter::Scope scope(emitter);
   auto &os = emitter.ostream();
   if (failed(emitter.emitTypes(functionOp.getType().getResults())))
     return functionOp.emitError() << "unable to emit all types";
@@ -198,20 +195,18 @@ static LogicalResult printFunction(emitc::CppEmitter &emitter,
   return success();
 }
 
-emitc::CppEmitter::CppEmitter(raw_ostream &os) : os(os) {
-  valueInScopeCount.push(0);
-}
+CppEmitter::CppEmitter(raw_ostream &os) : os(os) { valueInScopeCount.push(0); }
 
 /// Return the existing or a new name for a Value*.
-StringRef emitc::CppEmitter::getOrCreateName(Value val) {
+StringRef CppEmitter::getOrCreateName(Value val) {
   if (!mapper.count(val))
     mapper.insert(val, formatv("v{0}", ++valueInScopeCount.top()));
   return *mapper.begin(val);
 }
 
-bool emitc::CppEmitter::hasValueInScope(Value val) { return mapper.count(val); }
+bool CppEmitter::hasValueInScope(Value val) { return mapper.count(val); }
 
-LogicalResult emitc::CppEmitter::emitAttribute(Attribute attr) {
+LogicalResult CppEmitter::emitAttribute(Attribute attr) {
   if (auto iAttr = attr.dyn_cast<IntegerAttr>()) {
     os << iAttr.getValue();
     return success();
@@ -225,7 +220,7 @@ LogicalResult emitc::CppEmitter::emitAttribute(Attribute attr) {
   return failure();
 }
 
-LogicalResult emitc::CppEmitter::emitOperands(Operation &op) {
+LogicalResult CppEmitter::emitOperands(Operation &op) {
   auto emitOperandName = [&](Value result) -> LogicalResult {
     if (!hasValueInScope(result))
       return op.emitError() << "operand value not in scope";
@@ -236,8 +231,8 @@ LogicalResult emitc::CppEmitter::emitOperands(Operation &op) {
 }
 
 LogicalResult
-emitc::CppEmitter::emitOperandsAndAttributes(Operation &op,
-                                             ArrayRef<StringRef> exclude) {
+CppEmitter::emitOperandsAndAttributes(Operation &op,
+                                      ArrayRef<StringRef> exclude) {
   if (failed(emitOperands(op)))
     return failure();
   // Insert comma in between operands and non-filtered attributes if needed.
@@ -261,7 +256,7 @@ emitc::CppEmitter::emitOperandsAndAttributes(Operation &op,
   return interleaveCommaWithError(op.getAttrs(), os, emitNamedAttribute);
 }
 
-LogicalResult emitc::CppEmitter::emitAssignPrefix(Operation &op) {
+LogicalResult CppEmitter::emitAssignPrefix(Operation &op) {
   switch (op.getNumResults()) {
   case 0:
     break;
@@ -286,8 +281,8 @@ LogicalResult emitc::CppEmitter::emitAssignPrefix(Operation &op) {
   return success();
 }
 
-static LogicalResult printOperation(emitc::CppEmitter &emitter, Operation &op) {
-  if (auto callOp = dyn_cast<CallOp>(op))
+static LogicalResult printOperation(CppEmitter &emitter, Operation &op) {
+  if (auto callOp = dyn_cast<mlir::CallOp>(op))
     return printCallOp(emitter, callOp);
   if (auto callOp = dyn_cast<emitc::CallOp>(op))
     return printCallOp(emitter, callOp);
@@ -305,15 +300,14 @@ static LogicalResult printOperation(emitc::CppEmitter &emitter, Operation &op) {
   return op.emitOpError() << "unable to find printer for op";
 }
 
-LogicalResult emitc::CppEmitter::emitOperation(Operation &op,
-                                               bool trailingSemicolon) {
+LogicalResult CppEmitter::emitOperation(Operation &op, bool trailingSemicolon) {
   if (failed(printOperation(*this, op)))
     return failure();
   os << (trailingSemicolon ? ";\n" : "\n");
   return success();
 }
 
-LogicalResult emitc::CppEmitter::emitType(Type type) {
+LogicalResult CppEmitter::emitType(Type type) {
   if (auto itype = type.dyn_cast<IntegerType>()) {
     switch (itype.getWidth()) {
     case 1:
@@ -334,7 +328,7 @@ LogicalResult emitc::CppEmitter::emitType(Type type) {
   return failure();
 }
 
-LogicalResult emitc::CppEmitter::emitTypes(ArrayRef<Type> types) {
+LogicalResult CppEmitter::emitTypes(ArrayRef<Type> types) {
   switch (types.size()) {
   case 0:
     os << "void";

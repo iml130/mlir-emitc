@@ -21,6 +21,40 @@
 namespace mlir {
 namespace emitc {
 
+/// Convenience functions to produce interleaved output with functions returning
+/// a LogicalResult. This is different than those in STL as functions used on
+/// each element doesn't return a string.
+template <typename ForwardIterator, typename UnaryFunctor,
+          typename NullaryFunctor>
+LogicalResult interleaveWithError(ForwardIterator begin, ForwardIterator end,
+                                  UnaryFunctor each_fn,
+                                  NullaryFunctor between_fn) {
+  if (begin == end)
+    return success();
+  if (failed(each_fn(*begin)))
+    return failure();
+  ++begin;
+  for (; begin != end; ++begin) {
+    between_fn();
+    if (failed(each_fn(*begin)))
+      return failure();
+  }
+  return success();
+}
+
+template <typename Container, typename UnaryFunctor, typename NullaryFunctor>
+LogicalResult interleaveWithError(const Container &c, UnaryFunctor each_fn,
+                                  NullaryFunctor between_fn) {
+  return interleaveWithError(c.begin(), c.end(), each_fn, between_fn);
+}
+
+template <typename Container, typename UnaryFunctor>
+LogicalResult interleaveCommaWithError(const Container &c, raw_ostream &os,
+                                       UnaryFunctor each_fn) {
+  return interleaveWithError(c.begin(), c.end(), each_fn,
+                             [&]() { os << ", "; });
+}
+
 /// Emitter that uses dialect specific emitters to emit C++ code.
 struct CppEmitter {
   explicit CppEmitter(raw_ostream &os);

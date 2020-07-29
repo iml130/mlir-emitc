@@ -26,42 +26,6 @@ using namespace mlir;
 using namespace mlir::emitc;
 using llvm::formatv;
 
-/// Convenience functions to produce interleaved output with functions returning
-/// a LogicalResult. This is different than those in STL as functions used on
-/// each element doesn't return a string.
-template <typename ForwardIterator, typename UnaryFunctor,
-          typename NullaryFunctor>
-inline LogicalResult
-interleaveWithError(ForwardIterator begin, ForwardIterator end,
-                    UnaryFunctor each_fn, NullaryFunctor between_fn) {
-  if (begin == end)
-    return success();
-  if (failed(each_fn(*begin)))
-    return failure();
-  ++begin;
-  for (; begin != end; ++begin) {
-    between_fn();
-    if (failed(each_fn(*begin)))
-      return failure();
-  }
-  return success();
-}
-
-template <typename Container, typename UnaryFunctor, typename NullaryFunctor>
-inline LogicalResult interleaveWithError(const Container &c,
-                                         UnaryFunctor each_fn,
-                                         NullaryFunctor between_fn) {
-  return interleaveWithError(c.begin(), c.end(), each_fn, between_fn);
-}
-
-template <typename Container, typename UnaryFunctor>
-inline LogicalResult interleaveCommaWithError(const Container &c,
-                                              raw_ostream &os,
-                                              UnaryFunctor each_fn) {
-  return interleaveWithError(c.begin(), c.end(), each_fn,
-                             [&]() { os << ", "; });
-}
-
 static LogicalResult printConstantOp(CppEmitter &emitter,
                                      ConstantOp constantOp) {
   auto &os = emitter.ostream();

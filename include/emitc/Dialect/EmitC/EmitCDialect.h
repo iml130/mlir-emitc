@@ -13,6 +13,7 @@
 #ifndef MLIR_DIALECT_EMITC_EMITCDIALECT_H
 #define MLIR_DIALECT_EMITC_EMITCDIALECT_H
 
+#include "mlir/IR/Builders.h"
 #include "mlir/IR/Dialect.h"
 #include "mlir/IR/OpDefinition.h"
 #include "mlir/IR/StandardTypes.h"
@@ -21,6 +22,8 @@
 
 namespace mlir {
 namespace emitc {
+
+void buildTerminatedBody(OpBuilder &builder, Location loc);
 
 #define GET_OP_CLASSES
 #include "emitc/Dialect/EmitC/EmitC.h.inc"

@@ -157,6 +157,8 @@ def EmitC_YieldOp : EmitC_Op<"yield", [NoSideEffect, ReturnLike, Terminator]> {
   // Override default verifier (defined in SCF_Op), no custom verification
   // needed.
   //let verifier = ?;
+  let printer = [{ return ::print(p, *this); }];
+  let parser = [{ return ::parse$cppClass(parser, result); }];
 }
 
 #endif // EMITC_OPS

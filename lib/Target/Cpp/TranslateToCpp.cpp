@@ -390,6 +390,16 @@ LogicalResult CppEmitter::emitType(Type type) {
       return failure();
     }
   }
+  if (auto itype = type.dyn_cast<FloatType>()) {
+    switch (itype.getWidth()) {
+    case 32:
+      return (os << "float"), success();
+    case 64:
+      return (os << "double"), success();
+    default:
+      return failure();
+    }
+  }
   // TODO: Change to be EmitC specific.
   if (auto ot = type.dyn_cast<OpaqueType>()) {
     os << ot.getTypeData();

@@ -191,6 +191,30 @@ static LogicalResult printCallOp(CppEmitter &emitter, emitc::CallOp callOp) {
   return success();
 }
 
+static LogicalResult printIfOp(CppEmitter &emitter, emitc::IfOp ifOp) {
+  auto &os = emitter.ostream();
+
+  os << "if (";
+  if (failed(emitter.emitOperands(*ifOp.getOperation())))
+    return failure();
+  os << ") {\n";
+
+  // TODO: Emit ifOp.thenRegion()
+
+  os << "}\n";
+
+  auto &elseRegion = ifOp.elseRegion();
+  if(!elseRegion.empty()) {
+    os << "else {\n";
+
+    // TODO: Emit ifOp.elseRegion()
+
+    os << "}\n";
+  }
+
+  return success();
+}
+
 static LogicalResult printReturnOp(CppEmitter &emitter, ReturnOp returnOp) {
   auto &os = emitter.ostream();
   os << "return";
@@ -356,6 +380,8 @@ static LogicalResult printOperation(CppEmitter &emitter, Operation &op) {
     return printCallOp(emitter, callOp);
   if (auto callOp = dyn_cast<emitc::CallOp>(op))
     return printCallOp(emitter, callOp);
+  if (auto ifOp = dyn_cast<emitc::IfOp>(op))
+    return printIfOp(emitter, ifOp);
   if (auto constantOp = dyn_cast<ConstantOp>(op))
     return printConstantOp(emitter, constantOp);
   if (auto returnOp = dyn_cast<ReturnOp>(op))

@@ -191,6 +191,34 @@ static LogicalResult printCallOp(CppEmitter &emitter, emitc::CallOp callOp) {
   return success();
 }
 
+static LogicalResult printForOp(CppEmitter &emitter, emitc::ForOp forOp) {
+  auto &os = emitter.ostream();
+
+  os << "for (";
+  if (failed(emitter.emitType(forOp.getInductionVar().getType())))
+    return failure();
+  os << " ";
+  os << emitter.getOrCreateName(forOp.getInductionVar());
+  os << "=";
+  os << emitter.getOrCreateName(forOp.lowerBound());
+  os << "; ";
+  os << emitter.getOrCreateName(forOp.getInductionVar());
+  os << "<";
+  os << emitter.getOrCreateName(forOp.upperBound());
+  os << "; ";
+  os << emitter.getOrCreateName(forOp.getInductionVar());
+  os << "=";
+  os << emitter.getOrCreateName(forOp.getInductionVar());
+  os << "+";
+  os << emitter.getOrCreateName(forOp.step());
+  os << ") {\n";
+
+  // TODO: Emit forOp.region()
+
+  os << "}\n";
+  return success();
+}
+
 static LogicalResult printIfOp(CppEmitter &emitter, emitc::IfOp ifOp) {
   auto &os = emitter.ostream();
 
@@ -382,6 +410,8 @@ static LogicalResult printOperation(CppEmitter &emitter, Operation &op) {
     return printCallOp(emitter, callOp);
   if (auto ifOp = dyn_cast<emitc::IfOp>(op))
     return printIfOp(emitter, ifOp);
+  if (auto forOp = dyn_cast<emitc::ForOp>(op))
+    return printForOp(emitter, forOp);
   if (auto constantOp = dyn_cast<ConstantOp>(op))
     return printConstantOp(emitter, constantOp);
   if (auto returnOp = dyn_cast<ReturnOp>(op))

@@ -400,6 +400,9 @@ LogicalResult CppEmitter::emitType(Type type) {
       return failure();
     }
   }
+  if (auto itype = type.dyn_cast<IndexType>()) {
+    return (os << "size_t"), success();
+  }
   // TODO: Change to be EmitC specific.
   if (auto ot = type.dyn_cast<OpaqueType>()) {
     os << ot.getTypeData();

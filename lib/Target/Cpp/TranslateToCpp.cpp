@@ -193,15 +193,15 @@ static LogicalResult printCallOp(CppEmitter &emitter, emitc::CallOp callOp) {
 
 static LogicalResult printReturnOp(CppEmitter &emitter, ReturnOp returnOp) {
   auto &os = emitter.ostream();
-  os << "return ";
+  os << "return";
   switch (returnOp.getNumOperands()) {
   case 0:
     return success();
   case 1:
-    os << emitter.getOrCreateName(returnOp.getOperand(0));
+    os << " " << emitter.getOrCreateName(returnOp.getOperand(0));
     return success(emitter.hasValueInScope(returnOp.getOperand(0)));
   default:
-    os << "std::make_tuple(";
+    os << " std::make_tuple(";
     if (failed(emitter.emitOperandsAndAttributes(*returnOp.getOperation())))
       return failure();
     os << ")";

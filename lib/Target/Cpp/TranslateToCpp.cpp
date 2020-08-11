@@ -194,6 +194,15 @@ static LogicalResult printCallOp(CppEmitter &emitter, emitc::CallOp callOp) {
 static LogicalResult printForOp(CppEmitter &emitter, emitc::ForOp forOp) {
   auto &os = emitter.ostream();
 
+  if (forOp.getNumResults() != 0) {
+    for (uint result = 0; result < forOp.getNumResults(); ++result) {
+      emitter.emitType(forOp.getResult(result).getType());
+      // TODO: Take care of iter_args.
+      os << " " << emitter.getOrCreateName(forOp.getResult(result)) << ";";
+      os << "\n";
+    }
+  }
+
   os << "for (";
   if (failed(emitter.emitType(forOp.getInductionVar().getType())))
     return failure();
@@ -213,7 +222,10 @@ static LogicalResult printForOp(CppEmitter &emitter, emitc::ForOp forOp) {
   os << emitter.getOrCreateName(forOp.step());
   os << ") {\n";
 
-  // TODO: Emit forOp.region()
+  auto &forRegion = forOp.region();
+  for (auto &op : forRegion.getOps()) {
+    emitter.emitOperation(op);
+  }
 
   os << "}\n";
   return success();

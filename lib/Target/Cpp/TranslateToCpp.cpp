@@ -194,10 +194,22 @@ static LogicalResult printCallOp(CppEmitter &emitter, emitc::CallOp callOp) {
 static LogicalResult printForOp(CppEmitter &emitter, emitc::ForOp forOp) {
   auto &os = emitter.ostream();
 
+  if (forOp.getNumRegionIterArgs() != 0) {
+    auto regionArgs = forOp.getRegionIterArgs();
+    auto operands = forOp.getIterOperands();
+
+    for (uint result = 0; result < forOp.getNumRegionIterArgs(); result++) {
+      emitter.emitType(forOp.getResult(result).getType());
+
+      os << " " << emitter.getOrCreateName(regionArgs[result]) << " = ";
+      os << emitter.getOrCreateName(operands[result]) << ";\n";
+      os << "\n";
+    }
+  }
+
   if (forOp.getNumResults() != 0) {
     for (uint result = 0; result < forOp.getNumResults(); ++result) {
       emitter.emitType(forOp.getResult(result).getType());
-      // TODO: Take care of iter_args.
       os << " " << emitter.getOrCreateName(forOp.getResult(result)) << ";";
       os << "\n";
     }

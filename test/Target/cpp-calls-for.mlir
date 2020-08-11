@@ -8,3 +8,12 @@ func @test_for(%arg0 : index, %arg1 : index, %arg2 : index) {
   }
   return
 }
+
+func @std_for_yield(%arg0 : index, %arg1 : index, %arg2 : index) {
+  %s0 = emitc.call "foo::constant"() {args = [0 : i32]} : () -> (i32)
+  %result = emitc.for %i0 = %arg0 to %arg1 step %arg2 iter_args(%si = %s0) -> (i32) {
+    %sn = emitc.call "foo::add"(%si) {args = [0 : i32]} : (i32) -> (i32)
+    emitc.yield %sn : i32
+  }
+  return
+}

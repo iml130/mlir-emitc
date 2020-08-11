@@ -232,12 +232,33 @@ static LogicalResult printIfOp(CppEmitter &emitter, emitc::IfOp ifOp) {
   os << "}\n";
 
   auto &elseRegion = ifOp.elseRegion();
-  if(!elseRegion.empty()) {
+  if (!elseRegion.empty()) {
     os << "else {\n";
 
     // TODO: Emit ifOp.elseRegion()
 
     os << "}\n";
+  }
+
+  return success();
+}
+
+static LogicalResult printYieldOp(CppEmitter &emitter, emitc::YieldOp yieldOp) {
+  auto &os = emitter.ostream();
+
+  if (yieldOp.getNumOperands() == 0) {
+    return success();
+  } else {
+    auto &parentOp = *yieldOp.getParentOp();
+    uint numResults = parentOp.getNumResults();
+
+    for (uint result = 0; result < parentOp.getNumResults(); ++result) {
+      os << emitter.getOrCreateName(parentOp.getResult(result)) << " = ";
+
+      if (!emitter.hasValueInScope(yieldOp.getOperand(result)))
+        return yieldOp.emitError() << "operand value not in scope";
+      os << emitter.getOrCreateName(yieldOp.getOperand(result)) << ";\n";
+    }
   }
 
   return success();
@@ -410,6 +431,8 @@ static LogicalResult printOperation(CppEmitter &emitter, Operation &op) {
     return printCallOp(emitter, callOp);
   if (auto ifOp = dyn_cast<emitc::IfOp>(op))
     return printIfOp(emitter, ifOp);
+  if (auto yieldOp = dyn_cast<emitc::YieldOp>(op))
+    return printYieldOp(emitter, yieldOp);
   if (auto forOp = dyn_cast<emitc::ForOp>(op))
     return printForOp(emitter, forOp);
   if (auto constantOp = dyn_cast<ConstantOp>(op))

@@ -23,8 +23,7 @@ using namespace emitc;
 // EmitCDialect
 //===----------------------------------------------------------------------===//
 
-emitc::EmitCDialect::EmitCDialect(MLIRContext *context)
-    : Dialect(getDialectNamespace(), context) {
+void emitc::EmitCDialect::initialize() {
   addOperations<
 #define GET_OP_LIST
 #include "emitc/Dialect/EmitC/EmitC.cpp.inc"

@@ -222,12 +222,23 @@ static LogicalResult printForOp(CppEmitter &emitter, emitc::ForOp forOp) {
 static LogicalResult printIfOp(CppEmitter &emitter, emitc::IfOp ifOp) {
   auto &os = emitter.ostream();
 
+  if (ifOp.getNumResults() != 0) {
+    for (uint result = 0; result < ifOp.getNumResults(); ++result) {
+      emitter.emitType(ifOp.getResult(result).getType());
+      os << " " << emitter.getOrCreateName(ifOp.getResult(result)) << ";";
+      os << "\n";
+    }
+  }
+
   os << "if (";
   if (failed(emitter.emitOperands(*ifOp.getOperation())))
     return failure();
   os << ") {\n";
 
-  // TODO: Emit ifOp.thenRegion()
+  auto &thenRegion = ifOp.thenRegion();
+  for (auto &op : thenRegion.getOps()) {
+    emitter.emitOperation(op);
+  }
 
   os << "}\n";
 
@@ -235,7 +246,9 @@ static LogicalResult printIfOp(CppEmitter &emitter, emitc::IfOp ifOp) {
   if (!elseRegion.empty()) {
     os << "else {\n";
 
-    // TODO: Emit ifOp.elseRegion()
+    for (auto &op : elseRegion.getOps()) {
+      emitter.emitOperation(op);
+    }
 
     os << "}\n";
   }

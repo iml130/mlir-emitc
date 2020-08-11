@@ -201,7 +201,7 @@ static LogicalResult printForOp(CppEmitter &emitter, emitc::ForOp forOp) {
     for (uint result = 0; result < forOp.getNumRegionIterArgs(); result++) {
       emitter.emitType(regionArgs[result].getType());
       os << " " << emitter.getOrCreateName(regionArgs[result]) << " = ";
-      os << emitter.getOrCreateName(operands[result]) << ";\n";
+      os << emitter.getOrCreateName(operands[result]) << ";";
       os << "\n";
     }
   }

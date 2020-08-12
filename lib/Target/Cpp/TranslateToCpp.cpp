@@ -528,9 +528,17 @@ LogicalResult CppEmitter::emitType(Type type) {
     case 1:
       return (os << "bool"), success();
     case 32:
-      return (os << "int32_t"), success();
+      if (itype.getSignedness()) {
+        return (os << "uint32_t"), success();
+      } else {
+        return (os << "int32_t"), success();
+      }
     case 64:
-      return (os << "int64_t"), success();
+      if (itype.getSignedness()) {
+        return (os << "uint64_t"), success();
+      } else {
+        return (os << "int64_t"), success();
+      }
     default:
       return failure();
     }

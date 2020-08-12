@@ -40,3 +40,12 @@ func @test_float() {
   %0 = emitc.call "foo::constant"() {args = [dense<[0.000000e+00, 1.000000e+00]> : tensor<2xf32>]} : () -> f32
   return
 }
+
+// CHECK: test_uint
+func @test_uint() {
+  // CHECK: uint32_t
+  %0 = emitc.call "foo::constant"() {args = [dense<[0, 1]> : tensor<2xui32>]} : () -> ui32
+  // CHECK: uint64_t
+  %1 = emitc.call "foo::constant"() {args = [dense<[0, 1]> : tensor<2xui64>]} : () -> ui64
+  return
+}

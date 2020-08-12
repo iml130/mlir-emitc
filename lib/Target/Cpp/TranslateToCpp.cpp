@@ -207,9 +207,9 @@ static LogicalResult printForOp(CppEmitter &emitter, emitc::ForOp forOp) {
   }
 
   if (forOp.getNumResults() != 0) {
-    for (uint result = 0; result < forOp.getNumResults(); ++result) {
-      emitter.emitType(forOp.getResult(result).getType());
-      os << " " << emitter.getOrCreateName(forOp.getResult(result)) << ";";
+    for (auto op : forOp.getResults()) {
+      emitter.emitType(op.getType());
+      os << " " << emitter.getOrCreateName(op) << ";";
       os << "\n";
     }
   }
@@ -246,9 +246,9 @@ static LogicalResult printIfOp(CppEmitter &emitter, emitc::IfOp ifOp) {
   auto &os = emitter.ostream();
 
   if (ifOp.getNumResults() != 0) {
-    for (uint result = 0; result < ifOp.getNumResults(); ++result) {
-      emitter.emitType(ifOp.getResult(result).getType());
-      os << " " << emitter.getOrCreateName(ifOp.getResult(result)) << ";";
+    for (auto op : ifOp.getResults()) {
+      emitter.emitType(op.getType());
+      os << " " << emitter.getOrCreateName(op) << ";";
       os << "\n";
     }
   }

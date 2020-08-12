@@ -386,6 +386,35 @@ StringRef CppEmitter::getOrCreateName(Value val) {
 bool CppEmitter::hasValueInScope(Value val) { return mapper.count(val); }
 
 LogicalResult CppEmitter::emitAttribute(Attribute attr) {
+  auto print = [&](APFloat val) {
+    SmallString<128> strValue;
+    // Use default values of toString except don't truncate zeros.
+    val.toString(strValue, 0, 0, false);
+    switch (llvm::APFloatBase::SemanticsToEnum(val.getSemantics())) {
+    case llvm::APFloatBase::S_IEEEsingle:
+      os << "(float)";
+      break;
+    case llvm::APFloatBase::S_IEEEdouble:
+      os << "(double)";
+      break;
+    default:
+      break;
+    };
+    os << strValue;
+  };
+  // Print floating point attributes.
+  if (auto fAttr = attr.dyn_cast<FloatAttr>()) {
+    print(fAttr.getValue());
+    return success();
+  }
+  if (auto dense = attr.dyn_cast<mlir::DenseFPElementsAttr>()) {
+    os << '{';
+    interleaveComma(dense, os, [&](APFloat val) { print(val); });
+    os << '}';
+    return success();
+  }
+
+  // Print int attributes.
   if (auto iAttr = attr.dyn_cast<IntegerAttr>()) {
     os << iAttr.getValue();
     return success();

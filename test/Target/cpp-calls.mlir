@@ -1,4 +1,4 @@
-// RUN: emitc-translate -mlir-to-cpp %s | FileCheck %s --dump-input-on-failure
+// RUN: emitc-translate -mlir-to-cpp %s | FileCheck %s 
 
 // CHECK: // Forward declare functions.
 // CHECK: void test_foo_print();
@@ -32,4 +32,11 @@ func @test_multiple_return() -> (i32, i32) {
   %1 = call @test_single_return(%0#0) : (i32) -> i32
   // CHECK: return std::make_tuple([[V5]], [[V4]]);
   return %1, %0#1 : i32, i32
+}
+
+// CHECK: test_float
+func @test_float() {
+  // CHECK: foo::constant({(float)0.0e+00, (float)1.000000000e+00})
+  %0 = emitc.call "foo::constant"() {args = [dense<[0.000000e+00, 1.000000e+00]> : tensor<2xf32>]} : () -> f32
+  return
 }

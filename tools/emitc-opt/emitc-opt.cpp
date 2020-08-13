@@ -11,6 +11,7 @@
 //===----------------------------------------------------------------------===//
 
 #include "emitc/InitDialect.h"
+#include "emitc/InitPasses.h"
 #ifdef IREE_BUILD_EMITC
 #include "iree/tools/init_mlir_dialects.h"
 #include "iree/tools/init_mlir_passes.h"
@@ -80,6 +81,7 @@ int main(int argc, char **argv) {
   registerAllPasses();
 #endif
   registerEmitCDialect();
+  registerEmitCPasses();
 #ifdef EMITC_BUILD_HLO
   mhlo::registerAllDialects();
   mhlo::registerAllMhloPasses();

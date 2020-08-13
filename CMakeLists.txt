@@ -15,6 +15,13 @@ endif()
 
 project(mlir-emitc LANGUAGES CXX C)
 
+option(EMITC_ENABLE_HLO "Enables building MLIR-HLO." ON)
+
+if(${EMITC_ENABLE_HLO})
+  message(STATUS "Building MLIR-HLO")
+  add_definitions(-DEMITC_BUILD_HLO)
+endif()
+
 if(${IREE_ENABLE_EMITC})
   message(STATUS "Building EmitC (with reduced deps) for use within IREE")
   add_definitions(-DIREE_BUILD_EMITC)
@@ -56,6 +63,12 @@ include_directories(${PROJECT_SOURCE_DIR}/include)
 include_directories(${PROJECT_BINARY_DIR}/include)
 link_directories(${LLVM_BUILD_LIBRARY_DIR})
 add_definitions(${LLVM_DEFINITIONS})
+
+if(${EMITC_ENABLE_HLO})
+  add_subdirectory(third_party/mlir-hlo EXCLUDE_FROM_ALL)
+  include_directories(${mlir-hlo_SOURCE_DIR}/include)
+  include_directories(${mlir-hlo_BINARY_DIR}/include)
+endif()
 
 add_subdirectory(include/emitc)
 add_subdirectory(lib)

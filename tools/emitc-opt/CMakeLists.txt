@@ -32,6 +32,20 @@ else()
   get_property(conversion_libs GLOBAL PROPERTY MLIR_CONVERSION_LIBS)
 endif()
 
+if(${EMITC_ENABLE_HLO})
+  set(HLO_LIBS
+    MhloRegisterDialects
+    AllMhloPasses
+    )
+  set(HLO_LIBS_DEPS
+    MLIRLmhloPassIncGen
+    MLIRMhloPassIncGen
+    )
+else()
+  unset(HLO_LIBS)
+  unset(HLO_LIBS_DEPS)
+endif()
+
 set(LLVM_LINK_COMPONENTS
   Core
   Support
@@ -53,6 +67,7 @@ set(LIBS
   MLIRSupport
   MLIRIR
   MLIREmitC
+  ${HLO_LIBS}
   )
 
 add_llvm_executable(emitc-opt
@@ -60,8 +75,9 @@ add_llvm_executable(emitc-opt
 
   DEPENDS
   ${LIBS}
+  ${HLO_LIBS_DEPS}
   )
 target_link_libraries(emitc-opt PRIVATE ${LIBS})
 llvm_update_compile_flags(emitc-opt)
 
-mlir_check_all_link_libraries(emitc-opt)
+#mlir_check_all_link_libraries(emitc-opt)

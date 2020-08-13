@@ -15,6 +15,10 @@
 #include "iree/tools/init_mlir_dialects.h"
 #include "iree/tools/init_mlir_passes.h"
 #endif
+#ifdef EMITC_BUILD_HLO
+#include "mlir-hlo/Dialect/mhlo/IR/register.h"
+#include "mlir-hlo/Dialect/mhlo/transforms/register_passes.h"
+#endif
 #include "mlir/IR/AsmState.h"
 #include "mlir/IR/Dialect.h"
 #include "mlir/IR/MLIRContext.h"
@@ -76,6 +80,11 @@ int main(int argc, char **argv) {
   registerAllPasses();
 #endif
   registerEmitCDialect();
+#ifdef EMITC_BUILD_HLO
+  mhlo::registerAllDialects();
+  mhlo::registerAllMhloPasses();
+  lmhlo::registerAllLmhloPasses();
+#endif
   InitLLVM y(argc, argv);
 
   // Register any command line options.

@@ -21,6 +21,7 @@
 #include <cstdlib>
 
 namespace mlir {
+namespace emitc {
 
 // This function may be called to register the MLIR passes with the
 // global registry.
@@ -29,12 +30,13 @@ namespace mlir {
 // registry, since it would already be calling the creation routine of the
 // individual passes.
 // The global registry is interesting to interact with the command-line tools.
-inline void registerEmitCPasses() {
 
-  // TODO: Register Passes
+#define GEN_PASS_REGISTRATION
+#include "emitc/Dialect/EmitC/Passes.h.inc"
 
-}
+inline void registerAllEmitCPasses() { registerEmitCPasses(); }
 
+} // namespace emitc
 } // namespace mlir
 
 #endif // MLIR_INITPASSES_H

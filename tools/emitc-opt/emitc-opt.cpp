@@ -81,7 +81,7 @@ int main(int argc, char **argv) {
   registerAllPasses();
 #endif
   registerEmitCDialect();
-  registerEmitCPasses();
+  emitc::registerAllEmitCPasses();
 #ifdef EMITC_BUILD_HLO
   mhlo::registerAllDialects();
   mhlo::registerAllMhloPasses();

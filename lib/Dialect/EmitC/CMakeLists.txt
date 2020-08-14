@@ -14,3 +14,5 @@ add_mlir_dialect_library(MLIREmitC
   MLIRIR
   MLIRSideEffectInterfaces
   )
+
+add_subdirectory(Conversion)

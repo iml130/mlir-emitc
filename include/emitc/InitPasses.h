@@ -21,6 +21,14 @@
 #include <cstdlib>
 
 namespace mlir {
+
+#ifdef EMITC_BUILD_HLO
+// TODO: Remove
+namespace mhlo {
+extern std::unique_ptr<OperationPass<FuncOp>> createConvertToScfPass();
+} // namespace mhlo
+#endif
+
 namespace emitc {
 
 // This function may be called to register the MLIR passes with the
@@ -34,7 +42,9 @@ namespace emitc {
 #define GEN_PASS_REGISTRATION
 #include "emitc/Dialect/EmitC/Passes.h.inc"
 
-inline void registerAllEmitCPasses() { registerEmitCPasses(); }
+inline void registerAllEmitCPasses() {
+ registerEmitCPasses();
+}
 
 } // namespace emitc
 } // namespace mlir

@@ -79,14 +79,14 @@ int main(int argc, char **argv) {
 #else
   registerAllDialects();
   registerAllPasses();
-#endif
+#endif // IREE_BUILD_EMITC
   registerEmitCDialect();
   emitc::registerAllEmitCPasses();
 #ifdef EMITC_BUILD_HLO
   mhlo::registerAllDialects();
   mhlo::registerAllMhloPasses();
   lmhlo::registerAllLmhloPasses();
-#endif
+#endif // EMITC_BUILD_HLO
   InitLLVM y(argc, argv);
 
   // Register any command line options.
@@ -114,7 +114,7 @@ int main(int argc, char **argv) {
 
   if (failed(MlirOptMain(output->os(), std::move(file), passPipeline,
                          splitInputFile, verifyDiagnostics, verifyPasses,
-                         allowUnregisteredDialects, true))) {
+                         allowUnregisteredDialects))) {
     return 1;
   }
   // Keep the output file if the invocation of MlirOptMain was successful.

@@ -37,7 +37,6 @@ void ConvertWhile(WhileOp while_op);
 class ConvertToScfPass
     : public mlir::PassWrapper<ConvertToScfPass, FunctionPass> {
   void runOnFunction() override {
-    std::vector<WhileOp> while_ops;
     getFunction().walk([&](Operation *op) {
       if (auto while_op = llvm::dyn_cast<WhileOp>(op)) {
         ConvertWhile(while_op);

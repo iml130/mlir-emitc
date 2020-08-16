@@ -20,7 +20,6 @@ def ConvertMHLOToEmitCPass : Pass<"convert-mhlo-to-emitc", "FuncOp"> {
 def ConvertToScfPass : Pass<"convert-mhlo-while-to-scf", "FuncOp"> {
   let summary = "Converting MHLO While to SCF.";
   let constructor = "mhlo::createConvertToScfPass()";
-  let dependentDialects = ["scf::SCFDialect"];
 }
 
 #endif // MLIR_DIALECT_EMITC_PASSES

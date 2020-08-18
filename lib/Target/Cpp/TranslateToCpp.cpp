@@ -198,11 +198,10 @@ static LogicalResult printForOp(CppEmitter &emitter, emitc::ForOp forOp) {
     auto regionArgs = forOp.getRegionIterArgs();
     auto operands = forOp.getIterOperands();
 
-    for (auto i = std::make_pair(regionArgs.begin(), operands.begin());
-         i.first != regionArgs.end(); ++i.first, ++i.second) {
-      emitter.emitType(i.first->getType());
-      os << " " << emitter.getOrCreateName(*i.first) << " = ";
-      os << emitter.getOrCreateName(*i.second) << ";";
+    for (auto i : llvm::zip(regionArgs, operands)) {
+      emitter.emitType(std::get<0>(i).getType());
+      os << " " << emitter.getOrCreateName(std::get<0>(i)) << " = ";
+      os << emitter.getOrCreateName(std::get<1>(i)) << ";";
       os << "\n";
     }
   }

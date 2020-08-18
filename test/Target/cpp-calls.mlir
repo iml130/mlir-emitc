@@ -49,3 +49,8 @@ func @test_uint() {
   %1 = emitc.call "foo::constant"() {args = [dense<[0, 1]> : tensor<2xui64>]} : () -> ui64
   return
 }
+
+func @test_plus_int(%arg0 : i64) -> i64 {
+  %0 = emitc.call "std::plus<>{}"(%arg0, %arg0) {args = [0 : index, 1 : index]} : (i64, i64) -> i64
+  return %0 : i64
+}

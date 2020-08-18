@@ -555,6 +555,12 @@ LogicalResult CppEmitter::emitType(Type type) {
   if (auto itype = type.dyn_cast<IndexType>()) {
     return (os << "size_t"), success();
   }
+  if (auto itype = type.dyn_cast<TensorType>()) {
+    os << "std::vector<";
+    emitType(itype.getElementType());
+    os << ">";
+    return success();
+  }
   // TODO: Change to be EmitC specific.
   if (auto ot = type.dyn_cast<OpaqueType>()) {
     os << ot.getTypeData();

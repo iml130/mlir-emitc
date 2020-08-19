@@ -85,6 +85,8 @@ private:
 void populateMhloToEmitcPatterns(MLIRContext *ctx,
                                  OwningRewritePatternList &patterns) {
   /// Insert patterns for MHLO unary elementwise ops.
+  patterns.insert<UnaryOpConversion<mhlo::AbsOp, emitc::CallOp>>(ctx,
+                                                                 "mhlo::abs");
   patterns.insert<UnaryOpConversion<mhlo::CosOp, emitc::CallOp>>(ctx,
                                                                  "mhlo::cos");
 
@@ -120,7 +122,7 @@ struct ConvertMhloToEmitcPass
 
     target.addLegalDialect<emitc::EmitCDialect>();
     target.addLegalDialect<mhlo::MhloDialect>();
-    target.addIllegalOp<mhlo::CosOp>();
+    target.addIllegalOp<mhlo::AbsOp, mhlo::CosOp>();
     target.addIllegalOp<mhlo::AddOp, mhlo::DivOp, mhlo::MaxOp, mhlo::MinOp,
                         mhlo::MulOp, mhlo::PowOp, mhlo::ShiftLeftOp,
                         mhlo::ShiftRightLogicalOp, mhlo::SubOp>();

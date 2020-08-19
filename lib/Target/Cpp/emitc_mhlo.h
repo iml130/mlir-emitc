@@ -24,6 +24,31 @@
 namespace mhlo {
 
 /// Functions for MHLO unary elementwise ops
+// AbsOp
+template <typename T1, typename T2>
+inline T1 abs(T2 x) {
+  return std::abs(x);
+}
+
+template <typename T>
+inline std::vector<T> abs(std::vector<T> x) {
+  std::vector<T> z(x);
+  for (size_t i = 0; i < z.size(); i++) {
+    z[i] = std::abs(x[i]);
+  }
+  return z;
+}
+
+// AbsOp supports complex to real.
+template <typename T>
+inline std::vector<T> abs(std::vector<std::complex<T>> x) {
+  std::vector<T> z(x.size());
+  for (size_t i = 0; i < z.size(); i++) {
+    z[i] = std::abs(x[i]);
+  }
+  return z;
+}
+
 // CosOp
 template <typename T>
 inline T cos(T x) {

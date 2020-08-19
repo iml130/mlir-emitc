@@ -23,6 +23,33 @@ namespace emitc {
 
 namespace {
 
+template <typename SrcOp, typename DstOp>
+class UnaryOpConversion : public OpConversionPattern<SrcOp> {
+  using OpConversionPattern<SrcOp>::OpConversionPattern;
+
+public:
+  UnaryOpConversion(MLIRContext *ctx, StringRef funcName)
+      : OpConversionPattern<SrcOp>(ctx), funcName(funcName) {}
+
+private:
+  LogicalResult
+  matchAndRewrite(SrcOp srcOp, ArrayRef<Value> operands,
+                  ConversionPatternRewriter &rewriter) const override {
+    typename SrcOp::Adaptor srcAdapter(operands);
+
+    StringAttr callee = rewriter.getStringAttr(funcName);
+    ArrayAttr args =
+        rewriter.getArrayAttr({IntegerAttr::get(rewriter.getIndexType(), 0)});
+
+    rewriter.replaceOpWithNewOp<DstOp>(srcOp, srcOp.getType(), callee, args,
+                                       operands);
+
+    return success();
+  }
+
+  StringRef funcName;
+};
+
 // Adopted from IREE's ConvertStandardToVM/ConvertVMToEmitC.
 template <typename SrcOp, typename DstOp>
 class BinaryOpConversion : public OpConversionPattern<SrcOp> {

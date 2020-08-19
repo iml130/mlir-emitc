@@ -52,7 +52,7 @@ func @test_uint() {
 
 // CHECK: int64_t test_plus_int(int64_t [[V1]])
 func @test_plus_int(%arg0 : i64) -> i64 {
-  // CHECK: std::plus<>{}([[V1]], [[V1]])
-  %0 = emitc.call "std::plus<>{}"(%arg0, %arg0) {args = [0 : index, 1 : index]} : (i64, i64) -> i64
+  // CHECK: mhlo::add([[V1]], [[V1]])
+  %0 = emitc.call "mhlo::add"(%arg0, %arg0) {args = [0 : index, 1 : index]} : (i64, i64) -> i64
   return %0 : i64
 }

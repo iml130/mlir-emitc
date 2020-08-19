@@ -321,10 +321,7 @@ static LogicalResult printReturnOp(CppEmitter &emitter, ReturnOp returnOp) {
 static LogicalResult printModule(CppEmitter &emitter, ModuleOp moduleOp) {
   CppEmitter::Scope scope(emitter);
   auto &os = emitter.ostream();
-  // TODO: Only include if functional objects or vector are used.
-  os << "#include <functional>\n";
-  os << "#include <vector>\n";
-  os << "\n";
+  os << "#include \"emitc_mhlo.h\"\n\n";
   os << "// Forward declare functions.\n";
   for (FuncOp funcOp : moduleOp.getOps<FuncOp>()) {
     if (failed(emitter.emitTypes(funcOp.getType().getResults())))

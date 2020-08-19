@@ -84,14 +84,29 @@ private:
 
 void populateMhloToEmitcPatterns(MLIRContext *ctx,
                                  OwningRewritePatternList &patterns) {
-  patterns.insert<BinaryOpConversion<mhlo::AddOp, emitc::CallOp>>(
-      ctx, "std::plus<>{}");
-  patterns.insert<BinaryOpConversion<mhlo::SubOp, emitc::CallOp>>(
-      ctx, "std::minus<>{}");
-  patterns.insert<BinaryOpConversion<mhlo::MulOp, emitc::CallOp>>(
-      ctx, "std::multiplies<>{}");
-  patterns.insert<BinaryOpConversion<mhlo::DivOp, emitc::CallOp>>(
-      ctx, "std::divides<>{}");
+  /// Insert patterns for MHLO unary elementwise ops.
+  patterns.insert<UnaryOpConversion<mhlo::CosOp, emitc::CallOp>>(ctx,
+                                                                 "mhlo::cos");
+
+  /// Insert patterns for MHLO binary elementwise ops.
+  patterns.insert<BinaryOpConversion<mhlo::AddOp, emitc::CallOp>>(ctx,
+                                                                  "mhlo::add");
+  patterns.insert<BinaryOpConversion<mhlo::DivOp, emitc::CallOp>>(ctx,
+                                                                  "mhlo::div");
+  patterns.insert<BinaryOpConversion<mhlo::MaxOp, emitc::CallOp>>(ctx,
+                                                                  "mhlo::max");
+  patterns.insert<BinaryOpConversion<mhlo::MinOp, emitc::CallOp>>(ctx,
+                                                                  "mhlo::min");
+  patterns.insert<BinaryOpConversion<mhlo::MulOp, emitc::CallOp>>(ctx,
+                                                                  "mhlo::mul");
+  patterns.insert<BinaryOpConversion<mhlo::PowOp, emitc::CallOp>>(ctx,
+                                                                  "mhlo::pow");
+  patterns.insert<BinaryOpConversion<mhlo::ShiftLeftOp, emitc::CallOp>>(
+      ctx, "mhlo::shift_left");
+  patterns.insert<BinaryOpConversion<mhlo::ShiftRightLogicalOp, emitc::CallOp>>(
+      ctx, "mhlo::shift_right_logical");
+  patterns.insert<BinaryOpConversion<mhlo::SubOp, emitc::CallOp>>(ctx,
+                                                                  "mhlo::sub");
 }
 
 namespace {
@@ -105,7 +120,10 @@ struct ConvertMhloToEmitcPass
 
     target.addLegalDialect<emitc::EmitCDialect>();
     target.addLegalDialect<mhlo::MhloDialect>();
-    target.addIllegalOp<mhlo::AddOp, mhlo::SubOp, mhlo::MulOp, mhlo::DivOp>();
+    target.addIllegalOp<mhlo::CosOp>();
+    target.addIllegalOp<mhlo::AddOp, mhlo::DivOp, mhlo::MaxOp, mhlo::MinOp,
+                        mhlo::MulOp, mhlo::PowOp, mhlo::ShiftLeftOp,
+                        mhlo::ShiftRightLogicalOp, mhlo::SubOp>();
 
     OwningRewritePatternList patterns;
     populateMhloToEmitcPatterns(&getContext(), patterns);

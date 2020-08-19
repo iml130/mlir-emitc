@@ -56,3 +56,10 @@ func @test_plus_int(%arg0 : i64) -> i64 {
   %0 = emitc.call "mhlo::add"(%arg0, %arg0) {args = [0 : index, 1 : index]} : (i64, i64) -> i64
   return %0 : i64
 }
+
+// CHECK: std::vector<float> mixed_types(std::vector<double> [[V1]])
+func @mixed_types(%arg0: tensor<2xf64>) -> tensor<2xf32> {
+  // CHECK: foo::mixed_types([[V1]]);
+  %0 = emitc.call "foo::mixed_types"(%arg0) {args = [0 : index]} : (tensor<2xf64>) -> tensor<2xf32>
+  return %0 : tensor<2xf32>
+}

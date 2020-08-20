@@ -144,7 +144,20 @@ void populateMhloToEmitcPatterns(MLIRContext *ctx,
   patterns.insert<BinaryOpConversion<mhlo::XorOp, emitc::CallOp>>(ctx,
                                                                   "mhlo::xor");
 
+  // Insert patterns for MHLO tuple ops.
+  // TODO:
+  //  mhlo::GetTupleElementOp
+  //  mhlo::TupleOp
+  //  mhlo::CompareOp
+
+  // Insert patterns for MHLO slice op.
+  // TODO:
+  //  mhlo::SliceOp
+  //  mhlo::DynamicUpdateSliceOp
+
   // Insert patterns for other MHLO ops.
+  // TODO:
+  //  mhlo::HLO_BroadcastInDimOp
   patterns.insert<ConcatenateOpConversion>(ctx);
 }
 

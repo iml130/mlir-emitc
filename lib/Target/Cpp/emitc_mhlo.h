@@ -166,6 +166,14 @@ inline std::vector<T> sub(std::vector<T> x, std::vector<T> y) {
   return z;
 }
 
+// ConcatenateOp
+template <typename T>
+inline std::vector<T> concatenate(std::vector<T> x, std::vector<T> y) {
+  std::vector<T> z(x);
+  z.insert(z.end(), y.begin(), y.end());
+  return z;
+}
+
 } // namespace mhlo
 
 #endif // EMITC_MHLO_H

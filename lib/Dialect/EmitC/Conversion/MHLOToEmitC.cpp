@@ -23,6 +23,32 @@ namespace emitc {
 
 namespace {
 
+class ConcatenateOpConversion
+    : public OpConversionPattern<mhlo::ConcatenateOp> {
+
+public:
+  ConcatenateOpConversion(MLIRContext *ctx) : OpConversionPattern(ctx) {}
+
+private:
+  LogicalResult
+  matchAndRewrite(mhlo::ConcatenateOp srcOp, ArrayRef<Value> operands,
+                  ConversionPatternRewriter &rewriter) const override {
+
+    // TODO: Take care of the op's dimension attribute.
+
+    StringRef funcName = "mhlo::concatenate";
+    StringAttr callee = rewriter.getStringAttr(funcName);
+    ArrayAttr args =
+        rewriter.getArrayAttr({IntegerAttr::get(rewriter.getIndexType(), 0),
+                               IntegerAttr::get(rewriter.getIndexType(), 1)});
+
+    rewriter.replaceOpWithNewOp<emitc::CallOp>(srcOp, srcOp.getType(), callee,
+                                               args, operands);
+
+    return success();
+  }
+};
+
 template <typename SrcOp, typename DstOp>
 class UnaryOpConversion : public OpConversionPattern<SrcOp> {
   using OpConversionPattern<SrcOp>::OpConversionPattern;
@@ -109,6 +135,9 @@ void populateMhloToEmitcPatterns(MLIRContext *ctx,
       ctx, "mhlo::shift_right_logical");
   patterns.insert<BinaryOpConversion<mhlo::SubOp, emitc::CallOp>>(ctx,
                                                                   "mhlo::sub");
+
+  // Insert patterns for other MHLO ops.
+  patterns.insert<ConcatenateOpConversion>(ctx);
 }
 
 namespace {
@@ -126,6 +155,7 @@ struct ConvertMhloToEmitcPass
     target.addIllegalOp<mhlo::AddOp, mhlo::DivOp, mhlo::MaxOp, mhlo::MinOp,
                         mhlo::MulOp, mhlo::PowOp, mhlo::ShiftLeftOp,
                         mhlo::ShiftRightLogicalOp, mhlo::SubOp>();
+    target.addIllegalOp<mhlo::ConcatenateOp>();
 
     OwningRewritePatternList patterns;
     populateMhloToEmitcPatterns(&getContext(), patterns);

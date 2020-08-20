@@ -78,7 +78,14 @@ struct CppEmitter {
   LogicalResult emitType(Type type);
 
   /// Emits array of types as a std::tuple of the emitted types.
+  /// - emits void for an empty array;
+  /// - emits the type of the only element for arrays of size one;
+  /// - emits a std::tuple otherwise;
   LogicalResult emitTypes(ArrayRef<Type> types);
+
+  /// Emits array of types as a std::tuple of the emitted types independently of
+  /// the array size.
+  LogicalResult emitTupleType(ArrayRef<Type> types);
 
   /// Emits the variable declaration and assignment prefix for 'op'.
   /// - emits separate variable followed by std::tie for multi-valued operation;
@@ -179,7 +186,7 @@ static LogicalResult printCallOp(CppEmitter &emitter, emitc::CallOp callOp) {
     return emitter.emitAttribute(attr);
   };
 
-  //if (callOp.argsAttr()) {
+  // if (callOp.argsAttr()) {
   //  callOp.dump();
   //}
   auto emittedArgs =
@@ -472,7 +479,7 @@ LogicalResult CppEmitter::emitAssignPrefix(Operation &op) {
   case 1: {
     auto result = op.getResult(0);
     if (failed(emitType(result.getType())))
-      return failure();
+      return op.emitError() << "unable to emit type " << result.getType();
     os << " " << getOrCreateName(result) << " = ";
     break;
   }
@@ -562,6 +569,9 @@ LogicalResult CppEmitter::emitType(Type type) {
     os << ">";
     return success();
   }
+  if (auto ttype = type.dyn_cast<TupleType>()) {
+    return emitTupleType(ttype.getTypes());
+  }
   // TODO: Change to be EmitC specific.
   if (auto ot = type.dyn_cast<OpaqueType>()) {
     os << ot.getTypeData();
@@ -578,13 +588,17 @@ LogicalResult CppEmitter::emitTypes(ArrayRef<Type> types) {
   case 1:
     return emitType(types.front());
   default:
-    os << "std::tuple<";
-    if (failed(interleaveCommaWithError(
-            types, os, [&](Type type) { return emitType(type); })))
-      return failure();
-    os << ">";
-    return success();
+    return emitTupleType(types);
   }
+}
+
+LogicalResult CppEmitter::emitTupleType(ArrayRef<Type> types) {
+  os << "std::tuple<";
+  if (failed(interleaveCommaWithError(
+          types, os, [&](Type type) { return emitType(type); })))
+    return failure();
+  os << ">";
+  return success();
 }
 
 LogicalResult emitc::TranslateToCpp(Operation &op, raw_ostream &os,

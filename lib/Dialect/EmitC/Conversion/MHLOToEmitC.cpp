@@ -113,10 +113,18 @@ void populateMhloToEmitcPatterns(MLIRContext *ctx,
   /// Insert patterns for MHLO unary elementwise ops.
   patterns.insert<UnaryOpConversion<mhlo::AbsOp, emitc::CallOp>>(ctx,
                                                                  "mhlo::abs");
-  patterns.insert<UnaryOpConversion<mhlo::ConvertOp, emitc::CallOp>>(ctx,
-                                                                 "mhlo::convert");
+  patterns.insert<UnaryOpConversion<mhlo::ConvertOp, emitc::CallOp>>(
+      ctx, "mhlo::convert");
   patterns.insert<UnaryOpConversion<mhlo::CosOp, emitc::CallOp>>(ctx,
                                                                  "mhlo::cos");
+  patterns.insert<UnaryOpConversion<mhlo::ExpOp, emitc::CallOp>>(
+      ctx, "mhlo::exponential");
+  patterns.insert<UnaryOpConversion<mhlo::IsFiniteOp, emitc::CallOp>>(
+      ctx, "mhlo::isfinite");
+  patterns.insert<UnaryOpConversion<mhlo::LogOp, emitc::CallOp>>(ctx,
+                                                                 "mhlo::log");
+  patterns.insert<UnaryOpConversion<mhlo::NegOp, emitc::CallOp>>(
+      ctx, "mhlo::negate");
 
   /// Insert patterns for MHLO binary elementwise ops.
   patterns.insert<BinaryOpConversion<mhlo::AddOp, emitc::CallOp>>(ctx,
@@ -140,7 +148,7 @@ void populateMhloToEmitcPatterns(MLIRContext *ctx,
 
   // Insert patterns for MHLO MHLO binary logical elementwise ops.
   patterns.insert<BinaryOpConversion<mhlo::OrOp, emitc::CallOp>>(ctx,
-                                                                  "mhlo::or");
+                                                                 "mhlo::or");
   patterns.insert<BinaryOpConversion<mhlo::XorOp, emitc::CallOp>>(ctx,
                                                                   "mhlo::xor");
 
@@ -157,8 +165,14 @@ void populateMhloToEmitcPatterns(MLIRContext *ctx,
 
   // Insert patterns for other MHLO ops.
   // TODO:
-  //  mhlo::HLO_BroadcastInDimOp
+  //  mhlo::BitcastConvertOp
+  //  mhlo::BroadcastInDimOp
   patterns.insert<ConcatenateOpConversion>(ctx);
+
+  // Insert patterns for MHLO RNG ops.
+  // TODO:
+  //  mhlo::RngUniformOp
+  //  mhlo::RngBitGeneratorOp
 }
 
 namespace {
@@ -172,7 +186,8 @@ struct ConvertMhloToEmitcPass
 
     target.addLegalDialect<emitc::EmitCDialect>();
     target.addLegalDialect<mhlo::MhloDialect>();
-    target.addIllegalOp<mhlo::AbsOp, mhlo::ConvertOp, mhlo::CosOp>();
+    target.addIllegalOp<mhlo::AbsOp, mhlo::ConvertOp, mhlo::CosOp, mhlo::ExpOp,
+                        mhlo::IsFiniteOp, mhlo::LogOp, mhlo::NegOp>();
     target.addIllegalOp<mhlo::AddOp, mhlo::DivOp, mhlo::MaxOp, mhlo::MinOp,
                         mhlo::MulOp, mhlo::PowOp, mhlo::ShiftLeftOp,
                         mhlo::ShiftRightLogicalOp, mhlo::SubOp>();

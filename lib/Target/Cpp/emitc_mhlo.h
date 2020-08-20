@@ -69,6 +69,19 @@ inline std::vector<T> cos(std::vector<T> x) {
   return z;
 }
 
+// ExpOp
+// TODO: Implement!
+// `e^(operand)` element-wise
+
+// IsFiniteOp
+// TODO: Implement!
+
+// LogOp
+// TODO: Implement!
+
+// NegOp
+// TODO: Implement!
+
 /// Functions for MHLO binary elementwise ops.
 // AddOp
 template <typename T>

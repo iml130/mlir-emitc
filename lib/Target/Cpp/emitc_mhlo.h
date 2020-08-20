@@ -57,7 +57,7 @@ inline std::vector<T> abs(std::vector<std::complex<T>> x) {
 // CosOp
 template <typename T>
 inline T cos(T x) {
-  return std::abs(x);
+  return std::cos(x);
 }
 
 template <typename T>

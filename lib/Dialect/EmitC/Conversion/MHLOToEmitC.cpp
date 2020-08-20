@@ -106,6 +106,36 @@ private:
   StringRef funcName;
 };
 
+class TupleOpConversion : public OpConversionPattern<mhlo::TupleOp> {
+  using OpConversionPattern<mhlo::TupleOp>::OpConversionPattern;
+
+public:
+  TupleOpConversion(MLIRContext *ctx)
+      : OpConversionPattern<mhlo::TupleOp>(ctx) {}
+
+private:
+  LogicalResult
+  matchAndRewrite(mhlo::TupleOp tupleOp, ArrayRef<Value> operands,
+                  ConversionPatternRewriter &rewriter) const override {
+    typename mhlo::TupleOp::Adaptor srcAdapter(operands);
+
+    StringAttr callee = rewriter.getStringAttr("std::make_tuple");
+
+    // build vector of indices [0 ... operands.size-1]
+    std::vector<Attribute> indices;
+    for (int i = 0; i < operands.size(); i++) {
+      indices.push_back(IntegerAttr::get(rewriter.getIndexType(), i));
+    }
+
+    ArrayAttr args = rewriter.getArrayAttr(llvm::makeArrayRef(indices));
+
+    rewriter.replaceOpWithNewOp<emitc::CallOp>(tupleOp, tupleOp.getType(),
+                                               callee, args, operands);
+
+    return success();
+  }
+};
+
 } // namespace
 
 void populateMhloToEmitcPatterns(MLIRContext *ctx,
@@ -155,8 +185,8 @@ void populateMhloToEmitcPatterns(MLIRContext *ctx,
   // Insert patterns for MHLO tuple ops.
   // TODO:
   //  mhlo::GetTupleElementOp
-  //  mhlo::TupleOp
   //  mhlo::CompareOp
+  patterns.insert<TupleOpConversion>(ctx);
 
   // Insert patterns for MHLO slice op.
   // TODO:
@@ -193,6 +223,7 @@ struct ConvertMhloToEmitcPass
                         mhlo::ShiftRightLogicalOp, mhlo::SubOp>();
     target.addIllegalOp<mhlo::OrOp, mhlo::XorOp>();
     target.addIllegalOp<mhlo::ConcatenateOp>();
+    target.addIllegalOp<mhlo::TupleOp>();
 
     OwningRewritePatternList patterns;
     populateMhloToEmitcPatterns(&getContext(), patterns);

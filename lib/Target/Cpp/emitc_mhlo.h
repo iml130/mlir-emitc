@@ -50,6 +50,9 @@ inline std::vector<T> abs(std::vector<std::complex<T>> x) {
   return z;
 }
 
+// ConvertOp
+// TODO: Implement!
+
 // CosOp
 template <typename T>
 inline T cos(T x) {

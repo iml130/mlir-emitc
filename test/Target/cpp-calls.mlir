@@ -63,3 +63,8 @@ func @mixed_types(%arg0: tensor<2xf64>) -> tensor<2xf32> {
   %0 = emitc.call "foo::mixed_types"(%arg0) {args = [0 : index]} : (tensor<2xf64>) -> tensor<2xf32>
   return %0 : tensor<2xf32>
 }
+
+func @mhlo_convert(%arg0: tensor<ui32>) -> tensor<ui64> {
+  %0 = emitc.call "mhlo::convert"(%arg0) {args = [0 : index]} : (tensor<ui32>) -> tensor<ui64>
+  return %0 : tensor<ui64>
+}

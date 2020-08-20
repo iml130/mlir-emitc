@@ -40,3 +40,8 @@ func @mhlo_concaternate(%arg0: tensor<1xf32>, %arg1: tensor<2xf32>) -> tensor<3x
   %0 = "mhlo.concatenate"(%arg0, %arg1) {dimension = 0 : i64} : (tensor<1xf32>, tensor<2xf32>) -> tensor<3xf32>
   return %0 : tensor<3xf32>
 }
+
+func @mhlo_convert(%arg0: tensor<ui32>) -> tensor<ui64> {
+  %0 = "mhlo.convert"(%arg0) : (tensor<ui32>) -> tensor<ui64>
+  return %0 : tensor<ui64>
+}

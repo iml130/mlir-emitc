@@ -134,7 +134,18 @@ inline std::vector<T> mul(std::vector<T> x, std::vector<T> y) {
 }
 
 // PowOp
-// TODO: Implement!
+template <typename T>
+inline T pow(T x, T y) {
+  return std::pow(x, y);
+}
+
+template <typename T>
+inline std::vector<T> pow(std::vector<T> x, std::vector<T> y) {
+  std::vector<T> z(x);
+  std::transform(x.begin(), x.end(), y.begin(), z.begin(),
+                 [](auto a, auto b) { return std::pow(a, b); });
+  return z;
+}
 
 // ShiftLeftOp
 // TODO: Implement!

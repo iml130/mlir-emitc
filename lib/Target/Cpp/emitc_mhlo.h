@@ -170,6 +170,13 @@ inline std::vector<T> sub(std::vector<T> x, std::vector<T> y) {
   return z;
 }
 
+/// Functions for MHLO binary logical elementwise ops.
+// OrOp
+// TODO: Implement!
+
+// XorOp
+// TODO: Implement!
+
 /// Functions for other MHLO ops.
 // ConcatenateOp
 template <typename T>

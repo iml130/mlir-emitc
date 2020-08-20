@@ -47,3 +47,9 @@ func @mhlo_convert(%arg0: tensor<ui32>) -> tensor<ui64> {
   %0 = "mhlo.convert"(%arg0) : (tensor<ui32>) -> tensor<ui64>
   return %0 : tensor<ui64>
 }
+
+func @mhlo_or(%arg0: tensor<ui64>, %arg1: tensor<ui64>) -> tensor<ui64> {
+  // CHECK: emitc.call "mhlo::or"
+  %0 = "mhlo.or"(%arg0, %arg1) : (tensor<ui64>, tensor<ui64>) -> tensor<ui64>
+  return %0 : tensor<ui64>
+}

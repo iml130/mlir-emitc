@@ -138,6 +138,12 @@ void populateMhloToEmitcPatterns(MLIRContext *ctx,
   patterns.insert<BinaryOpConversion<mhlo::SubOp, emitc::CallOp>>(ctx,
                                                                   "mhlo::sub");
 
+  // Insert patterns for MHLO MHLO binary logical elementwise ops.
+  patterns.insert<BinaryOpConversion<mhlo::OrOp, emitc::CallOp>>(ctx,
+                                                                  "mhlo::or");
+  patterns.insert<BinaryOpConversion<mhlo::XorOp, emitc::CallOp>>(ctx,
+                                                                  "mhlo::xor");
+
   // Insert patterns for other MHLO ops.
   patterns.insert<ConcatenateOpConversion>(ctx);
 }
@@ -157,6 +163,7 @@ struct ConvertMhloToEmitcPass
     target.addIllegalOp<mhlo::AddOp, mhlo::DivOp, mhlo::MaxOp, mhlo::MinOp,
                         mhlo::MulOp, mhlo::PowOp, mhlo::ShiftLeftOp,
                         mhlo::ShiftRightLogicalOp, mhlo::SubOp>();
+    target.addIllegalOp<mhlo::OrOp, mhlo::XorOp>();
     target.addIllegalOp<mhlo::ConcatenateOp>();
 
     OwningRewritePatternList patterns;

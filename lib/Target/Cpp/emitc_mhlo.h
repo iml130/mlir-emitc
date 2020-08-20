@@ -43,7 +43,8 @@ inline std::vector<T> abs(std::vector<T> x) {
 // AbsOp supports complex to real.
 template <typename T>
 inline std::vector<T> abs(std::vector<std::complex<T>> x) {
-  std::vector<T> z(x.size());
+  std::vector<T> z;
+  z.reserve(x.size());
   for (size_t i = 0; i < z.size(); i++) {
     z[i] = std::abs(x[i]);
   }
@@ -169,6 +170,7 @@ inline std::vector<T> sub(std::vector<T> x, std::vector<T> y) {
   return z;
 }
 
+/// Functions for other MHLO ops.
 // ConcatenateOp
 template <typename T>
 inline std::vector<T> concatenate(std::vector<T> x, std::vector<T> y) {

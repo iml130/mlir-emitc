@@ -64,7 +64,9 @@ func @mixed_types(%arg0: tensor<2xf64>) -> tensor<2xf32> {
   return %0 : tensor<2xf32>
 }
 
+// CHECK: std::vector<uint64_t> mhlo_convert(std::vector<uint32_t> [[V1]])
 func @mhlo_convert(%arg0: tensor<ui32>) -> tensor<ui64> {
+  // CHECK: mhlo::convert([[V1]]);
   %0 = emitc.call "mhlo::convert"(%arg0) {args = [0 : index]} : (tensor<ui32>) -> tensor<ui64>
   return %0 : tensor<ui64>
 }

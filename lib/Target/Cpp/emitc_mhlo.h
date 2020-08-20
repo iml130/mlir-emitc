@@ -15,6 +15,7 @@
 #ifndef EMITC_MHLO_H
 #define EMITC_MHLO_H
 
+#include <algorithm>
 #include <cmath>
 #include <complex>
 #include <cstdint>
@@ -92,10 +93,32 @@ inline std::vector<T> div(std::vector<T> x, std::vector<T> y) {
 }
 
 // MaxOp
-// TODO: Implement!
+template <typename T>
+inline T max(T x, T y) {
+  return std::max(x, y);
+}
+
+template <typename T>
+inline std::vector<T> max(std::vector<T> x, std::vector<T> y) {
+  std::vector<T> z(x);
+  std::transform(x.begin(), x.end(), y.begin(), z.begin(),
+                 [](auto a, auto b) { return std::max(a, b); });
+  return z;
+}
 
 // MinOp
-// TODO: Implement!
+template <typename T>
+inline T min(T x, T y) {
+  return std::min(x, y);
+}
+
+template <typename T>
+inline std::vector<T> min(std::vector<T> x, std::vector<T> y) {
+  std::vector<T> z(x);
+  std::transform(x.begin(), x.end(), y.begin(), z.begin(),
+                 [](auto a, auto b) { return std::min(a, b); });
+  return z;
+}
 
 // MulOp
 template <typename T>

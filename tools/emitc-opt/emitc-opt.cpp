@@ -68,14 +68,16 @@ static cl::opt<bool>
                  cl::init(false));
 
 int main(int argc, char **argv) {
+  mlir::DialectRegistry registry;
 #ifdef IREE_BUILD_EMITC
-  registerMlirDialects();
+  registerMlirDialects(registry);
   registerMlirPasses();
 #else
-  registerAllDialects();
+  registerAllDialects(registry);
   registerAllPasses();
-#endif
-  registerEmitCDialect();
+#endif // IREE_BUILD_EMITC
+  registerEmitCDialect(registry);
+
   InitLLVM y(argc, argv);
 
   // Register any command line options.
@@ -88,11 +90,10 @@ int main(int argc, char **argv) {
   cl::ParseCommandLineOptions(argc, argv, "MLIR modular optimizer driver\n");
 
   if (showDialects) {
-    llvm::outs() << "Registered Dialects:\n";
-    MLIRContext context;
-    for (Dialect *dialect : context.getRegisteredDialects()) {
-      llvm::outs() << dialect->getNamespace() << "\n";
-    }
+    llvm::outs() << "Available Dialects:\n";
+    interleave(
+        registry, llvm::outs(),
+        [](auto &registryEntry) { llvm::outs() << registryEntry.first; }, "\n");
     return 0;
   }
 
@@ -110,9 +111,10 @@ int main(int argc, char **argv) {
     exit(1);
   }
 
-  if (failed(MlirOptMain(output->os(), std::move(file), passPipeline,
+  if (failed(MlirOptMain(output->os(), std::move(file), passPipeline, registry,
                          splitInputFile, verifyDiagnostics, verifyPasses,
-                         allowUnregisteredDialects))) {
+                         allowUnregisteredDialects,
+                         /*preloadDialectsInContext=*/false))) {
     return 1;
   }
   // Keep the output file if the invocation of MlirOptMain was successful.

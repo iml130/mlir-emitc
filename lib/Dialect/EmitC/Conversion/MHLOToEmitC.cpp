@@ -117,8 +117,6 @@ private:
   LogicalResult
   matchAndRewrite(mhlo::TupleOp tupleOp, ArrayRef<Value> operands,
                   ConversionPatternRewriter &rewriter) const override {
-    typename mhlo::TupleOp::Adaptor srcAdapter(operands);
-
     StringAttr callee = rewriter.getStringAttr("std::make_tuple");
 
     // build vector of indices [0 ... operands.size-1]
@@ -131,6 +129,36 @@ private:
 
     rewriter.replaceOpWithNewOp<emitc::CallOp>(tupleOp, tupleOp.getType(),
                                                callee, args, operands);
+
+    return success();
+  }
+};
+
+class GetTupleElementOpConversion
+    : public OpConversionPattern<mhlo::GetTupleElementOp> {
+  using OpConversionPattern<mhlo::GetTupleElementOp>::OpConversionPattern;
+
+public:
+  GetTupleElementOpConversion(MLIRContext *ctx)
+      : OpConversionPattern<mhlo::GetTupleElementOp>(ctx) {}
+
+private:
+  LogicalResult
+  matchAndRewrite(mhlo::GetTupleElementOp getTupleElementOp,
+                  ArrayRef<Value> operands,
+                  ConversionPatternRewriter &rewriter) const override {
+    auto index = getTupleElementOp.index().getZExtValue();
+
+    // TODO Consider adding template arguments to CallOp
+    std::string calleStr =
+        std::string("std::get<") + std::to_string(index) + std::string(">");
+    StringAttr callee = rewriter.getStringAttr(calleStr);
+
+    ArrayAttr args =
+        rewriter.getArrayAttr({IntegerAttr::get(rewriter.getIndexType(), 0)});
+
+    rewriter.replaceOpWithNewOp<emitc::CallOp>(
+        getTupleElementOp, getTupleElementOp.getType(), callee, args, operands);
 
     return success();
   }
@@ -184,9 +212,9 @@ void populateMhloToEmitcPatterns(MLIRContext *ctx,
 
   // Insert patterns for MHLO tuple ops.
   // TODO:
-  //  mhlo::GetTupleElementOp
   //  mhlo::CompareOp
   patterns.insert<TupleOpConversion>(ctx);
+  patterns.insert<GetTupleElementOpConversion>(ctx);
 
   // Insert patterns for MHLO slice op.
   // TODO:
@@ -226,7 +254,7 @@ struct ConvertMhloToEmitcPass
                         mhlo::ShiftRightLogicalOp, mhlo::SubOp>();
     target.addIllegalOp<mhlo::OrOp, mhlo::XorOp>();
     target.addIllegalOp<mhlo::ConcatenateOp>();
-    target.addIllegalOp<mhlo::TupleOp>();
+    target.addIllegalOp<mhlo::TupleOp, mhlo::GetTupleElementOp>();
 
     OwningRewritePatternList patterns;
     populateMhloToEmitcPatterns(&getContext(), patterns);

@@ -209,6 +209,9 @@ namespace {
 
 struct ConvertMhloToEmitcPass
     : public PassWrapper<ConvertMhloToEmitcPass, FunctionPass> {
+  void getDependentDialects(DialectRegistry &registry) const override {
+    registry.insert<emitc::EmitCDialect>();
+  }
   /// Perform the lowering to EmitC dialect.
   void runOnFunction() override {
 

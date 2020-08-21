@@ -30,6 +30,9 @@ namespace {
 
 struct ConvertScfToEmitcPass
     : public PassWrapper<ConvertScfToEmitcPass, FunctionPass> {
+  void getDependentDialects(DialectRegistry &registry) const override {
+    registry.insert<emitc::EmitCDialect>();
+  }
   /// Perform the lowering to EmitC dialect.
   void runOnFunction() override {
 

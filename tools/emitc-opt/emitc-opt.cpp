@@ -17,7 +17,9 @@
 #include "iree/tools/init_mlir_passes.h"
 #endif
 #ifdef EMITC_BUILD_HLO
-#include "mlir-hlo/Dialect/mhlo/IR/register.h"
+#include "mlir-hlo/Dialect/mhlo/IR/chlo_ops.h"
+#include "mlir-hlo/Dialect/mhlo/IR/hlo_ops.h"
+#include "mlir-hlo/Dialect/mhlo/IR/lhlo_ops.h"
 #include "mlir-hlo/Dialect/mhlo/transforms/register_passes.h"
 #endif
 #include "mlir/IR/AsmState.h"
@@ -80,13 +82,27 @@ int main(int argc, char **argv) {
   registerAllDialects();
   registerAllPasses();
 #endif // IREE_BUILD_EMITC
-  registerEmitCDialect();
   emitc::registerAllEmitCPasses();
 #ifdef EMITC_BUILD_HLO
-  mhlo::registerAllDialects();
   mhlo::registerAllMhloPasses();
   lmhlo::registerAllLmhloPasses();
 #endif // EMITC_BUILD_HLO
+
+  // Register dialects.
+  mlir::DialectRegistry registry;
+#ifdef IREE_BUILD_EMITC
+  // TODO: Not yet available in upstream.
+  // registerMlirDialects(registry);
+#else
+  mlir::registerAllDialects(registry);
+#endif // IREE_BUILD_EMITC
+  registerEmitCDialect(registry);
+#ifdef EMITC_BUILD_HLO
+  registry.insert<mlir::mhlo::MhloDialect>();
+  registry.insert<mlir::chlo::HloClientDialect>();
+  registry.insert<mlir::lmhlo::LmhloDialect>();
+#endif // EMITC_BUILD_HLO
+
   InitLLVM y(argc, argv);
 
   // Register any command line options.
@@ -112,9 +128,10 @@ int main(int argc, char **argv) {
     exit(1);
   }
 
-  if (failed(MlirOptMain(output->os(), std::move(file), passPipeline,
+  if (failed(MlirOptMain(output->os(), std::move(file), passPipeline, registry,
                          splitInputFile, verifyDiagnostics, verifyPasses,
-                         allowUnregisteredDialects))) {
+                         allowUnregisteredDialects,
+                         /*preloadDialectsInContext=*/false))) {
     return 1;
   }
   // Keep the output file if the invocation of MlirOptMain was successful.

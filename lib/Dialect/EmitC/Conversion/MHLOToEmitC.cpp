@@ -220,15 +220,18 @@ void populateMhloToEmitcPatterns(MLIRContext *ctx,
   patterns.insert<TupleOpConversion>(ctx);
   patterns.insert<GetTupleElementOpConversion>(ctx);
 
-  // Insert patterns for MHLO slice op.
+  // Insert patterns for MHLO slice ops.
   // TODO:
   //  mhlo::SliceOp
+  //  mhlo::DynamicSliceOp
   //  mhlo::DynamicUpdateSliceOp
 
   // Insert patterns for other MHLO ops.
   // TODO:
   //  mhlo::BitcastConvertOp
   //  mhlo::BroadcastInDimOp
+  //  mhlo::ReshapeOp
+  //  mhlo::SelectOp
   patterns.insert<ConcatenateOpConversion>(ctx);
 
   // Insert patterns for MHLO RNG ops.

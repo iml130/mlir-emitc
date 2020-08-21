@@ -38,12 +38,11 @@ private:
 
     StringRef funcName = "mhlo::concatenate";
     StringAttr callee = rewriter.getStringAttr(funcName);
-    ArrayAttr args =
-        rewriter.getArrayAttr({IntegerAttr::get(rewriter.getIndexType(), 0),
-                               IntegerAttr::get(rewriter.getIndexType(), 1)});
+    ArrayAttr args;
+    ArrayAttr templateArgs;
 
     rewriter.replaceOpWithNewOp<emitc::CallOp>(srcOp, srcOp.getType(), callee,
-                                               args, operands);
+                                               ArrayAttr{}, templateArgs, operands);
 
     return success();
   }
@@ -64,11 +63,11 @@ private:
     typename SrcOp::Adaptor srcAdapter(operands);
 
     StringAttr callee = rewriter.getStringAttr(funcName);
-    ArrayAttr args =
-        rewriter.getArrayAttr({IntegerAttr::get(rewriter.getIndexType(), 0)});
+    ArrayAttr args;
+    ArrayAttr templateArgs;
 
     rewriter.replaceOpWithNewOp<DstOp>(srcOp, srcOp.getType(), callee, args,
-                                       operands);
+                                       templateArgs, operands);
 
     return success();
   }
@@ -92,13 +91,12 @@ private:
     typename SrcOp::Adaptor srcAdapter(operands);
 
     StringAttr callee = rewriter.getStringAttr(funcName);
-    ArrayAttr args =
-        rewriter.getArrayAttr({IntegerAttr::get(rewriter.getIndexType(), 0),
-                               IntegerAttr::get(rewriter.getIndexType(), 1)});
+    ArrayAttr args;
+    ArrayAttr templateArgs;
     ValueRange dstOperands{srcAdapter.lhs(), srcAdapter.rhs()};
 
     rewriter.replaceOpWithNewOp<DstOp>(srcOp, srcAdapter.lhs().getType(),
-                                       callee, args, dstOperands);
+                                       callee, args, templateArgs, dstOperands);
 
     return success();
   }
@@ -119,16 +117,11 @@ private:
                   ConversionPatternRewriter &rewriter) const override {
     StringAttr callee = rewriter.getStringAttr("std::make_tuple");
 
-    // build vector of indices [0 ... operands.size-1]
-    std::vector<Attribute> indices;
-    for (int i = 0; i < operands.size(); i++) {
-      indices.push_back(IntegerAttr::get(rewriter.getIndexType(), i));
-    }
+    ArrayAttr args;
+    ArrayAttr templateArgs;
 
-    ArrayAttr args = rewriter.getArrayAttr(llvm::makeArrayRef(indices));
-
-    rewriter.replaceOpWithNewOp<emitc::CallOp>(tupleOp, tupleOp.getType(),
-                                               callee, args, operands);
+    rewriter.replaceOpWithNewOp<emitc::CallOp>(
+        tupleOp, tupleOp.getType(), callee, args, templateArgs, operands);
 
     return success();
   }
@@ -150,15 +143,16 @@ private:
     auto index = getTupleElementOp.index().getZExtValue();
 
     // TODO Consider adding template arguments to CallOp
-    std::string calleStr =
-        std::string("std::get<") + std::to_string(index) + std::string(">");
-    StringAttr callee = rewriter.getStringAttr(calleStr);
+    StringAttr callee = rewriter.getStringAttr("std::get");
 
-    ArrayAttr args =
-        rewriter.getArrayAttr({IntegerAttr::get(rewriter.getIndexType(), 0)});
+    ArrayAttr args;
+    ArrayAttr templateArgs = rewriter.getArrayAttr(
+        {IntegerAttr::get(rewriter.getIntegerType(32), index)});
+    ;
 
     rewriter.replaceOpWithNewOp<emitc::CallOp>(
-        getTupleElementOp, getTupleElementOp.getType(), callee, args, operands);
+        getTupleElementOp, getTupleElementOp.getType(), callee, args,
+        templateArgs, operands);
 
     return success();
   }

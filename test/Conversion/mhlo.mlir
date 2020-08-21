@@ -127,13 +127,13 @@ func @mhlo_xor(%arg0: tensor<ui64>, %arg1: tensor<ui64>) -> tensor<ui64> {
 }
 
 func @mhlo_tuple(%arg0: tensor<i32>, %arg1: tensor<ui64>) -> (tuple<tensor<i32>, tensor<ui64>, tensor<i32>, tensor<ui64>>) {
-  // CHECK: emitc.call "std::make_tuple"() {args = []}
+  // CHECK: emitc.call "std::make_tuple"()
   %0 = "mhlo.tuple"() : () -> tuple<>
-  // CHECK: emitc.call "std::make_tuple"(%arg0) {args = [0 : index]}
+  // CHECK: emitc.call "std::make_tuple"(%arg0)
   %1 = "mhlo.tuple"(%arg0) : (tensor<i32>) -> tuple<tensor<i32>>
-  // CHECK: emitc.call "std::make_tuple"(%arg0, %arg1) {args = [0 : index, 1 : index]}
+  // CHECK: emitc.call "std::make_tuple"(%arg0, %arg1)
   %2 = "mhlo.tuple"(%arg0, %arg1) : (tensor<i32>, tensor<ui64>) -> tuple<tensor<i32>, tensor<ui64>>
-  // CHECK: emitc.call "std::make_tuple"(%arg0, %arg1, %arg0, %arg1) {args = [0 : index, 1 : index, 2 : index, 3 : index]}
+  // CHECK: emitc.call "std::make_tuple"(%arg0, %arg1, %arg0, %arg1)
   %3 = "mhlo.tuple"(%arg0, %arg1, %arg0, %arg1) : (tensor<i32>, tensor<ui64>, tensor<i32>, tensor<ui64>) -> tuple<tensor<i32>, tensor<ui64>, tensor<i32>, tensor<ui64>>
   return %3 : tuple<tensor<i32>, tensor<ui64>, tensor<i32>, tensor<ui64>>
 }
@@ -146,9 +146,9 @@ func @mhlo_tuple_nested(%arg0: tensor<i32>, %arg1: tensor<ui64>) -> tuple<tensor
 
 func @mhlo_tuple_unpack(%arg0: tensor<i32>, %arg1: tensor<ui64>) -> (tuple<tensor<i32>, tensor<ui64>>, tensor<i32>) {
   %0 = call @mhlo_tuple_nested(%arg0, %arg1) : (tensor<i32>, tensor<ui64>) -> tuple<tensor<i32>, tuple<tensor<i32>, tensor<ui64>>>
-  // CHECK: emitc.call "std::get<1>"(%0) {args = [0 : index]}
+  // CHECK: emitc.call "std::get"(%0) {template_args = [1 : i32]}
   %1 = "mhlo.get_tuple_element"(%0) {index = 1 : i32} : (tuple<tensor<i32>, tuple<tensor<i32>, tensor<ui64>>>) -> tuple<tensor<i32>, tensor<ui64>>
-  // CHECK: emitc.call "std::get<0>"(%1) {args = [0 : index]}
+  // CHECK: emitc.call "std::get"(%1) {template_args = [0 : i32]}
   %2 = "mhlo.get_tuple_element"(%1) {index = 0 : i32} : (tuple<tensor<i32>, tensor<ui64>>) -> tensor<i32>
   return %1, %2 : tuple<tensor<i32>, tensor<ui64>>, tensor<i32>
 }

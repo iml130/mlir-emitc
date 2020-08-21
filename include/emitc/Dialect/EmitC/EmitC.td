@@ -38,6 +38,7 @@ def EmitC_CallOp : EmitC_Op<"call", []> {
   let arguments = (ins
     Arg<StrAttr, "the C++ function to call">:$callee,
     Arg<OptionalAttr<ArrayAttr>, "the order of operands and attributes">:$args,
+    Arg<OptionalAttr<ArrayAttr>, "the order of operands and attributes">:$template_args,
     Variadic<AnyType>:$operands);
   let results = (outs Variadic<AnyType>);
   let assemblyFormat = [{

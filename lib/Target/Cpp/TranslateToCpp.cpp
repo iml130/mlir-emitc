@@ -167,7 +167,7 @@ static LogicalResult printCallOp(CppEmitter &emitter, emitc::CallOp callOp) {
   auto &op = *callOp.getOperation();
   if (failed(emitter.emitAssignPrefix(op)))
     return failure();
-  os << callOp.callee() << "(";
+  os << callOp.callee();
 
   auto emitArgs = [&](Attribute attr) -> LogicalResult {
     if (auto t = attr.dyn_cast<IntegerAttr>()) {
@@ -185,6 +185,15 @@ static LogicalResult printCallOp(CppEmitter &emitter, emitc::CallOp callOp) {
     }
     return emitter.emitAttribute(attr);
   };
+
+  if (callOp.template_args()) {
+    os << "<";
+    if (failed(interleaveCommaWithError(*callOp.template_args(), os, emitArgs)))
+      return failure();
+    os << ">";
+  }
+
+  os << "(";
 
   // if (callOp.argsAttr()) {
   //  callOp.dump();

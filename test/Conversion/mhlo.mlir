@@ -7,7 +7,7 @@ func @float_abs(%arg0: tensor<2xf32>) -> tensor<2xf32> {
 }
 
 func @mhlo_convert(%arg0: tensor<ui32>) -> tensor<ui64> {
-  // CHECK: emitc.call "mhlo::convert"
+  // CHECK: emitc.call "mhlo::convert"(%arg0) {template_args = [ui64]}
   %0 = "mhlo.convert"(%arg0) : (tensor<ui32>) -> tensor<ui64>
   return %0 : tensor<ui64>
 }

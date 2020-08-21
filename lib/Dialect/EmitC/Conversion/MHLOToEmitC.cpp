@@ -41,8 +41,8 @@ private:
     ArrayAttr args;
     ArrayAttr templateArgs;
 
-    rewriter.replaceOpWithNewOp<emitc::CallOp>(srcOp, srcOp.getType(), callee,
-                                               ArrayAttr{}, templateArgs, operands);
+    rewriter.replaceOpWithNewOp<emitc::CallOp>(
+        srcOp, srcOp.getType(), callee, ArrayAttr{}, templateArgs, operands);
 
     return success();
   }
@@ -158,6 +158,35 @@ private:
   }
 };
 
+class ConvertOpConversion : public OpConversionPattern<mhlo::ConvertOp> {
+  using OpConversionPattern<mhlo::ConvertOp>::OpConversionPattern;
+
+public:
+  ConvertOpConversion(MLIRContext *ctx)
+      : OpConversionPattern<mhlo::ConvertOp>(ctx) {}
+
+private:
+  LogicalResult
+  matchAndRewrite(mhlo::ConvertOp convertOp, ArrayRef<Value> operands,
+                  ConversionPatternRewriter &rewriter) const override {
+    StringAttr callee = rewriter.getStringAttr("mhlo::convert");
+
+    Type elementType = convertOp.getType();
+    if (auto tensorType = elementType.dyn_cast<TensorType>()) {
+      elementType = tensorType.getElementType();
+    }
+    ArrayAttr args;
+    ArrayAttr templateArgs =
+        rewriter.getArrayAttr({TypeAttr::get(elementType)});
+    ;
+
+    rewriter.replaceOpWithNewOp<emitc::CallOp>(
+        convertOp, convertOp.getType(), callee, args, templateArgs, operands);
+
+    return success();
+  }
+};
+
 } // namespace
 
 void populateMhloToEmitcPatterns(MLIRContext *ctx,
@@ -165,8 +194,6 @@ void populateMhloToEmitcPatterns(MLIRContext *ctx,
   /// Insert patterns for MHLO unary elementwise ops.
   patterns.insert<UnaryOpConversion<mhlo::AbsOp, emitc::CallOp>>(ctx,
                                                                  "mhlo::abs");
-  patterns.insert<UnaryOpConversion<mhlo::ConvertOp, emitc::CallOp>>(
-      ctx, "mhlo::convert");
   patterns.insert<UnaryOpConversion<mhlo::CosOp, emitc::CallOp>>(ctx,
                                                                  "mhlo::cos");
   patterns.insert<UnaryOpConversion<mhlo::ExpOp, emitc::CallOp>>(
@@ -226,6 +253,7 @@ void populateMhloToEmitcPatterns(MLIRContext *ctx,
   //  mhlo::BroadcastInDimOp
   //  mhlo::ReshapeOp
   //  mhlo::SelectOp
+  patterns.insert<ConvertOpConversion>(ctx);
   patterns.insert<ConcatenateOpConversion>(ctx);
 
   // Insert patterns for MHLO RNG ops.

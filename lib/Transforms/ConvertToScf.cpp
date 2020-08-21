@@ -36,6 +36,9 @@ void ConvertWhile(WhileOp while_op);
 
 class ConvertToScfPass
     : public mlir::PassWrapper<ConvertToScfPass, FunctionPass> {
+  void getDependentDialects(DialectRegistry &registry) const override {
+    registry.insert<scf::SCFDialect>();
+  }
   void runOnFunction() override {
     getFunction().walk([&](Operation *op) {
       if (auto while_op = llvm::dyn_cast<WhileOp>(op)) {

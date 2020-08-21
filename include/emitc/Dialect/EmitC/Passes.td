@@ -28,4 +28,11 @@ def ConvertToScfPass : Pass<"convert-mhlo-while-to-scf", "FuncOp"> {
   let dependentDialects = ["scf::SCFDialect"];
 }
 
+// TODO: This could be moved to separate file.
+def ConvertMHLOToStandardPass : Pass<"convert-mhlo-const-to-std", "FuncOp"> {
+  let summary = "Converting MHLO constant to std.";
+  let constructor = "mhlo::createConvertMHLOToStandardPass()";
+  let dependentDialects = ["StandardOpsDialect"];
+}
+
 #endif // MLIR_DIALECT_EMITC_PASSES

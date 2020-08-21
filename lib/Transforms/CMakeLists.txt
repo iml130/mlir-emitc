@@ -1,10 +1,17 @@
 if(${EMITC_ENABLE_HLO})
+
+include_directories(BEFORE
+  ${mlir-hlo_BINARY_DIR}/lib/Dialect/mhlo/transforms
+  )
+
 add_mlir_library(MLIREmitCTransforms
   ConvertToScf.cpp
+  ConvertMHLOToStandard.cpp
 
   DEPENDS
   MLIRLmhloPassIncGen
   MLIRMhloPassIncGen
+  MLIRMhloLegalizeToStandardIncGen
 
   LINK_LIBS PUBLIC
   MLIRLoopLikeInterface

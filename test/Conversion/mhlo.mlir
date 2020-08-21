@@ -42,6 +42,18 @@ func @mhlo_negate(%arg0: tensor<2xf32>) -> tensor<2xf32> {
   return %0 : tensor<2xf32>
 }
 
+func @mhlo_sine(%arg0: tensor<2xf32>) -> tensor<2xf32> {
+  // CHECK: emitc.call "mhlo::sin"
+  %0 = "mhlo.sine"(%arg0) : (tensor<2xf32>) -> tensor<2xf32>
+  return %0 : tensor<2xf32>
+}
+
+func @mhlo_sqrt(%arg0: tensor<2xf32>) -> tensor<2xf32> {
+  // CHECK: emitc.call "mhlo::sqrt"
+  %0 = "mhlo.sqrt"(%arg0) : (tensor<2xf32>) -> tensor<2xf32>
+  return %0 : tensor<2xf32>
+}
+
 func @mhlo_add_i64(%arg0: tensor<i64>) -> tensor<i64> {
   // CHECK: emitc.call "mhlo::add"
   %0 = mhlo.add %arg0, %arg0 : tensor<i64>

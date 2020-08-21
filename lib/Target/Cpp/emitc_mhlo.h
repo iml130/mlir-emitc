@@ -82,6 +82,36 @@ inline std::vector<T> cos(std::vector<T> x) {
 // NegOp
 // TODO: Implement!
 
+// SinOp
+template <typename T>
+inline T sin(T x) {
+  return std::sin(x);
+}
+
+template <typename T>
+inline std::vector<T> sin(std::vector<T> x) {
+  std::vector<T> z(x);
+  for (size_t i = 0; i < z.size(); i++) {
+    z[i] = std::sin(x[i]);
+  }
+  return z;
+}
+
+// SqrtOp
+template <typename T>
+inline T sqrt(T x) {
+  return std::sqrt(x);
+}
+
+template <typename T>
+inline std::vector<T> sqrt(std::vector<T> x) {
+  std::vector<T> z(x);
+  for (size_t i = 0; i < z.size(); i++) {
+    z[i] = std::sqrt(x[i]);
+  }
+  return z;
+}
+
 /// Functions for MHLO binary elementwise ops.
 // AddOp
 template <typename T>

@@ -183,6 +183,10 @@ void populateMhloToEmitcPatterns(MLIRContext *ctx,
                                                                  "mhlo::log");
   patterns.insert<UnaryOpConversion<mhlo::NegOp, emitc::CallOp>>(
       ctx, "mhlo::negate");
+  patterns.insert<UnaryOpConversion<mhlo::SinOp, emitc::CallOp>>(ctx,
+                                                                 "mhlo::sin");
+  patterns.insert<UnaryOpConversion<mhlo::SqrtOp, emitc::CallOp>>(ctx,
+                                                                  "mhlo::sqrt");
 
   /// Insert patterns for MHLO binary elementwise ops.
   patterns.insert<BinaryOpConversion<mhlo::AddOp, emitc::CallOp>>(ctx,
@@ -248,7 +252,8 @@ struct ConvertMhloToEmitcPass
     target.addLegalDialect<emitc::EmitCDialect>();
     target.addLegalDialect<mhlo::MhloDialect>();
     target.addIllegalOp<mhlo::AbsOp, mhlo::ConvertOp, mhlo::CosOp, mhlo::ExpOp,
-                        mhlo::IsFiniteOp, mhlo::LogOp, mhlo::NegOp>();
+                        mhlo::IsFiniteOp, mhlo::LogOp, mhlo::NegOp, mhlo::SinOp,
+                        mhlo::SqrtOp>();
     target.addIllegalOp<mhlo::AddOp, mhlo::DivOp, mhlo::MaxOp, mhlo::MinOp,
                         mhlo::MulOp, mhlo::PowOp, mhlo::ShiftLeftOp,
                         mhlo::ShiftRightLogicalOp, mhlo::SubOp>();

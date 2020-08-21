@@ -21,6 +21,11 @@ def ConvertScfToEmitCPass : Pass<"convert-scf-to-emitc", "FuncOp"> {
   let constructor = "createConvertScfToEmitcPass()";
 }
 
+def ConvertStdToEmitCPass : Pass<"convert-std-to-emitc", "FuncOp"> {
+  let summary = "Convert std dialect to EmitC dialect, replacing IndexCastOp.";
+  let constructor = "createConvertStdToEmitcPass()";
+}
+
 // TODO: This could be moved to separate file, but this will be moved to mlir-hlo and removed here.
 def ConvertToScfPass : Pass<"convert-mhlo-while-to-scf", "FuncOp"> {
   let summary = "Converting MHLO While to SCF.";

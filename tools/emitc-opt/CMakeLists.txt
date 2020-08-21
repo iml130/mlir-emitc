@@ -72,6 +72,7 @@ set(LIBS
   MLIREmitC
   MLIRMHLOToEmitC
   MLIRSCFToEmitC
+  MLIRStdToEmitC
   ${HLO_LIBS}
   )
 

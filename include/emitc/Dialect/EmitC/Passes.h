@@ -20,6 +20,7 @@ namespace emitc {
 
 std::unique_ptr<OperationPass<FuncOp>> createConvertMhloToEmitcPass();
 std::unique_ptr<OperationPass<FuncOp>> createConvertScfToEmitcPass();
+std::unique_ptr<OperationPass<FuncOp>> createConvertStdToEmitcPass();
 
 } // namespace emitc
 } // namespace mlir

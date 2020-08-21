@@ -338,6 +338,7 @@ static LogicalResult printModule(CppEmitter &emitter, ModuleOp moduleOp) {
   CppEmitter::Scope scope(emitter);
   auto &os = emitter.ostream();
   os << "#include \"emitc_mhlo.h\"\n\n";
+  os << "#include \"emitc_std.h\"\n\n";
   os << "// Forward declare functions.\n";
   for (FuncOp funcOp : moduleOp.getOps<FuncOp>()) {
     if (failed(emitter.emitTypes(funcOp.getType().getResults())))
@@ -441,6 +442,9 @@ LogicalResult CppEmitter::emitAttribute(Attribute attr) {
     interleaveComma(dense.getIntValues(), os);
     os << '}';
     return success();
+  }
+  if (auto type = attr.dyn_cast<TypeAttr>()) {
+    return emitType(type.getValue());
   }
   return failure();
 }

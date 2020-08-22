@@ -22,6 +22,36 @@ namespace mlir {
 namespace emitc {
 
 namespace {
+class ExtractElementOpConversion
+    : public OpConversionPattern<ExtractElementOp> {
+  using OpConversionPattern<ExtractElementOp>::OpConversionPattern;
+
+public:
+  ExtractElementOpConversion(MLIRContext *ctx)
+      : OpConversionPattern<ExtractElementOp>(ctx) {}
+
+private:
+  LogicalResult
+  matchAndRewrite(ExtractElementOp indexCastOp, ArrayRef<Value> operands,
+                  ConversionPatternRewriter &rewriter) const override {
+    StringAttr callee = rewriter.getStringAttr("standard::extract_element");
+
+    Type elementType = indexCastOp.getType();
+    if (auto tensorType = elementType.dyn_cast<TensorType>()) {
+      elementType = tensorType.getElementType();
+    }
+
+    ArrayAttr args;
+    ArrayAttr templateArgs;
+
+    rewriter.replaceOpWithNewOp<emitc::CallOp>(indexCastOp,
+                                               indexCastOp.getType(), callee,
+                                               args, templateArgs, operands);
+
+    return success();
+  }
+};
+
 class IndexCastOpConversion : public OpConversionPattern<IndexCastOp> {
   using OpConversionPattern<IndexCastOp>::OpConversionPattern;
 
@@ -55,6 +85,7 @@ private:
 
 void populateStdToEmitcPatterns(MLIRContext *ctx,
                                 OwningRewritePatternList &patterns) {
+  patterns.insert<ExtractElementOpConversion>(ctx);
   patterns.insert<IndexCastOpConversion>(ctx);
 }
 
@@ -72,6 +103,7 @@ struct ConvertStdToEmitcPass
 
     target.addLegalDialect<emitc::EmitCDialect>();
     target.addLegalDialect<StandardOpsDialect>();
+    target.addIllegalOp<ExtractElementOp>();
     target.addIllegalOp<IndexCastOp>();
 
     OwningRewritePatternList patterns;

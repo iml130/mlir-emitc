@@ -20,6 +20,18 @@
 
 namespace standard {
 
+// ExtractElementOp
+// Special case for 0-dim tensors;
+template <typename T>
+inline T extract_element(std::vector<T> x) {
+  return x[0];
+}
+
+template <typename T>
+inline T extract_element(std::vector<T> x, size_t index) {
+  return x[index];
+}
+
 // IndexCastOp
 template <typename T1, typename T2>
 inline T1 index_cast(T2 x) {

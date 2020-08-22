@@ -114,6 +114,14 @@ int main(int argc, char **argv) {
   // Parse pass names in main to ensure static initialization completed.
   cl::ParseCommandLineOptions(argc, argv, "MLIR modular optimizer driver\n");
 
+  if (showDialects) {
+    llvm::outs() << "Available Dialects:\n";
+    interleave(
+        registry, llvm::outs(),
+        [](auto &registryEntry) { llvm::outs() << registryEntry.first; }, "\n");
+    return 0;
+  }
+
   // Set up the input file.
   std::string errorMessage;
   auto file = openInputFile(inputFilename, &errorMessage);

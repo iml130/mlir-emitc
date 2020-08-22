@@ -203,6 +203,38 @@ private:
   }
 };
 
+class BitcastConvertOpConversion
+    : public OpConversionPattern<mhlo::BitcastConvertOp> {
+  using OpConversionPattern<mhlo::BitcastConvertOp>::OpConversionPattern;
+
+public:
+  BitcastConvertOpConversion(MLIRContext *ctx)
+      : OpConversionPattern<mhlo::BitcastConvertOp>(ctx) {}
+
+private:
+  LogicalResult
+  matchAndRewrite(mhlo::BitcastConvertOp bitcastConvertOp,
+                  ArrayRef<Value> operands,
+                  ConversionPatternRewriter &rewriter) const override {
+    StringAttr callee = rewriter.getStringAttr("mhlo::bitcast_convert");
+
+    Type elementType = bitcastConvertOp.getType();
+    if (auto tensorType = elementType.dyn_cast<TensorType>()) {
+      elementType = tensorType.getElementType();
+    }
+    ArrayAttr args;
+    ArrayAttr templateArgs =
+        rewriter.getArrayAttr({TypeAttr::get(elementType)});
+    ;
+
+    rewriter.replaceOpWithNewOp<emitc::CallOp>(
+        bitcastConvertOp, bitcastConvertOp.getType(), callee, args,
+        templateArgs, operands);
+
+    return success();
+  }
+};
+
 class ConvertOpConversion : public OpConversionPattern<mhlo::ConvertOp> {
   using OpConversionPattern<mhlo::ConvertOp>::OpConversionPattern;
 
@@ -319,6 +351,7 @@ void populateMhloToEmitcPatterns(MLIRContext *ctx,
   //  mhlo::BitcastConvertOp
   //  mhlo::BroadcastInDimOp
   //  mhlo::ReshapeOp
+  patterns.insert<BitcastConvertOpConversion>(ctx);
   patterns.insert<BroadcastInDimOpConversion>(ctx);
   patterns.insert<ConvertOpConversion>(ctx);
   patterns.insert<ConcatenateOpConversion>(ctx);
@@ -344,15 +377,14 @@ struct ConvertMhloToEmitcPass
 
     target.addLegalDialect<emitc::EmitCDialect>();
     target.addLegalDialect<mhlo::MhloDialect>();
-    target.addIllegalOp<mhlo::AbsOp, mhlo::ConvertOp, mhlo::CosOp, mhlo::ExpOp,
-                        mhlo::IsFiniteOp, mhlo::LogOp, mhlo::NegOp, mhlo::SinOp,
-                        mhlo::SqrtOp>();
+    target.addIllegalOp<mhlo::AbsOp, mhlo::CosOp, mhlo::ExpOp, mhlo::IsFiniteOp,
+                        mhlo::LogOp, mhlo::NegOp, mhlo::SinOp, mhlo::SqrtOp>();
     target.addIllegalOp<mhlo::AddOp, mhlo::DivOp, mhlo::MaxOp, mhlo::MinOp,
                         mhlo::MulOp, mhlo::PowOp, mhlo::ShiftLeftOp,
                         mhlo::ShiftRightLogicalOp, mhlo::SubOp>();
     target.addIllegalOp<mhlo::OrOp, mhlo::XorOp>();
-    target.addIllegalOp<mhlo::BroadcastInDimOp, mhlo::ConcatenateOp,
-                        mhlo::SelectOp>();
+    target.addIllegalOp<mhlo::BitcastConvertOp, mhlo::BroadcastInDimOp,
+                        mhlo::ConvertOp, mhlo::ConcatenateOp, mhlo::SelectOp>();
     target.addIllegalOp<mhlo::TupleOp, mhlo::GetTupleElementOp>();
 
     OwningRewritePatternList patterns;

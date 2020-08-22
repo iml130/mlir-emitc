@@ -51,6 +51,21 @@ inline std::vector<T> abs(std::vector<std::complex<T>> x) {
   return z;
 }
 
+// BitcastConvertOp
+template <typename T1, typename T2>
+inline T1 bitcast_convert(T2 x) {
+  return reinterpret_cast<T1>(x);
+}
+
+template <typename T1, typename T2>
+inline std::vector<T1> bitcast_convert(std::vector<T2> x) {
+  std::vector<T1> z(x.size());
+  for (size_t i = 0; i < z.size(); i++) {
+    z[i] = reinterpret_cast<T1>(x[i]);
+  }
+  return z;
+}
+
 // ConvertOp
 template <typename T1, typename T2>
 inline T1 convert(T2 x) {

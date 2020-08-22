@@ -187,6 +187,28 @@ private:
   }
 };
 
+class SelectOpConversion : public OpConversionPattern<mhlo::SelectOp> {
+  using OpConversionPattern<mhlo::SelectOp>::OpConversionPattern;
+
+public:
+  SelectOpConversion(MLIRContext *ctx)
+      : OpConversionPattern<mhlo::SelectOp>(ctx) {}
+
+private:
+  LogicalResult
+  matchAndRewrite(mhlo::SelectOp selectOp, ArrayRef<Value> operands,
+                  ConversionPatternRewriter &rewriter) const override {
+    StringAttr callee = rewriter.getStringAttr("mhlo::select");
+    ArrayAttr args;
+    ArrayAttr templateArgs;
+
+    rewriter.replaceOpWithNewOp<emitc::CallOp>(
+        selectOp, selectOp.getType(), callee, args, templateArgs, operands);
+
+    return success();
+  }
+};
+
 } // namespace
 
 void populateMhloToEmitcPatterns(MLIRContext *ctx,
@@ -252,9 +274,9 @@ void populateMhloToEmitcPatterns(MLIRContext *ctx,
   //  mhlo::BitcastConvertOp
   //  mhlo::BroadcastInDimOp
   //  mhlo::ReshapeOp
-  //  mhlo::SelectOp
   patterns.insert<ConvertOpConversion>(ctx);
   patterns.insert<ConcatenateOpConversion>(ctx);
+  patterns.insert<SelectOpConversion>(ctx);
 
   // Insert patterns for MHLO RNG ops.
   // TODO:
@@ -283,7 +305,7 @@ struct ConvertMhloToEmitcPass
                         mhlo::MulOp, mhlo::PowOp, mhlo::ShiftLeftOp,
                         mhlo::ShiftRightLogicalOp, mhlo::SubOp>();
     target.addIllegalOp<mhlo::OrOp, mhlo::XorOp>();
-    target.addIllegalOp<mhlo::ConcatenateOp>();
+    target.addIllegalOp<mhlo::ConcatenateOp, mhlo::SelectOp>();
     target.addIllegalOp<mhlo::TupleOp, mhlo::GetTupleElementOp>();
 
     OwningRewritePatternList patterns;

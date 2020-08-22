@@ -434,7 +434,11 @@ LogicalResult CppEmitter::emitAttribute(Attribute attr) {
 
   // Print int attributes.
   if (auto iAttr = attr.dyn_cast<IntegerAttr>()) {
-    os << iAttr.getValue();
+    auto value = iAttr.getValue();
+    if (value.getBitWidth() == 1)
+      os << value.getBoolValue();
+    else
+      os << value;
     return success();
   }
   if (auto dense = attr.dyn_cast<DenseIntElementsAttr>()) {

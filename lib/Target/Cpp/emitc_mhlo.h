@@ -241,6 +241,16 @@ inline std::vector<T> concatenate(std::vector<T> x, std::vector<T> y) {
   return z;
 }
 
+// SelectOp
+template <typename T>
+inline std::vector<T> concatenate(std::vector<bool> s, std::vector<T> x, std::vector<T> y) {
+  std::vector<T> z(x.size());
+  for (size_t i = 0; i < z.size(); i++) {
+    z[i] = s[i] ? x[i] : y[i];
+  }
+  return z;
+}
+
 } // namespace mhlo
 
 #endif // EMITC_MHLO_H

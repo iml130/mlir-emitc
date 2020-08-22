@@ -233,6 +233,18 @@ inline std::vector<T> sub(std::vector<T> x, std::vector<T> y) {
 // TODO: Implement!
 
 /// Functions for other MHLO ops.
+// BroadcastInDimOp
+template <typename T>
+inline std::vector<T> concatenate(std::vector<T> x, size_t n) {
+  std::vector<T> z;
+
+  for (size_t i = 0; i < n; i++) {
+    z.insert(z.end(), x.begin(), x.end());
+  }
+
+  return z;
+}
+
 // ConcatenateOp
 template <typename T>
 inline std::vector<T> concatenate(std::vector<T> x, std::vector<T> y) {
@@ -243,7 +255,8 @@ inline std::vector<T> concatenate(std::vector<T> x, std::vector<T> y) {
 
 // SelectOp
 template <typename T>
-inline std::vector<T> concatenate(std::vector<bool> s, std::vector<T> x, std::vector<T> y) {
+inline std::vector<T> concatenate(std::vector<bool> s, std::vector<T> x,
+                                  std::vector<T> y) {
   std::vector<T> z(x.size());
   for (size_t i = 0; i < z.size(); i++) {
     z[i] = s[i] ? x[i] : y[i];

@@ -23,6 +23,51 @@ namespace emitc {
 
 namespace {
 
+class BroadcastInDimOpConversion
+    : public OpConversionPattern<mhlo::BroadcastInDimOp> {
+
+public:
+  BroadcastInDimOpConversion(MLIRContext *ctx) : OpConversionPattern(ctx) {}
+
+private:
+  LogicalResult
+  matchAndRewrite(mhlo::BroadcastInDimOp broadcastInDimOp,
+                  ArrayRef<Value> operands,
+                  ConversionPatternRewriter &rewriter) const override {
+
+    // TODO: Generalize to other cases
+    auto broadcastDims = broadcastInDimOp.broadcast_dimensions();
+    if (broadcastDims.getType().getRank() != 1)
+      return broadcastInDimOp.emitError()
+             << "broadcast_dimensions with rank other than 1 not supported";
+    if (broadcastDims.getType().getShape().front() != 0)
+      return broadcastInDimOp.emitError()
+             << "broadcast_dimensions with size other than 0 not supported";
+    if (auto result = broadcastInDimOp.getResult()
+                          .getType()
+                          .dyn_cast<RankedTensorType>()) {
+      if (result.getRank() != 1)
+        return failure();
+
+      auto size = result.getShape().front();
+
+      StringRef funcName = "mhlo::broadcast_in_dim";
+      StringAttr callee = rewriter.getStringAttr(funcName);
+      ArrayAttr args;
+      ArrayAttr templateArgs = rewriter.getArrayAttr(
+          {IntegerAttr::get(rewriter.getIntegerType(32), size)});
+
+      rewriter.replaceOpWithNewOp<emitc::CallOp>(
+          broadcastInDimOp, broadcastInDimOp.getType(), callee, args,
+          templateArgs, operands);
+
+      return success();
+    }
+
+    return failure();
+  }
+};
+
 class ConcatenateOpConversion
     : public OpConversionPattern<mhlo::ConcatenateOp> {
 
@@ -274,6 +319,7 @@ void populateMhloToEmitcPatterns(MLIRContext *ctx,
   //  mhlo::BitcastConvertOp
   //  mhlo::BroadcastInDimOp
   //  mhlo::ReshapeOp
+  patterns.insert<BroadcastInDimOpConversion>(ctx);
   patterns.insert<ConvertOpConversion>(ctx);
   patterns.insert<ConcatenateOpConversion>(ctx);
   patterns.insert<SelectOpConversion>(ctx);
@@ -305,7 +351,8 @@ struct ConvertMhloToEmitcPass
                         mhlo::MulOp, mhlo::PowOp, mhlo::ShiftLeftOp,
                         mhlo::ShiftRightLogicalOp, mhlo::SubOp>();
     target.addIllegalOp<mhlo::OrOp, mhlo::XorOp>();
-    target.addIllegalOp<mhlo::ConcatenateOp, mhlo::SelectOp>();
+    target.addIllegalOp<mhlo::BroadcastInDimOp, mhlo::ConcatenateOp,
+                        mhlo::SelectOp>();
     target.addIllegalOp<mhlo::TupleOp, mhlo::GetTupleElementOp>();
 
     OwningRewritePatternList patterns;

@@ -6,6 +6,12 @@ func @float_abs(%arg0: tensor<2xf32>) -> tensor<2xf32> {
   return %0 : tensor<2xf32>
 }
 
+func @mhlo_broadcast_in_dim(%arg0: tensor<i32>) -> tensor<3xi32> {
+  // CHECK: emitc.call "mhlo::broadcast_in_dim"(%arg0) {template_args = [3 : i32]}
+  %0 = "mhlo.broadcast_in_dim"(%arg0) {broadcast_dimensions = dense<> : tensor<0xi64>}: (tensor<i32>) -> tensor<3xi32>
+  return %0 : tensor<3xi32>
+}
+
 func @mhlo_convert(%arg0: tensor<ui32>) -> tensor<ui64> {
   // CHECK: emitc.call "mhlo::convert"(%arg0) {template_args = [ui64]}
   %0 = "mhlo.convert"(%arg0) : (tensor<ui32>) -> tensor<ui64>

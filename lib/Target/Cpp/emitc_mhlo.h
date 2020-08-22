@@ -235,7 +235,7 @@ inline std::vector<T> sub(std::vector<T> x, std::vector<T> y) {
 /// Functions for other MHLO ops.
 // BroadcastInDimOp
 template <typename T>
-inline std::vector<T> concatenate(std::vector<T> x, size_t n) {
+inline std::vector<T> broadcast_in_dim(std::vector<T> x, size_t n) {
   std::vector<T> z;
 
   for (size_t i = 0; i < n; i++) {
@@ -255,7 +255,7 @@ inline std::vector<T> concatenate(std::vector<T> x, std::vector<T> y) {
 
 // SelectOp
 template <typename T>
-inline std::vector<T> concatenate(std::vector<bool> s, std::vector<T> x,
+inline std::vector<T> select(std::vector<bool> s, std::vector<T> x,
                                   std::vector<T> y) {
   std::vector<T> z(x.size());
   for (size_t i = 0; i < z.size(); i++) {

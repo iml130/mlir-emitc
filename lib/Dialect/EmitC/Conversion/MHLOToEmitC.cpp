@@ -264,6 +264,31 @@ private:
   }
 };
 
+class ReshapeOpConversion : public OpConversionPattern<mhlo::ReshapeOp> {
+  using OpConversionPattern<mhlo::ReshapeOp>::OpConversionPattern;
+
+public:
+  ReshapeOpConversion(MLIRContext *ctx)
+      : OpConversionPattern<mhlo::ReshapeOp>(ctx) {}
+
+private:
+  LogicalResult
+  matchAndRewrite(mhlo::ReshapeOp reshapeOp, ArrayRef<Value> operands,
+                  ConversionPatternRewriter &rewriter) const override {
+    StringAttr callee = rewriter.getStringAttr("mhlo::reshape");
+
+    // We might need to add arguments if tensor rank/shape get modelled in the
+    // translation
+    ArrayAttr args;
+    ArrayAttr templateArgs;
+
+    rewriter.replaceOpWithNewOp<emitc::CallOp>(
+        reshapeOp, reshapeOp.getType(), callee, args, templateArgs, operands);
+
+    return success();
+  }
+};
+
 class SelectOpConversion : public OpConversionPattern<mhlo::SelectOp> {
   using OpConversionPattern<mhlo::SelectOp>::OpConversionPattern;
 
@@ -347,14 +372,11 @@ void populateMhloToEmitcPatterns(MLIRContext *ctx,
   //  mhlo::DynamicUpdateSliceOp
 
   // Insert patterns for other MHLO ops.
-  // TODO:
-  //  mhlo::BitcastConvertOp
-  //  mhlo::BroadcastInDimOp
-  //  mhlo::ReshapeOp
   patterns.insert<BitcastConvertOpConversion>(ctx);
   patterns.insert<BroadcastInDimOpConversion>(ctx);
   patterns.insert<ConvertOpConversion>(ctx);
   patterns.insert<ConcatenateOpConversion>(ctx);
+  patterns.insert<ReshapeOpConversion>(ctx);
   patterns.insert<SelectOpConversion>(ctx);
 
   // Insert patterns for MHLO RNG ops.
@@ -384,7 +406,8 @@ struct ConvertMhloToEmitcPass
                         mhlo::ShiftRightLogicalOp, mhlo::SubOp>();
     target.addIllegalOp<mhlo::OrOp, mhlo::XorOp>();
     target.addIllegalOp<mhlo::BitcastConvertOp, mhlo::BroadcastInDimOp,
-                        mhlo::ConvertOp, mhlo::ConcatenateOp, mhlo::SelectOp>();
+                        mhlo::ConvertOp, mhlo::ConcatenateOp, mhlo::ReshapeOp,
+                        mhlo::SelectOp>();
     target.addIllegalOp<mhlo::TupleOp, mhlo::GetTupleElementOp>();
 
     OwningRewritePatternList patterns;

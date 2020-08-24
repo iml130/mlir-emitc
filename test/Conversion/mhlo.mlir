@@ -54,6 +54,12 @@ func @mhlo_negate(%arg0: tensor<2xf32>) -> tensor<2xf32> {
   return %0 : tensor<2xf32>
 }
 
+func @mhlo_reshape(%arg0: tensor<12xf32>) -> tensor<2x3x2xf32> {
+  // CHECK: emitc.call "mhlo::reshape"(%arg0)
+  %0 = "mhlo.reshape"(%arg0) : (tensor<12xf32>) -> tensor<2x3x2xf32>
+  return %0 : tensor<2x3x2xf32>
+}
+
 func @mhlo_sine(%arg0: tensor<2xf32>) -> tensor<2xf32> {
   // CHECK: emitc.call "mhlo::sin"
   %0 = "mhlo.sine"(%arg0) : (tensor<2xf32>) -> tensor<2xf32>

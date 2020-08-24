@@ -268,6 +268,13 @@ inline std::vector<T> concatenate(std::vector<T> x, std::vector<T> y) {
   return z;
 }
 
+// ReshapeOp
+// This needs to be changed if tensor rank/shape get modelled in the translation
+template <typename T>
+inline std::vector<T> reshape(std::vector<T> x) {
+  return std::vector(x);
+}
+
 // SelectOp
 template <typename T>
 inline std::vector<T> select(std::vector<bool> s, std::vector<T> x,

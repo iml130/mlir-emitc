@@ -20,6 +20,7 @@
 #include <complex>
 #include <cstdint>
 #include <functional>
+#include <random>
 #include <vector>
 
 namespace mhlo {
@@ -292,6 +293,49 @@ inline std::vector<T> select(std::vector<bool> s, std::vector<T> x,
     z[i] = s[i] ? x[i] : y[i];
   }
   return z;
+}
+
+// RngUniformOp
+template <typename T>
+using IsIntegral =
+    typename std::enable_if<std::is_integral<T>::value, bool>::type;
+template <typename T>
+using IsFloatingPoint =
+    typename std::enable_if<std::is_floating_point<T>::value, bool>::type;
+
+// integer types
+template <typename T, IsIntegral<T> = true>
+std::vector<T> rng_uniform(T low, T high, std::vector<int64_t> shape) {
+  int64_t n = std::accumulate(shape.begin(), shape.end(), 1,
+                              std::multiplies<int64_t>());
+
+  std::random_device rd;
+  std::mt19937 gen(rd());
+  // high value is exclusive in xla but incluseive in cpp
+  // see https://www.tensorflow.org/xla/operation_semantics?hl=en#rnguniform and
+  // https://en.cppreference.com/w/cpp/numeric/random/uniform_int_distribution
+  std::uniform_int_distribution<T> distribution(low, high - 1);
+  std::vector<T> result(n);
+  for (size_t i = 0; i < n; i++) {
+    result[i] = distribution(gen);
+  }
+  return result;
+}
+
+// floating point types
+template <typename T, IsFloatingPoint<T> = true>
+std::vector<T> rng_uniform(T low, T high, std::vector<int64_t> shape) {
+  int64_t n = std::accumulate(shape.begin(), shape.end(), 1,
+                              std::multiplies<int64_t>());
+
+  std::random_device rd;
+  std::mt19937 gen(rd());
+  std::uniform_real_distribution<T> distribution(low, high);
+  std::vector<T> result(n);
+  for (size_t i = 0; i < n; i++) {
+    result[i] = distribution(gen);
+  }
+  return result;
 }
 
 } // namespace mhlo

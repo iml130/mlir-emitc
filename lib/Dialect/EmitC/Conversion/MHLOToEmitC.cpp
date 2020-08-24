@@ -356,6 +356,43 @@ private:
   }
 };
 
+class RngUniformOpConveriosn : public OpConversionPattern<mhlo::RngUniformOp> {
+  using OpConversionPattern<mhlo::RngUniformOp>::OpConversionPattern;
+
+public:
+  RngUniformOpConveriosn(MLIRContext *ctx)
+      : OpConversionPattern<mhlo::RngUniformOp>(ctx) {}
+
+private:
+  LogicalResult
+  matchAndRewrite(mhlo::RngUniformOp rngUniformOp, ArrayRef<Value> operands,
+                  ConversionPatternRewriter &rewriter) const override {
+    typename mhlo::RngUniformOp::Adaptor srcAdapter(operands);
+
+    StringAttr callee = rewriter.getStringAttr("mhlo::rng_uniform");
+
+    Type elementType = rngUniformOp.getType();
+    if (auto tensorType = elementType.dyn_cast<TensorType>()) {
+      elementType = tensorType.getElementType();
+    }
+    if (auto result =
+            rngUniformOp.getResult().getType().dyn_cast<RankedTensorType>()) {
+      ArrayAttr args;
+      ArrayAttr templateArgs =
+          rewriter.getArrayAttr({TypeAttr::get(elementType)});
+      ;
+
+      rewriter.replaceOpWithNewOp<emitc::CallOp>(rngUniformOp,
+                                                 rngUniformOp.getType(), callee,
+                                                 args, templateArgs, operands);
+
+      return success();
+    }
+
+    return failure();
+  }
+};
+
 } // namespace
 
 void populateMhloToEmitcPatterns(MLIRContext *ctx,
@@ -425,8 +462,8 @@ void populateMhloToEmitcPatterns(MLIRContext *ctx,
 
   // Insert patterns for MHLO RNG ops.
   // TODO:
-  //  mhlo::RngUniformOp
   //  mhlo::RngBitGeneratorOp
+  patterns.insert<RngUniformOpConveriosn>(ctx);
 }
 
 namespace {
@@ -454,6 +491,7 @@ struct ConvertMhloToEmitcPass
                         mhlo::SelectOp>();
     target.addIllegalOp<mhlo::CompareOp, mhlo::TupleOp,
                         mhlo::GetTupleElementOp>();
+    target.addIllegalOp<mhlo::RngUniformOp>();
 
     OwningRewritePatternList patterns;
     populateMhloToEmitcPatterns(&getContext(), patterns);

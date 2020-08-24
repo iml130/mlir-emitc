@@ -75,29 +75,21 @@ static cl::opt<bool>
                  cl::init(false));
 
 int main(int argc, char **argv) {
-#ifdef IREE_BUILD_EMITC
-  registerMlirDialects();
-  registerMlirPasses();
-#else
-  registerAllDialects();
-  registerAllPasses();
-#endif // IREE_BUILD_EMITC
-  emitc::registerAllEmitCPasses();
-#ifdef EMITC_BUILD_HLO
-  mhlo::registerAllMhloPasses();
-  lmhlo::registerAllLmhloPasses();
-#endif // EMITC_BUILD_HLO
-
-  // Register dialects.
   mlir::DialectRegistry registry;
 #ifdef IREE_BUILD_EMITC
   // TODO: Not yet available in upstream.
   // registerMlirDialects(registry);
+  registerMlirDialects();
+  registerMlirPasses();
 #else
-  mlir::registerAllDialects(registry);
+  registerAllDialects(registry);
+  registerAllPasses();
 #endif // IREE_BUILD_EMITC
   registerEmitCDialect(registry);
+  emitc::registerAllEmitCPasses();
 #ifdef EMITC_BUILD_HLO
+  mhlo::registerAllMhloPasses();
+  lmhlo::registerAllLmhloPasses();
   registry.insert<mlir::mhlo::MhloDialect>();
   registry.insert<mlir::chlo::HloClientDialect>();
   registry.insert<mlir::lmhlo::LmhloDialect>();

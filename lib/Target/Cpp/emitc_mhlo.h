@@ -66,6 +66,14 @@ inline std::vector<T1> bitcast_convert(std::vector<T2> x) {
   return z;
 }
 
+// CompareOp
+template <typename T, template <typename> class Compare>
+std::vector<bool> compare(std::vector<T> x, std::vector<T> y) {
+  std::vector<bool> z(x.size());
+  std::transform(x.begin(), x.end(), y.begin(), z.begin(), Compare<T>());
+  return z;
+}
+
 // ConvertOp
 template <typename T1, typename T2>
 inline T1 convert(T2 x) {
@@ -278,7 +286,7 @@ inline std::vector<T> reshape(std::vector<T> x) {
 // SelectOp
 template <typename T>
 inline std::vector<T> select(std::vector<bool> s, std::vector<T> x,
-                                  std::vector<T> y) {
+                             std::vector<T> y) {
   std::vector<T> z(x.size());
   for (size_t i = 0; i < z.size(); i++) {
     z[i] = s[i] ? x[i] : y[i];

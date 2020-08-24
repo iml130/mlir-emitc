@@ -447,6 +447,10 @@ LogicalResult CppEmitter::emitAttribute(Attribute attr) {
     os << '}';
     return success();
   }
+  if (auto sAttr = attr.dyn_cast<StringAttr>()) {
+    os << sAttr.getValue();
+    return success();
+  }
   if (auto type = attr.dyn_cast<TypeAttr>()) {
     return emitType(type.getValue());
   }

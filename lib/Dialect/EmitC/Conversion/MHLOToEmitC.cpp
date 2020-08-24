@@ -149,6 +149,51 @@ private:
   StringRef funcName;
 };
 
+class CompareOpConversion : public OpConversionPattern<mhlo::CompareOp> {
+  using OpConversionPattern<mhlo::CompareOp>::OpConversionPattern;
+
+public:
+  CompareOpConversion(MLIRContext *ctx)
+      : OpConversionPattern<mhlo::CompareOp>(ctx) {}
+
+private:
+  LogicalResult
+  matchAndRewrite(mhlo::CompareOp compareOp, ArrayRef<Value> operands,
+                  ConversionPatternRewriter &rewriter) const override {
+    StringAttr callee = rewriter.getStringAttr("mhlo::compare");
+
+    llvm::StringRef comparisonDirection = compareOp.comparison_direction();
+    llvm::StringRef functionName;
+    if (comparisonDirection.equals("EQ"))
+      functionName = "std::equal_to";
+    else if (comparisonDirection.equals("NE"))
+      functionName = "std::not_equal_to";
+    else if (comparisonDirection.equals("GE"))
+      functionName = "std::greater_equal";
+    else if (comparisonDirection.equals("GT"))
+      functionName = "std::greater";
+    else if (comparisonDirection.equals("LE"))
+      functionName = "std::less_equal";
+    else if (comparisonDirection.equals("LT"))
+      functionName = "std::less";
+    else
+      return failure();
+
+    Type elementType = compareOp.getOperand(0).getType();
+    if (auto tensorType = elementType.dyn_cast<TensorType>()) {
+      elementType = tensorType.getElementType();
+    }
+    ArrayAttr args;
+    ArrayAttr templateArgs = rewriter.getArrayAttr(
+        {TypeAttr::get(elementType), rewriter.getStringAttr(functionName)});
+
+    rewriter.replaceOpWithNewOp<emitc::CallOp>(
+        compareOp, compareOp.getType(), callee, args, templateArgs, operands);
+
+    return success();
+  }
+};
+
 class TupleOpConversion : public OpConversionPattern<mhlo::TupleOp> {
   using OpConversionPattern<mhlo::TupleOp>::OpConversionPattern;
 
@@ -360,8 +405,7 @@ void populateMhloToEmitcPatterns(MLIRContext *ctx,
                                                                   "mhlo::xor");
 
   // Insert patterns for MHLO tuple ops.
-  // TODO:
-  //  mhlo::CompareOp
+  patterns.insert<CompareOpConversion>(ctx);
   patterns.insert<TupleOpConversion>(ctx);
   patterns.insert<GetTupleElementOpConversion>(ctx);
 
@@ -408,7 +452,8 @@ struct ConvertMhloToEmitcPass
     target.addIllegalOp<mhlo::BitcastConvertOp, mhlo::BroadcastInDimOp,
                         mhlo::ConvertOp, mhlo::ConcatenateOp, mhlo::ReshapeOp,
                         mhlo::SelectOp>();
-    target.addIllegalOp<mhlo::TupleOp, mhlo::GetTupleElementOp>();
+    target.addIllegalOp<mhlo::CompareOp, mhlo::TupleOp,
+                        mhlo::GetTupleElementOp>();
 
     OwningRewritePatternList patterns;
     populateMhloToEmitcPatterns(&getContext(), patterns);

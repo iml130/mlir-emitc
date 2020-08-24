@@ -18,6 +18,23 @@ func @mhlo_broadcast_in_dim(%arg0: tensor<i32>) -> tensor<3xi32> {
   return %0 : tensor<3xi32>
 }
 
+func @mhlo_compare(%arg0: tensor<4xi32>, %arg1: tensor<4xi32>) -> tensor<4xi1> {
+  // CHECK: emitc.call "mhlo::compare"(%arg0, %arg1) {template_args = [i32, "std::less"]}
+  %0 = "mhlo.compare"(%arg0, %arg1) {comparison_direction = "LT"} : (tensor<4xi32>, tensor<4xi32>) -> tensor<4xi1>
+  // CHECK: emitc.call "mhlo::compare"(%arg0, %arg1) {template_args = [i32, "std::less_equal"]}
+  %1 = "mhlo.compare"(%arg0, %arg1) {comparison_direction = "LE"} : (tensor<4xi32>, tensor<4xi32>) -> tensor<4xi1>
+  // CHECK: emitc.call "mhlo::compare"(%arg0, %arg1) {template_args = [i32, "std::greater"]}
+  %2 = "mhlo.compare"(%arg0, %arg1) {comparison_direction = "GT"} : (tensor<4xi32>, tensor<4xi32>) -> tensor<4xi1>
+  // CHECK: emitc.call "mhlo::compare"(%arg0, %arg1) {template_args = [i32, "std::greater_equal"]}
+  %3 = "mhlo.compare"(%arg0, %arg1) {comparison_direction = "GE"} : (tensor<4xi32>, tensor<4xi32>) -> tensor<4xi1>
+  // CHECK: emitc.call "mhlo::compare"(%arg0, %arg1) {template_args = [i32, "std::equal_to"]}
+  %4 = "mhlo.compare"(%arg0, %arg1) {comparison_direction = "EQ"} : (tensor<4xi32>, tensor<4xi32>) -> tensor<4xi1>
+  // CHECK: emitc.call "mhlo::compare"(%arg0, %arg1) {template_args = [i32, "std::not_equal_to"]}
+  %5 = "mhlo.compare"(%arg0, %arg1) {comparison_direction = "NE"} : (tensor<4xi32>, tensor<4xi32>) -> tensor<4xi1>
+  
+  return %0 : tensor<4xi1>
+}
+
 func @mhlo_convert(%arg0: tensor<ui32>) -> tensor<ui64> {
   // CHECK: emitc.call "mhlo::convert"(%arg0) {template_args = [ui64]}
   %0 = "mhlo.convert"(%arg0) : (tensor<ui32>) -> tensor<ui64>

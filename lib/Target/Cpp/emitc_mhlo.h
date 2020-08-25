@@ -24,6 +24,9 @@
 #include <vector>
 
 namespace mhlo {
+/// See
+/// https://github.com/tensorflow/tensorflow/blob/6f59650012f8904745dffaba540afc794c6613be/tensorflow/compiler/xla/service/hlo_evaluator.cc
+/// for the XLA implementation
 
 /// Functions for MHLO unary elementwise ops
 // AbsOp
@@ -336,6 +339,22 @@ std::vector<T> rng_uniform(T low, T high, std::vector<int64_t> shape) {
     result[i] = distribution(gen);
   }
   return result;
+}
+
+// RngBitGeneratorOp
+template <typename T, int32_t Algorithm, int64_t N>
+std::tuple<std::vector<uint64_t>, std::vector<T>>
+rng_bit_generator(std::vector<uint64_t> state) {
+  // TODO implement correct algorithm; starting point would be
+  // https://github.com/tensorflow/tensorflow/blob/6f59650012f8904745dffaba540afc794c6613be/tensorflow/compiler/xla/service/rng_bit_generator_expander.cc#L56
+  std::vector<uint64_t> newState(state);
+  std::vector<int64_t> shape{N};
+
+  T min = std::numeric_limits<T>::min();
+  T max = std::numeric_limits<T>::max();
+  std::vector<T> resultVector = rng_uniform<T>(min, max, shape);
+
+  return std::make_tuple(newState, resultVector);
 }
 
 } // namespace mhlo

@@ -356,11 +356,11 @@ private:
   }
 };
 
-class RngUniformOpConveriosn : public OpConversionPattern<mhlo::RngUniformOp> {
+class RngUniformOpConversion : public OpConversionPattern<mhlo::RngUniformOp> {
   using OpConversionPattern<mhlo::RngUniformOp>::OpConversionPattern;
 
 public:
-  RngUniformOpConveriosn(MLIRContext *ctx)
+  RngUniformOpConversion(MLIRContext *ctx)
       : OpConversionPattern<mhlo::RngUniformOp>(ctx) {}
 
 private:
@@ -387,6 +387,50 @@ private:
                                                  args, templateArgs, operands);
 
       return success();
+    }
+
+    return failure();
+  }
+};
+
+class RngBitGeneratorOpConversion
+    : public OpConversionPattern<mhlo::RngBitGeneratorOp> {
+  using OpConversionPattern<mhlo::RngBitGeneratorOp>::OpConversionPattern;
+
+public:
+  RngBitGeneratorOpConversion(MLIRContext *ctx)
+      : OpConversionPattern<mhlo::RngBitGeneratorOp>(ctx) {}
+
+private:
+  LogicalResult
+  matchAndRewrite(mhlo::RngBitGeneratorOp rngBitGeneratorOp,
+                  ArrayRef<Value> operands,
+                  ConversionPatternRewriter &rewriter) const override {
+    typename mhlo::RngUniformOp::Adaptor srcAdapter(operands);
+
+    StringAttr callee = rewriter.getStringAttr("mhlo::rng_bit_generator");
+
+    if (auto tupleType = rngBitGeneratorOp.getType().dyn_cast<TupleType>()) {
+      if (tupleType.getTypes().size() == 2) {
+        if (auto tensorType =
+                tupleType.getTypes()[1].dyn_cast<RankedTensorType>()) {
+
+          Type elementType = tensorType.getElementType();
+          int64_t size = tensorType.getNumElements();
+
+          ArrayAttr args;
+          ArrayAttr templateArgs =
+              rewriter.getArrayAttr({TypeAttr::get(elementType),
+                                     rngBitGeneratorOp.rng_algorithmAttr(),
+                                     rewriter.getI64IntegerAttr(size)});
+
+          rewriter.replaceOpWithNewOp<emitc::CallOp>(
+              rngBitGeneratorOp, rngBitGeneratorOp.getType(), callee, args,
+              templateArgs, operands);
+
+          return success();
+        }
+      }
     }
 
     return failure();
@@ -461,9 +505,8 @@ void populateMhloToEmitcPatterns(MLIRContext *ctx,
   patterns.insert<SelectOpConversion>(ctx);
 
   // Insert patterns for MHLO RNG ops.
-  // TODO:
-  //  mhlo::RngBitGeneratorOp
-  patterns.insert<RngUniformOpConveriosn>(ctx);
+  patterns.insert<RngUniformOpConversion>(ctx);
+  patterns.insert<RngBitGeneratorOpConversion>(ctx);
 }
 
 namespace {
@@ -491,7 +534,7 @@ struct ConvertMhloToEmitcPass
                         mhlo::SelectOp>();
     target.addIllegalOp<mhlo::CompareOp, mhlo::TupleOp,
                         mhlo::GetTupleElementOp>();
-    target.addIllegalOp<mhlo::RngUniformOp>();
+    target.addIllegalOp<mhlo::RngUniformOp, mhlo::RngBitGeneratorOp>();
 
     OwningRewritePatternList patterns;
     populateMhloToEmitcPatterns(&getContext(), patterns);

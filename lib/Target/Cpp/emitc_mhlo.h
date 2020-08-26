@@ -280,6 +280,36 @@ inline std::vector<T> concatenate(std::vector<T> x, std::vector<T> y) {
   return z;
 }
 
+// SliceOp
+// Overload for 1d case
+template <typename T, size_t Start, size_t Limit, size_t Stride,
+          size_t InputShape, size_t OutputShape>
+std::vector<T> slice(std::vector<T> x) {
+  std::vector<T> result(OutputShape);
+
+  size_t idx = 0;
+  for (size_t i = Start; i < Limit; i += Stride) {
+    result[idx++] = x[i];
+  }
+  return result;
+}
+
+// Overload for 2d case
+template <typename T, size_t Start1, size_t Start2, size_t Limit1,
+          size_t Limit2, size_t Stride1, size_t Stride2, size_t InputShape1,
+          size_t InputShape2, size_t OutputShape1, size_t OutputShape2>
+std::vector<T> slice(std::vector<T> x) {
+  std::vector<T> result(OutputShape1 * OutputShape2);
+
+  size_t idx = 0;
+  for (size_t i = Start1; i < Limit1; i += Stride1) {
+    for (size_t j = Start2; j < Limit2; j += Stride2) {
+      result[idx++] = x[i * InputShape2 + j];
+    }
+  }
+  return result;
+}
+
 // ReshapeOp
 // This needs to be changed if tensor rank/shape get modelled in the translation
 template <typename T>

@@ -248,6 +248,69 @@ private:
   }
 };
 
+class SliceOpConversion : public OpConversionPattern<mhlo::SliceOp> {
+  using OpConversionPattern<mhlo::SliceOp>::OpConversionPattern;
+
+public:
+  SliceOpConversion(MLIRContext *ctx)
+      : OpConversionPattern<mhlo::SliceOp>(ctx) {}
+
+private:
+  LogicalResult
+  matchAndRewrite(mhlo::SliceOp sliceOp, ArrayRef<Value> operands,
+                  ConversionPatternRewriter &rewriter) const override {
+    StringAttr callee = rewriter.getStringAttr("mhlo::slice");
+
+    auto operandTensorType =
+        sliceOp.getOperand().getType().cast<RankedTensorType>();
+    Type elementType = operandTensorType.getElementType();
+    int64_t rank = operandTensorType.getRank();
+    auto inputShape = operandTensorType.getShape();
+
+    auto resultTensorType =
+        sliceOp.getResult().getType().cast<RankedTensorType>();
+    auto outputShape = resultTensorType.getShape();
+
+    auto shapeToDenseAttr = [&rewriter](llvm::ArrayRef<int64_t> shape) {
+      int64_t size = shape.size();
+      auto tensorType = RankedTensorType::get({size}, rewriter.getI64Type());
+      return DenseIntElementsAttr::get(tensorType, shape);
+    };
+
+    std::vector<Attribute> template_args_;
+    template_args_.push_back(TypeAttr::get(elementType));
+    for (auto index : sliceOp.start_indices().getIntValues()) {
+      auto attr = rewriter.getI64IntegerAttr(index.getZExtValue());
+      template_args_.push_back(attr);
+    }
+    for (auto index : sliceOp.limit_indices().getIntValues()) {
+      auto attr = rewriter.getI64IntegerAttr(index.getZExtValue());
+      template_args_.push_back(attr);
+    }
+    for (auto index : sliceOp.strides().getIntValues()) {
+      auto attr = rewriter.getI64IntegerAttr(index.getZExtValue());
+      template_args_.push_back(attr);
+    }
+    for (auto value : inputShape) {
+      auto attr = rewriter.getI64IntegerAttr(value);
+      template_args_.push_back(attr);
+    }
+    for (auto value : outputShape) {
+      auto attr = rewriter.getI64IntegerAttr(value);
+      template_args_.push_back(attr);
+    }
+    int64_t size = 0;
+
+    ArrayAttr args;
+    ArrayAttr templateArgs = rewriter.getArrayAttr(template_args_);
+
+    rewriter.replaceOpWithNewOp<emitc::CallOp>(
+        sliceOp, sliceOp.getType(), callee, args, templateArgs, operands);
+
+    return success();
+  }
+};
+
 class BitcastConvertOpConversion
     : public OpConversionPattern<mhlo::BitcastConvertOp> {
   using OpConversionPattern<mhlo::BitcastConvertOp>::OpConversionPattern;
@@ -492,9 +555,9 @@ void populateMhloToEmitcPatterns(MLIRContext *ctx,
 
   // Insert patterns for MHLO slice ops.
   // TODO:
-  //  mhlo::SliceOp
   //  mhlo::DynamicSliceOp
   //  mhlo::DynamicUpdateSliceOp
+  patterns.insert<SliceOpConversion>(ctx);
 
   // Insert patterns for other MHLO ops.
   patterns.insert<BitcastConvertOpConversion>(ctx);
@@ -529,6 +592,7 @@ struct ConvertMhloToEmitcPass
                         mhlo::MulOp, mhlo::PowOp, mhlo::ShiftLeftOp,
                         mhlo::ShiftRightLogicalOp, mhlo::SubOp>();
     target.addIllegalOp<mhlo::OrOp, mhlo::XorOp>();
+    target.addIllegalOp<mhlo::SliceOp>();
     target.addIllegalOp<mhlo::BitcastConvertOp, mhlo::BroadcastInDimOp,
                         mhlo::ConvertOp, mhlo::ConcatenateOp, mhlo::ReshapeOp,
                         mhlo::SelectOp>();

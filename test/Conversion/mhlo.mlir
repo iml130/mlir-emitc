@@ -200,6 +200,14 @@ func @mhlo_concaternate(%arg0: tensor<1xf32>, %arg1: tensor<2xf32>) -> tensor<3x
   return %0 : tensor<3xf32>
 }
 
+func @mhlo_slice(%arg0: tensor<12xi32>, %arg1: tensor<8x7xi32>) -> tensor<4x3xi32> {
+  // CHECK: emitc.call "mhlo::slice"(%arg0) {template_args = [i32, 0, 1, 1, 12, 1]}
+  %0 = "mhlo.slice"(%arg0) {limit_indices = dense<1> : tensor<1xi64>, start_indices = dense<0> : tensor<1xi64>, strides = dense<1> : tensor<1xi64>} : (tensor<12xi32>) -> tensor<1xi32>
+  // CHECK: emitc.call "mhlo::slice"(%arg1) {template_args = [i32, 0, 0, 4, 3, 1, 1, 8, 7, 4, 3]}
+  %1 = "mhlo.slice"(%arg1) {limit_indices = dense<[4, 3]> : tensor<2xi64>, start_indices = dense<0> : tensor<2xi64>, strides = dense<1> : tensor<2xi64>} : (tensor<8x7xi32>) -> tensor<4x3xi32>    
+  return %1 : tensor<4x3xi32>
+}
+
 func @mhlo_rng_uniform() -> () {
   %cst = "std.constant"() {value = dense<-100> : tensor<i32>} : () -> tensor<i32>
   %cst_0 = "std.constant"() {value = dense<100> : tensor<i32>} : () -> tensor<i32>

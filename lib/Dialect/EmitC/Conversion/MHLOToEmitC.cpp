@@ -271,12 +271,6 @@ private:
         sliceOp.getResult().getType().cast<RankedTensorType>();
     auto outputShape = resultTensorType.getShape();
 
-    auto shapeToDenseAttr = [&rewriter](llvm::ArrayRef<int64_t> shape) {
-      int64_t size = shape.size();
-      auto tensorType = RankedTensorType::get({size}, rewriter.getI64Type());
-      return DenseIntElementsAttr::get(tensorType, shape);
-    };
-
     std::vector<Attribute> template_args_;
     template_args_.push_back(TypeAttr::get(elementType));
     for (auto index : sliceOp.start_indices().getIntValues()) {
@@ -299,13 +293,113 @@ private:
       auto attr = rewriter.getI64IntegerAttr(value);
       template_args_.push_back(attr);
     }
-    int64_t size = 0;
 
     ArrayAttr args;
     ArrayAttr templateArgs = rewriter.getArrayAttr(template_args_);
 
     rewriter.replaceOpWithNewOp<emitc::CallOp>(
         sliceOp, sliceOp.getType(), callee, args, templateArgs, operands);
+
+    return success();
+  }
+};
+
+class DynamicSliceOpConversion
+    : public OpConversionPattern<mhlo::DynamicSliceOp> {
+  using OpConversionPattern<mhlo::DynamicSliceOp>::OpConversionPattern;
+
+public:
+  DynamicSliceOpConversion(MLIRContext *ctx)
+      : OpConversionPattern<mhlo::DynamicSliceOp>(ctx) {}
+
+private:
+  LogicalResult
+  matchAndRewrite(mhlo::DynamicSliceOp dynamicSliceOp, ArrayRef<Value> operands,
+                  ConversionPatternRewriter &rewriter) const override {
+    StringAttr callee = rewriter.getStringAttr("mhlo::dynamic_slice");
+
+    auto operandTensorType =
+        dynamicSliceOp.getOperand(0).getType().cast<RankedTensorType>();
+    Type elementType = operandTensorType.getElementType();
+    int64_t rank = operandTensorType.getRank();
+    auto inputShape = operandTensorType.getShape();
+
+    auto resultTensorType =
+        dynamicSliceOp.getResult().getType().cast<RankedTensorType>();
+    auto outputShape = resultTensorType.getShape();
+
+    std::vector<Attribute> template_args_;
+    template_args_.push_back(TypeAttr::get(elementType));
+    for (auto size : dynamicSliceOp.slice_sizes().getIntValues()) {
+      auto attr = rewriter.getI64IntegerAttr(size.getZExtValue());
+      template_args_.push_back(attr);
+    }
+    for (auto value : inputShape) {
+      auto attr = rewriter.getI64IntegerAttr(value);
+      template_args_.push_back(attr);
+    }
+    for (auto value : outputShape) {
+      auto attr = rewriter.getI64IntegerAttr(value);
+      template_args_.push_back(attr);
+    }
+
+    ArrayAttr args;
+    ArrayAttr templateArgs = rewriter.getArrayAttr(template_args_);
+
+    rewriter.replaceOpWithNewOp<emitc::CallOp>(dynamicSliceOp,
+                                               dynamicSliceOp.getType(), callee,
+                                               args, templateArgs, operands);
+
+    return success();
+  }
+};
+
+class DynamicUpdateSliceOpConversion
+    : public OpConversionPattern<mhlo::DynamicUpdateSliceOp> {
+  using OpConversionPattern<mhlo::DynamicUpdateSliceOp>::OpConversionPattern;
+
+public:
+  DynamicUpdateSliceOpConversion(MLIRContext *ctx)
+      : OpConversionPattern<mhlo::DynamicUpdateSliceOp>(ctx) {}
+
+private:
+  LogicalResult
+  matchAndRewrite(mhlo::DynamicUpdateSliceOp dynamicUpdateSliceOp,
+                  ArrayRef<Value> operands,
+                  ConversionPatternRewriter &rewriter) const override {
+    StringAttr callee = rewriter.getStringAttr("mhlo::dynamic_update_slice");
+
+    auto operandTensorType =
+        dynamicUpdateSliceOp.getOperand(0).getType().cast<RankedTensorType>();
+    Type elementType = operandTensorType.getElementType();
+    int64_t rank = operandTensorType.getRank();
+    auto inputShape = operandTensorType.getShape();
+
+    auto resultTensorType =
+        dynamicUpdateSliceOp.getResult().getType().cast<RankedTensorType>();
+    auto outputShape = resultTensorType.getShape();
+
+    auto updateTensorType =
+        dynamicUpdateSliceOp.getOperand(1).getType().cast<RankedTensorType>();
+    auto updateShape = updateTensorType.getShape();
+
+    std::vector<Attribute> template_args_;
+    template_args_.push_back(TypeAttr::get(elementType));
+    for (auto value : inputShape) {
+      auto attr = rewriter.getI64IntegerAttr(value);
+      template_args_.push_back(attr);
+    }
+    for (auto value : updateShape) {
+      auto attr = rewriter.getI64IntegerAttr(value);
+      template_args_.push_back(attr);
+    }
+
+    ArrayAttr args;
+    ArrayAttr templateArgs = rewriter.getArrayAttr(template_args_);
+
+    rewriter.replaceOpWithNewOp<emitc::CallOp>(
+        dynamicUpdateSliceOp, dynamicUpdateSliceOp.getType(), callee, args,
+        templateArgs, operands);
 
     return success();
   }
@@ -554,10 +648,9 @@ void populateMhloToEmitcPatterns(MLIRContext *ctx,
   patterns.insert<GetTupleElementOpConversion>(ctx);
 
   // Insert patterns for MHLO slice ops.
-  // TODO:
-  //  mhlo::DynamicSliceOp
-  //  mhlo::DynamicUpdateSliceOp
   patterns.insert<SliceOpConversion>(ctx);
+  patterns.insert<DynamicSliceOpConversion>(ctx);
+  patterns.insert<DynamicUpdateSliceOpConversion>(ctx);
 
   // Insert patterns for other MHLO ops.
   patterns.insert<BitcastConvertOpConversion>(ctx);
@@ -592,7 +685,8 @@ struct ConvertMhloToEmitcPass
                         mhlo::MulOp, mhlo::PowOp, mhlo::ShiftLeftOp,
                         mhlo::ShiftRightLogicalOp, mhlo::SubOp>();
     target.addIllegalOp<mhlo::OrOp, mhlo::XorOp>();
-    target.addIllegalOp<mhlo::SliceOp>();
+    target.addIllegalOp<mhlo::DynamicSliceOp, mhlo::DynamicUpdateSliceOp,
+                        mhlo::SliceOp>();
     target.addIllegalOp<mhlo::BitcastConvertOp, mhlo::BroadcastInDimOp,
                         mhlo::ConvertOp, mhlo::ConcatenateOp, mhlo::ReshapeOp,
                         mhlo::SelectOp>();

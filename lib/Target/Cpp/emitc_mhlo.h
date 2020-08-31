@@ -310,6 +310,103 @@ std::vector<T> slice(std::vector<T> x) {
   return result;
 }
 
+// DynamicSliceOp
+// Overload for 1d case
+template <typename T, size_t Size, size_t InputShape, size_t OutputShape>
+std::vector<T> dynamic_slice(std::vector<T> x,
+                             std::vector<int64_t> startIndex) {
+  std::vector<T> result(OutputShape);
+
+  auto clamp = [](size_t value, size_t minValue, size_t maxValue) {
+    return std::max(minValue, std::min(maxValue, value));
+  };
+
+  size_t startIndex_ = startIndex[0];
+  startIndex_ = clamp(startIndex_, 0, InputShape - Size);
+
+  size_t limit = startIndex_ + Size;
+
+  size_t idx = 0;
+  for (size_t i = startIndex_; i < limit; i++) {
+    result[idx++] = x[i];
+  }
+  return result;
+}
+
+// Overload for 2d case
+template <typename T, size_t SizeX, size_t SizeY, size_t InputShapeX,
+          size_t InputShapeY, size_t OutputShapeX, size_t OutputShapeY>
+std::vector<T> dynamic_slice(std::vector<T> x, std::vector<int64_t> startIndexX,
+                             std::vector<int64_t> startIndexY) {
+  std::vector<T> result(OutputShapeX * OutputShapeY);
+
+  auto clamp = [](size_t value, size_t minValue, size_t maxValue) {
+    return std::max(minValue, std::min(maxValue, value));
+  };
+
+  size_t startIndexX_ = startIndexX[0];
+  size_t startIndexY_ = startIndexY[0];
+  startIndexX_ = clamp(startIndexX_, 0, InputShapeX - SizeX);
+  startIndexY_ = clamp(startIndexY_, 0, InputShapeY - SizeY);
+
+  size_t limitX = startIndexX_ + SizeX;
+  size_t limitY = startIndexY_ + SizeY;
+
+  size_t idx = 0;
+  for (size_t i = startIndexX_; i < limitX; i++) {
+    for (size_t j = startIndexY_; j < limitY; j++) {
+      result[idx++] = x[i * InputShapeY + j];
+    }
+  }
+  return result;
+}
+
+// DynamicUpdateSliceOp
+// Overload for 1d case
+template <typename T, size_t InputShape, size_t UpdateShape>
+std::vector<T> dynamic_update_slice(std::vector<T> x, std::vector<T> u,
+                                    std::vector<int64_t> startIndex) {
+  std::vector<T> result(x);
+
+  auto clamp = [](size_t value, size_t minValue, size_t maxValue) {
+    return std::max(minValue, std::min(maxValue, value));
+  };
+
+  size_t startIndex_ = startIndex[0];
+  startIndex_ = clamp(startIndex_, 0, InputShape - UpdateShape);
+
+  for (size_t i = 0; i < UpdateShape; i++) {
+    result[startIndex_ + i] = u[i];
+  }
+  return result;
+}
+
+// Overload for 2d case
+template <typename T, size_t InputShapeX, size_t InputShapeY,
+          size_t UpdateShapeX, size_t UpdateShapeY>
+std::vector<T> dynamic_update_slice(std::vector<T> x, std::vector<T> u,
+                                    std::vector<int64_t> startIndexX,
+                                    std::vector<int64_t> startIndexY) {
+  std::vector<T> result(x);
+
+  auto clamp = [](size_t value, size_t minValue, size_t maxValue) {
+    return std::max(minValue, std::min(maxValue, value));
+  };
+
+  size_t startIndexX_ = startIndexX[0];
+  size_t startIndexY_ = startIndexY[0];
+  startIndexX_ = clamp(startIndexX_, 0, InputShapeX - UpdateShapeX);
+  startIndexY_ = clamp(startIndexY_, 0, InputShapeY - UpdateShapeY);
+
+  for (size_t i = 0; i < UpdateShapeX; i++) {
+    for (size_t j = 0; j < UpdateShapeY; j++) {
+      result[(startIndexX_ + i) * InputShapeY + (startIndexY_ + j)] =
+          u[i * UpdateShapeY + j];
+    }
+  }
+  return result;
+}
+
 // ReshapeOp
 // This needs to be changed if tensor rank/shape get modelled in the translation
 template <typename T>

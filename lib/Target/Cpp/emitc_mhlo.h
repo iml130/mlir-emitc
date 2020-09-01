@@ -411,7 +411,7 @@ std::vector<T> dynamic_update_slice(std::vector<T> x, std::vector<T> u,
 // This needs to be changed if tensor rank/shape get modelled in the translation
 template <typename T>
 inline std::vector<T> reshape(std::vector<T> x) {
-  return std::vector(x);
+  return std::vector<T>(x);
 }
 
 // SelectOp

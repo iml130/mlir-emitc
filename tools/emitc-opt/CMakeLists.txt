@@ -34,7 +34,6 @@ endif()
 
 if(${EMITC_ENABLE_HLO})
   set(HLO_LIBS
-    MLIRSCF
     MLIREmitCTransforms
     MhloRegisterDialects
     AllMhloPasses

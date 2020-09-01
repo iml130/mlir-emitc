@@ -25,7 +25,6 @@ namespace mlir {
 #ifdef EMITC_BUILD_HLO
 // TODO: Remove
 namespace mhlo {
-extern std::unique_ptr<OperationPass<FuncOp>> createConvertToScfPass();
 extern std::unique_ptr<OperationPass<FuncOp>> createConvertMHLOToStandardPass();
 } // namespace mhlo
 #endif

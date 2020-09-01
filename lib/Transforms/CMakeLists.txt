@@ -5,7 +5,6 @@ include_directories(BEFORE
   )
 
 add_mlir_library(MLIREmitCTransforms
-  ConvertToScf.cpp
   ConvertMHLOToStandard.cpp
 
   DEPENDS
@@ -14,8 +13,6 @@ add_mlir_library(MLIREmitCTransforms
   MLIRMhloLegalizeToStandardIncGen
 
   LINK_LIBS PUBLIC
-  MLIRLoopLikeInterface
-  MLIRSCF
   MLIRPass
   MLIRTransformUtils
   MhloRegisterDialects

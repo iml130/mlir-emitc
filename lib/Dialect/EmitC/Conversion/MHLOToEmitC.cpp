@@ -93,12 +93,12 @@ private:
   }
 };
 
-template <typename SrcOp, typename DstOp>
-class UnaryOpConversion : public OpConversionPattern<SrcOp> {
+template <typename SrcOp>
+class CallOpConversion : public OpConversionPattern<SrcOp> {
   using OpConversionPattern<SrcOp>::OpConversionPattern;
 
 public:
-  UnaryOpConversion(MLIRContext *ctx, StringRef funcName)
+  CallOpConversion(MLIRContext *ctx, StringRef funcName)
       : OpConversionPattern<SrcOp>(ctx), funcName(funcName) {}
 
 private:
@@ -111,37 +111,8 @@ private:
     ArrayAttr args;
     ArrayAttr templateArgs;
 
-    rewriter.replaceOpWithNewOp<DstOp>(srcOp, srcOp.getType(), callee, args,
-                                       templateArgs, operands);
-
-    return success();
-  }
-
-  StringRef funcName;
-};
-
-// Adopted from IREE's ConvertStandardToVM/ConvertVMToEmitC.
-template <typename SrcOp, typename DstOp>
-class BinaryOpConversion : public OpConversionPattern<SrcOp> {
-  using OpConversionPattern<SrcOp>::OpConversionPattern;
-
-public:
-  BinaryOpConversion(MLIRContext *ctx, StringRef funcName)
-      : OpConversionPattern<SrcOp>(ctx), funcName(funcName) {}
-
-private:
-  LogicalResult
-  matchAndRewrite(SrcOp srcOp, ArrayRef<Value> operands,
-                  ConversionPatternRewriter &rewriter) const override {
-    typename SrcOp::Adaptor srcAdapter(operands);
-
-    StringAttr callee = rewriter.getStringAttr(funcName);
-    ArrayAttr args;
-    ArrayAttr templateArgs;
-    ValueRange dstOperands{srcAdapter.lhs(), srcAdapter.rhs()};
-
-    rewriter.replaceOpWithNewOp<DstOp>(srcOp, srcAdapter.lhs().getType(),
-                                       callee, args, templateArgs, dstOperands);
+    rewriter.replaceOpWithNewOp<emitc::CallOp>(srcOp, srcOp.getType(), callee,
+                                               args, templateArgs, operands);
 
     return success();
   }
@@ -599,48 +570,30 @@ private:
 void populateMhloToEmitcPatterns(MLIRContext *ctx,
                                  OwningRewritePatternList &patterns) {
   /// Insert patterns for MHLO unary elementwise ops.
-  patterns.insert<UnaryOpConversion<mhlo::AbsOp, emitc::CallOp>>(ctx,
-                                                                 "mhlo::abs");
-  patterns.insert<UnaryOpConversion<mhlo::CosOp, emitc::CallOp>>(ctx,
-                                                                 "mhlo::cos");
-  patterns.insert<UnaryOpConversion<mhlo::ExpOp, emitc::CallOp>>(
-      ctx, "mhlo::exponential");
-  patterns.insert<UnaryOpConversion<mhlo::IsFiniteOp, emitc::CallOp>>(
-      ctx, "mhlo::isfinite");
-  patterns.insert<UnaryOpConversion<mhlo::LogOp, emitc::CallOp>>(ctx,
-                                                                 "mhlo::log");
-  patterns.insert<UnaryOpConversion<mhlo::NegOp, emitc::CallOp>>(
-      ctx, "mhlo::negate");
-  patterns.insert<UnaryOpConversion<mhlo::SinOp, emitc::CallOp>>(ctx,
-                                                                 "mhlo::sin");
-  patterns.insert<UnaryOpConversion<mhlo::SqrtOp, emitc::CallOp>>(ctx,
-                                                                  "mhlo::sqrt");
+  patterns.insert<CallOpConversion<mhlo::AbsOp>>(ctx, "mhlo::abs");
+  patterns.insert<CallOpConversion<mhlo::CosOp>>(ctx, "mhlo::cos");
+  patterns.insert<CallOpConversion<mhlo::ExpOp>>(ctx, "mhlo::exponential");
+  patterns.insert<CallOpConversion<mhlo::IsFiniteOp>>(ctx, "mhlo::isfinite");
+  patterns.insert<CallOpConversion<mhlo::LogOp>>(ctx, "mhlo::log");
+  patterns.insert<CallOpConversion<mhlo::NegOp>>(ctx, "mhlo::negate");
+  patterns.insert<CallOpConversion<mhlo::SinOp>>(ctx, "mhlo::sin");
+  patterns.insert<CallOpConversion<mhlo::SqrtOp>>(ctx, "mhlo::sqrt");
 
   /// Insert patterns for MHLO binary elementwise ops.
-  patterns.insert<BinaryOpConversion<mhlo::AddOp, emitc::CallOp>>(ctx,
-                                                                  "mhlo::add");
-  patterns.insert<BinaryOpConversion<mhlo::DivOp, emitc::CallOp>>(ctx,
-                                                                  "mhlo::div");
-  patterns.insert<BinaryOpConversion<mhlo::MaxOp, emitc::CallOp>>(ctx,
-                                                                  "mhlo::max");
-  patterns.insert<BinaryOpConversion<mhlo::MinOp, emitc::CallOp>>(ctx,
-                                                                  "mhlo::min");
-  patterns.insert<BinaryOpConversion<mhlo::MulOp, emitc::CallOp>>(ctx,
-                                                                  "mhlo::mul");
-  patterns.insert<BinaryOpConversion<mhlo::PowOp, emitc::CallOp>>(ctx,
-                                                                  "mhlo::pow");
-  patterns.insert<BinaryOpConversion<mhlo::ShiftLeftOp, emitc::CallOp>>(
-      ctx, "mhlo::shift_left");
-  patterns.insert<BinaryOpConversion<mhlo::ShiftRightLogicalOp, emitc::CallOp>>(
+  patterns.insert<CallOpConversion<mhlo::AddOp>>(ctx, "mhlo::add");
+  patterns.insert<CallOpConversion<mhlo::DivOp>>(ctx, "mhlo::div");
+  patterns.insert<CallOpConversion<mhlo::MaxOp>>(ctx, "mhlo::max");
+  patterns.insert<CallOpConversion<mhlo::MinOp>>(ctx, "mhlo::min");
+  patterns.insert<CallOpConversion<mhlo::MulOp>>(ctx, "mhlo::mul");
+  patterns.insert<CallOpConversion<mhlo::PowOp>>(ctx, "mhlo::pow");
+  patterns.insert<CallOpConversion<mhlo::ShiftLeftOp>>(ctx, "mhlo::shift_left");
+  patterns.insert<CallOpConversion<mhlo::ShiftRightLogicalOp>>(
       ctx, "mhlo::shift_right_logical");
-  patterns.insert<BinaryOpConversion<mhlo::SubOp, emitc::CallOp>>(ctx,
-                                                                  "mhlo::sub");
+  patterns.insert<CallOpConversion<mhlo::SubOp>>(ctx, "mhlo::sub");
 
   // Insert patterns for MHLO MHLO binary logical elementwise ops.
-  patterns.insert<BinaryOpConversion<mhlo::OrOp, emitc::CallOp>>(ctx,
-                                                                 "mhlo::or");
-  patterns.insert<BinaryOpConversion<mhlo::XorOp, emitc::CallOp>>(ctx,
-                                                                  "mhlo::xor");
+  patterns.insert<CallOpConversion<mhlo::OrOp>>(ctx, "mhlo::or");
+  patterns.insert<CallOpConversion<mhlo::XorOp>>(ctx, "mhlo::xor");
 
   // Insert patterns for MHLO tuple ops.
   patterns.insert<CompareOpConversion>(ctx);

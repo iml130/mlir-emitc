@@ -11,8 +11,9 @@
 // limitations under the License.
 
 #include "emitc_mhlo.h"
-
 #include "gmock/gmock.h"
+
+namespace {
 
 using ::testing::ElementsAre;
 
@@ -125,3 +126,5 @@ TEST(mhlo, concatenate) {
   std::vector<int> v2 = {3, 4};
   EXPECT_THAT(mhlo::concatenate(v1, v2), ElementsAre(1, 2, 3, 4));
 }
+
+} // namespace

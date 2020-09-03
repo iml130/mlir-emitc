@@ -30,8 +30,8 @@ namespace mhlo {
 
 /// Functions for MHLO unary elementwise ops
 // AbsOp
-template <typename T1, typename T2>
-inline T1 abs(T2 x) {
+template <typename T>
+inline T abs(T x) {
   return std::abs(x);
 }
 
@@ -220,8 +220,8 @@ inline std::vector<T> mul(std::vector<T> x, std::vector<T> y) {
 }
 
 // PowOp
-template <typename T>
-inline T pow(T x, T y) {
+template <typename T1, typename T2>
+inline T1 pow(T1 x, T2 y) {
   return std::pow(x, y);
 }
 
@@ -441,7 +441,7 @@ std::vector<T> rng_uniform(T low, T high, std::vector<int64_t> shape) {
 
   std::random_device rd;
   std::mt19937 gen(rd());
-  // high value is exclusive in xla but incluseive in cpp
+  // high value is exclusive in xla but inclusive in cpp
   // see https://www.tensorflow.org/xla/operation_semantics?hl=en#rnguniform and
   // https://en.cppreference.com/w/cpp/numeric/random/uniform_int_distribution
   std::uniform_int_distribution<T> distribution(low, high - 1);

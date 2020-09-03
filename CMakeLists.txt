@@ -75,6 +75,7 @@ endif()
 
 if(${EMITC_INCLUDE_TESTS})
   add_subdirectory(third_party/googletest EXCLUDE_FROM_ALL)
+  add_subdirectory(unittests)
 endif()
 
 add_subdirectory(include/emitc)

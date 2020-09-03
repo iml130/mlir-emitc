@@ -14,6 +14,8 @@ if(POLICY CMP0077)
 endif()
 
 project(mlir-emitc LANGUAGES CXX C)
+set(CMAKE_C_STANDARD 11)
+set(CMAKE_CXX_STANDARD 14)
 
 if(${IREE_ENABLE_EMITC})
   message(STATUS "Building EmitC (with reduced deps) for use within IREE")

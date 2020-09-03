@@ -16,4 +16,4 @@ set(LLVM_LINK_COMPONENTS
   Support
   )
 
-add_mlir_unittest(MLIREmitCMHLOTests emitc_mhlo.cpp)
+add_mlir_unittest(MLIREmitCAllTests emitc_mhlo.cpp emitc_std.cpp)

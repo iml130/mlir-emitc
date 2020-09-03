@@ -16,6 +16,9 @@ endif()
 project(mlir-emitc LANGUAGES CXX C)
 
 option(EMITC_ENABLE_HLO "Enables building MLIR-HLO." ON)
+option(EMITC_INCLUDE_TESTS "Generate build targets for the MLIR EmitC unit tests." ON)
+# TODO: Set to MLIR or LLVM default
+#       ${LLVM_INCLUDE_TESTS})
 
 if(${EMITC_ENABLE_HLO})
   message(STATUS "Building MLIR-HLO")
@@ -68,6 +71,10 @@ if(${EMITC_ENABLE_HLO})
   add_subdirectory(third_party/mlir-hlo EXCLUDE_FROM_ALL)
   include_directories(${mlir-hlo_SOURCE_DIR}/include)
   include_directories(${mlir-hlo_BINARY_DIR}/include)
+endif()
+
+if(${EMITC_INCLUDE_TESTS})
+  add_subdirectory(third_party/googletest EXCLUDE_FROM_ALL)
 endif()
 
 add_subdirectory(include/emitc)

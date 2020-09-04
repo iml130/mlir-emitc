@@ -11,18 +11,10 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "emitc/InitDialect.h"
 #include "emitc/InitTranslation.h"
-#ifdef IREE_BUILD_EMITC
-#include "iree/tools/init_mlir_dialects.h"
-#endif
 #include "mlir/IR/AsmState.h"
 #include "mlir/IR/Diagnostics.h"
 #include "mlir/IR/MLIRContext.h"
-#ifndef IREE_BUILD_EMITC
-#include "mlir/InitAllDialects.h"
-#include "mlir/InitAllTranslations.h"
-#endif
 #include "mlir/Support/FileUtilities.h"
 #include "mlir/Support/LogicalResult.h"
 #include "mlir/Support/ToolUtilities.h"
@@ -55,12 +47,6 @@ static llvm::cl::opt<bool> verifyDiagnostics(
     llvm::cl::init(false));
 
 int main(int argc, char **argv) {
-#ifdef IREE_BUILD_EMITC
-  registerMlirDialects();
-#else
-  registerAllDialects();
-#endif
-  registerEmitCDialect();
   registerEmitCTranslation();
   llvm::InitLLVM y(argc, argv);
 
@@ -89,7 +75,6 @@ int main(int argc, char **argv) {
   auto processBuffer = [&](std::unique_ptr<llvm::MemoryBuffer> ownedBuffer,
                            raw_ostream &os) {
     MLIRContext context(false);
-    registerAllDialects(&context);
     context.allowUnregisteredDialects();
     context.printOpOnDiagnostic(!verifyDiagnostics);
     llvm::SourceMgr sourceMgr;

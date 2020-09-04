@@ -201,7 +201,7 @@ private:
   matchAndRewrite(mhlo::GetTupleElementOp getTupleElementOp,
                   ArrayRef<Value> operands,
                   ConversionPatternRewriter &rewriter) const override {
-    auto index = getTupleElementOp.index().getZExtValue();
+    auto index = getTupleElementOp.index();
 
     // TODO Consider adding template arguments to CallOp
     StringAttr callee = rewriter.getStringAttr("std::get");

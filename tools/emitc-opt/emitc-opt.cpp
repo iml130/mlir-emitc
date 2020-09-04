@@ -77,9 +77,7 @@ static cl::opt<bool>
 int main(int argc, char **argv) {
   mlir::DialectRegistry registry;
 #ifdef IREE_BUILD_EMITC
-  // TODO: Not yet available in upstream.
-  // registerMlirDialects(registry);
-  registerMlirDialects();
+  registerMlirDialects(registry);
   registerMlirPasses();
 #else
   registerAllDialects(registry);

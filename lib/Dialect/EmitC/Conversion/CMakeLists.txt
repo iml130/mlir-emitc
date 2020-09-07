@@ -7,6 +7,10 @@ set(LLVM_OPTIONAL_SOURCES
 add_mlir_library(MLIRMHLOToEmitC
   MHLOToEmitC.cpp
 
+  DEPENDS
+  MLIREmitCIncGen
+  MLIRhlo_opsIncGen
+
   LINK_COMPONENTS
   Core
 
@@ -19,6 +23,9 @@ add_mlir_library(MLIRMHLOToEmitC
 add_mlir_library(MLIRSCFToEmitC
   SCFToEmitC.cpp
 
+  DEPENDS
+  MLIREmitCIncGen
+
   LINK_COMPONENTS
   Core
 
@@ -30,6 +37,9 @@ add_mlir_library(MLIRSCFToEmitC
 
 add_mlir_library(MLIRStdToEmitC
   StdToEmitC.cpp
+
+  DEPENDS
+  MLIREmitCIncGen
 
   LINK_COMPONENTS
   Core

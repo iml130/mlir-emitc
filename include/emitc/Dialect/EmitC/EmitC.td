@@ -49,7 +49,7 @@ def EmitC_CallOp : EmitC_Op<"call", []> {
 def EmitC_ForOp : EmitC_Op<"for",
       [DeclareOpInterfaceMethods<LoopLikeOpInterface>,
        DeclareOpInterfaceMethods<RegionBranchOpInterface>,
-       SingleBlockImplicitTerminator<"YieldOp">,
+       SingleBlockImplicitTerminator<"emitc::YieldOp">,
        RecursiveSideEffects]> {
   let summary = "for operation";
   let description = [{
@@ -197,7 +197,7 @@ def EmitC_ForOp : EmitC_Op<"for",
 
 def EmitC_IfOp : EmitC_Op<"if",
       [DeclareOpInterfaceMethods<RegionBranchOpInterface>,
-       SingleBlockImplicitTerminator<"YieldOp">, RecursiveSideEffects,
+       SingleBlockImplicitTerminator<"emitc::YieldOp">, RecursiveSideEffects,
        NoRegionArguments]> {
   let summary = "if-then-else operation";
   let description = [{

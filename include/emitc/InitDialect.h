@@ -19,14 +19,17 @@
 
 namespace mlir {
 
+// Add all the MLIR dialects to the provided registry.
+inline void registerEmitCDialect(DialectRegistry &registry) {
+  registry.insert<emitc::EmitCDialect>();
+}
+
 // This function should be called before creating any MLIRContext if one expect
 // all the possible dialects to be made available to the context automatically.
 inline void registerEmitCDialect() {
-  static bool init_once = []() {
-    registerDialect<emitc::EmitCDialect>();
-    return true;
-  }();
-  (void)init_once;
+  static bool initOnce =
+      ([]() { registerEmitCDialect(getGlobalDialectRegistry()); }(), true);
+  (void)initOnce;
 }
 } // namespace mlir
 

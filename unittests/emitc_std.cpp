@@ -10,15 +10,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "emitc_std.h"
 #include "gmock/gmock.h"
+
+#include "emitc_std.h"
+#include "emitc_tensor.h"
 
 namespace {
 
+using ::testing::ElementsAre;
+
 TEST(std, extract_element) {
-  std::vector<int> v1 = {1, 2, 3};
-  EXPECT_EQ(1, standard::extract_element(v1));
-  EXPECT_EQ(2, standard::extract_element(v1, 1));
+  Tensor0D<float> t0{1.0};
+  Tensor1D<int32_t, 2> t1{1, 2};
+  Tensor2D<uint16_t, 1, 4> t2{10, 11, 12, 13};
+
+  EXPECT_EQ(1.0, standard::extract_element(t0));
+  EXPECT_EQ(2, standard::extract_element(t1, 1));
+  EXPECT_EQ(12, standard::extract_element(t2, 0, 2));
 }
 
 TEST(std, index_cast) {
@@ -26,9 +34,15 @@ TEST(std, index_cast) {
   uint64_t b = 1;
   EXPECT_EQ(b, standard::index_cast<uint64_t>(a));
 
-  std::vector<uint32_t> v1 = {1, 2};
-  std::vector<uint64_t> v2 = {1, 2};
-  EXPECT_EQ(v2, standard::index_cast<uint64_t>(v1));
+  Tensor0D<uint32_t> t0{1};
+  EXPECT_THAT(standard::index_cast<size_t>(t0), ElementsAre(1));
+
+  Tensor1D<uint16_t, 2> t1{1, 2};
+  EXPECT_THAT(standard::index_cast<size_t>(t1), ElementsAre(1, 2));
+
+  Tensor2D<size_t, 2, 2> t2{1, 2, 4, 8};
+  EXPECT_THAT(standard::index_cast<size_t>(t2), ElementsAre(1, 2, 4, 8));
+
 }
 
 } // namespace

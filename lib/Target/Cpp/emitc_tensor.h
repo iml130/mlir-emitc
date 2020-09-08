@@ -12,6 +12,9 @@
 
 // This file defines tensor classes used by EmitC
 
+#ifndef EMITC_TENSOR_H
+#define EMITC_TENSOR_H
+
 #include <cassert>
 #include <cstddef>
 #include <vector>
@@ -19,8 +22,8 @@
 template <typename T, size_t SIZE>
 class Tensor {
 public:
-  using ElementType = T;
-  using IteratorType = typename std::vector<T>::iterator;
+  using value_type = T;
+  using const_iterator = typename std::vector<T>::const_iterator;
 
   Tensor() : data(SIZE) {}
 
@@ -28,9 +31,9 @@ public:
     assert(data.size() == SIZE);
   }
 
-  IteratorType begin() { return data.begin(); }
+  const_iterator begin() const { return data.begin(); }
 
-  IteratorType end() { return data.end(); }
+  const_iterator end() const { return data.end(); }
 
   // Index into the flat data buffer.
   T &operator[](size_t x) { return data[x]; }
@@ -90,6 +93,12 @@ template <typename T>
 using is_scalar = std::is_arithmetic<T>;
 
 template <typename T>
+struct is_tensor_0d : std::false_type {};
+
+template <typename T>
+struct is_tensor_0d<Tensor0D<T>> : std::true_type {};
+
+template <typename T>
 struct is_tensor_1d : std::false_type {};
 
 template <typename T, size_t DimX>
@@ -107,7 +116,7 @@ struct is_tensor : std::false_type {};
 template <typename T>
 struct is_tensor<T,
                  typename std::enable_if<std::is_base_of<
-                     Tensor<typename T::ElementType, T::size>, T>::value>::type>
+                     Tensor<typename T::value_type, T::size>, T>::value>::type>
     : std::true_type {};
 
 template <typename T>
@@ -121,6 +130,11 @@ struct get_element_type {
   using type = T;
 };
 
+template <typename T>
+struct get_element_type<Tensor0D<T>> {
+  using type = T;
+};
+
 template <typename T, size_t DimX>
 struct get_element_type<Tensor1D<T, DimX>> {
   using type = T;
@@ -130,3 +144,5 @@ template <typename T, size_t DimX, size_t DimY>
 struct get_element_type<Tensor2D<T, DimX, DimY>> {
   using type = T;
 };
+
+#endif // EMITC_TENSOR_H

@@ -15,21 +15,26 @@
 #ifndef EMITC_STD_H
 #define EMITC_STD_H
 
-#include <cstdint>
 #include <vector>
+
+#include "emitc_tensor.h"
 
 namespace standard {
 
 // ExtractElementOp
-// Special case for 0-dim tensors;
 template <typename T>
-inline T extract_element(std::vector<T> x) {
-  return x[0];
+inline T extract_element(Tensor0D<T> x) {
+  return x();
 }
 
-template <typename T>
-inline T extract_element(std::vector<T> x, size_t index) {
-  return x[index];
+template <typename T, size_t DimX>
+inline T extract_element(Tensor1D<T, DimX> x, size_t indexX) {
+  return x(indexX);
+}
+
+template <typename T, size_t DimX, size_t DimY>
+inline T extract_element(Tensor2D<T, DimX, DimY> x, size_t indexX, size_t indexY) {
+  return x(indexX, indexY);
 }
 
 // IndexCastOp
@@ -39,9 +44,25 @@ inline T1 index_cast(T2 x) {
 }
 
 template <typename T1, typename T2>
-inline std::vector<T1> index_cast(std::vector<T2> x) {
-  std::vector<T1> z(x.size());
-  for (size_t i = 0; i < z.size(); i++) {
+inline Tensor0D<T1> index_cast(Tensor0D<T2> x) {
+  Tensor0D<T1> z;
+  z[0] = static_cast<T1>(x[0]);
+  return z;
+}
+
+template <typename T1, typename T2, size_t DimX>
+inline Tensor1D<T1, DimX> index_cast(Tensor1D<T2, DimX> x) {
+  Tensor1D<T1, DimX> z;
+  for (size_t i = 0; i < x.size; i++) {
+    z[i] = static_cast<T1>(x[i]);
+  }
+  return z;
+}
+
+template <typename T1, typename T2, size_t DimX, size_t DimY>
+inline Tensor2D<T1, DimX, DimY> index_cast(Tensor2D<T2, DimX, DimY> x) {
+  Tensor2D<T1, DimX, DimY> z;
+  for (size_t i = 0; i < x.size; i++) {
     z[i] = static_cast<T1>(x[i]);
   }
   return z;

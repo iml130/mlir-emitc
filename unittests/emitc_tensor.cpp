@@ -11,7 +11,6 @@
 // limitations under the License.
 
 #include "emitc_tensor.h"
-#include "emitc_mhlo.h"
 
 #include "gmock/gmock.h"
 

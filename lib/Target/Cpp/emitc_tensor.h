@@ -12,6 +12,7 @@
 
 // This file defines tensor classes used by EmitC
 
+#include <cstddef>
 #include <vector>
 
 template <typename T, size_t SIZE>

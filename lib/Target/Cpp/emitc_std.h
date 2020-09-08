@@ -33,39 +33,20 @@ inline T extract_element(Tensor1D<T, DimX> x, size_t indexX) {
 }
 
 template <typename T, size_t DimX, size_t DimY>
-inline T extract_element(Tensor2D<T, DimX, DimY> x, size_t indexX, size_t indexY) {
+inline T extract_element(Tensor2D<T, DimX, DimY> x, size_t indexX,
+                         size_t indexY) {
   return x(indexX, indexY);
 }
 
 // IndexCastOp
-template <typename T1, typename T2>
-inline T1 index_cast(T2 x) {
-  return static_cast<T1>(x);
-}
+template <typename Dest, typename Src>
+inline Dest index_cast(Src x) {
+  using ET_Dest = typename get_element_type<Dest>::type;
+  using ET_Src = typename get_element_type<Src>::type;
 
-template <typename T1, typename T2>
-inline Tensor0D<T1> index_cast(Tensor0D<T2> x) {
-  Tensor0D<T1> z;
-  z[0] = static_cast<T1>(x[0]);
-  return z;
-}
+  auto cast = [](ET_Src value) { return static_cast<ET_Dest>(value); };
 
-template <typename T1, typename T2, size_t DimX>
-inline Tensor1D<T1, DimX> index_cast(Tensor1D<T2, DimX> x) {
-  Tensor1D<T1, DimX> z;
-  for (size_t i = 0; i < x.size; i++) {
-    z[i] = static_cast<T1>(x[i]);
-  }
-  return z;
-}
-
-template <typename T1, typename T2, size_t DimX, size_t DimY>
-inline Tensor2D<T1, DimX, DimY> index_cast(Tensor2D<T2, DimX, DimY> x) {
-  Tensor2D<T1, DimX, DimY> z;
-  for (size_t i = 0; i < x.size; i++) {
-    z[i] = static_cast<T1>(x[i]);
-  }
-  return z;
+  return unary<Dest, Src, UnaryFuncType<ET_Dest, ET_Src>>(x, cast);
 }
 
 } // namespace standard

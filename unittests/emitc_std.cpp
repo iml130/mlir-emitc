@@ -35,14 +35,24 @@ TEST(std, index_cast) {
   EXPECT_EQ(b, standard::index_cast<uint64_t>(a));
 
   Tensor0D<uint32_t> t0{1};
-  EXPECT_THAT(standard::index_cast<size_t>(t0), ElementsAre(1));
+  auto lambda_0d = [&t0]() -> Tensor0D<size_t> {
+    return standard::index_cast<Tensor0D<size_t>>(t0);
+  };
+  EXPECT_THAT(lambda_0d(), ElementsAre(1));
 
   Tensor1D<uint16_t, 2> t1{1, 2};
-  EXPECT_THAT(standard::index_cast<size_t>(t1), ElementsAre(1, 2));
+  auto lambda_1d = [&t1]() -> Tensor1D<size_t, 2> {
+    return standard::index_cast<Tensor1D<size_t, 2>>(t1);
+  };
+
+  EXPECT_THAT(lambda_1d(), ElementsAre(1, 2));
 
   Tensor2D<size_t, 2, 2> t2{1, 2, 4, 8};
-  EXPECT_THAT(standard::index_cast<size_t>(t2), ElementsAre(1, 2, 4, 8));
+  auto lambda_2d = [&t2]() -> Tensor2D<int8_t, 2, 2> {
+    return standard::index_cast<Tensor2D<int8_t, 2, 2>>(t2);
+  };
 
+  EXPECT_THAT(lambda_2d(), ElementsAre(1, 2, 4, 8));
 }
 
 } // namespace

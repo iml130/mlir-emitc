@@ -15,6 +15,7 @@
 #ifndef EMITC_TENSOR_H
 #define EMITC_TENSOR_H
 
+#include <algorithm>
 #include <cassert>
 #include <cstddef>
 #include <vector>
@@ -23,6 +24,7 @@ template <typename T, size_t SIZE>
 class Tensor {
 public:
   using value_type = T;
+  using iterator = typename std::vector<T>::iterator;
   using const_iterator = typename std::vector<T>::const_iterator;
 
   Tensor() : data(SIZE) {}
@@ -31,7 +33,11 @@ public:
     assert(data.size() == SIZE);
   }
 
+  iterator begin() { return data.begin(); }
+
   const_iterator begin() const { return data.begin(); }
+
+  iterator end() { return data.end(); }
 
   const_iterator end() const { return data.end(); }
 
@@ -144,5 +150,20 @@ template <typename T, size_t DimX, size_t DimY>
 struct get_element_type<Tensor2D<T, DimX, DimY>> {
   using type = T;
 };
+
+template <typename Dest, typename Src>
+using UnaryFuncType = Dest (*)(Src);
+
+template <typename Dest, typename Src, class UnaryOp, IsScalar<Src> = true>
+inline Dest unary(Src x, UnaryOp op) {
+  return op(x);
+}
+
+template <typename Dest, typename Src, class UnaryOp, IsTensor<Src> = true>
+inline Dest unary(Src x, UnaryOp op) {
+  Dest z;
+  std::transform(x.begin(), x.end(), z.begin(), op);
+  return z;
+}
 
 #endif // EMITC_TENSOR_H

@@ -72,3 +72,25 @@ TEST(tensor, initializer_list_2d) {
   EXPECT_EQ(3, tensor[2]);
   EXPECT_EQ(4, tensor[3]);
 }
+
+TEST(tensor, dimension_1d) {
+  Tensor1D<float, 2> tensor;
+
+  EXPECT_EQ(2, tensor.dimX);
+
+  Tensor1D<int32_t, 13> tensor2;
+
+  EXPECT_EQ(13, tensor2.dimX);
+}
+
+TEST(tensor, dimension_2d) {
+  Tensor2D<float, 4, 12> tensor;
+
+  EXPECT_EQ(4, tensor.dimX);
+  EXPECT_EQ(12, tensor.dimY);
+
+  Tensor2D<int8_t, 64, 16> tensor2;
+
+  EXPECT_EQ(64, tensor2.dimX);
+  EXPECT_EQ(16, tensor2.dimY);
+}

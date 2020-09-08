@@ -44,7 +44,7 @@ public:
 
   T &operator()(size_t x) { return this->data.at(x); }
 
-  static constexpr size_t dimX = DimX;
+  static const size_t dimX;
 };
 
 template <typename T, size_t DimX, size_t DimY>
@@ -56,9 +56,18 @@ public:
 
   T &operator()(size_t x, size_t y) { return this->data.at(x * DimY + y); }
 
-  static constexpr size_t dimX = DimX;
-  static constexpr size_t dimY = DimY;
+  static const size_t dimX;
+  static const size_t dimY;
 };
+
+template <typename T, size_t DimX>
+const size_t Tensor1D<T, DimX>::dimX = DimX;
+
+template <typename T, size_t DimX, size_t DimY>
+const size_t Tensor2D<T, DimX, DimY>::dimX = DimX;
+
+template <typename T, size_t DimX, size_t DimY>
+const size_t Tensor2D<T, DimX, DimY>::dimY = DimY;
 
 template <typename T>
 using is_scalar = std::is_arithmetic<T>;

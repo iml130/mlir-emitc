@@ -12,6 +12,7 @@
 
 // This file defines tensor classes used by EmitC
 
+#include <cassert>
 #include <cstddef>
 #include <vector>
 
@@ -23,7 +24,9 @@ public:
 
   Tensor() : data(SIZE) {}
 
-  Tensor(std::initializer_list<T> data) : data(data) {}
+  Tensor(std::initializer_list<T> data) : data(data) {
+    assert(data.size() == SIZE);
+  }
 
   IteratorType begin() { return data.begin(); }
 
@@ -33,7 +36,17 @@ public:
   T &operator[](size_t x) { return data[x]; }
 
   std::vector<T> data;
-  static constexpr size_t size = SIZE;
+  static const size_t size;
+};
+
+template <typename T>
+class Tensor0D : public Tensor<T, 1> {
+public:
+  Tensor0D() : Tensor<T, 1>() {}
+
+  Tensor0D(std::initializer_list<T> data) : Tensor<T, 1>(data) {}
+
+  T &operator()() { return this->data.at(0); }
 };
 
 template <typename T, size_t DimX>
@@ -60,6 +73,9 @@ public:
   static const size_t dimX;
   static const size_t dimY;
 };
+
+template <typename T, size_t SIZE>
+const size_t Tensor<T, SIZE>::size = SIZE;
 
 template <typename T, size_t DimX>
 const size_t Tensor1D<T, DimX>::dimX = DimX;

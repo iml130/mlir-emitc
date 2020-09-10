@@ -159,4 +159,74 @@ TEST(tensor, size_2d) {
   EXPECT_EQ(1024, tensor2.size);
 }
 
+TEST(tensor, meta_is_scalar) {
+  using s0 = float;
+  using s1 = int32_t;
+  using t0 = Tensor0D<uint16_t>;
+  using t1 = Tensor1D<int8_t, 12>;
+  using t2 = Tensor2D<double, 3, 7>;
+
+  EXPECT_TRUE(is_scalar<s0>::value);
+  EXPECT_TRUE(is_scalar<s1>::value);
+  EXPECT_FALSE(is_scalar<t0>::value);
+  EXPECT_FALSE(is_scalar<t1>::value);
+  EXPECT_FALSE(is_scalar<t2>::value);
+}
+
+TEST(tensor, meta_is_tensor) {
+  using s0 = float;
+  using s1 = int32_t;
+  using t0 = Tensor0D<uint16_t>;
+  using t1 = Tensor1D<int8_t, 12>;
+  using t2 = Tensor2D<double, 3, 7>;
+
+  EXPECT_FALSE(is_tensor<s0>::value);
+  EXPECT_FALSE(is_tensor<s1>::value);
+  EXPECT_TRUE(is_tensor<t0>::value);
+  EXPECT_TRUE(is_tensor<t1>::value);
+  EXPECT_TRUE(is_tensor<t2>::value);
+}
+
+TEST(tensor, meta_is_tensor_0d) {
+  using s0 = float;
+  using s1 = int32_t;
+  using t0 = Tensor0D<uint16_t>;
+  using t1 = Tensor1D<int8_t, 12>;
+  using t2 = Tensor2D<double, 3, 7>;
+
+  EXPECT_FALSE(is_tensor_0d<s0>::value);
+  EXPECT_FALSE(is_tensor_0d<s1>::value);
+  EXPECT_TRUE(is_tensor_0d<t0>::value);
+  EXPECT_FALSE(is_tensor_0d<t1>::value);
+  EXPECT_FALSE(is_tensor_0d<t2>::value);
+}
+
+TEST(tensor, meta_is_tensor_1d) {
+  using s0 = float;
+  using s1 = int32_t;
+  using t0 = Tensor0D<uint16_t>;
+  using t1 = Tensor1D<int8_t, 12>;
+  using t2 = Tensor2D<double, 3, 7>;
+
+  EXPECT_FALSE(is_tensor_1d<s0>::value);
+  EXPECT_FALSE(is_tensor_1d<s1>::value);
+  EXPECT_FALSE(is_tensor_1d<t0>::value);
+  EXPECT_TRUE(is_tensor_1d<t1>::value);
+  EXPECT_FALSE(is_tensor_1d<t2>::value);
+}
+
+TEST(tensor, meta_is_tensor_2d) {
+  using s0 = float;
+  using s1 = int32_t;
+  using t0 = Tensor0D<uint16_t>;
+  using t1 = Tensor1D<int8_t, 12>;
+  using t2 = Tensor2D<double, 3, 7>;
+
+  EXPECT_FALSE(is_tensor_2d<s0>::value);
+  EXPECT_FALSE(is_tensor_2d<s1>::value);
+  EXPECT_FALSE(is_tensor_2d<t0>::value);
+  EXPECT_FALSE(is_tensor_2d<t1>::value);
+  EXPECT_TRUE(is_tensor_2d<t2>::value);
+}
+
 } // namespace

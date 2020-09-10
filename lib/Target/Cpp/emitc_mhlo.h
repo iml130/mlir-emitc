@@ -23,6 +23,8 @@
 #include <random>
 #include <vector>
 
+#include "emitc_tensor.h"
+
 namespace mhlo {
 /// See
 /// https://github.com/tensorflow/tensorflow/blob/6f59650012f8904745dffaba540afc794c6613be/tensorflow/compiler/xla/service/hlo_evaluator.cc
@@ -30,29 +32,12 @@ namespace mhlo {
 
 /// Functions for MHLO unary elementwise ops
 // AbsOp
-template <typename T>
-inline T abs(T x) {
-  return std::abs(x);
-}
+// TODO support complex numbers
+template <typename Src>
+inline Src abs(Src x) {
+  using ET_Src = typename get_element_type<Src>::type;
 
-template <typename T>
-inline std::vector<T> abs(std::vector<T> x) {
-  std::vector<T> z(x);
-  for (size_t i = 0; i < z.size(); i++) {
-    z[i] = std::abs(x[i]);
-  }
-  return z;
-}
-
-// AbsOp supports complex to real.
-template <typename T>
-inline std::vector<T> abs(std::vector<std::complex<T>> x) {
-  std::vector<T> z;
-  z.reserve(x.size());
-  for (size_t i = 0; i < z.size(); i++) {
-    z[i] = std::abs(x[i]);
-  }
-  return z;
+  return unary<Src, Src, UnaryFuncType<ET_Src, ET_Src>>(x, std::abs);
 }
 
 // BitcastConvertOp
@@ -153,16 +138,11 @@ inline std::vector<T> sqrt(std::vector<T> x) {
 
 /// Functions for MHLO binary elementwise ops.
 // AddOp
-template <typename T>
-inline T add(T x, T y) {
-  return std::plus<>{}(x, y);
-}
+template <typename Src>
+inline Src add(Src x, Src y) {
+  using ET_Src = typename get_element_type<Src>::type;
 
-template <typename T>
-inline std::vector<T> add(std::vector<T> x, std::vector<T> y) {
-  std::vector<T> z(x);
-  std::transform(x.begin(), x.end(), y.begin(), z.begin(), std::plus<>());
-  return z;
+  return binary<Src>(x, y, std::plus<ET_Src>{});
 }
 
 // DivOp

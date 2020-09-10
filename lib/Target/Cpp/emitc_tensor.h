@@ -154,15 +154,32 @@ struct get_element_type<Tensor2D<T, DimX, DimY>> {
 template <typename Dest, typename Src>
 using UnaryFuncType = Dest (*)(Src);
 
-template <typename Dest, typename Src, class UnaryOp, IsScalar<Src> = true>
-inline Dest unary(Src x, UnaryOp op) {
+template <typename Dest, typename SrcLeft, typename SrcRight>
+using BinaryFuncType = Dest (*)(SrcLeft, SrcRight);
+
+template <typename Dest, typename Src, typename UnaryOp, IsScalar<Src> = true>
+inline Dest unary(Src x, UnaryOp &&op) {
   return op(x);
 }
 
-template <typename Dest, typename Src, class UnaryOp, IsTensor<Src> = true>
-inline Dest unary(Src x, UnaryOp op) {
+template <typename Dest, typename Src, typename UnaryOp, IsTensor<Src> = true>
+inline Dest unary(Src x, UnaryOp &&op) {
   Dest z;
   std::transform(x.begin(), x.end(), z.begin(), op);
+  return z;
+}
+
+template <typename Dest, typename SrcLeft, typename SrcRight, typename BinaryOp,
+          IsScalar<SrcLeft> = true>
+inline Dest binary(SrcLeft x, SrcRight y, BinaryOp &&op) {
+  return op(x, y);
+}
+
+template <typename Dest, typename SrcLeft, typename SrcRight, typename BinaryOp,
+          IsTensor<SrcLeft> = true>
+inline Dest binary(SrcLeft x, SrcRight y, BinaryOp &&op) {
+  Dest z;
+  std::transform(x.begin(), x.end(), y.begin(), z.begin(), op);
   return z;
 }
 

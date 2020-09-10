@@ -10,8 +10,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "emitc_mhlo.h"
 #include "gmock/gmock.h"
+
+#include "emitc_mhlo.h"
+#include "emitc_tensor.h"
 
 namespace {
 
@@ -20,11 +22,13 @@ using ::testing::ElementsAre;
 TEST(mhlo, abs) {
   EXPECT_EQ(1, mhlo::abs(-1));
 
-  std::vector<int> v1 = {-1, -2};
-  EXPECT_THAT(mhlo::abs(v1), ElementsAre(1, 2));
+  Tensor0D<int> t0{-1};
+  Tensor1D<float, 2> t1{-1.0f, -2.0f};
+  Tensor2D<long, 2, 2> t2{-2, -1, 0, 2};
 
-  std::vector<float> v2 = {-1.0f, -2.0f};
-  EXPECT_THAT(mhlo::abs(v2), ElementsAre(1.0f, 2.0f));
+  EXPECT_THAT(mhlo::abs(t0), ElementsAre(1));
+  EXPECT_THAT(mhlo::abs(t1), ElementsAre(1.0f, 2.0f));
+  EXPECT_THAT(mhlo::abs(t2), ElementsAre(2, 1, 0, 2));
 
   // TODO:: Test complex to real.
 }
@@ -64,10 +68,35 @@ TEST(mhlo, sqrt) {
 }
 
 TEST(mhlo, add) {
-  EXPECT_EQ(1, mhlo::add(-1, 2));
+  EXPECT_EQ(2, mhlo::add(-1, 3));
 
-  std::vector<int> v1 = {-1, -2};
-  EXPECT_THAT(mhlo::add(v1, v1), ElementsAre(-2, -4));
+  Tensor0D<int> s0{-3};
+  Tensor0D<int> t0{8};
+
+  auto lambda_0d = [&s0, &t0]() -> Tensor0D<int> {
+    return mhlo::add<Tensor0D<int>>(s0, t0);
+  };
+
+  EXPECT_THAT(lambda_0d(), ElementsAre(5));
+
+  Tensor1D<float, 2> s1{-1.3f, 2.4f};
+  Tensor1D<float, 2> t1{0.2f, -3.7f};
+
+  auto lambda_1d = [&s1, &t1]() -> Tensor1D<float, 2> {
+    return mhlo::add<Tensor1D<float, 2>>(s1, t1);
+  };
+
+  // TODO use floating point compare
+  // EXPECT_THAT(lambda_1d(), ElementsAre(-1.1f, -1.3f));
+
+  Tensor2D<long, 2, 2> s2{3, 1, 4, 9};
+  Tensor2D<long, 2, 2> t2{-2, 8, 6, -10};
+
+  auto lambda_2d = [&s2, &t2]() -> Tensor2D<long, 2, 2> {
+    return mhlo::add<Tensor2D<long, 2, 2>>(s2, t2);
+  };
+
+  EXPECT_THAT(lambda_2d(), ElementsAre(1, 9, 10, -1));
 }
 
 TEST(mhlo, div) {

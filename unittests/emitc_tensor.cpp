@@ -14,6 +14,8 @@
 
 #include "gmock/gmock.h"
 
+namespace {
+
 using ::testing::ElementsAre;
 
 TEST(tensor, default_constructor_0d) {
@@ -93,13 +95,15 @@ TEST(tensor, initializer_list_2d) {
 }
 
 TEST(tensor, wrong_size_initializer_list) {
-  auto lambda_0d = []() -> void {Tensor0D<float>t{0.0, 1.0};};
+  auto lambda_0d = []() -> void { Tensor0D<float> t{0.0, 1.0}; };
   EXPECT_DEATH(lambda_0d();, "");
-  
-  auto lambda_1d = []() -> void {Tensor1D<uint16_t, 1>t{0, 1, 3};};
+
+  auto lambda_1d = []() -> void { Tensor1D<uint16_t, 1> t{0, 1, 3}; };
   EXPECT_DEATH(lambda_1d();, "");
 
-  auto lambda_2d = []() -> void {Tensor2D<int8_t, 2, 3>t{0, 1, 2, 3, 4, 5, 6, 7, 8, 9};};
+  auto lambda_2d = []() -> void {
+    Tensor2D<int8_t, 2, 3> t{0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+  };
   EXPECT_DEATH(lambda_2d();, "");
 }
 
@@ -154,3 +158,5 @@ TEST(tensor, size_2d) {
 
   EXPECT_EQ(1024, tensor2.size);
 }
+
+} // namespace

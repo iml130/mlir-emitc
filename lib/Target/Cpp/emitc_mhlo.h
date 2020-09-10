@@ -37,7 +37,9 @@ template <typename Src>
 inline Src abs(Src x) {
   using ET_Src = typename get_element_type<Src>::type;
 
-  return unary<Src, Src, UnaryFuncType<ET_Src, ET_Src>>(x, std::abs);
+  auto f = static_cast<ET_Src (*)(ET_Src)>(std::abs);
+
+  return unary<Src>(x, f);
 }
 
 // BitcastConvertOp
@@ -142,7 +144,9 @@ template <typename Src>
 inline Src add(Src x, Src y) {
   using ET_Src = typename get_element_type<Src>::type;
 
-  return binary<Src>(x, y, std::plus<ET_Src>{});
+  auto f = std::plus<ET_Src>{};
+
+  return binary<Src>(x, y, f);
 }
 
 // DivOp
@@ -150,35 +154,31 @@ template <typename Src>
 inline Src div(Src x, Src y) {
   using ET_Src = typename get_element_type<Src>::type;
 
-  return binary<Src>(x, y, std::divides<ET_Src>{});
+  auto f = std::divides<ET_Src>{};
+
+  return binary<Src>(x, y, f);
 }
 
 // MaxOp
-template <typename T>
-inline T max(T x, T y) {
-  return std::max(x, y);
-}
+template <typename Src>
+inline Src max(Src x, Src y) {
+  using ET_Src = typename get_element_type<Src>::type;
 
-template <typename T>
-inline std::vector<T> max(std::vector<T> x, std::vector<T> y) {
-  std::vector<T> z(x);
-  std::transform(x.begin(), x.end(), y.begin(), z.begin(),
-                 [](auto a, auto b) { return std::max(a, b); });
-  return z;
+  auto f =
+      static_cast<const ET_Src &(*)(const ET_Src &, const ET_Src &)>(std::max);
+
+  return binary<Src>(x, y, f);
 }
 
 // MinOp
-template <typename T>
-inline T min(T x, T y) {
-  return std::min(x, y);
-}
+template <typename Src>
+inline Src min(Src x, Src y) {
+  using ET_Src = typename get_element_type<Src>::type;
 
-template <typename T>
-inline std::vector<T> min(std::vector<T> x, std::vector<T> y) {
-  std::vector<T> z(x);
-  std::transform(x.begin(), x.end(), y.begin(), z.begin(),
-                 [](auto a, auto b) { return std::min(a, b); });
-  return z;
+  auto f =
+      static_cast<const ET_Src &(*)(const ET_Src &, const ET_Src &)>(std::min);
+
+  return binary<Src>(x, y, f);
 }
 
 // MulOp
@@ -186,7 +186,9 @@ template <typename Src>
 inline Src mul(Src x, Src y) {
   using ET_Src = typename get_element_type<Src>::type;
 
-  return binary<Src>(x, y, std::multiplies<ET_Src>{});
+  auto f = std::multiplies<ET_Src>{};
+
+  return binary<Src>(x, y, f);
 }
 
 // PowOp
@@ -214,7 +216,9 @@ template <typename Src>
 inline Src sub(Src x, Src y) {
   using ET_Src = typename get_element_type<Src>::type;
 
-  return binary<Src>(x, y, std::minus<ET_Src>{});
+  auto f = std::minus<ET_Src>{};
+
+  return binary<Src>(x, y, f);
 }
 
 /// Functions for MHLO binary logical elementwise ops.

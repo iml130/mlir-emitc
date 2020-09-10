@@ -22,6 +22,8 @@ using ::testing::FloatEq;
 using ::testing::FloatNear;
 using ::testing::Pointwise;
 
+const float EPSILON = 5e-4;
+
 TEST(mhlo, abs) {
   EXPECT_EQ(1, mhlo::abs(-1));
 
@@ -48,7 +50,7 @@ TEST(mhlo, convert) {
 
 TEST(mhlo, cos) {
   EXPECT_EQ(1, mhlo::cos(0));
-  EXPECT_NEAR(0.8775, mhlo::cos(0.5), 5e-4);
+  EXPECT_NEAR(0.8775, mhlo::cos(0.5), EPSILON);
   EXPECT_EQ(0, mhlo::cos(1));
 
   // TODO: Check vector
@@ -56,8 +58,8 @@ TEST(mhlo, cos) {
 
 TEST(mhlo, sin) {
   EXPECT_EQ(0, mhlo::sin(0));
-  EXPECT_NEAR(0.4795, mhlo::sin(0.5), 5e-4);
-  EXPECT_NEAR(1, mhlo::sin(1.57), 5e-4);
+  EXPECT_NEAR(0.4795, mhlo::sin(0.5), EPSILON);
+  EXPECT_NEAR(1, mhlo::sin(1.57), EPSILON);
 
   // TODO: Check vector
 }
@@ -120,7 +122,7 @@ TEST(mhlo, div) {
     return mhlo::div<Tensor1D<float, 2>>(s1, t1);
   };
 
-  EXPECT_THAT(lambda_1d(), Pointwise(FloatNear(1e-4), {-6.5f, -0.6486f}));
+  EXPECT_THAT(lambda_1d(), Pointwise(FloatNear(EPSILON), {-6.5f, -0.6486f}));
 
   Tensor2D<long, 2, 2> s2{3, 14, -31, -51};
   Tensor2D<long, 2, 2> t2{-2, 2, 6, 7};
@@ -133,19 +135,65 @@ TEST(mhlo, div) {
 }
 
 TEST(mhlo, max) {
-  EXPECT_EQ(5.0, mhlo::max(5.0, 2.0));
+  EXPECT_EQ(3, mhlo::max(-1, 3));
 
-  std::vector<float> v1 = {5.0f, -5.0f};
-  std::vector<float> v2 = {2.0f, 2.0f};
-  EXPECT_THAT(mhlo::max(v1, v2), Pointwise(Eq(), {5.0f, 2.0f}));
+  Tensor0D<int> s0{-3};
+  Tensor0D<int> t0{8};
+
+  auto lambda_0d = [&s0, &t0]() -> Tensor0D<int> {
+    return mhlo::max<Tensor0D<int>>(s0, t0);
+  };
+
+  EXPECT_THAT(lambda_0d(), Pointwise(Eq(), {8}));
+
+  Tensor1D<float, 2> s1{-1.3f, 2.4f};
+  Tensor1D<float, 2> t1{0.2f, -3.7f};
+
+  auto lambda_1d = [&s1, &t1]() -> Tensor1D<float, 2> {
+    return mhlo::max<Tensor1D<float, 2>>(s1, t1);
+  };
+
+  EXPECT_THAT(lambda_1d(), Pointwise(FloatEq(), {0.2f, 2.4f}));
+
+  Tensor2D<long, 2, 2> s2{3, 1, 4, 9};
+  Tensor2D<long, 2, 2> t2{-2, 8, 6, -10};
+
+  auto lambda_2d = [&s2, &t2]() -> Tensor2D<long, 2, 2> {
+    return mhlo::max<Tensor2D<long, 2, 2>>(s2, t2);
+  };
+
+  EXPECT_THAT(lambda_2d(), Pointwise(Eq(), {3, 8, 6, 9}));
 }
 
 TEST(mhlo, min) {
-  EXPECT_EQ(2.0, mhlo::min(5.0, 2.0));
+  EXPECT_EQ(-1, mhlo::min(-1, 3));
 
-  std::vector<float> v1 = {5.0f, -5.0f};
-  std::vector<float> v2 = {2.0f, 2.0f};
-  EXPECT_THAT(mhlo::min(v1, v2), Pointwise(Eq(), {2.0f, -5.0f}));
+  Tensor0D<int> s0{-3};
+  Tensor0D<int> t0{8};
+
+  auto lambda_0d = [&s0, &t0]() -> Tensor0D<int> {
+    return mhlo::min<Tensor0D<int>>(s0, t0);
+  };
+
+  EXPECT_THAT(lambda_0d(), Pointwise(Eq(), {-3}));
+
+  Tensor1D<float, 2> s1{-1.3f, 2.4f};
+  Tensor1D<float, 2> t1{0.2f, -3.7f};
+
+  auto lambda_1d = [&s1, &t1]() -> Tensor1D<float, 2> {
+    return mhlo::min<Tensor1D<float, 2>>(s1, t1);
+  };
+
+  EXPECT_THAT(lambda_1d(), Pointwise(FloatEq(), {-1.3f, -3.7f}));
+
+  Tensor2D<long, 2, 2> s2{3, 1, 4, 9};
+  Tensor2D<long, 2, 2> t2{-2, 8, 6, -10};
+
+  auto lambda_2d = [&s2, &t2]() -> Tensor2D<long, 2, 2> {
+    return mhlo::min<Tensor2D<long, 2, 2>>(s2, t2);
+  };
+
+  EXPECT_THAT(lambda_2d(), Pointwise(Eq(), {-2, 1, 4, -10}));
 }
 
 TEST(mhlo, mul) {

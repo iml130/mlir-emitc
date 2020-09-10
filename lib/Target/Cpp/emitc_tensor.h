@@ -33,6 +33,8 @@ public:
     assert(data.size() == SIZE);
   }
 
+  size_t size() const { return size_; }
+
   iterator begin() { return data.begin(); }
 
   const_iterator begin() const { return data.begin(); }
@@ -45,7 +47,7 @@ public:
   T &operator[](size_t x) { return data[x]; }
 
   std::vector<T> data;
-  static const size_t size;
+  static const size_t size_;
 };
 
 template <typename T>
@@ -84,7 +86,7 @@ public:
 };
 
 template <typename T, size_t SIZE>
-const size_t Tensor<T, SIZE>::size = SIZE;
+const size_t Tensor<T, SIZE>::size_ = SIZE;
 
 template <typename T, size_t DimX>
 const size_t Tensor1D<T, DimX>::dimX = DimX;
@@ -122,7 +124,7 @@ struct is_tensor : std::false_type {};
 template <typename T>
 struct is_tensor<T,
                  typename std::enable_if<std::is_base_of<
-                     Tensor<typename T::value_type, T::size>, T>::value>::type>
+                     Tensor<typename T::value_type, T::size_>, T>::value>::type>
     : std::true_type {};
 
 template <typename T>

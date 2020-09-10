@@ -146,16 +146,11 @@ inline Src add(Src x, Src y) {
 }
 
 // DivOp
-template <typename T>
-inline T div(T x, T y) {
-  return std::divides<>{}(x, y);
-}
+template <typename Src>
+inline Src div(Src x, Src y) {
+  using ET_Src = typename get_element_type<Src>::type;
 
-template <typename T>
-inline std::vector<T> div(std::vector<T> x, std::vector<T> y) {
-  std::vector<T> z(x);
-  std::transform(x.begin(), x.end(), y.begin(), z.begin(), std::divides<>());
-  return z;
+  return binary<Src>(x, y, std::divides<ET_Src>{});
 }
 
 // MaxOp
@@ -187,16 +182,11 @@ inline std::vector<T> min(std::vector<T> x, std::vector<T> y) {
 }
 
 // MulOp
-template <typename T>
-inline T mul(T x, T y) {
-  return std::multiplies<>{}(x, y);
-}
+template <typename Src>
+inline Src mul(Src x, Src y) {
+  using ET_Src = typename get_element_type<Src>::type;
 
-template <typename T>
-inline std::vector<T> mul(std::vector<T> x, std::vector<T> y) {
-  std::vector<T> z(x);
-  std::transform(x.begin(), x.end(), y.begin(), z.begin(), std::multiplies<>());
-  return z;
+  return binary<Src>(x, y, std::multiplies<ET_Src>{});
 }
 
 // PowOp
@@ -220,16 +210,11 @@ inline std::vector<T> pow(std::vector<T> x, std::vector<T> y) {
 // TODO: Implement!
 
 // SubOp
-template <typename T>
-inline T sub(T x, T y) {
-  return std::minus<>{}(x, y);
-}
+template <typename Src>
+inline Src sub(Src x, Src y) {
+  using ET_Src = typename get_element_type<Src>::type;
 
-template <typename T>
-inline std::vector<T> sub(std::vector<T> x, std::vector<T> y) {
-  std::vector<T> z(x);
-  std::transform(x.begin(), x.end(), y.begin(), z.begin(), std::minus<>());
-  return z;
+  return binary<Src>(x, y, std::minus<ET_Src>{});
 }
 
 /// Functions for MHLO binary logical elementwise ops.

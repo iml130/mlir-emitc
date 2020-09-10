@@ -17,7 +17,10 @@
 
 namespace {
 
-using ::testing::ElementsAre;
+using ::testing::Eq;
+using ::testing::FloatEq;
+using ::testing::FloatNear;
+using ::testing::Pointwise;
 
 TEST(mhlo, abs) {
   EXPECT_EQ(1, mhlo::abs(-1));
@@ -26,9 +29,9 @@ TEST(mhlo, abs) {
   Tensor1D<float, 2> t1{-1.0f, -2.0f};
   Tensor2D<long, 2, 2> t2{-2, -1, 0, 2};
 
-  EXPECT_THAT(mhlo::abs(t0), ElementsAre(1));
-  EXPECT_THAT(mhlo::abs(t1), ElementsAre(1.0f, 2.0f));
-  EXPECT_THAT(mhlo::abs(t2), ElementsAre(2, 1, 0, 2));
+  EXPECT_THAT(mhlo::abs(t0), Pointwise(Eq(), {1}));
+  EXPECT_THAT(mhlo::abs(t1), Pointwise(Eq(), {1.0f, 2.0f}));
+  EXPECT_THAT(mhlo::abs(t2), Pointwise(Eq(), {2, 1, 0, 2}));
 
   // TODO:: Test complex to real.
 }
@@ -64,7 +67,7 @@ TEST(mhlo, sqrt) {
   EXPECT_EQ(2.0f, mhlo::sqrt(4.0f));
 
   std::vector<float> v1 = {4.0, 9.0};
-  EXPECT_THAT(mhlo::sqrt(v1), ElementsAre(2.0, 3.0));
+  EXPECT_THAT(mhlo::sqrt(v1), Pointwise(Eq(), {2.0, 3.0}));
 }
 
 TEST(mhlo, add) {
@@ -77,7 +80,7 @@ TEST(mhlo, add) {
     return mhlo::add<Tensor0D<int>>(s0, t0);
   };
 
-  EXPECT_THAT(lambda_0d(), ElementsAre(5));
+  EXPECT_THAT(lambda_0d(), Pointwise(Eq(), {5}));
 
   Tensor1D<float, 2> s1{-1.3f, 2.4f};
   Tensor1D<float, 2> t1{0.2f, -3.7f};
@@ -86,8 +89,7 @@ TEST(mhlo, add) {
     return mhlo::add<Tensor1D<float, 2>>(s1, t1);
   };
 
-  // TODO use floating point compare
-  // EXPECT_THAT(lambda_1d(), ElementsAre(-1.1f, -1.3f));
+  EXPECT_THAT(lambda_1d(), Pointwise(FloatEq(), {-1.1f, -1.3f}));
 
   Tensor2D<long, 2, 2> s2{3, 1, 4, 9};
   Tensor2D<long, 2, 2> t2{-2, 8, 6, -10};
@@ -96,15 +98,38 @@ TEST(mhlo, add) {
     return mhlo::add<Tensor2D<long, 2, 2>>(s2, t2);
   };
 
-  EXPECT_THAT(lambda_2d(), ElementsAre(1, 9, 10, -1));
+  EXPECT_THAT(lambda_2d(), Pointwise(Eq(), {1, 9, 10, -1}));
 }
 
 TEST(mhlo, div) {
-  EXPECT_EQ(2.5, mhlo::div(5.0, 2.0));
+  EXPECT_EQ(-3, mhlo::div(-3, 1));
 
-  std::vector<float> v1 = {5.0f, -5.0f};
-  std::vector<float> v2 = {2.0f, 2.0f};
-  EXPECT_THAT(mhlo::div(v1, v2), ElementsAre(2.5f, -2.5f));
+  Tensor0D<int> s0{27};
+  Tensor0D<int> t0{-4};
+
+  auto lambda_0d = [&s0, &t0]() -> Tensor0D<int> {
+    return mhlo::div<Tensor0D<int>>(s0, t0);
+  };
+
+  EXPECT_THAT(lambda_0d(), Pointwise(Eq(), {-6}));
+
+  Tensor1D<float, 2> s1{-1.3f, 2.4f};
+  Tensor1D<float, 2> t1{0.2f, -3.7f};
+
+  auto lambda_1d = [&s1, &t1]() -> Tensor1D<float, 2> {
+    return mhlo::div<Tensor1D<float, 2>>(s1, t1);
+  };
+
+  EXPECT_THAT(lambda_1d(), Pointwise(FloatNear(1e-4), {-6.5f, -0.6486f}));
+
+  Tensor2D<long, 2, 2> s2{3, 14, -31, -51};
+  Tensor2D<long, 2, 2> t2{-2, 2, 6, 7};
+
+  auto lambda_2d = [&s2, &t2]() -> Tensor2D<long, 2, 2> {
+    return mhlo::div<Tensor2D<long, 2, 2>>(s2, t2);
+  };
+
+  EXPECT_THAT(lambda_2d(), Pointwise(Eq(), {-1, 7, -5, -7}));
 }
 
 TEST(mhlo, max) {
@@ -112,7 +137,7 @@ TEST(mhlo, max) {
 
   std::vector<float> v1 = {5.0f, -5.0f};
   std::vector<float> v2 = {2.0f, 2.0f};
-  EXPECT_THAT(mhlo::max(v1, v2), ElementsAre(5.0f, 2.0f));
+  EXPECT_THAT(mhlo::max(v1, v2), Pointwise(Eq(), {5.0f, 2.0f}));
 }
 
 TEST(mhlo, min) {
@@ -120,14 +145,38 @@ TEST(mhlo, min) {
 
   std::vector<float> v1 = {5.0f, -5.0f};
   std::vector<float> v2 = {2.0f, 2.0f};
-  EXPECT_THAT(mhlo::min(v1, v2), ElementsAre(2.0f, -5.0f));
+  EXPECT_THAT(mhlo::min(v1, v2), Pointwise(Eq(), {2.0f, -5.0f}));
 }
 
 TEST(mhlo, mul) {
-  EXPECT_EQ(1, mhlo::mul(-1, -1));
+  EXPECT_EQ(-3, mhlo::mul(-1, 3));
 
-  std::vector<int> v1 = {-1, -2};
-  EXPECT_THAT(mhlo::mul(v1, v1), ElementsAre(1, 4));
+  Tensor0D<int> s0{-3};
+  Tensor0D<int> t0{8};
+
+  auto lambda_0d = [&s0, &t0]() -> Tensor0D<int> {
+    return mhlo::mul<Tensor0D<int>>(s0, t0);
+  };
+
+  EXPECT_THAT(lambda_0d(), Pointwise(Eq(), {-24}));
+
+  Tensor1D<float, 2> s1{-1.3f, 2.4f};
+  Tensor1D<float, 2> t1{0.2f, -3.7f};
+
+  auto lambda_1d = [&s1, &t1]() -> Tensor1D<float, 2> {
+    return mhlo::mul<Tensor1D<float, 2>>(s1, t1);
+  };
+
+  EXPECT_THAT(lambda_1d(), Pointwise(FloatEq(), {-0.26f, -8.88f}));
+
+  Tensor2D<long, 2, 2> s2{3, 1, 4, 9};
+  Tensor2D<long, 2, 2> t2{-2, 8, 6, -10};
+
+  auto lambda_2d = [&s2, &t2]() -> Tensor2D<long, 2, 2> {
+    return mhlo::mul<Tensor2D<long, 2, 2>>(s2, t2);
+  };
+
+  EXPECT_THAT(lambda_2d(), Pointwise(Eq(), {-6, 8, 24, -90}));
 }
 
 TEST(mhlo, pow) {
@@ -138,22 +187,46 @@ TEST(mhlo, pow) {
 }
 
 TEST(mhlo, sub) {
-  EXPECT_EQ(1, mhlo::sub(2, 1));
+  EXPECT_EQ(-4, mhlo::sub(-1, 3));
 
-  std::vector<int> v1 = {5, -2};
-  std::vector<int> v2 = {2, 2};
-  EXPECT_THAT(mhlo::sub(v1, v2), ElementsAre(3, -4));
+  Tensor0D<int> s0{-3};
+  Tensor0D<int> t0{8};
+
+  auto lambda_0d = [&s0, &t0]() -> Tensor0D<int> {
+    return mhlo::sub<Tensor0D<int>>(s0, t0);
+  };
+
+  EXPECT_THAT(lambda_0d(), Pointwise(Eq(), {-11}));
+
+  Tensor1D<float, 2> s1{-1.3f, 2.4f};
+  Tensor1D<float, 2> t1{0.2f, -3.7f};
+
+  auto lambda_1d = [&s1, &t1]() -> Tensor1D<float, 2> {
+    return mhlo::sub<Tensor1D<float, 2>>(s1, t1);
+  };
+
+  EXPECT_THAT(lambda_1d(), Pointwise(FloatEq(), {-1.5f, 6.1f}));
+
+  Tensor2D<long, 2, 2> s2{3, 1, 4, 9};
+  Tensor2D<long, 2, 2> t2{-2, 8, 6, -10};
+
+  auto lambda_2d = [&s2, &t2]() -> Tensor2D<long, 2, 2> {
+    return mhlo::sub<Tensor2D<long, 2, 2>>(s2, t2);
+  };
+
+  EXPECT_THAT(lambda_2d(), Pointwise(Eq(), {5, -7, -2, 19}));
 }
 
 TEST(mhlo, broadcast_in_dim) {
   std::vector<int> v1 = {1, 2};
-  EXPECT_THAT(mhlo::broadcast_in_dim(v1, 3), ElementsAre(1, 2, 1, 2, 1, 2));
+  EXPECT_THAT(mhlo::broadcast_in_dim(v1, 3),
+              Pointwise(Eq(), {1, 2, 1, 2, 1, 2}));
 }
 
 TEST(mhlo, concatenate) {
   std::vector<int> v1 = {1, 2};
   std::vector<int> v2 = {3, 4};
-  EXPECT_THAT(mhlo::concatenate(v1, v2), ElementsAre(1, 2, 3, 4));
+  EXPECT_THAT(mhlo::concatenate(v1, v2), Pointwise(Eq(), {1, 2, 3, 4}));
 }
 
 } // namespace

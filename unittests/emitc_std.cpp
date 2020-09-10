@@ -17,7 +17,8 @@
 
 namespace {
 
-using ::testing::ElementsAre;
+using ::testing::Eq;
+using ::testing::Pointwise;
 
 TEST(std, extract_element) {
   Tensor0D<float> t0{1.0};
@@ -40,21 +41,21 @@ TEST(std, index_cast) {
   auto lambda_0d = [&t0]() -> Tensor0D<size_t> {
     return standard::index_cast<Tensor0D<size_t>>(t0);
   };
-  EXPECT_THAT(lambda_0d(), ElementsAre(1));
+  EXPECT_THAT(lambda_0d(), Pointwise(Eq(), {1}));
 
   Tensor1D<uint16_t, 2> t1{1, 2};
   auto lambda_1d = [&t1]() -> Tensor1D<size_t, 2> {
     return standard::index_cast<Tensor1D<size_t, 2>>(t1);
   };
 
-  EXPECT_THAT(lambda_1d(), ElementsAre(1, 2));
+  EXPECT_THAT(lambda_1d(), Pointwise(Eq(), {1, 2}));
 
   Tensor2D<size_t, 2, 2> t2{1, 2, 4, 8};
   auto lambda_2d = [&t2]() -> Tensor2D<int8_t, 2, 2> {
     return standard::index_cast<Tensor2D<int8_t, 2, 2>>(t2);
   };
 
-  EXPECT_THAT(lambda_2d(), ElementsAre(1, 2, 4, 8));
+  EXPECT_THAT(lambda_2d(), Pointwise(Eq(), {1, 2, 4, 8}));
 }
 
 } // namespace

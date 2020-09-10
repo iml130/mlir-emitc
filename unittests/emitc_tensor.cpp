@@ -16,8 +16,6 @@
 
 namespace {
 
-using ::testing::ElementsAre;
-
 TEST(tensor, default_constructor_0d) {
   Tensor0D<float> tensor;
 
@@ -132,31 +130,31 @@ TEST(tensor, dimension_2d) {
 TEST(tensor, size_0d) {
   Tensor0D<float> tensor;
 
-  EXPECT_EQ(1, tensor.size);
+  EXPECT_EQ(1, tensor.size_);
 
   Tensor0D<int32_t> tensor2;
 
-  EXPECT_EQ(1, tensor2.size);
+  EXPECT_EQ(1, tensor2.size_);
 }
 
 TEST(tensor, size_1d) {
   Tensor1D<float, 2> tensor;
 
-  EXPECT_EQ(2, tensor.size);
+  EXPECT_EQ(2, tensor.size_);
 
   Tensor1D<int32_t, 13> tensor2;
 
-  EXPECT_EQ(13, tensor2.size);
+  EXPECT_EQ(13, tensor2.size_);
 }
 
 TEST(tensor, size_2d) {
   Tensor2D<float, 4, 12> tensor;
 
-  EXPECT_EQ(48, tensor.size);
+  EXPECT_EQ(48, tensor.size_);
 
   Tensor2D<int8_t, 64, 16> tensor2;
 
-  EXPECT_EQ(1024, tensor2.size);
+  EXPECT_EQ(1024, tensor2.size_);
 }
 
 TEST(tensor, meta_is_scalar) {

@@ -230,11 +230,24 @@ inline Src sub(Src x, Src y) {
 
 /// Functions for MHLO binary logical elementwise ops.
 // OrOp
-// TODO: Implement!
+template <typename Src>
+inline Src logical_or(Src x, Src y) {
+  using ET_Src = typename get_element_type<Src>::type;
+
+  auto f = std::logical_or<ET_Src>{};
+
+  return binary<Src>(x, y, f);
+}
 
 // XorOp
-// TODO: Implement!
+template <typename Src>
+inline Src logical_xor(Src x, Src y) {
+  using ET_Src = typename get_element_type<Src>::type;
 
+  auto f = [](ET_Src a, ET_Src b) -> ET_Src { return a != b; };
+
+  return binary<Src>(x, y, f);
+}
 /// Functions for other MHLO ops.
 // BroadcastInDimOp
 template <typename T>

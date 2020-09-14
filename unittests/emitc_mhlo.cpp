@@ -255,6 +255,37 @@ TEST(mhlo, negate) {
   EXPECT_THAT(lambda_2d(), Pointwise(Eq(), {-3, -1, 4, 0}));
 }
 
+TEST(mhlo, or) {
+  EXPECT_EQ(1, mhlo::logical_or(2, 3));
+
+  Tensor0D<int> s0{2};
+  Tensor0D<int> t0{8};
+
+  auto lambda_0d = [&s0, &t0]() -> Tensor0D<int> {
+    return mhlo::logical_or<Tensor0D<int>>(s0, t0);
+  };
+
+  EXPECT_THAT(lambda_0d(), Pointwise(Eq(), {1}));
+
+  Tensor1D<int8_t, 2> s1{-1, 0};
+  Tensor1D<int8_t, 2> t1{0, 0};
+
+  auto lambda_1d = [&s1, &t1]() -> Tensor1D<int8_t, 2> {
+    return mhlo::logical_or<Tensor1D<int8_t, 2>>(s1, t1);
+  };
+
+  EXPECT_THAT(lambda_1d(), Pointwise(Eq(), {1, 0}));
+
+  Tensor2D<long, 2, 2> s2{0, 2, 0, -1};
+  Tensor2D<long, 2, 2> t2{0, 0, -2, -2};
+
+  auto lambda_2d = [&s2, &t2]() -> Tensor2D<long, 2, 2> {
+    return mhlo::logical_or<Tensor2D<long, 2, 2>>(s2, t2);
+  };
+
+  EXPECT_THAT(lambda_2d(), Pointwise(Eq(), {0, 1, 1, 1}));
+}
+
 TEST(mhlo, pow) {
   EXPECT_EQ(9, mhlo::pow(3, 2));
   EXPECT_EQ(4.0f, mhlo::pow(2.0f, 2));
@@ -291,6 +322,37 @@ TEST(mhlo, sub) {
   };
 
   EXPECT_THAT(lambda_2d(), Pointwise(Eq(), {5, -7, -2, 19}));
+}
+
+TEST(mhlo, xor) {
+  EXPECT_EQ(1, mhlo::logical_xor(2, 3));
+
+  Tensor0D<int> s0{2};
+  Tensor0D<int> t0{8};
+
+  auto lambda_0d = [&s0, &t0]() -> Tensor0D<int> {
+    return mhlo::logical_xor<Tensor0D<int>>(s0, t0);
+  };
+
+  EXPECT_THAT(lambda_0d(), Pointwise(Eq(), {1}));
+
+  Tensor1D<int8_t, 2> s1{-1, 0};
+  Tensor1D<int8_t, 2> t1{0, 0};
+
+  auto lambda_1d = [&s1, &t1]() -> Tensor1D<int8_t, 2> {
+    return mhlo::logical_xor<Tensor1D<int8_t, 2>>(s1, t1);
+  };
+
+  EXPECT_THAT(lambda_1d(), Pointwise(Eq(), {1, 0}));
+
+  Tensor2D<long, 2, 2> s2{0, 2, 0, -1};
+  Tensor2D<long, 2, 2> t2{0, 0, -2, -2};
+
+  auto lambda_2d = [&s2, &t2]() -> Tensor2D<long, 2, 2> {
+    return mhlo::logical_xor<Tensor2D<long, 2, 2>>(s2, t2);
+  };
+
+  EXPECT_THAT(lambda_2d(), Pointwise(Eq(), {0, 1, 1, 1}));
 }
 
 TEST(mhlo, broadcast_in_dim) {

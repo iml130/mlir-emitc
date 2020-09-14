@@ -81,18 +81,13 @@ inline std::vector<T1> convert(std::vector<T2> x) {
 }
 
 // CosOp
-template <typename T>
-inline T cos(T x) {
-  return std::cos(x);
-}
+template <typename Src>
+inline Src cos(Src x) {
+  using ET_Src = typename get_element_type<Src>::type;
 
-template <typename T>
-inline std::vector<T> cos(std::vector<T> x) {
-  std::vector<T> z(x);
-  for (size_t i = 0; i < z.size(); i++) {
-    z[i] = std::cos(x[i]);
-  }
-  return z;
+  auto f = static_cast<ET_Src (*)(ET_Src)>(std::cos);
+
+  return unary<Src>(x, f);
 }
 
 // ExpOp
@@ -116,18 +111,13 @@ inline Src negate(Src x) {
 }
 
 // SinOp
-template <typename T>
-inline T sin(T x) {
-  return std::sin(x);
-}
+template <typename Src>
+inline Src sin(Src x) {
+  using ET_Src = typename get_element_type<Src>::type;
 
-template <typename T>
-inline std::vector<T> sin(std::vector<T> x) {
-  std::vector<T> z(x);
-  for (size_t i = 0; i < z.size(); i++) {
-    z[i] = std::sin(x[i]);
-  }
-  return z;
+  auto f = static_cast<ET_Src (*)(ET_Src)>(std::sin);
+
+  return unary<Src>(x, f);
 }
 
 // SqrtOp

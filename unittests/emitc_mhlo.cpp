@@ -49,19 +49,29 @@ TEST(mhlo, convert) {
 }
 
 TEST(mhlo, cos) {
-  EXPECT_EQ(1, mhlo::cos(0));
-  EXPECT_NEAR(0.8775, mhlo::cos(0.5), EPSILON);
-  EXPECT_EQ(0, mhlo::cos(1));
+  EXPECT_NEAR(1.0f, mhlo::cos(0.0f), EPSILON);
 
-  // TODO: Check vector
+  Tensor0D<float> t0{M_PIf32};
+  Tensor1D<float, 2> t1{M_PI_2f32, -M_PI_2f32};
+  Tensor2D<double, 2, 2> t2{2 * M_PIf32, 0.0f, -0.5f, 0.5f};
+
+  EXPECT_THAT(mhlo::cos(t0), Pointwise(FloatNear(EPSILON), {-1.0f}));
+  EXPECT_THAT(mhlo::cos(t1), Pointwise(FloatNear(EPSILON), {0.0f, 0.0f}));
+  EXPECT_THAT(mhlo::cos(t2), Pointwise(FloatNear(EPSILON),
+                                       {1.0f, 1.0f, 0.8775826f, 0.8775826f}));
 }
 
 TEST(mhlo, sin) {
-  EXPECT_EQ(0, mhlo::sin(0));
-  EXPECT_NEAR(0.4795, mhlo::sin(0.5), EPSILON);
-  EXPECT_NEAR(1, mhlo::sin(1.57), EPSILON);
+  EXPECT_NEAR(0.0f, mhlo::sin(0.0f), EPSILON);
 
-  // TODO: Check vector
+  Tensor0D<float> t0{M_PIf32};
+  Tensor1D<float, 2> t1{M_PI_2f32, -M_PI_2f32};
+  Tensor2D<double, 2, 2> t2{2 * M_PIf32, 0.0f, -0.5f, 0.5f};
+
+  EXPECT_THAT(mhlo::sin(t0), Pointwise(FloatNear(EPSILON), {0.0f}));
+  EXPECT_THAT(mhlo::sin(t1), Pointwise(FloatNear(EPSILON), {1.0f, -1.0f}));
+  EXPECT_THAT(mhlo::sin(t2), Pointwise(FloatNear(EPSILON),
+                                       {0.0f, 0.0f, -0.479426f, 0.479426f}));
 }
 
 TEST(mhlo, sqrt) {

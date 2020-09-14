@@ -106,7 +106,14 @@ inline std::vector<T> cos(std::vector<T> x) {
 // TODO: Implement!
 
 // NegOp
-// TODO: Implement!
+template <typename Src>
+inline Src negate(Src x) {
+  using ET_Src = typename get_element_type<Src>::type;
+
+  auto f = std::negate<ET_Src>{};
+
+  return unary<Src>(x, f);
+}
 
 // SinOp
 template <typename T>

@@ -227,6 +227,34 @@ TEST(mhlo, mul) {
   EXPECT_THAT(lambda_2d(), Pointwise(Eq(), {-6, 8, 24, -90}));
 }
 
+TEST(mhlo, negate) {
+  EXPECT_EQ(1, mhlo::negate(-1));
+
+  Tensor0D<int> s0{-3};
+
+  auto lambda_0d = [&s0]() -> Tensor0D<int> {
+    return mhlo::negate<Tensor0D<int>>(s0);
+  };
+
+  EXPECT_THAT(lambda_0d(), Pointwise(Eq(), {3}));
+
+  Tensor1D<float, 2> s1{-1.3f, 2.4f};
+
+  auto lambda_1d = [&s1]() -> Tensor1D<float, 2> {
+    return mhlo::negate<Tensor1D<float, 2>>(s1);
+  };
+
+  EXPECT_THAT(lambda_1d(), Pointwise(FloatEq(), {1.3f, -2.4f}));
+
+  Tensor2D<long, 2, 2> s2{3, 1, -4, 0};
+
+  auto lambda_2d = [&s2]() -> Tensor2D<long, 2, 2> {
+    return mhlo::negate<Tensor2D<long, 2, 2>>(s2);
+  };
+
+  EXPECT_THAT(lambda_2d(), Pointwise(Eq(), {-3, -1, 4, 0}));
+}
+
 TEST(mhlo, pow) {
   EXPECT_EQ(9, mhlo::pow(3, 2));
   EXPECT_EQ(4.0f, mhlo::pow(2.0f, 2));

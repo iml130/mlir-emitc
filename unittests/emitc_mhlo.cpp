@@ -75,11 +75,17 @@ TEST(mhlo, sin) {
 }
 
 TEST(mhlo, sqrt) {
-  EXPECT_EQ(3, mhlo::sqrt(9));
-  EXPECT_EQ(2.0f, mhlo::sqrt(4.0f));
+  EXPECT_NEAR(3.0f, mhlo::sqrt(9.0f), EPSILON);
 
-  std::vector<float> v1 = {4.0, 9.0};
-  EXPECT_THAT(mhlo::sqrt(v1), Pointwise(Eq(), {2.0, 3.0}));
+  Tensor0D<float> t0{4.0f};
+  Tensor1D<float, 2> t1{0.0f, 81.0f};
+  Tensor2D<double, 2, 2> t2{2.0f, 3.0f, 10.0f, 1.0f};
+
+  EXPECT_THAT(mhlo::sqrt(t0), Pointwise(FloatNear(EPSILON), {2.0f}));
+  EXPECT_THAT(mhlo::sqrt(t1), Pointwise(FloatNear(EPSILON), {0.0f, 9.0f}));
+  EXPECT_THAT(
+      mhlo::sqrt(t2),
+      Pointwise(FloatNear(EPSILON), {1.414213f, 1.732050f, 3.162277f, 1.0f}));
 }
 
 TEST(mhlo, add) {
@@ -142,6 +148,35 @@ TEST(mhlo, div) {
   };
 
   EXPECT_THAT(lambda_2d(), Pointwise(Eq(), {-1, 7, -5, -7}));
+}
+
+TEST(mhlo, exponential) {
+  EXPECT_NEAR(M_Ef32, mhlo::exponential(1.0f), EPSILON);
+
+  Tensor0D<float> t0{0.0f};
+  Tensor1D<float, 2> t1{M_LN2f32, M_LN10f32};
+  Tensor2D<double, 2, 2> t2{1.0f, 2.0f, 3.0f, 4.0f};
+
+  EXPECT_THAT(mhlo::exponential(t0), Pointwise(FloatNear(EPSILON), {1.0f}));
+  EXPECT_THAT(mhlo::exponential(t1),
+              Pointwise(FloatNear(EPSILON), {2.0f, 10.0f}));
+  EXPECT_THAT(mhlo::exponential(t2),
+              Pointwise(FloatNear(EPSILON),
+                        {2.718281f, 7.389056f, 20.085536f, 54.598150f}));
+}
+
+TEST(mhlo, log) {
+  EXPECT_NEAR(0.0f, mhlo::log(1.0f), EPSILON);
+
+  Tensor0D<float> t0{M_Ef32};
+  Tensor1D<float, 2> t1{M_Ef32 * M_Ef32, M_Ef32 * M_Ef32 * M_Ef32};
+  Tensor2D<double, 2, 2> t2{1.0f, 2.0f, 3.0f, 4.0f};
+
+  EXPECT_THAT(mhlo::log(t0), Pointwise(FloatNear(EPSILON), {1.0f}));
+  EXPECT_THAT(mhlo::log(t1), Pointwise(FloatNear(EPSILON), {2.0f, 3.0f}));
+  // clang-format off
+  EXPECT_THAT(mhlo::log(t2), Pointwise(FloatNear(EPSILON), {0.0f, 0.693147f, 1.098612f, 1.386294f}));
+  // clang-format on
 }
 
 TEST(mhlo, max) {
@@ -298,9 +333,33 @@ TEST(mhlo, or) {
 
 TEST(mhlo, pow) {
   EXPECT_EQ(9, mhlo::pow(3, 2));
-  EXPECT_EQ(4.0f, mhlo::pow(2.0f, 2));
 
-  // TODO: Check vector
+  Tensor0D<int> s0{2};
+  Tensor0D<int> t0{4};
+
+  auto lambda_0d = [&s0, &t0]() -> Tensor0D<int> {
+    return mhlo::pow<Tensor0D<int>>(s0, t0);
+  };
+
+  EXPECT_THAT(lambda_0d(), Pointwise(Eq(), {16}));
+
+  Tensor1D<float, 2> s1{4.0f, 2.0f};
+  Tensor1D<float, 2> t1{0.5f, -2.0f};
+
+  auto lambda_1d = [&s1, &t1]() -> Tensor1D<float, 2> {
+    return mhlo::pow<Tensor1D<float, 2>>(s1, t1);
+  };
+
+  EXPECT_THAT(lambda_1d(), Pointwise(FloatNear(EPSILON), {2.0f, 0.25f}));
+
+  Tensor2D<long, 2, 2> s2{3, 1, 4, 2};
+  Tensor2D<long, 2, 2> t2{0, -1, 3, -2};
+
+  auto lambda_2d = [&s2, &t2]() -> Tensor2D<long, 2, 2> {
+    return mhlo::pow<Tensor2D<long, 2, 2>>(s2, t2);
+  };
+
+  EXPECT_THAT(lambda_2d(), Pointwise(Eq(), {1, 1, 64, 0}));
 }
 
 TEST(mhlo, sub) {

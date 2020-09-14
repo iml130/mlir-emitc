@@ -21,6 +21,7 @@
 #include <cstdint>
 #include <functional>
 #include <random>
+#include <type_traits>
 #include <vector>
 
 #include "emitc_tensor.h"
@@ -91,14 +92,27 @@ inline Src cos(Src x) {
 }
 
 // ExpOp
-// TODO: Implement!
-// `e^(operand)` element-wise
+template <typename Src>
+inline Src exponential(Src x) {
+  using ET_Src = typename get_element_type<Src>::type;
+
+  auto f = static_cast<ET_Src (*)(ET_Src)>(std::exp);
+
+  return unary<Src>(x, f);
+}
 
 // IsFiniteOp
 // TODO: Implement!
 
 // LogOp
-// TODO: Implement!
+template <typename Src>
+inline Src log(Src x) {
+  using ET_Src = typename get_element_type<Src>::type;
+
+  auto f = static_cast<ET_Src (*)(ET_Src)>(std::log);
+
+  return unary<Src>(x, f);
+}
 
 // NegOp
 template <typename Src>
@@ -121,18 +135,13 @@ inline Src sin(Src x) {
 }
 
 // SqrtOp
-template <typename T>
-inline T sqrt(T x) {
-  return std::sqrt(x);
-}
+template <typename Src>
+inline Src sqrt(Src x) {
+  using ET_Src = typename get_element_type<Src>::type;
 
-template <typename T>
-inline std::vector<T> sqrt(std::vector<T> x) {
-  std::vector<T> z(x);
-  for (size_t i = 0; i < z.size(); i++) {
-    z[i] = std::sqrt(x[i]);
-  }
-  return z;
+  auto f = static_cast<ET_Src (*)(ET_Src)>(std::sqrt);
+
+  return unary<Src>(x, f);
 }
 
 /// Functions for MHLO binary elementwise ops.
@@ -189,17 +198,33 @@ inline Src mul(Src x, Src y) {
 }
 
 // PowOp
-template <typename T1, typename T2>
-inline T1 pow(T1 x, T2 y) {
-  return std::pow(x, y);
-}
+template <typename Src>
+inline Src pow(Src x, Src y) {
+  using ET_Src = typename get_element_type<Src>::type;
 
-template <typename T>
-inline std::vector<T> pow(std::vector<T> x, std::vector<T> y) {
-  std::vector<T> z(x);
-  std::transform(x.begin(), x.end(), y.begin(), z.begin(),
-                 [](auto a, auto b) { return std::pow(a, b); });
-  return z;
+  auto f = [](ET_Src a, ET_Src b) -> ET_Src {
+    if (std::is_integral<ET_Src>::value) {
+      const bool negative = b < 0;
+      if (b < 0) {
+        b = -b;
+      }
+
+      ET_Src result = 1;
+
+      for (ET_Src i = 0; i < b; i++) {
+        result *= a;
+      }
+
+      if (negative) {
+        result = 1 / result;
+      }
+      return result;
+    } else {
+      return std::pow(a, b);
+    }
+  };
+
+  return binary<Src>(x, y, f);
 }
 
 // ShiftLeftOp

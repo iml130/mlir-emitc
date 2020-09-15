@@ -165,6 +165,19 @@ TEST(mhlo, exponential) {
                         {2.718281f, 7.389056f, 20.085536f, 54.598150f}));
 }
 
+TEST(mhlo, is_finite) {
+  EXPECT_EQ(true, mhlo::is_finite(0.0f));
+
+  Tensor0D<float> t0{M_PIf32};
+  Tensor1D<float, 2> t1{M_PI_2f32, INFINITY};
+  Tensor2D<double, 2, 2> t2{INFINITY, -INFINITY, NAN, -0.0f};
+
+  EXPECT_THAT(mhlo::is_finite(t0), Pointwise(Eq(), {true}));
+  EXPECT_THAT(mhlo::is_finite(t1), Pointwise(Eq(), {true, false}));
+  EXPECT_THAT(mhlo::is_finite(t2),
+              Pointwise(Eq(), {false, false, false, true}));
+}
+
 TEST(mhlo, log) {
   EXPECT_NEAR(0.0f, mhlo::log(1.0f), EPSILON);
 

@@ -102,7 +102,18 @@ inline Src exponential(Src x) {
 }
 
 // IsFiniteOp
-// TODO: Implement!
+template <typename Src>
+inline typename replace_element_type<bool, Src>::type is_finite(Src x) {
+  using ET_Src = typename get_element_type<Src>::type;
+  static_assert(std::is_floating_point<ET_Src>::value,
+                "Operation supports only floating point types");
+
+  using Dest = typename replace_element_type<bool, Src>::type;
+
+  auto f = static_cast<bool (*)(ET_Src)>(std::isfinite);
+
+  return unary<Dest, Src>(x, f);
+}
 
 // LogOp
 template <typename Src>

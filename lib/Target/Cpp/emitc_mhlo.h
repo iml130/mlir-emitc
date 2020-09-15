@@ -228,10 +228,28 @@ inline Src pow(Src x, Src y) {
 }
 
 // ShiftLeftOp
-// TODO: Implement!
+template <typename Src>
+inline Src shift_left(Src x, Src y) {
+  using ET_Src = typename get_element_type<Src>::type;
+  static_assert(std::is_unsigned<ET_Src>::value,
+                "Operation not implemented for signed types");
+
+  auto f = [](ET_Src a, ET_Src b) -> ET_Src { return a << b; };
+
+  return binary<Src>(x, y, f);
+}
 
 // ShiftRightLogicalOp
-// TODO: Implement!
+template <typename Src>
+inline Src shift_right_logical(Src x, Src y) {
+  using ET_Src = typename get_element_type<Src>::type;
+  static_assert(std::is_unsigned<ET_Src>::value,
+                "Operation not implemented for signed types");
+
+  auto f = [](ET_Src a, ET_Src b) -> ET_Src { return a >> b; };
+
+  return binary<Src>(x, y, f);
+}
 
 // SubOp
 template <typename Src>

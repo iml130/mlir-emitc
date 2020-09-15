@@ -362,6 +362,68 @@ TEST(mhlo, pow) {
   EXPECT_THAT(lambda_2d(), Pointwise(Eq(), {1, 1, 64, 0}));
 }
 
+TEST(mhlo, shift_left) {
+  EXPECT_EQ(16u, mhlo::shift_left(2u, 3u));
+
+  Tensor0D<uint> s0{2};
+  Tensor0D<uint> t0{8};
+
+  auto lambda_0d = [&s0, &t0]() -> Tensor0D<uint> {
+    return mhlo::shift_left<Tensor0D<uint>>(s0, t0);
+  };
+
+  EXPECT_THAT(lambda_0d(), Pointwise(Eq(), {512}));
+
+  Tensor1D<uint8_t, 2> s1{3, 0};
+  Tensor1D<uint8_t, 2> t1{2, 3};
+
+  auto lambda_1d = [&s1, &t1]() -> Tensor1D<uint8_t, 2> {
+    return mhlo::shift_left<Tensor1D<uint8_t, 2>>(s1, t1);
+  };
+
+  EXPECT_THAT(lambda_1d(), Pointwise(Eq(), {12, 0}));
+
+  Tensor2D<uint64_t, 2, 2> s2{0, 2, 5, 10};
+  Tensor2D<uint64_t, 2, 2> t2{0, 1, 3, 4};
+
+  auto lambda_2d = [&s2, &t2]() -> Tensor2D<uint64_t, 2, 2> {
+    return mhlo::shift_left<Tensor2D<uint64_t, 2, 2>>(s2, t2);
+  };
+
+  EXPECT_THAT(lambda_2d(), Pointwise(Eq(), {0, 4, 40, 160}));
+}
+
+TEST(mhlo, shift_right_logical) {
+  EXPECT_EQ(2u, mhlo::shift_right_logical(4u, 1u));
+
+  Tensor0D<uint> s0{6};
+  Tensor0D<uint> t0{2};
+
+  auto lambda_0d = [&s0, &t0]() -> Tensor0D<uint> {
+    return mhlo::shift_right_logical<Tensor0D<uint>>(s0, t0);
+  };
+
+  EXPECT_THAT(lambda_0d(), Pointwise(Eq(), {1}));
+
+  Tensor1D<uint8_t, 2> s1{17, 32};
+  Tensor1D<uint8_t, 2> t1{1, 3};
+
+  auto lambda_1d = [&s1, &t1]() -> Tensor1D<uint8_t, 2> {
+    return mhlo::shift_right_logical<Tensor1D<uint8_t, 2>>(s1, t1);
+  };
+
+  EXPECT_THAT(lambda_1d(), Pointwise(Eq(), {8, 4}));
+
+  Tensor2D<uint64_t, 2, 2> s2{0, 2, 25, 10};
+  Tensor2D<uint64_t, 2, 2> t2{0, 1, 3, 2};
+
+  auto lambda_2d = [&s2, &t2]() -> Tensor2D<uint64_t, 2, 2> {
+    return mhlo::shift_right_logical<Tensor2D<uint64_t, 2, 2>>(s2, t2);
+  };
+
+  EXPECT_THAT(lambda_2d(), Pointwise(Eq(), {0, 1, 3, 2}));
+}
+
 TEST(mhlo, sub) {
   EXPECT_EQ(-4, mhlo::sub(-1, 3));
 

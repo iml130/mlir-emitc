@@ -157,6 +157,28 @@ TEST(tensor, size_2d) {
   EXPECT_EQ(1024, tensor2.size_);
 }
 
+TEST(tensor, meta_get_element_type) {
+  using s0 = float;
+  using s1 = int32_t;
+  using t0 = Tensor0D<uint16_t>;
+  using t1 = Tensor1D<int8_t, 12>;
+  using t2 = Tensor2D<double, 3, 7>;
+
+  const bool check_s0 = std::is_same<float, get_element_type<s0>::type>::value;
+  const bool check_s1 =
+      std::is_same<int32_t, get_element_type<s1>::type>::value;
+  const bool check_t0 =
+      std::is_same<uint16_t, get_element_type<t0>::type>::value;
+  const bool check_t1 = std::is_same<int8_t, get_element_type<t1>::type>::value;
+  const bool check_t2 = std::is_same<double, get_element_type<t2>::type>::value;
+
+  EXPECT_TRUE(check_s0);
+  EXPECT_TRUE(check_s1);
+  EXPECT_TRUE(check_t0);
+  EXPECT_TRUE(check_t1);
+  EXPECT_TRUE(check_t2);
+}
+
 TEST(tensor, meta_is_scalar) {
   using s0 = float;
   using s1 = int32_t;
@@ -225,6 +247,36 @@ TEST(tensor, meta_is_tensor_2d) {
   EXPECT_FALSE(is_tensor_2d<t0>::value);
   EXPECT_FALSE(is_tensor_2d<t1>::value);
   EXPECT_TRUE(is_tensor_2d<t2>::value);
+}
+
+TEST(tensor, meta_replace_element_type) {
+  using s0 = float;
+  using s1 = int32_t;
+  using t0 = Tensor0D<uint16_t>;
+  using t1 = Tensor1D<int8_t, 12>;
+  using t2 = Tensor2D<double, 3, 7>;
+
+  using repalce_s0 = replace_element_type<int32_t, s0>::type;
+
+  const bool check_s0 =
+      std::is_same<int32_t, replace_element_type<int32_t, s0>::type>::value;
+  const bool check_s1 =
+      std::is_same<uint8_t, replace_element_type<uint8_t, s1>::type>::value;
+  const bool check_t0 =
+      std::is_same<Tensor0D<int32_t>,
+                   replace_element_type<int32_t, t0>::type>::value;
+  const bool check_t1 =
+      std::is_same<Tensor1D<uint16_t, 12>,
+                   replace_element_type<uint16_t, t1>::type>::value;
+  const bool check_t2 =
+      std::is_same<Tensor2D<int32_t, 3, 7>,
+                   replace_element_type<int32_t, t2>::type>::value;
+
+  EXPECT_TRUE(check_s0);
+  EXPECT_TRUE(check_s1);
+  EXPECT_TRUE(check_t0);
+  EXPECT_TRUE(check_t1);
+  EXPECT_TRUE(check_t2);
 }
 
 } // namespace

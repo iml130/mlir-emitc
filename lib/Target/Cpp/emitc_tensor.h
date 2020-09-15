@@ -154,6 +154,26 @@ struct get_element_type<Tensor2D<T, DimX, DimY>> {
 };
 
 template <typename Dest, typename Src>
+struct replace_element_type {
+  using type = Dest;
+};
+
+template <typename Dest, typename Src>
+struct replace_element_type<Dest, Tensor0D<Src>> {
+  using type = Tensor0D<Dest>;
+};
+
+template <typename Dest, typename Src, size_t DimX>
+struct replace_element_type<Dest, Tensor1D<Src, DimX>> {
+  using type = Tensor1D<Dest, DimX>;
+};
+
+template <typename Dest, typename Src, size_t DimX, size_t DimY>
+struct replace_element_type<Dest, Tensor2D<Src, DimX, DimY>> {
+  using type = Tensor2D<Dest, DimX, DimY>;
+};
+
+template <typename Dest, typename Src>
 using UnaryFuncType = Dest (*)(Src);
 
 template <typename Dest, typename SrcLeft, typename SrcRight>

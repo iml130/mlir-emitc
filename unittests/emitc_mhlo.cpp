@@ -17,6 +17,7 @@
 
 namespace {
 
+using ::testing::DoubleEq;
 using ::testing::Eq;
 using ::testing::FloatEq;
 using ::testing::FloatNear;
@@ -55,9 +56,25 @@ TEST(mhlo, convert) {
   uint64_t b = 1;
   EXPECT_EQ(b, mhlo::convert<uint64_t>(a));
 
-  std::vector<uint32_t> v1 = {1, 2};
-  std::vector<uint64_t> v2 = {1, 2};
-  EXPECT_EQ(v2, mhlo::convert<uint64_t>(v1));
+  Tensor0D<uint32_t> t0{1};
+  auto lambda_0d = [&t0]() -> Tensor0D<size_t> {
+    return mhlo::convert<Tensor0D<size_t>>(t0);
+  };
+  EXPECT_THAT(lambda_0d(), Pointwise(Eq(), {1}));
+
+  Tensor1D<uint16_t, 2> t1{1, 2};
+  auto lambda_1d = [&t1]() -> Tensor1D<size_t, 2> {
+    return mhlo::convert<Tensor1D<size_t, 2>>(t1);
+  };
+
+  EXPECT_THAT(lambda_1d(), Pointwise(Eq(), {1, 2}));
+
+  Tensor2D<float, 2, 2> t2{1.0f, 2.0f, 4.0f, 8.0f};
+  auto lambda_2d = [&t2]() -> Tensor2D<double, 2, 2> {
+    return mhlo::convert<Tensor2D<double, 2, 2>>(t2);
+  };
+
+  EXPECT_THAT(lambda_2d(), Pointwise(DoubleEq(), {1.0, 2.0, 4.0, 8.0}));
 }
 
 TEST(mhlo, cos) {

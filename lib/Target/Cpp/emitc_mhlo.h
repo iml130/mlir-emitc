@@ -77,18 +77,14 @@ std::vector<bool> compare(std::vector<T> x, std::vector<T> y) {
 }
 
 // ConvertOp
-template <typename T1, typename T2>
-inline T1 convert(T2 x) {
-  return static_cast<T1>(x);
-}
+template <typename Dest, typename Src>
+inline Dest convert(Src x) {
+  using ET_Dest = typename get_element_type<Dest>::type;
+  using ET_Src = typename get_element_type<Src>::type;
 
-template <typename T1, typename T2>
-inline std::vector<T1> convert(std::vector<T2> x) {
-  std::vector<T1> z(x.size());
-  for (size_t i = 0; i < z.size(); i++) {
-    z[i] = static_cast<T1>(x[i]);
-  }
-  return z;
+  auto cast = [](ET_Src value) { return static_cast<ET_Dest>(value); };
+
+  return unary<Dest, Src, UnaryFuncType<ET_Dest, ET_Src>>(x, cast);
 }
 
 // CosOp

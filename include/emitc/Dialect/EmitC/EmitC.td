@@ -17,7 +17,7 @@ include "mlir/Interfaces/SideEffectInterfaces.td"
 
 def EmitC_Dialect : Dialect {
   let name = "emitc";
-  let cppNamespace = "emitc";
+  let cppNamespace = "::mlir::emitc";
 }
 
 // Base class for EmitC dialect ops.

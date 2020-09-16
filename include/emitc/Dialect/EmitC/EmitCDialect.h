@@ -18,15 +18,9 @@
 #include "mlir/IR/StandardTypes.h"
 #include "mlir/Interfaces/SideEffectInterfaces.h"
 
-namespace mlir {
-namespace emitc {
-
 #define GET_OP_CLASSES
 #include "emitc/Dialect/EmitC/EmitC.h.inc"
 
 #include "emitc/Dialect/EmitC/EmitCDialect.h.inc"
-
-} // namespace emitc
-} // namespace mlir
 
 #endif // MLIR_DIALECT_EMITC_EMITCDIALECT_H

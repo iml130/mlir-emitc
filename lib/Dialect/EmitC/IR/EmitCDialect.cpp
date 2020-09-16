@@ -26,9 +26,5 @@ void emitc::EmitCDialect::initialize() {
   allowUnknownOperations();
 }
 
-namespace mlir {
-namespace emitc {
 #define GET_OP_CLASSES
 #include "emitc/Dialect/EmitC/EmitC.cpp.inc"
-} // namespace emitc
-} // namespace mlir

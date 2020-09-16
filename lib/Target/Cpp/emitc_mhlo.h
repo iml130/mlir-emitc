@@ -69,11 +69,14 @@ inline std::vector<T1> bitcast_convert(std::vector<T2> x) {
 }
 
 // CompareOp
-template <typename T, template <typename> class Compare>
-std::vector<bool> compare(std::vector<T> x, std::vector<T> y) {
-  std::vector<bool> z(x.size());
-  std::transform(x.begin(), x.end(), y.begin(), z.begin(), Compare<T>());
-  return z;
+template <typename Src, template <typename> class Compare>
+typename replace_element_type<bool, Src>::type compare(Src x, Src y) {
+  using Dest = typename replace_element_type<bool, Src>::type;
+  using ET_Src = typename get_element_type<Src>::type;
+
+  auto cmp = Compare<ET_Src>{};
+
+  return binary<Dest, Src>(x, y, cmp);
 }
 
 // ConvertOp

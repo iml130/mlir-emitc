@@ -51,6 +51,38 @@ TEST(mhlo, ceil) {
   EXPECT_THAT(mhlo::ceil(t2), Pointwise(Eq(), {3.0, 2.0, 0.0, 2.0}));
 }
 
+TEST(mhlo, compare) {
+  auto lambda = []() { return mhlo::compare<int, std::less>(-1, 3); };
+  EXPECT_EQ(true, lambda());
+
+  Tensor0D<int> s0{-3};
+  Tensor0D<int> t0{-8};
+
+  auto lambda_0d = [&s0, &t0]() {
+    return mhlo::compare<Tensor0D<int>, std::less_equal>(s0, t0);
+  };
+
+  EXPECT_THAT(lambda_0d(), Pointwise(Eq(), {false}));
+
+  Tensor1D<float, 2> s1{-1.3f, 2.4f};
+  Tensor1D<float, 2> t1{0.2f, 2.4f};
+
+  auto lambda_1d = [&s1, &t1]() {
+    return mhlo::compare<Tensor1D<float, 2>, std::equal_to>(s1, t1);
+  };
+
+  EXPECT_THAT(lambda_1d(), Pointwise(Eq(), {false, true}));
+
+  Tensor2D<long, 2, 2> s2{3, 1, 4, 9};
+  Tensor2D<long, 2, 2> t2{-2, 1, 6, -10};
+
+  auto lambda_2d = [&s2, &t2]() {
+    return mhlo::compare<Tensor2D<long, 2, 2>, std::greater_equal>(s2, t2);
+  };
+
+  EXPECT_THAT(lambda_2d(), Pointwise(Eq(), {true, true, false, true}));
+}
+
 TEST(mhlo, convert) {
   uint32_t a = 1;
   uint64_t b = 1;
@@ -126,9 +158,8 @@ TEST(mhlo, tanh) {
 
   EXPECT_THAT(mhlo::tanh(t0), Pointwise(FloatNear(EPSILON), {0.0f}));
   EXPECT_THAT(mhlo::tanh(t1), Pointwise(FloatNear(EPSILON), {0.0f, 0.761594f}));
-  EXPECT_THAT(
-      mhlo::tanh(t2),
-      Pointwise(FloatNear(EPSILON), {0.0f, 0.761594f, -0.761594f, 0.0f}));
+  EXPECT_THAT(mhlo::tanh(t2), Pointwise(FloatNear(EPSILON),
+                                        {0.0f, 0.761594f, -0.761594f, 0.0f}));
 }
 
 TEST(mhlo, add) {

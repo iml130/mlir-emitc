@@ -509,9 +509,5 @@ static void print(OpAsmPrinter &p, emitc::YieldOp op) {
 // TableGen'd op method definitions
 //===----------------------------------------------------------------------===//
 
-namespace mlir {
-namespace emitc {
 #define GET_OP_CLASSES
 #include "emitc/Dialect/EmitC/EmitC.cpp.inc"
-} // namespace emitc
-} // namespace mlir

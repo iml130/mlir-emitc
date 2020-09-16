@@ -26,10 +26,16 @@ namespace emitc {
 
 void buildTerminatedBody(OpBuilder &builder, Location loc);
 
+} // namespace emitc
+} // namespace mlir
+
 #define GET_OP_CLASSES
 #include "emitc/Dialect/EmitC/EmitC.h.inc"
 
 #include "emitc/Dialect/EmitC/EmitCDialect.h.inc"
+
+namespace mlir {
+namespace emitc {
 
 /// Returns the loop parent of an induction variable. If the provided value is
 /// not an induction variable, then return nullptr.

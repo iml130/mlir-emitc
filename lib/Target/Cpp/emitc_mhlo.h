@@ -486,13 +486,25 @@ inline Dest reshape(Src x) {
 }
 
 // SelectOp
-template <typename T>
-inline std::vector<T> select(std::vector<bool> s, std::vector<T> x,
-                             std::vector<T> y) {
-  std::vector<T> z(x.size());
-  for (size_t i = 0; i < z.size(); i++) {
-    z[i] = s[i] ? x[i] : y[i];
+template <typename Src, IsScalar<Src> = true>
+inline Src select(typename replace_element_type<bool, Src>::type pred,
+                  Src on_true, Src on_false) {
+  static_assert(is_scalar<Src>::value);
+
+  return pred ? on_true : on_false;
+}
+
+template <typename Src, IsTensor<Src> = true>
+inline Src select(typename replace_element_type<bool, Src>::type pred,
+                  Src on_true, Src on_false) {
+  static_assert(is_tensor<Src>::value);
+
+  Src z;
+
+  for (size_t i = 0; i < Src::size_; i++) {
+    z[i] = pred[i] ? on_true[i] : on_false[i];
   }
+
   return z;
 }
 

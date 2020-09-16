@@ -16,6 +16,79 @@
 
 namespace {
 
+TEST(tensor, tensor_of_bool) {
+  Tensor0D<bool> t0{false};
+  Tensor1D<bool, 2> t1{false, true};
+  Tensor2D<bool, 2, 2> t2{false, true, false, true};
+
+  EXPECT_FALSE(t0[0]);
+  EXPECT_FALSE(t0());
+
+  EXPECT_FALSE(t1[0]);
+  EXPECT_FALSE(t1(0));
+  EXPECT_TRUE(t1[1]);
+  EXPECT_TRUE(t1(1));
+
+  EXPECT_FALSE(t2[0]);
+  EXPECT_FALSE(t2(0, 0));
+  EXPECT_TRUE(t2[1]);
+  EXPECT_TRUE(t2(0, 1));
+  EXPECT_FALSE(t2[2]);
+  EXPECT_FALSE(t2(1, 0));
+  EXPECT_TRUE(t2[3]);
+  EXPECT_TRUE(t2(1, 1));
+
+  t0[0] = !t0[0];
+  t1[0] = !t1[0];
+  t1[1] = !t1[1];
+  t2[0] = !t2[0];
+  t2[1] = !t2[1];
+  t2[2] = !t2[2];
+  t2[3] = !t2[3];
+
+  EXPECT_TRUE(t0[0]);
+  EXPECT_TRUE(t0());
+
+  EXPECT_TRUE(t1[0]);
+  EXPECT_TRUE(t1(0));
+  EXPECT_FALSE(t1[1]);
+  EXPECT_FALSE(t1(1));
+
+  EXPECT_TRUE(t2[0]);
+  EXPECT_TRUE(t2(0, 0));
+  EXPECT_FALSE(t2[1]);
+  EXPECT_FALSE(t2(0, 1));
+  EXPECT_TRUE(t2[2]);
+  EXPECT_TRUE(t2(1, 0));
+  EXPECT_FALSE(t2[3]);
+  EXPECT_FALSE(t2(1, 1));
+
+  t0() = !t0();
+  t1(0) = !t1(0);
+  t1(1) = !t1(1);
+  t2(0, 0) = !t2(0, 0);
+  t2(0, 1) = !t2(0, 1);
+  t2(1, 0) = !t2(1, 0);
+  t2(1, 1) = !t2(1, 1);
+
+  EXPECT_FALSE(t0[0]);
+  EXPECT_FALSE(t0());
+
+  EXPECT_FALSE(t1[0]);
+  EXPECT_FALSE(t1(0));
+  EXPECT_TRUE(t1[1]);
+  EXPECT_TRUE(t1(1));
+
+  EXPECT_FALSE(t2[0]);
+  EXPECT_FALSE(t2(0, 0));
+  EXPECT_TRUE(t2[1]);
+  EXPECT_TRUE(t2(0, 1));
+  EXPECT_FALSE(t2[2]);
+  EXPECT_FALSE(t2(1, 0));
+  EXPECT_TRUE(t2[3]);
+  EXPECT_TRUE(t2(1, 1));
+}
+
 TEST(tensor, default_constructor_0d) {
   Tensor0D<float> tensor;
 

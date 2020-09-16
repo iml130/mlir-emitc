@@ -24,6 +24,7 @@ template <typename T, size_t SIZE>
 class Tensor {
 public:
   using value_type = T;
+  using reference_type = typename std::vector<T>::reference;
   using iterator = typename std::vector<T>::iterator;
   using const_iterator = typename std::vector<T>::const_iterator;
 
@@ -44,7 +45,10 @@ public:
   const_iterator end() const { return data.end(); }
 
   // Index into the flat data buffer.
-  T &operator[](size_t x) { return data[x]; }
+  reference_type operator[](size_t x) {
+    assert(0 <= x && x < SIZE);
+    return data[x];
+  }
 
   std::vector<T> data;
   static const size_t size_;
@@ -53,21 +57,29 @@ public:
 template <typename T>
 class Tensor0D : public Tensor<T, 1> {
 public:
+  using reference_type = typename Tensor<T, 1>::reference_type;
+
   Tensor0D() : Tensor<T, 1>() {}
 
   Tensor0D(std::initializer_list<T> data) : Tensor<T, 1>(data) {}
 
-  T &operator()() { return this->data.at(0); }
+  reference_type operator()() { return this->data.at(0); }
 };
 
 template <typename T, size_t DimX>
 class Tensor1D : public Tensor<T, DimX> {
 public:
+  using reference_type = typename Tensor<T, DimX>::reference_type;
+
   Tensor1D() : Tensor<T, DimX>() {}
 
   Tensor1D(std::initializer_list<T> data) : Tensor<T, DimX>(data) {}
 
-  T &operator()(size_t x) { return this->data.at(x); }
+  reference_type operator()(size_t x) {
+    assert(0 <= x && x < dimX);
+
+    return this->operator[](x);
+  }
 
   static const size_t dimX;
 };
@@ -75,11 +87,18 @@ public:
 template <typename T, size_t DimX, size_t DimY>
 class Tensor2D : public Tensor<T, DimX * DimY> {
 public:
+  using reference_type = typename Tensor<T, DimX * DimY>::reference_type;
+
   Tensor2D() : Tensor<T, DimX * DimY>() {}
 
   Tensor2D(std::initializer_list<T> data) : Tensor<T, DimX * DimY>(data) {}
 
-  T &operator()(size_t x, size_t y) { return this->data.at(x * DimY + y); }
+  reference_type operator()(size_t x, size_t y) {
+    assert(0 <= x && x < dimX);
+    assert(0 <= y && y < dimY);
+
+    return this->operator[](x *DimY + y);
+  }
 
   static const size_t dimX;
   static const size_t dimY;

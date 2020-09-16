@@ -54,18 +54,21 @@ inline Src ceil(Src x) {
 }
 
 // BitcastConvertOp
-template <typename T1, typename T2>
-inline T1 bitcast_convert(T2 x) {
-  return reinterpret_cast<T1>(x);
-}
+template <typename Dest, typename Src>
+inline Dest bitcast_convert(Src x) {
+  using ET_Dest = typename get_element_type<Dest>::type;
+  using ET_Src = typename get_element_type<Src>::type;
 
-template <typename T1, typename T2>
-inline std::vector<T1> bitcast_convert(std::vector<T2> x) {
-  std::vector<T1> z(x.size());
-  for (size_t i = 0; i < z.size(); i++) {
-    z[i] = reinterpret_cast<T1>(x[i]);
-  }
-  return z;
+  static_assert(sizeof(ET_Src) == sizeof(ET_Dest),
+                "Can only bitcast on types of the same size");
+
+  auto cast = [](ET_Src value) {
+    ET_Dest result;
+    memcpy(&result, &value, sizeof(ET_Src));
+    return result;
+  };
+
+  return unary<Dest, Src, UnaryFuncType<ET_Dest, ET_Src>>(x, cast);
 }
 
 // CompareOp

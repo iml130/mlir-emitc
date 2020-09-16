@@ -51,6 +51,32 @@ TEST(mhlo, ceil) {
   EXPECT_THAT(mhlo::ceil(t2), Pointwise(Eq(), {3.0, 2.0, 0.0, 2.0}));
 }
 
+TEST(mhlo, bitcast_convert) {
+  uint8_t a = 128;
+  int8_t b = -128;
+  EXPECT_EQ(b, mhlo::bitcast_convert<int8_t>(a));
+
+  Tensor0D<int16_t> t0{-1};
+  auto lambda_0d = [&t0]() {
+    return mhlo::bitcast_convert<Tensor0D<uint16_t>>(t0);
+  };
+  EXPECT_THAT(lambda_0d(), Pointwise(Eq(), {65535}));
+
+  Tensor1D<uint16_t, 2> t1{1, 2};
+  auto lambda_1d = [&t1]() {
+    return mhlo::bitcast_convert<Tensor1D<int16_t, 2>>(t1);
+  };
+
+  EXPECT_THAT(lambda_1d(), Pointwise(Eq(), {1, 2}));
+
+  Tensor2D<int8_t, 2, 2> t2{0, -4, 3, -12};
+  auto lambda_2d = [&t2]() {
+    return mhlo::bitcast_convert<Tensor2D<uint8_t, 2, 2>>(t2);
+  };
+
+  EXPECT_THAT(lambda_2d(), Pointwise(DoubleEq(), {0, 252, 3, 244}));
+}
+
 TEST(mhlo, compare) {
   auto lambda = []() { return mhlo::compare<int, std::less>(-1, 3); };
   EXPECT_EQ(true, lambda());

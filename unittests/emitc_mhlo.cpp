@@ -549,4 +549,22 @@ TEST(mhlo, concatenate) {
   EXPECT_THAT(mhlo::concatenate(v1, v2), Pointwise(Eq(), {1, 2, 3, 4}));
 }
 
+TEST(mhlo, reshape) {
+  Tensor0D<int> s0{-3};
+  auto t0 = mhlo::reshape<Tensor1D<int, 1>>(s0);
+  auto t0_1 = mhlo::reshape<Tensor2D<int, 1, 1>>(s0);
+  EXPECT_THAT(t0, Pointwise(Eq(), {-3}));
+  EXPECT_THAT(t0_1, Pointwise(Eq(), {-3}));
+
+  Tensor1D<float, 2> s1{-1.3f, 2.4f};
+  auto t1 = mhlo::reshape<Tensor2D<float, 1, 2>>(s1);
+
+  EXPECT_THAT(t1, Pointwise(FloatEq(), {-1.3f, 2.4f}));
+
+  Tensor2D<long, 2, 2> s2{3, 1, 4, 9};
+  auto t2 = mhlo::reshape<Tensor1D<long, 4>>(s2);
+
+  EXPECT_THAT(t2, Pointwise(Eq(), {3, 1, 4, 9}));
+}
+
 } // namespace

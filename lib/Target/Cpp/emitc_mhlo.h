@@ -471,10 +471,22 @@ std::vector<T> dynamic_update_slice(std::vector<T> x, std::vector<T> u,
 }
 
 // ReshapeOp
-// This needs to be changed if tensor rank/shape get modelled in the translation
-template <typename T>
-inline std::vector<T> reshape(std::vector<T> x) {
-  return std::vector<T>(x);
+template <typename Dest, typename Src>
+inline Dest reshape(Src x) {
+  static_assert(is_tensor<Src>::value, "Expected tensor argument");
+  static_assert(is_tensor<Dest>::value, "Expected tensor result");
+
+  using ET_Src = typename get_element_type<Src>::type;
+  using ET_Dest = typename get_element_type<Dest>::type;
+
+  static_assert(std::is_same<ET_Src, ET_Dest>::value, "Element type mismatch");
+  static_assert(Src::size_ == Dest::size_, "Tensor size mismatch");
+
+  Dest z;
+
+  std::copy(x.begin(), x.end(), z.begin());
+
+  return z;
 }
 
 // SelectOp

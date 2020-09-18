@@ -43,6 +43,16 @@ inline Src abs(Src x) {
   return unary<Src>(x, f);
 }
 
+// CeilOp
+template <typename Src>
+inline Src ceil(Src x) {
+  using ET_Src = typename get_element_type<Src>::type;
+
+  auto f = static_cast<ET_Src (*)(ET_Src)>(std::ceil);
+
+  return unary<Src>(x, f);
+}
+
 // BitcastConvertOp
 template <typename T1, typename T2>
 inline T1 bitcast_convert(T2 x) {

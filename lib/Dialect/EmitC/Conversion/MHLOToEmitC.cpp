@@ -571,6 +571,7 @@ void populateMhloToEmitcPatterns(MLIRContext *ctx,
                                  OwningRewritePatternList &patterns) {
   /// Insert patterns for MHLO unary elementwise ops.
   patterns.insert<CallOpConversion<mhlo::AbsOp>>(ctx, "mhlo::abs");
+  patterns.insert<CallOpConversion<mhlo::CeilOp>>(ctx, "mhlo::ceil");
   patterns.insert<CallOpConversion<mhlo::CosOp>>(ctx, "mhlo::cos");
   patterns.insert<CallOpConversion<mhlo::ExpOp>>(ctx, "mhlo::exponential");
   patterns.insert<CallOpConversion<mhlo::IsFiniteOp>>(ctx, "mhlo::isfinite");
@@ -632,8 +633,9 @@ struct ConvertMhloToEmitcPass
 
     target.addLegalDialect<emitc::EmitCDialect>();
     target.addLegalDialect<mhlo::MhloDialect>();
-    target.addIllegalOp<mhlo::AbsOp, mhlo::CosOp, mhlo::ExpOp, mhlo::IsFiniteOp,
-                        mhlo::LogOp, mhlo::NegOp, mhlo::SinOp, mhlo::SqrtOp>();
+    target.addIllegalOp<mhlo::AbsOp, mhlo::CeilOp, mhlo::CosOp, mhlo::ExpOp,
+                        mhlo::IsFiniteOp, mhlo::LogOp, mhlo::NegOp, mhlo::SinOp,
+                        mhlo::SqrtOp>();
     target.addIllegalOp<mhlo::AddOp, mhlo::DivOp, mhlo::MaxOp, mhlo::MinOp,
                         mhlo::MulOp, mhlo::PowOp, mhlo::ShiftLeftOp,
                         mhlo::ShiftRightLogicalOp, mhlo::SubOp>();

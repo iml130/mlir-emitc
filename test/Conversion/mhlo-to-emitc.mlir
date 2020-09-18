@@ -18,6 +18,12 @@ func @mhlo_broadcast_in_dim(%arg0: tensor<i32>) -> tensor<3xi32> {
   return %0 : tensor<3xi32>
 }
 
+func @mhlo_ceil(%arg0: tensor<2xf32>) -> tensor<2xf32> {
+  // CHECK: emitc.call "mhlo::ceil"
+  %0 = "mhlo.ceil"(%arg0) : (tensor<2xf32>) -> tensor<2xf32>
+  return %0 : tensor<2xf32>
+}
+
 func @mhlo_compare(%arg0: tensor<4xi32>, %arg1: tensor<4xi32>) -> tensor<4xi1> {
   // CHECK: emitc.call "mhlo::compare"(%arg0, %arg1) {template_args = [i32, "std::less"]}
   %0 = "mhlo.compare"(%arg0, %arg1) {comparison_direction = "LT"} : (tensor<4xi32>, tensor<4xi32>) -> tensor<4xi1>

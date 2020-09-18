@@ -38,6 +38,18 @@ TEST(mhlo, abs) {
   // TODO:: Test complex to real.
 }
 
+TEST(mhlo, ceil) {
+  EXPECT_EQ(1.0, mhlo::ceil(0.7));
+
+  Tensor0D<float> t0{0.7f};
+  Tensor1D<float, 2> t1{1.6f, 2.0f};
+  Tensor2D<double, 2, 2> t2{2.1, 1.6, 0.0, 2.0};
+
+  EXPECT_THAT(mhlo::ceil(t0), Pointwise(Eq(), {1.0f}));
+  EXPECT_THAT(mhlo::ceil(t1), Pointwise(Eq(), {2.0f, 2.0f}));
+  EXPECT_THAT(mhlo::ceil(t2), Pointwise(Eq(), {3.0, 2.0, 0.0, 2.0}));
+}
+
 TEST(mhlo, convert) {
   uint32_t a = 1;
   uint64_t b = 1;

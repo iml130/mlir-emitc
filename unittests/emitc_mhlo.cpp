@@ -100,6 +100,20 @@ TEST(mhlo, sqrt) {
       Pointwise(FloatNear(EPSILON), {1.414213f, 1.732050f, 3.162277f, 1.0f}));
 }
 
+TEST(mhlo, tanh) {
+  EXPECT_NEAR(0.0f, mhlo::tanh(0.0f), EPSILON);
+
+  Tensor0D<float> t0{0.0f};
+  Tensor1D<float, 2> t1{0.0f, 1.0f};
+  Tensor2D<double, 2, 2> t2{0.0f, 1.0f, -1.0f, 0.0f};
+
+  EXPECT_THAT(mhlo::tanh(t0), Pointwise(FloatNear(EPSILON), {0.0f}));
+  EXPECT_THAT(mhlo::tanh(t1), Pointwise(FloatNear(EPSILON), {0.0f, 0.761594f}));
+  EXPECT_THAT(
+      mhlo::tanh(t2),
+      Pointwise(FloatNear(EPSILON), {0.0f, 0.761594f, -0.761594f, 0.0f}));
+}
+
 TEST(mhlo, add) {
   EXPECT_EQ(2, mhlo::add(-1, 3));
 

@@ -175,6 +175,16 @@ inline Src sqrt(Src x) {
   return unary<Src>(x, f);
 }
 
+// TanhOp
+template <typename Src>
+inline Src tanh(Src x) {
+  using ET_Src = typename get_element_type<Src>::type;
+
+  auto f = static_cast<ET_Src (*)(ET_Src)>(std::tanh);
+
+  return unary<Src>(x, f);
+}
+
 /// Functions for MHLO binary elementwise ops.
 // AddOp
 template <typename Src>

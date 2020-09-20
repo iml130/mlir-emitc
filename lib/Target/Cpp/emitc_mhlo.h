@@ -111,6 +111,16 @@ inline Src exponential(Src x) {
   return unary<Src>(x, f);
 }
 
+// FloorOp
+template <typename Src>
+inline Src floor(Src x) {
+  using ET_Src = typename get_element_type<Src>::type;
+
+  auto f = static_cast<ET_Src (*)(ET_Src)>(std::floor);
+
+  return unary<Src>(x, f);
+}
+
 // IsFiniteOp
 template <typename Src>
 inline typename replace_element_type<bool, Src>::type is_finite(Src x) {

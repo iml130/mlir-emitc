@@ -177,6 +177,18 @@ TEST(mhlo, exponential) {
                         {2.718281f, 7.389056f, 20.085536f, 54.598150f}));
 }
 
+TEST(mhlo, floor) {
+  EXPECT_EQ(0.0, mhlo::floor(0.7));
+
+  Tensor0D<float> t0{0.7f};
+  Tensor1D<float, 2> t1{1.6f, 2.0f};
+  Tensor2D<double, 2, 2> t2{2.1, 1.6, 0.0, 2.0};
+
+  EXPECT_THAT(mhlo::floor(t0), Pointwise(Eq(), {0.0f}));
+  EXPECT_THAT(mhlo::floor(t1), Pointwise(Eq(), {1.0f, 2.0f}));
+  EXPECT_THAT(mhlo::floor(t2), Pointwise(Eq(), {2.0, 1.0, 0.0, 2.0}));
+}
+
 TEST(mhlo, is_finite) {
   EXPECT_EQ(true, mhlo::is_finite(0.0f));
 

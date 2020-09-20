@@ -59,6 +59,12 @@ func @mhlo_exponential(%arg0: tensor<2xf32>) -> tensor<2xf32> {
   return %0 : tensor<2xf32>
 }
 
+func @mhlo_floor(%arg0: tensor<2xf32>) -> tensor<2xf32> {
+  // CHECK: emitc.call "mhlo::floor"
+  %0 = "mhlo.floor"(%arg0) : (tensor<2xf32>) -> tensor<2xf32>
+  return %0 : tensor<2xf32>
+}
+
 func @mhlo_is_finite(%arg0: tensor<4xf32>) -> tensor<4xi1> {
   // CHECK: emitc.call "mhlo::isfinite"
   %0 = "mhlo.is_finite"(%arg0) : (tensor<4xf32>) -> tensor<4xi1>

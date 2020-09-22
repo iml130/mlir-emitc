@@ -5,9 +5,6 @@ function(add_mlir_unittest test_dirname)
   add_unittest(MLIREmitCUnitTests ${test_dirname} ${ARGN})
 endfunction()
 
-include_directories(BEFORE
-    ${CMAKE_SOURCE_DIR}/lib/Target/Cpp)
-
 
 include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
 include_directories(${gmock_SOURCE_DIR}/include ${gmock_SOURCE_DIR})

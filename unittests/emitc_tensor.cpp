@@ -10,9 +10,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "emitc_tensor.h"
-
 #include "gmock/gmock.h"
+
+#include "emitc/emitc_tensor.h"
 
 namespace {
 

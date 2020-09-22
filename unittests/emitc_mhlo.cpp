@@ -12,8 +12,8 @@
 
 #include "gmock/gmock.h"
 
-#include "emitc_mhlo.h"
-#include "emitc_tensor.h"
+#include "emitc/emitc_mhlo.h"
+#include "emitc/emitc_tensor.h"
 
 namespace {
 

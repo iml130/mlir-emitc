@@ -13,10 +13,12 @@
 # forked from https://github.com/google/iree
 
 import argparse
-from pathlib import Path
+
+# from pathlib import Path
 from shutil import which
 import subprocess
-import sys
+
+# import sys
 import tempfile
 from typing import Optional
 
@@ -24,10 +26,9 @@ import tensorflow as tf
 
 
 class Module(tf.Module):
-
     def __init__(self, model):
         self._model = model
-    
+
     def predict(self, x):
         return self._model.call(x, training=False)
 
@@ -40,74 +41,99 @@ def extract_tensor_specs(model, batch_size: Optional[int]):
             shape[0] = batch_size
 
         return tf.TensorSpec(shape, input.dtype)
-  
+
     return [extract_tensor_spec(input) for input in model.inputs]
 
 
-def convert_to_mhlo(model_dir):
+def convert_to_mhlo(model_dir, exported_name: Optional[str]):
     tf_translate = "tf-mlir-translate"
     tf_opt = "tf-opt"
 
-    assert which(tf_translate) is not None, f"Make sure '{tf_translate}' is in your PATH"
+    assert (
+        which(tf_translate) is not None
+    ), f"Make sure '{tf_translate}' is in your PATH"
     assert which(tf_opt) is not None, f"Make sure '{tf_opt}' is in your PATH"
 
-    p_translate = subprocess.Popen([
-        tf_translate,
-        "--savedmodel-objectgraph-to-mlir",
-        "--tf-savedmodel-exported-names=predict",
-        model_dir
-    ], stdout=subprocess.PIPE, universal_newlines=True)
+    translate_args = [tf_translate, "--savedmodel-objectgraph-to-mlir"]
+    if exported_name is not None:
+        translate_args.append(f"--tf-savedmodel-exported-names={exported_name}")
+    translate_args.append(model_dir)
 
-    p_opt = subprocess.Popen([
-        tf_opt,
-        "--symbol-dce",
-        "--tf-executor-graph-pruning",
-        "--tf-guarantee-all-funcs-one-use",
-        "--tf-standard-pipeline",
-        "--tf-device-index-selector",
-        "--inline",
-        "--canonicalize",
-        "--tf-device-decompose-resource-ops",
-        "--tf-shape-inference",
-        "--tf-functional-control-flow-to-cfg",
-        "--inline",
-        "--symbol-dce",
-        "--canonicalize",
-        "--tf-saved-model-optimize-global-tensors",
-        "--tf-saved-model-freeze-global-tensors",
-        "--xla-legalize-tf",
-        "--canonicalize",
-        "--tf-saved-model-optimize-global-tensors"
-    ], stdin=p_translate.stdout, stdout=subprocess.PIPE, universal_newlines=True)
-    
+    p_translate = subprocess.Popen(
+        translate_args, stdout=subprocess.PIPE, universal_newlines=True
+    )
+
+    p_opt = subprocess.Popen(
+        [
+            tf_opt,
+            "--symbol-dce",
+            "--tf-executor-graph-pruning",
+            "--tf-guarantee-all-funcs-one-use",
+            "--tf-standard-pipeline",
+            "--tf-device-index-selector",
+            "--inline",
+            "--canonicalize",
+            "--tf-device-decompose-resource-ops",
+            "--tf-shape-inference",
+            "--tf-functional-control-flow-to-cfg",
+            "--inline",
+            "--symbol-dce",
+            "--canonicalize",
+            "--tf-saved-model-optimize-global-tensors",
+            "--tf-saved-model-freeze-global-tensors",
+            "--xla-legalize-tf",
+            "--canonicalize",
+            "--tf-saved-model-optimize-global-tensors",
+        ],
+        stdin=p_translate.stdout,
+        stdout=subprocess.PIPE,
+        universal_newlines=True,
+    )
+
     p_translate.stdout.close()
-    
+
     output = p_opt.communicate()[0]
 
     return output
 
 
-def translate(file_path: str, batch_size: int):
-    model = tf.keras.models.load_model(file_path)
-    
-    # Produce a concrete function to compile.
-    module = Module(model)
-    module.predict = tf.function(input_signature=extract_tensor_specs(model, batch_size=batch_size))(module.predict)
+def translate(path: str, format: str, batch_size: int):
+    if format == "keras":
+        model = tf.keras.models.load_model(path)
 
-    with tempfile.TemporaryDirectory(prefix="tf-mlir-") as tmpdir:
-        tf.saved_model.save(module, tmpdir)
+        # Produce a concrete function to compile.
+        module = Module(model)
+        module.predict = tf.function(
+            input_signature=extract_tensor_specs(model, batch_size=batch_size)
+        )(module.predict)
 
-        output = convert_to_mhlo(tmpdir)
+        with tempfile.TemporaryDirectory(prefix="tf-mlir-") as tmpdir:
+            tf.saved_model.save(module, tmpdir)
+
+            output = convert_to_mhlo(tmpdir, "predict")
+            print(output)
+    elif format == "saved_model":
+        output = convert_to_mhlo(path, None)
         print(output)
+    else:
+        raise ValueError(f"Unknown value for argument format '{format}'")
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Translate keras model to mhlo dialect")
-    parser.add_argument("--batch-size", type=int, default=1, help="Set the batch size for inference")
-    parser.add_argument("input", help="Keras model")
+    parser = argparse.ArgumentParser(
+        description="Translate tensorflow model to mhlo dialect"
+    )
+    parser.add_argument(
+        "--batch-size",
+        type=int,
+        default=1,
+        help="Set the batch size for inference (keras models only)",
+    )
+    parser.add_argument("--format", choices=["keras", "saved_model"], required=True)
+    parser.add_argument("input", help="Path to tensorflow model")
     args = parser.parse_args()
 
-    translate(args.input, args.batch_size)
+    translate(args.input, args.format, args.batch_size)
 
 
 if __name__ == "__main__":

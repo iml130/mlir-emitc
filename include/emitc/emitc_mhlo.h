@@ -535,7 +535,7 @@ std::vector<T> rng_uniform(T low, T high, std::vector<int64_t> shape) {
   // https://en.cppreference.com/w/cpp/numeric/random/uniform_int_distribution
   std::uniform_int_distribution<T> distribution(low, high - 1);
   std::vector<T> result(n);
-  for (size_t i = 0; i < n; i++) {
+  for (int64_t i = 0; i < n; i++) {
     result[i] = distribution(gen);
   }
   return result;
@@ -551,7 +551,7 @@ std::vector<T> rng_uniform(T low, T high, std::vector<int64_t> shape) {
   std::mt19937 gen(rd());
   std::uniform_real_distribution<T> distribution(low, high);
   std::vector<T> result(n);
-  for (size_t i = 0; i < n; i++) {
+  for (int64_t i = 0; i < n; i++) {
     result[i] = distribution(gen);
   }
   return result;

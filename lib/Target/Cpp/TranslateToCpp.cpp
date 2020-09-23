@@ -302,7 +302,6 @@ static LogicalResult printYieldOp(CppEmitter &emitter, emitc::YieldOp yieldOp) {
     return success();
   } else {
     auto &parentOp = *yieldOp.getParentOp();
-    uint numResults = parentOp.getNumResults();
 
     for (uint result = 0; result < parentOp.getNumResults(); ++result) {
       os << emitter.getOrCreateName(parentOp.getResult(result)) << " = ";

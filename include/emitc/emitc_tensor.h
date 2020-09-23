@@ -150,6 +150,15 @@ template <typename T>
 using IsScalar = typename std::enable_if<std::is_scalar<T>::value, bool>::type;
 
 template <typename T>
+using IsTensor0D = typename std::enable_if<is_tensor_0d<T>::value, bool>::type;
+
+template <typename T>
+using IsTensor1D = typename std::enable_if<is_tensor_1d<T>::value, bool>::type;
+
+template <typename T>
+using IsTensor2D = typename std::enable_if<is_tensor_2d<T>::value, bool>::type;
+
+template <typename T>
 using IsTensor = typename std::enable_if<is_tensor<T>::value, bool>::type;
 
 template <typename T>

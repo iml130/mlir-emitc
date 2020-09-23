@@ -676,4 +676,60 @@ TEST(mhlo, reshape) {
   EXPECT_THAT(t2, Pointwise(Eq(), {3, 1, 4, 9}));
 }
 
+TEST(mhlo, slice) {
+  Tensor1D<float, 5> s1{0.0f, 1.0f, 2.0f, 3.0f, 4.0f};
+  auto t1 =
+      mhlo::slice<Tensor1D<float, 2>, Tensor1D<float, 5>>(s1, {2}, {4}, {1});
+  EXPECT_THAT(t1, Pointwise(FloatEq(), {2.0f, 3.0f}));
+
+  auto t1_strided =
+      mhlo::slice<Tensor1D<float, 2>, Tensor1D<float, 5>>(s1, {1}, {4}, {2});
+  EXPECT_THAT(t1_strided, Pointwise(FloatEq(), {1.0f, 3.0f}));
+
+  Tensor2D<float, 4, 3> s2{0.0f, 1.0f, 2.0f, 3.0f, 4.0f,  5.0f,
+                           6.0f, 7.0f, 8.0f, 9.0f, 10.0f, 11.0f};
+  auto t2 = mhlo::slice<Tensor2D<float, 2, 2>, Tensor2D<float, 4, 3>>(
+      s2, {2, 1}, {4, 3}, {1, 1});
+
+  EXPECT_THAT(t2, Pointwise(FloatEq(), {7.0f, 8.0f, 10.0f, 11.0f}));
+
+  auto t2_strided = mhlo::slice<Tensor2D<float, 2, 2>, Tensor2D<float, 4, 3>>(
+      s2, {1, 0}, {4, 3}, {2, 2});
+
+  EXPECT_THAT(t2_strided, Pointwise(FloatEq(), {3.0f, 5.0f, 9.0f, 11.0f}));
+}
+
+TEST(mhlo, dynamic_slice) {
+  Tensor1D<float, 5> s1{0.0f, 1.0f, 2.0f, 3.0f, 4.0f};
+  auto t1 =
+      mhlo::dynamic_slice<Tensor1D<float, 2>, Tensor1D<float, 5>>(s1, 2, {2});
+  EXPECT_THAT(t1, Pointwise(FloatEq(), {2.0f, 3.0f}));
+
+  Tensor2D<float, 4, 3> s2{0.0f, 1.0f, 2.0f, 3.0f, 4.0f,  5.0f,
+                           6.0f, 7.0f, 8.0f, 9.0f, 10.0f, 11.0f};
+  auto t2 = mhlo::dynamic_slice<Tensor2D<float, 2, 2>, Tensor2D<float, 4, 3>>(
+      s2, 2, 1, {2, 2});
+
+  EXPECT_THAT(t2, Pointwise(FloatEq(), {7.0f, 8.0f, 10.0f, 11.0f}));
+}
+
+TEST(mhlo, dynamic_update_slice) {
+  Tensor1D<float, 5> s1{0.0f, 1.0f, 2.0f, 3.0f, 4.0f};
+  Tensor1D<float, 2> u1{5.0f, 6.0f};
+  auto t1 = mhlo::dynamic_update_slice<Tensor1D<float, 2>, Tensor1D<float, 5>>(
+      s1, u1, 2);
+  EXPECT_THAT(t1, Pointwise(FloatEq(), {0.0f, 1.0f, 5.0f, 6.0f, 4.0f}));
+
+  Tensor2D<float, 4, 3> s2{0.0f, 1.0f, 2.0f, 3.0f, 4.0f,  5.0f,
+                           6.0f, 7.0f, 8.0f, 9.0f, 10.0f, 11.0f};
+  Tensor2D<float, 3, 2> u2{12.0f, 13.0f, 14.0f, 15.0f, 16.0f, 17.0f};
+  auto t2 =
+      mhlo::dynamic_update_slice<Tensor2D<float, 3, 2>, Tensor2D<float, 4, 3>>(
+          s2, u2, 1, 1);
+
+  EXPECT_THAT(t2,
+              Pointwise(FloatEq(), {0.0f, 1.0f, 2.0f, 3.0f, 12.0f, 13.0f, 6.0f,
+                                    14.0f, 15.0f, 9.0f, 16.0f, 17.0f}));
+}
+
 } // namespace

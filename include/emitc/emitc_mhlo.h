@@ -347,129 +347,112 @@ inline std::vector<T> concatenate(std::vector<T> x, std::vector<T> y) {
 
 // SliceOp
 // Overload for 1d case
-template <typename T, size_t Start, size_t Limit, size_t Stride,
-          size_t InputShape, size_t OutputShape>
-std::vector<T> slice(std::vector<T> x) {
-  std::vector<T> result(OutputShape);
+template <typename Dest, typename Src, IsTensor1D<Src> = true>
+Dest slice(Src x, Tensor1D<int64_t, 1> start_indices,
+           Tensor1D<int64_t, 1> limit_indices, Tensor1D<int64_t, 1> strides) {
+  Dest z;
 
-  size_t idx = 0;
-  for (size_t i = Start; i < Limit; i += Stride) {
-    result[idx++] = x[i];
+  size_t index = 0;
+  for (int64_t i = start_indices[0]; i < limit_indices[0]; i += strides[0]) {
+    z[index++] = x(i);
   }
-  return result;
+
+  return z;
 }
 
 // Overload for 2d case
-template <typename T, size_t Start1, size_t Start2, size_t Limit1,
-          size_t Limit2, size_t Stride1, size_t Stride2, size_t InputShape1,
-          size_t InputShape2, size_t OutputShape1, size_t OutputShape2>
-std::vector<T> slice(std::vector<T> x) {
-  std::vector<T> result(OutputShape1 * OutputShape2);
+template <typename Dest, typename Src, IsTensor2D<Src> = true>
+Dest slice(Src x, Tensor1D<int64_t, 2> start_indices,
+           Tensor1D<int64_t, 2> limit_indices, Tensor1D<int64_t, 2> strides) {
+  Dest z;
 
-  size_t idx = 0;
-  for (size_t i = Start1; i < Limit1; i += Stride1) {
-    for (size_t j = Start2; j < Limit2; j += Stride2) {
-      result[idx++] = x[i * InputShape2 + j];
+  size_t index = 0;
+  for (int64_t i = start_indices[0]; i < limit_indices[0]; i += strides[0]) {
+    for (int64_t j = start_indices[1]; j < limit_indices[1]; j += strides[1]) {
+      z[index++] = x(i, j);
     }
   }
-  return result;
+
+  return z;
 }
 
 // DynamicSliceOp
 // Overload for 1d case
-template <typename T, size_t Size, size_t InputShape, size_t OutputShape>
-std::vector<T> dynamic_slice(std::vector<T> x,
-                             std::vector<int64_t> startIndex) {
-  std::vector<T> result(OutputShape);
-
-  auto clamp = [](size_t value, size_t minValue, size_t maxValue) {
+template <typename Dest, typename Src, IsTensor1D<Src> = true>
+Dest dynamic_slice(Src x, int64_t start_index,
+                   Tensor1D<int64_t, 1> size_indices) {
+  auto clamp = [](int64_t value, int64_t minValue, int64_t maxValue) {
     return std::max(minValue, std::min(maxValue, value));
   };
 
-  size_t startIndex_ = startIndex[0];
-  startIndex_ = clamp(startIndex_, 0, InputShape - Size);
+  int64_t dim_x = static_cast<int64_t>(Src::dimX);
+  int64_t start_index_eff = clamp(start_index, 0, dim_x - size_indices[0]);
+  Tensor1D<int64_t, 1> start_indices{start_index_eff};
+  Tensor1D<int64_t, 1> limit_indices{start_index_eff + size_indices[0]};
+  Tensor1D<int64_t, 1> strides{1};
 
-  size_t limit = startIndex_ + Size;
-
-  size_t idx = 0;
-  for (size_t i = startIndex_; i < limit; i++) {
-    result[idx++] = x[i];
-  }
-  return result;
+  return slice<Dest, Src>(x, start_indices, limit_indices, strides);
 }
 
 // Overload for 2d case
-template <typename T, size_t SizeX, size_t SizeY, size_t InputShapeX,
-          size_t InputShapeY, size_t OutputShapeX, size_t OutputShapeY>
-std::vector<T> dynamic_slice(std::vector<T> x, std::vector<int64_t> startIndexX,
-                             std::vector<int64_t> startIndexY) {
-  std::vector<T> result(OutputShapeX * OutputShapeY);
-
-  auto clamp = [](size_t value, size_t minValue, size_t maxValue) {
+template <typename Dest, typename Src, IsTensor2D<Src> = true>
+Dest dynamic_slice(Src x, int64_t start_index_x, int64_t start_index_y,
+                   Tensor1D<int64_t, 2> size_indices) {
+  auto clamp = [](int64_t value, int64_t minValue, int64_t maxValue) {
     return std::max(minValue, std::min(maxValue, value));
   };
 
-  size_t startIndexX_ = startIndexX[0];
-  size_t startIndexY_ = startIndexY[0];
-  startIndexX_ = clamp(startIndexX_, 0, InputShapeX - SizeX);
-  startIndexY_ = clamp(startIndexY_, 0, InputShapeY - SizeY);
+  int64_t dim_x = static_cast<int64_t>(Src::dimX);
+  int64_t dim_y = static_cast<int64_t>(Src::dimY);
+  int64_t start_index_x_eff = clamp(start_index_x, 0, dim_x - size_indices[0]);
+  int64_t start_index_y_eff = clamp(start_index_y, 0, dim_y - size_indices[1]);
+  Tensor1D<int64_t, 2> start_indices{start_index_x_eff, start_index_y_eff};
+  Tensor1D<int64_t, 2> limit_indices{start_index_x_eff + size_indices[0],
+                                     start_index_y_eff + size_indices[1]};
+  Tensor1D<int64_t, 2> strides{1, 1};
 
-  size_t limitX = startIndexX_ + SizeX;
-  size_t limitY = startIndexY_ + SizeY;
-
-  size_t idx = 0;
-  for (size_t i = startIndexX_; i < limitX; i++) {
-    for (size_t j = startIndexY_; j < limitY; j++) {
-      result[idx++] = x[i * InputShapeY + j];
-    }
-  }
-  return result;
+  return slice<Dest, Src>(x, start_indices, limit_indices, strides);
 }
 
 // DynamicUpdateSliceOp
 // Overload for 1d case
-template <typename T, size_t InputShape, size_t UpdateShape>
-std::vector<T> dynamic_update_slice(std::vector<T> x, std::vector<T> u,
-                                    std::vector<int64_t> startIndex) {
-  std::vector<T> result(x);
-
-  auto clamp = [](size_t value, size_t minValue, size_t maxValue) {
+template <typename Update, typename Src, IsTensor1D<Src> = true>
+Src dynamic_update_slice(Src x, Update update, int64_t start_index) {
+  auto clamp = [](int64_t value, int64_t minValue, int64_t maxValue) {
     return std::max(minValue, std::min(maxValue, value));
   };
 
-  size_t startIndex_ = startIndex[0];
-  startIndex_ = clamp(startIndex_, 0, InputShape - UpdateShape);
+  Src z = x;
 
-  for (size_t i = 0; i < UpdateShape; i++) {
-    result[startIndex_ + i] = u[i];
+  size_t start_index_eff = clamp(start_index, 0, Src::dimX - Update::dimX);
+
+  for (size_t i = 0; i < Update::dimX; i++) {
+    z(start_index_eff + i) = update(i);
   }
-  return result;
+
+  return z;
 }
 
 // Overload for 2d case
-template <typename T, size_t InputShapeX, size_t InputShapeY,
-          size_t UpdateShapeX, size_t UpdateShapeY>
-std::vector<T> dynamic_update_slice(std::vector<T> x, std::vector<T> u,
-                                    std::vector<int64_t> startIndexX,
-                                    std::vector<int64_t> startIndexY) {
-  std::vector<T> result(x);
-
-  auto clamp = [](size_t value, size_t minValue, size_t maxValue) {
+template <typename Update, typename Src, IsTensor2D<Src> = true>
+Src dynamic_update_slice(Src x, Update update, int64_t start_index_x,
+                         int64_t start_index_y) {
+  auto clamp = [](int64_t value, int64_t minValue, int64_t maxValue) {
     return std::max(minValue, std::min(maxValue, value));
   };
 
-  size_t startIndexX_ = startIndexX[0];
-  size_t startIndexY_ = startIndexY[0];
-  startIndexX_ = clamp(startIndexX_, 0, InputShapeX - UpdateShapeX);
-  startIndexY_ = clamp(startIndexY_, 0, InputShapeY - UpdateShapeY);
+  Src z = x;
 
-  for (size_t i = 0; i < UpdateShapeX; i++) {
-    for (size_t j = 0; j < UpdateShapeY; j++) {
-      result[(startIndexX_ + i) * InputShapeY + (startIndexY_ + j)] =
-          u[i * UpdateShapeY + j];
+  size_t start_index_x_eff = clamp(start_index_x, 0, Src::dimX - Update::dimX);
+  size_t start_index_y_eff = clamp(start_index_y, 0, Src::dimY - Update::dimY);
+
+  for (size_t i = 0; i < Update::dimX; i++) {
+    for (size_t j = 0; j < Update::dimY; j++) {
+      z(start_index_x_eff + i, start_index_y_eff + j) = update(i, j);
     }
   }
-  return result;
+
+  return z;
 }
 
 // ReshapeOp

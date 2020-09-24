@@ -655,9 +655,72 @@ TEST(mhlo, broadcast_in_dim) {
 }
 
 TEST(mhlo, concatenate) {
-  std::vector<int> v1 = {1, 2};
-  std::vector<int> v2 = {3, 4};
-  EXPECT_THAT(mhlo::concatenate(v1, v2), Pointwise(Eq(), {1, 2, 3, 4}));
+  Tensor1D<int, 1> t1{1};
+  Tensor1D<int, 2> t2{2, 3};
+  Tensor1D<int, 3> t3{4, 5, 6};
+
+  auto lambda_1d_1 = [&t1]() -> Tensor1D<int, 1> {
+    return mhlo::concatenate<0, Tensor1D<int, 1>, Tensor1D<int, 1>>(t1);
+  };
+
+  EXPECT_THAT(lambda_1d_1(), Pointwise(Eq(), {1}));
+
+  auto lambda_1d_2 = [&t1, &t2]() -> Tensor1D<int, 3> {
+    return mhlo::concatenate<0, Tensor1D<int, 3>, Tensor1D<int, 1>,
+                             Tensor1D<int, 2>>(t1, t2);
+  };
+
+  EXPECT_THAT(lambda_1d_2(), Pointwise(Eq(), {1, 2, 3}));
+
+  auto lambda_1d_3 = [&t1, &t2, &t3]() -> Tensor1D<int, 6> {
+    return mhlo::concatenate<0, Tensor1D<int, 6>, Tensor1D<int, 1>,
+                             Tensor1D<int, 2>, Tensor1D<int, 3>>(t1, t2, t3);
+  };
+
+  EXPECT_THAT(lambda_1d_3(), Pointwise(Eq(), {1, 2, 3, 4, 5, 6}));
+
+  Tensor2D<float, 1, 2> t4{1.0f, 2.0f};
+  Tensor2D<float, 2, 2> t5{3.0f, 4.0f, 5.0f, 6.0f};
+  Tensor2D<float, 3, 2> t6{7.0f, 8.0f, 9.0f, 10.0f, 11.0f, 12.0f};
+
+  auto lambda_2d_2_row = [&t4, &t5]() -> Tensor2D<float, 3, 2> {
+    return mhlo::concatenate<0, Tensor2D<float, 3, 2>, Tensor2D<float, 1, 2>,
+                             Tensor2D<float, 2, 2>>(t4, t5);
+  };
+
+  EXPECT_THAT(lambda_2d_2_row(),
+              Pointwise(FloatEq(), {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f}));
+
+  auto lambda_2d_2_col = [&t4, &t5]() -> Tensor2D<float, 2, 3> {
+    Tensor2D<float, 2, 1> t4_reshape = mhlo::reshape<Tensor2D<float, 2, 1>>(t4);
+    return mhlo::concatenate<1, Tensor2D<float, 2, 3>, Tensor2D<float, 2, 1>,
+                             Tensor2D<float, 2, 2>>(t4_reshape, t5);
+  };
+
+  EXPECT_THAT(lambda_2d_2_col(),
+              Pointwise(FloatEq(), {1.0f, 3.0f, 4.0f, 2.0f, 5.0f, 6.0f}));
+
+  auto lambda_2d_3_row = [&t4, &t5, &t6]() -> Tensor2D<float, 6, 2> {
+    return mhlo::concatenate<0, Tensor2D<float, 6, 2>, Tensor2D<float, 1, 2>,
+                             Tensor2D<float, 2, 2>, Tensor2D<float, 3, 2>>(
+        t4, t5, t6);
+  };
+
+  EXPECT_THAT(lambda_2d_3_row(),
+              Pointwise(FloatEq(), {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f,
+                                    8.0f, 9.0f, 10.0f, 11.0f, 12.0f}));
+
+  auto lambda_2d_3_col = [&t4, &t5, &t6]() -> Tensor2D<float, 2, 6> {
+    Tensor2D<float, 2, 1> t4_reshape = mhlo::reshape<Tensor2D<float, 2, 1>>(t4);
+    Tensor2D<float, 2, 3> t6_reshape = mhlo::reshape<Tensor2D<float, 2, 3>>(t6);
+    return mhlo::concatenate<1, Tensor2D<float, 2, 6>, Tensor2D<float, 2, 1>,
+                             Tensor2D<float, 2, 2>, Tensor2D<float, 2, 3>>(
+        t4_reshape, t5, t6_reshape);
+  };
+
+  EXPECT_THAT(lambda_2d_3_col(),
+              Pointwise(FloatEq(), {1.0f, 3.0f, 4.0f, 7.0f, 8.0f, 9.0f, 2.0f,
+                                    5.0f, 6.0f, 10.0f, 11.0f, 12.0f}));
 }
 
 TEST(mhlo, reshape) {

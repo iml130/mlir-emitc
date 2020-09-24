@@ -16,9 +16,47 @@
 #define EMITC_TENSOR_H
 
 #include <algorithm>
+#include <array>
 #include <cassert>
 #include <cstddef>
 #include <vector>
+
+namespace {
+template <typename nono = void>
+constexpr size_t sum() {
+  return 0;
+}
+
+template <size_t First, size_t... Rest>
+constexpr size_t sum() {
+  return First + sum<Rest...>();
+}
+
+template <size_t First, size_t... Rest>
+constexpr size_t first() {
+  return First;
+}
+
+template <size_t Default>
+constexpr size_t first_default() {
+  return Default;
+}
+
+template <size_t Default, size_t First, size_t... Rest>
+constexpr size_t first_default() {
+  return First;
+}
+
+template <typename none = void>
+constexpr bool all_same() {
+  return true;
+}
+
+template <size_t First, size_t... Rest>
+constexpr bool all_same() {
+  return First == first_default<First, Rest...>() && all_same<Rest...>();
+}
+} // namespace
 
 template <typename T, size_t SIZE>
 class Tensor {
@@ -64,6 +102,9 @@ public:
   Tensor0D(std::initializer_list<T> data) : Tensor<T, 1>(data) {}
 
   reference_type operator()() { return this->data.at(0); }
+
+  static const size_t rank;
+  static const std::array<size_t, 0> shape;
 };
 
 template <typename T, size_t DimX>
@@ -82,6 +123,8 @@ public:
   }
 
   static const size_t dimX;
+  static const size_t rank;
+  static const std::array<size_t, 1> shape;
 };
 
 template <typename T, size_t DimX, size_t DimY>
@@ -102,6 +145,8 @@ public:
 
   static const size_t dimX;
   static const size_t dimY;
+  static const size_t rank;
+  static const std::array<size_t, 2> shape;
 };
 
 template <typename T, size_t SIZE>
@@ -115,6 +160,24 @@ const size_t Tensor2D<T, DimX, DimY>::dimX = DimX;
 
 template <typename T, size_t DimX, size_t DimY>
 const size_t Tensor2D<T, DimX, DimY>::dimY = DimY;
+
+template <typename T>
+const size_t Tensor0D<T>::rank = 0;
+
+template <typename T>
+const std::array<size_t, 0> Tensor0D<T>::shape = {};
+
+template <typename T, size_t DimX>
+const size_t Tensor1D<T, DimX>::rank = 1;
+
+template <typename T, size_t DimX>
+const std::array<size_t, 1> Tensor1D<T, DimX>::shape = {DimX};
+
+template <typename T, size_t DimX, size_t DimY>
+const size_t Tensor2D<T, DimX, DimY>::rank = 2;
+
+template <typename T, size_t DimX, size_t DimY>
+const std::array<size_t, 2> Tensor2D<T, DimX, DimY>::shape = {DimX, DimY};
 
 template <typename T>
 using is_scalar = std::is_arithmetic<T>;
@@ -232,5 +295,24 @@ inline Dest binary(SrcLeft x, SrcRight y, BinaryOp &&op) {
   std::transform(x.begin(), x.end(), y.begin(), z.begin(), op);
   return z;
 }
+
+template <typename T, size_t D, typename... Ts>
+struct concat {};
+
+template <typename T, size_t D, size_t... Xs>
+struct concat<T, D, Tensor1D<T, Xs>...> {
+  static_assert(0 <= D && D < 1, "Dimension index out of bounds");
+  using type = Tensor1D<T, sum<Xs...>()>;
+};
+
+template <typename T, size_t D, size_t... Xs, size_t... Ys>
+struct concat<T, D, Tensor2D<T, Xs, Ys>...> {
+  static_assert(0 <= D && D < 2, "Dimension index out of bounds");
+  static_assert((D == 0 && all_same<Ys...>()) || (D == 1 && all_same<Xs...>()),
+                "All dimensions except for the dimension index must match");
+  using type = typename std::conditional<
+      D == 0, Tensor2D<T, sum<Xs...>(), first<Ys...>()>,
+      Tensor2D<T, first<Xs...>(), sum<Ys...>()>>::type;
+};
 
 #endif // EMITC_TENSOR_H

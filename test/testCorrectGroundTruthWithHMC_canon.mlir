@@ -1,4 +1,4 @@
-
+// RUN: emitc-opt
 
 "module"() ( {
   "func"() ( {

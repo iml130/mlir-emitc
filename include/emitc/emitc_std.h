@@ -49,6 +49,16 @@ inline Dest index_cast(Src x) {
   return unary<Dest, Src, UnaryFuncType<ET_Dest, ET_Src>>(x, cast);
 }
 
+// SplatOp
+template <typename Dest, typename Src, IsScalar<Src> = true>
+inline Dest splat(Src x) {
+  Dest z;
+
+  std::fill(z.begin(), z.end(), x);
+
+  return z;
+}
+
 } // namespace standard
 
 #endif // EMITC_STD_H

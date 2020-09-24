@@ -18,6 +18,7 @@
 namespace {
 
 using ::testing::Eq;
+using ::testing::FloatEq;
 using ::testing::Pointwise;
 
 TEST(std, extract_element) {
@@ -56,6 +57,22 @@ TEST(std, index_cast) {
   };
 
   EXPECT_THAT(lambda_2d(), Pointwise(Eq(), {1, 2, 4, 8}));
+}
+
+TEST(std, splat) {
+  EXPECT_THAT(standard::splat<Tensor0D<uint32_t>>(1), Pointwise(Eq(), {1}));
+
+  auto lambda_1d = []() -> Tensor1D<int32_t, 3> {
+    return standard::splat<Tensor1D<int32_t, 3>>(-1);
+  };
+
+  EXPECT_THAT(lambda_1d(), Pointwise(Eq(), {-1, -1, -1}));
+
+  auto lambda_2d = []() -> Tensor2D<float, 2, 2> {
+    return standard::splat<Tensor2D<float, 2, 2>>(1.5f);
+  };
+
+  EXPECT_THAT(lambda_2d(), Pointwise(FloatEq(), {1.5f, 1.5f, 1.5f, 1.5f}));
 }
 
 } // namespace

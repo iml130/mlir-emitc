@@ -57,14 +57,14 @@ func @test_plus_int(%arg0 : i64) -> i64 {
   return %0 : i64
 }
 
-// CHECK: std::vector<float> mixed_types(std::vector<double> [[V1]])
+// CHECK: Tensor1D<float, 2> mixed_types(Tensor1D<double, 2> [[V1]])
 func @mixed_types(%arg0: tensor<2xf64>) -> tensor<2xf32> {
   // CHECK: foo::mixed_types([[V1]]);
   %0 = emitc.call "foo::mixed_types"(%arg0) {args = [0 : index]} : (tensor<2xf64>) -> tensor<2xf32>
   return %0 : tensor<2xf32>
 }
 
-// CHECK: std::vector<uint64_t> mhlo_convert(std::vector<uint32_t> [[V1]])
+// CHECK: Tensor0D<uint64_t> mhlo_convert(Tensor0D<uint32_t> [[V1]])
 func @mhlo_convert(%arg0: tensor<ui32>) -> tensor<ui64> {
   // CHECK: mhlo::convert([[V1]]);
   %0 = emitc.call "mhlo::convert"(%arg0) {args = [0 : index]} : (tensor<ui32>) -> tensor<ui64>

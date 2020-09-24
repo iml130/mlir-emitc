@@ -584,8 +584,17 @@ LogicalResult CppEmitter::emitType(Type type) {
     return (os << "size_t"), success();
   }
   if (auto itype = type.dyn_cast<TensorType>()) {
-    os << "std::vector<";
+    if (!itype.hasRank())
+      return failure();
+    os << "Tensor";
+    os << itype.getRank();
+    os << "D<";
     emitType(itype.getElementType());
+    auto shape = itype.getShape();
+    for (auto dimSize : shape) {
+      os << ", ";
+      os << dimSize;
+    }
     os << ">";
     return success();
   }

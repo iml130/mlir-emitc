@@ -81,6 +81,15 @@ if(${EMITC_ENABLE_HLO})
 endif()
 
 if(${EMITC_INCLUDE_TESTS})
+  # With `LLVM_INSTALL_UTILS` set to `ON`, the LLVM/MLIR build dir contains a
+  # gtest, added in llvm/utils/unittest/CMakeLists.txt. However, LLVM ships
+  # gooletest version 1.8, whereas we require a more recent version. Therefore,
+  # we require to use an installed MLIR if unittests should be build.
+  if(TARGET gtest)
+    message(FATAL_ERROR
+      "Unitests can only be build if MLIR is installed, but MLIR_DIR seems to "
+      "point to an MLIR build directory.")
+  endif()
   add_subdirectory(third_party/googletest EXCLUDE_FROM_ALL)
   add_subdirectory(unittests)
 endif()

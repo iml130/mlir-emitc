@@ -25,17 +25,17 @@ func @mhlo_ceil(%arg0: tensor<2xf32>) -> tensor<2xf32> {
 }
 
 func @mhlo_compare(%arg0: tensor<4xi32>, %arg1: tensor<4xi32>) -> tensor<4xi1> {
-  // CHECK: emitc.call "mhlo::compare"(%arg0, %arg1) {template_args = [i32, "std::less"]}
+  // CHECK: emitc.call "mhlo::compare"(%arg0, %arg1) {template_args = [tensor<4xi32>, "std::less"]}
   %0 = "mhlo.compare"(%arg0, %arg1) {comparison_direction = "LT"} : (tensor<4xi32>, tensor<4xi32>) -> tensor<4xi1>
-  // CHECK: emitc.call "mhlo::compare"(%arg0, %arg1) {template_args = [i32, "std::less_equal"]}
+  // CHECK: emitc.call "mhlo::compare"(%arg0, %arg1) {template_args = [tensor<4xi32>, "std::less_equal"]}
   %1 = "mhlo.compare"(%arg0, %arg1) {comparison_direction = "LE"} : (tensor<4xi32>, tensor<4xi32>) -> tensor<4xi1>
-  // CHECK: emitc.call "mhlo::compare"(%arg0, %arg1) {template_args = [i32, "std::greater"]}
+  // CHECK: emitc.call "mhlo::compare"(%arg0, %arg1) {template_args = [tensor<4xi32>, "std::greater"]}
   %2 = "mhlo.compare"(%arg0, %arg1) {comparison_direction = "GT"} : (tensor<4xi32>, tensor<4xi32>) -> tensor<4xi1>
-  // CHECK: emitc.call "mhlo::compare"(%arg0, %arg1) {template_args = [i32, "std::greater_equal"]}
+  // CHECK: emitc.call "mhlo::compare"(%arg0, %arg1) {template_args = [tensor<4xi32>, "std::greater_equal"]}
   %3 = "mhlo.compare"(%arg0, %arg1) {comparison_direction = "GE"} : (tensor<4xi32>, tensor<4xi32>) -> tensor<4xi1>
-  // CHECK: emitc.call "mhlo::compare"(%arg0, %arg1) {template_args = [i32, "std::equal_to"]}
+  // CHECK: emitc.call "mhlo::compare"(%arg0, %arg1) {template_args = [tensor<4xi32>, "std::equal_to"]}
   %4 = "mhlo.compare"(%arg0, %arg1) {comparison_direction = "EQ"} : (tensor<4xi32>, tensor<4xi32>) -> tensor<4xi1>
-  // CHECK: emitc.call "mhlo::compare"(%arg0, %arg1) {template_args = [i32, "std::not_equal_to"]}
+  // CHECK: emitc.call "mhlo::compare"(%arg0, %arg1) {template_args = [tensor<4xi32>, "std::not_equal_to"]}
   %5 = "mhlo.compare"(%arg0, %arg1) {comparison_direction = "NE"} : (tensor<4xi32>, tensor<4xi32>) -> tensor<4xi1>
   
   return %0 : tensor<4xi1>

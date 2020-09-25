@@ -151,9 +151,6 @@ private:
       return failure();
 
     Type elementType = compareOp.getOperand(0).getType();
-    if (auto tensorType = elementType.dyn_cast<TensorType>()) {
-      elementType = tensorType.getElementType();
-    }
     ArrayAttr args;
     ArrayAttr templateArgs = rewriter.getArrayAttr(
         {TypeAttr::get(elementType), rewriter.getStringAttr(functionName)});

@@ -86,8 +86,8 @@ private:
     ArrayAttr args;
     ArrayAttr templateArgs;
 
-    rewriter.replaceOpWithNewOp<emitc::CallOp>(
-        srcOp, srcOp.getType(), callee, ArrayAttr{}, templateArgs, operands);
+    rewriter.replaceOpWithNewOp<emitc::CallOp>(srcOp, srcOp.getType(), callee,
+                                               args, templateArgs, operands);
 
     return success();
   }
@@ -200,13 +200,12 @@ private:
                   ConversionPatternRewriter &rewriter) const override {
     auto index = getTupleElementOp.index();
 
-    // TODO Consider adding template arguments to CallOp
+    // TODO: Consider adding template arguments to CallOp
     StringAttr callee = rewriter.getStringAttr("std::get");
 
     ArrayAttr args;
     ArrayAttr templateArgs = rewriter.getArrayAttr(
         {IntegerAttr::get(rewriter.getIntegerType(32), index)});
-    ;
 
     rewriter.replaceOpWithNewOp<emitc::CallOp>(
         getTupleElementOp, getTupleElementOp.getType(), callee, args,
@@ -232,7 +231,6 @@ private:
     auto operandTensorType =
         sliceOp.getOperand().getType().cast<RankedTensorType>();
     Type elementType = operandTensorType.getElementType();
-    int64_t rank = operandTensorType.getRank();
     auto inputShape = operandTensorType.getShape();
 
     auto resultTensorType =
@@ -289,7 +287,6 @@ private:
     auto operandTensorType =
         dynamicSliceOp.getOperand(0).getType().cast<RankedTensorType>();
     Type elementType = operandTensorType.getElementType();
-    int64_t rank = operandTensorType.getRank();
     auto inputShape = operandTensorType.getShape();
 
     auto resultTensorType =
@@ -340,12 +337,7 @@ private:
     auto operandTensorType =
         dynamicUpdateSliceOp.getOperand(0).getType().cast<RankedTensorType>();
     Type elementType = operandTensorType.getElementType();
-    int64_t rank = operandTensorType.getRank();
     auto inputShape = operandTensorType.getShape();
-
-    auto resultTensorType =
-        dynamicUpdateSliceOp.getResult().getType().cast<RankedTensorType>();
-    auto outputShape = resultTensorType.getShape();
 
     auto updateTensorType =
         dynamicUpdateSliceOp.getOperand(1).getType().cast<RankedTensorType>();
@@ -420,7 +412,6 @@ private:
     ArrayAttr args;
     ArrayAttr templateArgs =
         rewriter.getArrayAttr({TypeAttr::get(elementType)});
-    ;
 
     rewriter.replaceOpWithNewOp<emitc::CallOp>(
         convertOp, convertOp.getType(), callee, args, templateArgs, operands);
@@ -500,7 +491,6 @@ private:
       ArrayAttr args;
       ArrayAttr templateArgs =
           rewriter.getArrayAttr({TypeAttr::get(elementType)});
-      ;
 
       rewriter.replaceOpWithNewOp<emitc::CallOp>(rngUniformOp,
                                                  rngUniformOp.getType(), callee,

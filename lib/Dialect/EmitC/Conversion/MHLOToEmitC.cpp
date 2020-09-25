@@ -391,14 +391,9 @@ private:
                   ConversionPatternRewriter &rewriter) const override {
     StringAttr callee = rewriter.getStringAttr("mhlo::bitcast_convert");
 
-    Type elementType = bitcastConvertOp.getType();
-    if (auto tensorType = elementType.dyn_cast<TensorType>()) {
-      elementType = tensorType.getElementType();
-    }
     ArrayAttr args;
-    ArrayAttr templateArgs =
-        rewriter.getArrayAttr({TypeAttr::get(elementType)});
-    ;
+    Type resultType = bitcastConvertOp.getResult().getType();
+    ArrayAttr templateArgs = rewriter.getArrayAttr({TypeAttr::get(resultType)});
 
     rewriter.replaceOpWithNewOp<emitc::CallOp>(
         bitcastConvertOp, bitcastConvertOp.getType(), callee, args,

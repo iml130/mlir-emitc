@@ -7,7 +7,7 @@ func @float_abs(%arg0: tensor<2xf32>) -> tensor<2xf32> {
 }
 
 func @mhlo_bitcast_convert(%arg0: tensor<ui32>) -> tensor<i32> {
-  // CHECK: emitc.call "mhlo::bitcast_convert"(%arg0) {template_args = [i32]}
+  // CHECK: emitc.call "mhlo::bitcast_convert"(%arg0) {template_args = [tensor<i32>]}
   %0 = "mhlo.bitcast_convert"(%arg0) : (tensor<ui32>) -> tensor<i32>
   return %0 : tensor<i32>
 }

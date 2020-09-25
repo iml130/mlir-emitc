@@ -150,21 +150,6 @@ static LogicalResult printConstantOp(CppEmitter &emitter,
   return success();
 }
 
-static LogicalResult printSplatOp(CppEmitter &emitter, SplatOp splatOp) {
-  auto &os = emitter.ostream();
-  auto &op = *splatOp.getOperation();
-  if (failed(emitter.emitAssignPrefix(op)))
-    return failure();
-
-  os << "standard::splat<";
-  emitter.emitType(op.getResult(0).getType());
-  os << ">(";
-  if (failed(emitter.emitOperands(op)))
-    return failure();
-  os << ")";
-  return success();
-}
-
 static LogicalResult printCallOp(CppEmitter &emitter, CallOp callOp) {
   if (failed(emitter.emitAssignPrefix(*callOp.getOperation())))
     return failure();
@@ -545,8 +530,6 @@ static LogicalResult printOperation(CppEmitter &emitter, Operation &op) {
     return printForOp(emitter, forOp);
   if (auto constantOp = dyn_cast<ConstantOp>(op))
     return printConstantOp(emitter, constantOp);
-  if (auto splatOp = dyn_cast<SplatOp>(op))
-    return printSplatOp(emitter, splatOp);
   if (auto returnOp = dyn_cast<ReturnOp>(op))
     return printReturnOp(emitter, returnOp);
   if (auto moduleOp = dyn_cast<ModuleOp>(op))

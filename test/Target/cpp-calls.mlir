@@ -70,10 +70,3 @@ func @mhlo_convert(%arg0: tensor<ui32>) -> tensor<ui64> {
   %0 = emitc.call "mhlo::convert"(%arg0) {args = [0 : index]} : (tensor<ui32>) -> tensor<ui64>
   return %0 : tensor<ui64>
 }
-
-// CHECK: Tensor1D<float, 8> splat_op(float [[V1]])
-func @splat_op(%s : f32) -> tensor<8xf32> {
-  // CHECK: standard::splat<Tensor1D<float, 8>>([[V1]])
-  %t = splat %s : tensor<8xf32>
-  return %t : tensor<8xf32>
-}

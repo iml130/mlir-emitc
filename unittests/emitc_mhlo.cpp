@@ -221,6 +221,8 @@ TEST(mhlo, add) {
 
 TEST(mhlo, div) {
   EXPECT_EQ(-3, mhlo::div(-3, 1));
+  EXPECT_EQ(-6.75, mhlo::div(27.0, -4.0));
+  EXPECT_EQ(-6, mhlo::div<int>(27.0, -4.0));
 
   Tensor0D<int> s0{27};
   Tensor0D<int> t0{-4};

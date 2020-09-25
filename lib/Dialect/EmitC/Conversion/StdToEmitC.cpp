@@ -65,14 +65,9 @@ private:
                   ConversionPatternRewriter &rewriter) const override {
     StringAttr callee = rewriter.getStringAttr("standard::index_cast");
 
-    Type elementType = indexCastOp.getType();
-    if (auto tensorType = elementType.dyn_cast<TensorType>()) {
-      elementType = tensorType.getElementType();
-    }
     ArrayAttr args;
-    ArrayAttr templateArgs =
-        rewriter.getArrayAttr({TypeAttr::get(elementType)});
-    ;
+    Type resultType = indexCastOp.getResult().getType();
+    ArrayAttr templateArgs = rewriter.getArrayAttr({TypeAttr::get(resultType)});
 
     rewriter.replaceOpWithNewOp<emitc::CallOp>(indexCastOp,
                                                indexCastOp.getType(), callee,

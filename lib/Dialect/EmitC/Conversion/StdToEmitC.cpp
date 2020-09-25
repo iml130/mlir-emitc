@@ -81,12 +81,36 @@ private:
     return success();
   }
 };
+
+class SplatOpConversion : public OpConversionPattern<SplatOp> {
+  using OpConversionPattern<SplatOp>::OpConversionPattern;
+
+public:
+  SplatOpConversion(MLIRContext *ctx) : OpConversionPattern<SplatOp>(ctx) {}
+
+private:
+  LogicalResult
+  matchAndRewrite(SplatOp splatOp, ArrayRef<Value> operands,
+                  ConversionPatternRewriter &rewriter) const override {
+    StringAttr callee = rewriter.getStringAttr("standard::splat");
+
+    ArrayAttr args;
+    Type resultType = splatOp.getResult().getType();
+    ArrayAttr templateArgs = rewriter.getArrayAttr({TypeAttr::get(resultType)});
+
+    rewriter.replaceOpWithNewOp<emitc::CallOp>(
+        splatOp, splatOp.getType(), callee, args, templateArgs, operands);
+
+    return success();
+  }
+};
 } // namespace
 
 void populateStdToEmitcPatterns(MLIRContext *ctx,
                                 OwningRewritePatternList &patterns) {
   patterns.insert<ExtractElementOpConversion>(ctx);
   patterns.insert<IndexCastOpConversion>(ctx);
+  patterns.insert<SplatOpConversion>(ctx);
 }
 
 namespace {
@@ -105,6 +129,7 @@ struct ConvertStdToEmitcPass
     target.addLegalDialect<StandardOpsDialect>();
     target.addIllegalOp<ExtractElementOp>();
     target.addIllegalOp<IndexCastOp>();
+    target.addIllegalOp<SplatOp>();
 
     OwningRewritePatternList patterns;
     populateStdToEmitcPatterns(&getContext(), patterns);

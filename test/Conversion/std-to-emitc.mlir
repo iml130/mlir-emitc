@@ -22,3 +22,10 @@ func @std_index_cast(%arg0: tensor<index>, %arg1: tensor<2xi32>) -> tensor<2xind
   // CHECK: return v4;
   return %1 : tensor<2xindex>
 }
+
+// CHECK: Tensor1D<float, 8> splat_op(float v1)
+func @splat_op(%s : f32) -> tensor<8xf32> {
+  // CHECK: standard::splat<Tensor1D<float, 8>>(v1)
+  %t = splat %s : tensor<8xf32>
+  return %t : tensor<8xf32>
+}

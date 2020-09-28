@@ -649,9 +649,19 @@ TEST(mhlo, xor) {
 }
 
 TEST(mhlo, broadcast_in_dim) {
-  std::vector<int> v1 = {1, 2};
-  EXPECT_THAT(mhlo::broadcast_in_dim(v1, 3),
-              Pointwise(Eq(), {1, 2, 1, 2, 1, 2}));
+  Tensor0D<int> t0{1};
+  Tensor1D<int64_t, 0> b0;
+
+  Tensor1D<int, 4> expected_result1{1, 1, 1, 1};
+  Tensor1D<int, 4> result1 = mhlo::broadcast_in_dim<Tensor1D<int, 4>>(t0, b0);
+  EXPECT_THAT(result1, Pointwise(Eq(), expected_result1));
+
+  Tensor2D<int, 2, 3> expected_result2{1, 1, 1, 1, 1, 1};
+  Tensor2D<int, 2, 3> result2 =
+      mhlo::broadcast_in_dim<Tensor2D<int, 2, 3>>(t0, b0);
+  EXPECT_THAT(result2, Pointwise(Eq(), expected_result2));
+
+  // TODO add more tests once higher dimensions are supported
 }
 
 TEST(mhlo, concatenate) {

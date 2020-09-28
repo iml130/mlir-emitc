@@ -326,14 +326,13 @@ inline Src logical_xor(Src x, Src y) {
 }
 /// Functions for other MHLO ops.
 // BroadcastInDimOp
-template <typename T>
-inline std::vector<T> broadcast_in_dim(std::vector<T> x, size_t n) {
-  std::vector<T> z;
+template <typename Dest, typename Src>
+inline Dest
+broadcast_in_dim(Src x, Tensor1D<int64_t, Src::rank> broadcast_dimensions) {
+  static_assert(Src::rank == 0, "Only 0-dim operand supported so far");
 
-  for (size_t i = 0; i < n; i++) {
-    z.insert(z.end(), x.begin(), x.end());
-  }
-
+  Dest z;
+  std::fill(z.begin(), z.end(), x[0]);
   return z;
 }
 

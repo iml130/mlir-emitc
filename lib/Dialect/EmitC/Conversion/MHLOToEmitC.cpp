@@ -617,21 +617,51 @@ struct ConvertMhloToEmitcPass
 
     target.addLegalDialect<emitc::EmitCDialect>();
     target.addLegalDialect<mhlo::MhloDialect>();
-    target.addIllegalOp<mhlo::AbsOp, mhlo::CeilOp, mhlo::CosOp, mhlo::ExpOp,
-                        mhlo::FloorOp, mhlo::IsFiniteOp, mhlo::LogOp,
-                        mhlo::NegOp, mhlo::SinOp, mhlo::SqrtOp, mhlo::TanhOp>();
-    target.addIllegalOp<mhlo::AddOp, mhlo::DivOp, mhlo::MaxOp, mhlo::MinOp,
-                        mhlo::MulOp, mhlo::PowOp, mhlo::ShiftLeftOp,
-                        mhlo::ShiftRightLogicalOp, mhlo::SubOp>();
-    target.addIllegalOp<mhlo::OrOp, mhlo::XorOp>();
-    target.addIllegalOp<mhlo::DynamicSliceOp, mhlo::DynamicUpdateSliceOp,
-                        mhlo::SliceOp>();
-    target.addIllegalOp<mhlo::BitcastConvertOp, mhlo::BroadcastInDimOp,
-                        mhlo::ConvertOp, mhlo::ConcatenateOp, mhlo::ReshapeOp,
-                        mhlo::SelectOp>();
-    target.addIllegalOp<mhlo::CompareOp, mhlo::TupleOp,
+    // clang-format off
+    // MHLO unary elementwise ops
+    target.addIllegalOp<mhlo::AbsOp,
+                        mhlo::CeilOp,
+                        mhlo::CosOp,
+                        mhlo::ExpOp,
+                        mhlo::FloorOp,
+                        mhlo::IsFiniteOp,
+                        mhlo::LogOp,
+                        mhlo::NegOp,
+                        mhlo::SinOp,
+                        mhlo::SqrtOp,
+                        mhlo::TanhOp>();
+    // MHLO binary elementwise ops
+    target.addIllegalOp<mhlo::AddOp,
+                        mhlo::DivOp,
+                        mhlo::MaxOp,
+                        mhlo::MinOp,
+                        mhlo::MulOp,
+                        mhlo::PowOp,
+                        mhlo::ShiftLeftOp,
+                        mhlo::ShiftRightLogicalOp,
+                        mhlo::SubOp>();
+    // MHLO binary logical elementwise ops
+    target.addIllegalOp<mhlo::OrOp,
+                        mhlo::XorOp>();
+    // MHLO tuple ops
+    target.addIllegalOp<mhlo::CompareOp,
+                        mhlo::TupleOp,
                         mhlo::GetTupleElementOp>();
-    target.addIllegalOp<mhlo::RngUniformOp, mhlo::RngBitGeneratorOp>();
+    // MHLO slice ops
+    target.addIllegalOp<mhlo::DynamicSliceOp,
+                        mhlo::DynamicUpdateSliceOp,
+                        mhlo::SliceOp>();
+    // other MHLO ops
+    target.addIllegalOp<mhlo::BitcastConvertOp,
+                        mhlo::BroadcastInDimOp,
+                        mhlo::ConvertOp,
+                        mhlo::ConcatenateOp,
+                        mhlo::ReshapeOp,
+                        mhlo::SelectOp>();
+    // MHLO RNG ops
+    target.addIllegalOp<mhlo::RngUniformOp,
+                        mhlo::RngBitGeneratorOp>();
+    // clang-format on
 
     OwningRewritePatternList patterns;
     populateMhloToEmitcPatterns(&getContext(), patterns);

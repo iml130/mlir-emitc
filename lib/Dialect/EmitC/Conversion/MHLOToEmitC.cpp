@@ -560,6 +560,7 @@ void populateMhloToEmitcPatterns(MLIRContext *ctx,
   patterns.insert<CallOpConversion<mhlo::IsFiniteOp>>(ctx, "mhlo::isfinite");
   patterns.insert<CallOpConversion<mhlo::LogOp>>(ctx, "mhlo::log");
   patterns.insert<CallOpConversion<mhlo::NegOp>>(ctx, "mhlo::negate");
+  patterns.insert<CallOpConversion<mhlo::RoundOp>>(ctx, "mhlo::round");
   patterns.insert<CallOpConversion<mhlo::SinOp>>(ctx, "mhlo::sin");
   patterns.insert<CallOpConversion<mhlo::SqrtOp>>(ctx, "mhlo::sqrt");
   patterns.insert<CallOpConversion<mhlo::TanhOp>>(ctx, "mhlo::tanh");
@@ -627,6 +628,7 @@ struct ConvertMhloToEmitcPass
                         mhlo::IsFiniteOp,
                         mhlo::LogOp,
                         mhlo::NegOp,
+                        mhlo::RoundOp,
                         mhlo::SinOp,
                         mhlo::SqrtOp,
                         mhlo::TanhOp>();

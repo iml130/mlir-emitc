@@ -148,6 +148,19 @@ TEST(mhlo, cos) {
                                        {1.0f, 1.0f, 0.8775826f, 0.8775826f}));
 }
 
+TEST(mhlo, round) {
+  EXPECT_EQ(1.0, mhlo::round(0.7));
+  EXPECT_EQ(0.0, mhlo::round(0.4));
+
+  Tensor0D<float> t0{0.7f};
+  Tensor1D<float, 3> t1{1.4f, 1.6f, 2.0f};
+  Tensor2D<double, 2, 2> t2{2.1, 1.6, 0.0, 2.0};
+
+  EXPECT_THAT(mhlo::round(t0), Pointwise(Eq(), {1.0f}));
+  EXPECT_THAT(mhlo::round(t1), Pointwise(Eq(), {1.0f, 2.0f, 2.0f}));
+  EXPECT_THAT(mhlo::round(t2), Pointwise(Eq(), {2.0, 2.0, 0.0, 2.0}));
+}
+
 TEST(mhlo, sin) {
   EXPECT_NEAR(0.0f, mhlo::sin(0.0f), EPSILON);
 

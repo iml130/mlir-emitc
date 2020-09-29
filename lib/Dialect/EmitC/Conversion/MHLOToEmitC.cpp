@@ -567,6 +567,7 @@ void populateMhloToEmitcPatterns(MLIRContext *ctx,
 
   /// Insert patterns for MHLO binary elementwise ops.
   patterns.insert<CallOpConversion<mhlo::AddOp>>(ctx, "mhlo::add");
+  patterns.insert<CallOpConversion<mhlo::Atan2Op>>(ctx, "mhlo::atan2");
   patterns.insert<CallOpConversion<mhlo::DivOp>>(ctx, "mhlo::div");
   patterns.insert<CallOpConversion<mhlo::MaxOp>>(ctx, "mhlo::max");
   patterns.insert<CallOpConversion<mhlo::MinOp>>(ctx, "mhlo::min");
@@ -634,6 +635,7 @@ struct ConvertMhloToEmitcPass
                         mhlo::TanhOp>();
     // MHLO binary elementwise ops
     target.addIllegalOp<mhlo::AddOp,
+                        mhlo::Atan2Op,
                         mhlo::DivOp,
                         mhlo::MaxOp,
                         mhlo::MinOp,

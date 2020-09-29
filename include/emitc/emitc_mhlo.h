@@ -208,6 +208,16 @@ inline Src add(Src x, Src y) {
   return binary<Src>(x, y, f);
 }
 
+// Atan2Op
+template <typename Src>
+inline Src atan2(Src x, Src y) {
+  using ET_Src = typename get_element_type<Src>::type;
+
+  auto f = static_cast<ET_Src (*)(ET_Src, ET_Src)>(std::atan2);
+
+  return binary<Src>(x, y, f);
+}
+
 // DivOp
 template <typename Src>
 inline Src div(Src x, Src y) {

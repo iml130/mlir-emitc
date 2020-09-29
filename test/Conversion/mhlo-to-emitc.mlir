@@ -132,6 +132,12 @@ func @mhlo_add_f64(%arg0: tensor<f64>) -> tensor<f64> {
   return %0 : tensor<f64>
 }
 
+func @mhlo_atan2(%arg0: tensor<2xf32>, %arg1: tensor<2xf32>) -> tensor<2xf32> {
+  // CHECK: emitc.call "mhlo::atan2"
+  %0 = "mhlo.atan2"(%arg0, %arg1) : (tensor<2xf32>, tensor<2xf32>) -> tensor<2xf32>
+  return %0 : tensor<2xf32>
+}
+
 func @mhlo_divide(%arg0: tensor<f32>, %arg1: tensor<f32>) -> tensor<f32> {
   // CHECK: emitc.call "mhlo::div"
   %0 = "mhlo.divide"(%arg0, %arg1) : (tensor<f32>, tensor<f32>) -> tensor<f32>

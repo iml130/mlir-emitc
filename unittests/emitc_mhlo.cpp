@@ -232,6 +232,37 @@ TEST(mhlo, add) {
   EXPECT_THAT(lambda_2d(), Pointwise(Eq(), {1, 9, 10, -1}));
 }
 
+TEST(mhlo, atan2) {
+  EXPECT_NEAR(0.321751f, mhlo::atan2(1.0f, 3.0f), EPSILON);
+
+  Tensor0D<float> s0{1.0f};
+  Tensor0D<float> t0{3.0f};
+
+  auto lambda_0d = [&s0, &t0]() -> Tensor0D<float> {
+    return mhlo::atan2<Tensor0D<float>>(s0, t0);
+  };
+
+  EXPECT_THAT(lambda_0d(), Pointwise(FloatNear(EPSILON), {0.321751f}));
+
+  Tensor1D<float, 2> s1{1.0f, 0.5f};
+  Tensor1D<float, 2> t1{3.0f, -0.5f};
+
+  auto lambda_1d = [&s1, &t1]() -> Tensor1D<float, 2> {
+    return mhlo::atan2<Tensor1D<float, 2>>(s1, t1);
+  };
+
+  EXPECT_THAT(lambda_1d(), Pointwise(FloatNear(EPSILON), {0.321751f, 2.35619f}));
+
+  Tensor2D<double, 2, 2> s2{1.0, 0.5, -0.5, 0.5};
+  Tensor2D<double, 2, 2> t2{3.0, -0.5, 0.5, 0.5};
+
+  auto lambda_2d = [&s2, &t2]() -> Tensor2D<double, 2, 2> {
+    return mhlo::atan2<Tensor2D<double, 2, 2>>(s2, t2);
+  };
+
+  EXPECT_THAT(lambda_2d(), Pointwise(FloatNear(EPSILON), {0.321751, 2.35619, -0.785398, 0.785398}));
+}
+
 TEST(mhlo, div) {
   EXPECT_EQ(-3, mhlo::div(-3, 1));
   EXPECT_EQ(-6.75, mhlo::div(27.0, -4.0));

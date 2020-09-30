@@ -134,20 +134,17 @@ private:
     StringAttr callee = rewriter.getStringAttr("mhlo::compare");
 
     llvm::StringRef comparisonDirection = compareOp.comparison_direction();
-    llvm::StringRef functionName;
-    if (comparisonDirection.equals("EQ"))
-      functionName = "std::equal_to";
-    else if (comparisonDirection.equals("NE"))
-      functionName = "std::not_equal_to";
-    else if (comparisonDirection.equals("GE"))
-      functionName = "std::greater_equal";
-    else if (comparisonDirection.equals("GT"))
-      functionName = "std::greater";
-    else if (comparisonDirection.equals("LE"))
-      functionName = "std::less_equal";
-    else if (comparisonDirection.equals("LT"))
-      functionName = "std::less";
-    else
+    llvm::StringRef functionName =
+        llvm::StringSwitch<llvm::StringRef>(comparisonDirection)
+            .Case("EQ", "std::equal_to")
+            .Case("NE", "std::not_equal_to")
+            .Case("GE", "std::greater_equal")
+            .Case("GT", "std::greater")
+            .Case("LE", "std::less_equal")
+            .Case("LT", "std::less")
+            .Default("");
+
+    if (functionName.equals(""))
       return failure();
 
     Type elementType = compareOp.getOperand(0).getType();

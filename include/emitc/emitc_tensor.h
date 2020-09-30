@@ -149,6 +149,60 @@ public:
   static const std::array<size_t, 2> shape;
 };
 
+template <typename T, size_t DimX, size_t DimY, size_t DimZ>
+class Tensor3D : public Tensor<T, DimX * DimY * DimZ> {
+public:
+  using reference_type = typename Tensor<T, DimX * DimY * DimZ>::reference_type;
+
+  Tensor3D() : Tensor<T, DimX * DimY * DimZ>() {}
+
+  Tensor3D(std::initializer_list<T> data)
+      : Tensor<T, DimX * DimY * DimZ>(data) {}
+
+  reference_type operator()(size_t x, size_t y, size_t z) {
+    assert(0 <= x && x < dimX);
+    assert(0 <= y && y < dimY);
+    assert(0 <= z && z < dimZ);
+
+    return this->operator[](x *DimY *DimZ + y * DimZ + z);
+  }
+
+  static const size_t dimX;
+  static const size_t dimY;
+  static const size_t dimZ;
+  static const size_t rank;
+  static const std::array<size_t, 3> shape;
+};
+
+template <typename T, size_t DimX, size_t DimY, size_t DimZ, size_t DimW>
+class Tensor4D : public Tensor<T, DimX * DimY * DimZ * DimW> {
+public:
+  using reference_type =
+      typename Tensor<T, DimX * DimY * DimZ * DimW>::reference_type;
+
+  Tensor4D() : Tensor<T, DimX * DimY * DimZ * DimW>() {}
+
+  Tensor4D(std::initializer_list<T> data)
+      : Tensor<T, DimX * DimY * DimZ * DimW>(data) {}
+
+  reference_type operator()(size_t x, size_t y, size_t z, size_t w) {
+    assert(0 <= x && x < dimX);
+    assert(0 <= y && y < dimY);
+    assert(0 <= z && z < dimZ);
+    assert(0 <= w && w < dimW);
+
+    return this->operator[](x *DimY *DimZ *DimW + y * DimZ * DimW + z * DimW +
+                            w);
+  }
+
+  static const size_t dimX;
+  static const size_t dimY;
+  static const size_t dimZ;
+  static const size_t dimW;
+  static const size_t rank;
+  static const std::array<size_t, 4> shape;
+};
+
 template <typename T, size_t SIZE>
 const size_t Tensor<T, SIZE>::size_ = SIZE;
 
@@ -160,6 +214,27 @@ const size_t Tensor2D<T, DimX, DimY>::dimX = DimX;
 
 template <typename T, size_t DimX, size_t DimY>
 const size_t Tensor2D<T, DimX, DimY>::dimY = DimY;
+
+template <typename T, size_t DimX, size_t DimY, size_t DimZ>
+const size_t Tensor3D<T, DimX, DimY, DimZ>::dimX = DimX;
+
+template <typename T, size_t DimX, size_t DimY, size_t DimZ>
+const size_t Tensor3D<T, DimX, DimY, DimZ>::dimY = DimY;
+
+template <typename T, size_t DimX, size_t DimY, size_t DimZ>
+const size_t Tensor3D<T, DimX, DimY, DimZ>::dimZ = DimZ;
+
+template <typename T, size_t DimX, size_t DimY, size_t DimZ, size_t DimW>
+const size_t Tensor4D<T, DimX, DimY, DimZ, DimW>::dimX = DimX;
+
+template <typename T, size_t DimX, size_t DimY, size_t DimZ, size_t DimW>
+const size_t Tensor4D<T, DimX, DimY, DimZ, DimW>::dimY = DimY;
+
+template <typename T, size_t DimX, size_t DimY, size_t DimZ, size_t DimW>
+const size_t Tensor4D<T, DimX, DimY, DimZ, DimW>::dimZ = DimZ;
+
+template <typename T, size_t DimX, size_t DimY, size_t DimZ, size_t DimW>
+const size_t Tensor4D<T, DimX, DimY, DimZ, DimW>::dimW = DimW;
 
 template <typename T>
 const size_t Tensor0D<T>::rank = 0;
@@ -178,6 +253,20 @@ const size_t Tensor2D<T, DimX, DimY>::rank = 2;
 
 template <typename T, size_t DimX, size_t DimY>
 const std::array<size_t, 2> Tensor2D<T, DimX, DimY>::shape = {DimX, DimY};
+
+template <typename T, size_t DimX, size_t DimY, size_t DimZ>
+const size_t Tensor3D<T, DimX, DimY, DimZ>::rank = 3;
+
+template <typename T, size_t DimX, size_t DimY, size_t DimZ>
+const std::array<size_t, 3> Tensor3D<T, DimX, DimY, DimZ>::shape = {DimX, DimY,
+                                                                    DimZ};
+
+template <typename T, size_t DimX, size_t DimY, size_t DimZ, size_t DimW>
+const size_t Tensor4D<T, DimX, DimY, DimZ, DimW>::rank = 4;
+
+template <typename T, size_t DimX, size_t DimY, size_t DimZ, size_t DimW>
+const std::array<size_t, 4> Tensor4D<T, DimX, DimY, DimZ, DimW>::shape = {
+    DimX, DimY, DimZ, DimW};
 
 template <typename T>
 using is_scalar = std::is_arithmetic<T>;
@@ -200,6 +289,18 @@ struct is_tensor_2d : std::false_type {};
 template <typename T, size_t DimX, size_t DimY>
 struct is_tensor_2d<Tensor2D<T, DimX, DimY>> : std::true_type {};
 
+template <typename T>
+struct is_tensor_3d : std::false_type {};
+
+template <typename T, size_t DimX, size_t DimY, size_t DimZ>
+struct is_tensor_3d<Tensor3D<T, DimX, DimY, DimZ>> : std::true_type {};
+
+template <typename T>
+struct is_tensor_4d : std::false_type {};
+
+template <typename T, size_t DimX, size_t DimY, size_t DimZ, size_t DimW>
+struct is_tensor_4d<Tensor4D<T, DimX, DimY, DimZ, DimW>> : std::true_type {};
+
 template <typename T, typename Unused = void>
 struct is_tensor : std::false_type {};
 
@@ -220,6 +321,12 @@ using IsTensor1D = typename std::enable_if<is_tensor_1d<T>::value, bool>::type;
 
 template <typename T>
 using IsTensor2D = typename std::enable_if<is_tensor_2d<T>::value, bool>::type;
+
+template <typename T>
+using IsTensor3D = typename std::enable_if<is_tensor_3d<T>::value, bool>::type;
+
+template <typename T>
+using IsTensor4D = typename std::enable_if<is_tensor_4d<T>::value, bool>::type;
 
 template <typename T>
 using IsTensor = typename std::enable_if<is_tensor<T>::value, bool>::type;
@@ -244,6 +351,16 @@ struct get_element_type<Tensor2D<T, DimX, DimY>> {
   using type = T;
 };
 
+template <typename T, size_t DimX, size_t DimY, size_t DimZ>
+struct get_element_type<Tensor3D<T, DimX, DimY, DimZ>> {
+  using type = T;
+};
+
+template <typename T, size_t DimX, size_t DimY, size_t DimZ, size_t DimW>
+struct get_element_type<Tensor4D<T, DimX, DimY, DimZ, DimW>> {
+  using type = T;
+};
+
 template <typename Dest, typename Src>
 struct replace_element_type {
   using type = Dest;
@@ -262,6 +379,17 @@ struct replace_element_type<Dest, Tensor1D<Src, DimX>> {
 template <typename Dest, typename Src, size_t DimX, size_t DimY>
 struct replace_element_type<Dest, Tensor2D<Src, DimX, DimY>> {
   using type = Tensor2D<Dest, DimX, DimY>;
+};
+
+template <typename Dest, typename Src, size_t DimX, size_t DimY, size_t DimZ>
+struct replace_element_type<Dest, Tensor3D<Src, DimX, DimY, DimZ>> {
+  using type = Tensor3D<Dest, DimX, DimY, DimZ>;
+};
+
+template <typename Dest, typename Src, size_t DimX, size_t DimY, size_t DimZ,
+          size_t DimW>
+struct replace_element_type<Dest, Tensor4D<Src, DimX, DimY, DimZ, DimW>> {
+  using type = Tensor4D<Dest, DimX, DimY, DimZ, DimW>;
 };
 
 template <typename Dest, typename Src>

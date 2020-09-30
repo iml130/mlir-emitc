@@ -200,6 +200,36 @@ TEST(tensor, dimension_2d) {
   EXPECT_EQ(16, tensor2.dimY);
 }
 
+TEST(tensor, dimension_3d) {
+  Tensor3D<float, 2, 1, 7> tensor;
+
+  EXPECT_EQ(2, tensor.dimX);
+  EXPECT_EQ(1, tensor.dimY);
+  EXPECT_EQ(7, tensor.dimZ);
+
+  Tensor3D<int32_t, 13, 9, 24> tensor2;
+
+  EXPECT_EQ(13, tensor2.dimX);
+  EXPECT_EQ(9, tensor2.dimY);
+  EXPECT_EQ(24, tensor2.dimZ);
+}
+
+TEST(tensor, dimension_4d) {
+  Tensor4D<float, 2, 1, 4, 5> tensor;
+
+  EXPECT_EQ(2, tensor.dimX);
+  EXPECT_EQ(1, tensor.dimY);
+  EXPECT_EQ(4, tensor.dimZ);
+  EXPECT_EQ(5, tensor.dimW);
+
+  Tensor4D<int32_t, 13, 6, 9, 8> tensor2;
+
+  EXPECT_EQ(13, tensor2.dimX);
+  EXPECT_EQ(6, tensor2.dimY);
+  EXPECT_EQ(9, tensor2.dimZ);
+  EXPECT_EQ(8, tensor2.dimW);
+}
+
 TEST(tensor, size_0d) {
   Tensor0D<float> tensor;
 
@@ -230,12 +260,34 @@ TEST(tensor, size_2d) {
   EXPECT_EQ(1024, tensor2.size_);
 }
 
+TEST(tensor, size_3d) {
+  Tensor3D<float, 4, 3, 5> tensor;
+
+  EXPECT_EQ(60, tensor.size_);
+
+  Tensor3D<int8_t, 8, 8, 8> tensor2;
+
+  EXPECT_EQ(512, tensor2.size_);
+}
+
+TEST(tensor, size_4d) {
+  Tensor4D<float, 4, 2, 1, 3> tensor;
+
+  EXPECT_EQ(24, tensor.size_);
+
+  Tensor4D<int8_t, 1, 5, 6, 2> tensor2;
+
+  EXPECT_EQ(60, tensor2.size_);
+}
+
 TEST(tensor, meta_get_element_type) {
   using s0 = float;
   using s1 = int32_t;
   using t0 = Tensor0D<uint16_t>;
   using t1 = Tensor1D<int8_t, 12>;
   using t2 = Tensor2D<double, 3, 7>;
+  using t3 = Tensor3D<float, 1, 4, 6>;
+  using t4 = Tensor4D<uint8_t, 2, 1, 1, 9>;
 
   const bool check_s0 = std::is_same<float, get_element_type<s0>::type>::value;
   const bool check_s1 =
@@ -244,12 +296,17 @@ TEST(tensor, meta_get_element_type) {
       std::is_same<uint16_t, get_element_type<t0>::type>::value;
   const bool check_t1 = std::is_same<int8_t, get_element_type<t1>::type>::value;
   const bool check_t2 = std::is_same<double, get_element_type<t2>::type>::value;
+  const bool check_t3 = std::is_same<float, get_element_type<t3>::type>::value;
+  const bool check_t4 =
+      std::is_same<uint8_t, get_element_type<t4>::type>::value;
 
   EXPECT_TRUE(check_s0);
   EXPECT_TRUE(check_s1);
   EXPECT_TRUE(check_t0);
   EXPECT_TRUE(check_t1);
   EXPECT_TRUE(check_t2);
+  EXPECT_TRUE(check_t3);
+  EXPECT_TRUE(check_t4);
 }
 
 TEST(tensor, meta_is_scalar) {
@@ -258,12 +315,16 @@ TEST(tensor, meta_is_scalar) {
   using t0 = Tensor0D<uint16_t>;
   using t1 = Tensor1D<int8_t, 12>;
   using t2 = Tensor2D<double, 3, 7>;
+  using t3 = Tensor3D<float, 1, 4, 6>;
+  using t4 = Tensor4D<uint8_t, 2, 1, 1, 9>;
 
   EXPECT_TRUE(is_scalar<s0>::value);
   EXPECT_TRUE(is_scalar<s1>::value);
   EXPECT_FALSE(is_scalar<t0>::value);
   EXPECT_FALSE(is_scalar<t1>::value);
   EXPECT_FALSE(is_scalar<t2>::value);
+  EXPECT_FALSE(is_scalar<t3>::value);
+  EXPECT_FALSE(is_scalar<t4>::value);
 }
 
 TEST(tensor, meta_is_tensor) {
@@ -272,12 +333,16 @@ TEST(tensor, meta_is_tensor) {
   using t0 = Tensor0D<uint16_t>;
   using t1 = Tensor1D<int8_t, 12>;
   using t2 = Tensor2D<double, 3, 7>;
+  using t3 = Tensor3D<float, 1, 4, 6>;
+  using t4 = Tensor4D<uint8_t, 2, 1, 1, 9>;
 
   EXPECT_FALSE(is_tensor<s0>::value);
   EXPECT_FALSE(is_tensor<s1>::value);
   EXPECT_TRUE(is_tensor<t0>::value);
   EXPECT_TRUE(is_tensor<t1>::value);
   EXPECT_TRUE(is_tensor<t2>::value);
+  EXPECT_TRUE(is_tensor<t3>::value);
+  EXPECT_TRUE(is_tensor<t4>::value);
 }
 
 TEST(tensor, meta_is_tensor_0d) {
@@ -286,12 +351,16 @@ TEST(tensor, meta_is_tensor_0d) {
   using t0 = Tensor0D<uint16_t>;
   using t1 = Tensor1D<int8_t, 12>;
   using t2 = Tensor2D<double, 3, 7>;
+  using t3 = Tensor3D<float, 1, 4, 6>;
+  using t4 = Tensor4D<uint8_t, 2, 1, 1, 9>;
 
   EXPECT_FALSE(is_tensor_0d<s0>::value);
   EXPECT_FALSE(is_tensor_0d<s1>::value);
   EXPECT_TRUE(is_tensor_0d<t0>::value);
   EXPECT_FALSE(is_tensor_0d<t1>::value);
   EXPECT_FALSE(is_tensor_0d<t2>::value);
+  EXPECT_FALSE(is_tensor_0d<t3>::value);
+  EXPECT_FALSE(is_tensor_0d<t4>::value);
 }
 
 TEST(tensor, meta_is_tensor_1d) {
@@ -300,12 +369,16 @@ TEST(tensor, meta_is_tensor_1d) {
   using t0 = Tensor0D<uint16_t>;
   using t1 = Tensor1D<int8_t, 12>;
   using t2 = Tensor2D<double, 3, 7>;
+  using t3 = Tensor3D<float, 1, 4, 6>;
+  using t4 = Tensor4D<uint8_t, 2, 1, 1, 9>;
 
   EXPECT_FALSE(is_tensor_1d<s0>::value);
   EXPECT_FALSE(is_tensor_1d<s1>::value);
   EXPECT_FALSE(is_tensor_1d<t0>::value);
   EXPECT_TRUE(is_tensor_1d<t1>::value);
   EXPECT_FALSE(is_tensor_1d<t2>::value);
+  EXPECT_FALSE(is_tensor_1d<t3>::value);
+  EXPECT_FALSE(is_tensor_1d<t4>::value);
 }
 
 TEST(tensor, meta_is_tensor_2d) {
@@ -314,12 +387,52 @@ TEST(tensor, meta_is_tensor_2d) {
   using t0 = Tensor0D<uint16_t>;
   using t1 = Tensor1D<int8_t, 12>;
   using t2 = Tensor2D<double, 3, 7>;
+  using t3 = Tensor3D<float, 1, 4, 6>;
+  using t4 = Tensor4D<uint8_t, 2, 1, 1, 9>;
 
   EXPECT_FALSE(is_tensor_2d<s0>::value);
   EXPECT_FALSE(is_tensor_2d<s1>::value);
   EXPECT_FALSE(is_tensor_2d<t0>::value);
   EXPECT_FALSE(is_tensor_2d<t1>::value);
   EXPECT_TRUE(is_tensor_2d<t2>::value);
+  EXPECT_FALSE(is_tensor_2d<t3>::value);
+  EXPECT_FALSE(is_tensor_2d<t4>::value);
+}
+
+TEST(tensor, meta_is_tensor_3d) {
+  using s0 = float;
+  using s1 = int32_t;
+  using t0 = Tensor0D<uint16_t>;
+  using t1 = Tensor1D<int8_t, 12>;
+  using t2 = Tensor2D<double, 3, 7>;
+  using t3 = Tensor3D<float, 1, 4, 6>;
+  using t4 = Tensor4D<uint8_t, 2, 1, 1, 9>;
+
+  EXPECT_FALSE(is_tensor_3d<s0>::value);
+  EXPECT_FALSE(is_tensor_3d<s1>::value);
+  EXPECT_FALSE(is_tensor_3d<t0>::value);
+  EXPECT_FALSE(is_tensor_3d<t1>::value);
+  EXPECT_FALSE(is_tensor_3d<t2>::value);
+  EXPECT_TRUE(is_tensor_3d<t3>::value);
+  EXPECT_FALSE(is_tensor_3d<t4>::value);
+}
+
+TEST(tensor, meta_is_tensor_4d) {
+  using s0 = float;
+  using s1 = int32_t;
+  using t0 = Tensor0D<uint16_t>;
+  using t1 = Tensor1D<int8_t, 12>;
+  using t2 = Tensor2D<double, 3, 7>;
+  using t3 = Tensor3D<float, 1, 4, 6>;
+  using t4 = Tensor4D<uint8_t, 2, 1, 1, 9>;
+
+  EXPECT_FALSE(is_tensor_4d<s0>::value);
+  EXPECT_FALSE(is_tensor_4d<s1>::value);
+  EXPECT_FALSE(is_tensor_4d<t0>::value);
+  EXPECT_FALSE(is_tensor_4d<t1>::value);
+  EXPECT_FALSE(is_tensor_4d<t2>::value);
+  EXPECT_FALSE(is_tensor_4d<t3>::value);
+  EXPECT_TRUE(is_tensor_4d<t4>::value);
 }
 
 TEST(tensor, meta_replace_element_type) {
@@ -328,8 +441,8 @@ TEST(tensor, meta_replace_element_type) {
   using t0 = Tensor0D<uint16_t>;
   using t1 = Tensor1D<int8_t, 12>;
   using t2 = Tensor2D<double, 3, 7>;
-
-  using repalce_s0 = replace_element_type<int32_t, s0>::type;
+  using t3 = Tensor3D<float, 1, 4, 6>;
+  using t4 = Tensor4D<uint8_t, 2, 1, 1, 9>;
 
   const bool check_s0 =
       std::is_same<int32_t, replace_element_type<int32_t, s0>::type>::value;
@@ -344,12 +457,20 @@ TEST(tensor, meta_replace_element_type) {
   const bool check_t2 =
       std::is_same<Tensor2D<int32_t, 3, 7>,
                    replace_element_type<int32_t, t2>::type>::value;
+  const bool check_t3 =
+      std::is_same<Tensor3D<uint8_t, 1, 4, 6>,
+                   replace_element_type<uint8_t, t3>::type>::value;
+  const bool check_t4 =
+      std::is_same<Tensor4D<float, 2, 1, 1, 9>,
+                   replace_element_type<float, t4>::type>::value;
 
   EXPECT_TRUE(check_s0);
   EXPECT_TRUE(check_s1);
   EXPECT_TRUE(check_t0);
   EXPECT_TRUE(check_t1);
   EXPECT_TRUE(check_t2);
+  EXPECT_TRUE(check_t3);
+  EXPECT_TRUE(check_t4);
 }
 
 } // namespace

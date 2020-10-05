@@ -181,103 +181,103 @@ TEST(tensor, wrong_size_initializer_list) {
 TEST(tensor, dimension_1d) {
   Tensor1D<float, 2> tensor;
 
-  EXPECT_EQ(2, tensor.dimX);
+  EXPECT_EQ(2, tensor.dim(0));
 
   Tensor1D<int32_t, 13> tensor2;
 
-  EXPECT_EQ(13, tensor2.dimX);
+  EXPECT_EQ(13, tensor2.dim(0));
 }
 
 TEST(tensor, dimension_2d) {
   Tensor2D<float, 4, 12> tensor;
 
-  EXPECT_EQ(4, tensor.dimX);
-  EXPECT_EQ(12, tensor.dimY);
+  EXPECT_EQ(4, tensor.dim(0));
+  EXPECT_EQ(12, tensor.dim(1));
 
   Tensor2D<int8_t, 64, 16> tensor2;
 
-  EXPECT_EQ(64, tensor2.dimX);
-  EXPECT_EQ(16, tensor2.dimY);
+  EXPECT_EQ(64, tensor2.dim(0));
+  EXPECT_EQ(16, tensor2.dim(1));
 }
 
 TEST(tensor, dimension_3d) {
   Tensor3D<float, 2, 1, 7> tensor;
 
-  EXPECT_EQ(2, tensor.dimX);
-  EXPECT_EQ(1, tensor.dimY);
-  EXPECT_EQ(7, tensor.dimZ);
+  EXPECT_EQ(2, tensor.dim(0));
+  EXPECT_EQ(1, tensor.dim(1));
+  EXPECT_EQ(7, tensor.dim(2));
 
   Tensor3D<int32_t, 13, 9, 24> tensor2;
 
-  EXPECT_EQ(13, tensor2.dimX);
-  EXPECT_EQ(9, tensor2.dimY);
-  EXPECT_EQ(24, tensor2.dimZ);
+  EXPECT_EQ(13, tensor2.dim(0));
+  EXPECT_EQ(9, tensor2.dim(1));
+  EXPECT_EQ(24, tensor2.dim(2));
 }
 
 TEST(tensor, dimension_4d) {
   Tensor4D<float, 2, 1, 4, 5> tensor;
 
-  EXPECT_EQ(2, tensor.dimX);
-  EXPECT_EQ(1, tensor.dimY);
-  EXPECT_EQ(4, tensor.dimZ);
-  EXPECT_EQ(5, tensor.dimW);
+  EXPECT_EQ(2, tensor.dim(0));
+  EXPECT_EQ(1, tensor.dim(1));
+  EXPECT_EQ(4, tensor.dim(2));
+  EXPECT_EQ(5, tensor.dim(3));
 
   Tensor4D<int32_t, 13, 6, 9, 8> tensor2;
 
-  EXPECT_EQ(13, tensor2.dimX);
-  EXPECT_EQ(6, tensor2.dimY);
-  EXPECT_EQ(9, tensor2.dimZ);
-  EXPECT_EQ(8, tensor2.dimW);
+  EXPECT_EQ(13, tensor2.dim(0));
+  EXPECT_EQ(6, tensor2.dim(1));
+  EXPECT_EQ(9, tensor2.dim(2));
+  EXPECT_EQ(8, tensor2.dim(3));
 }
 
 TEST(tensor, size_0d) {
   Tensor0D<float> tensor;
 
-  EXPECT_EQ(1, tensor.size_);
+  EXPECT_EQ(1, tensor.size());
 
   Tensor0D<int32_t> tensor2;
 
-  EXPECT_EQ(1, tensor2.size_);
+  EXPECT_EQ(1, tensor2.size());
 }
 
 TEST(tensor, size_1d) {
   Tensor1D<float, 2> tensor;
 
-  EXPECT_EQ(2, tensor.size_);
+  EXPECT_EQ(2, tensor.size());
 
   Tensor1D<int32_t, 13> tensor2;
 
-  EXPECT_EQ(13, tensor2.size_);
+  EXPECT_EQ(13, tensor2.size());
 }
 
 TEST(tensor, size_2d) {
   Tensor2D<float, 4, 12> tensor;
 
-  EXPECT_EQ(48, tensor.size_);
+  EXPECT_EQ(48, tensor.size());
 
   Tensor2D<int8_t, 64, 16> tensor2;
 
-  EXPECT_EQ(1024, tensor2.size_);
+  EXPECT_EQ(1024, tensor2.size());
 }
 
 TEST(tensor, size_3d) {
   Tensor3D<float, 4, 3, 5> tensor;
 
-  EXPECT_EQ(60, tensor.size_);
+  EXPECT_EQ(60, tensor.size());
 
   Tensor3D<int8_t, 8, 8, 8> tensor2;
 
-  EXPECT_EQ(512, tensor2.size_);
+  EXPECT_EQ(512, tensor2.size());
 }
 
 TEST(tensor, size_4d) {
   Tensor4D<float, 4, 2, 1, 3> tensor;
 
-  EXPECT_EQ(24, tensor.size_);
+  EXPECT_EQ(24, tensor.size());
 
   Tensor4D<int8_t, 1, 5, 6, 2> tensor2;
 
-  EXPECT_EQ(60, tensor2.size_);
+  EXPECT_EQ(60, tensor2.size());
 }
 
 TEST(tensor, meta_get_element_type) {
@@ -354,13 +354,13 @@ TEST(tensor, meta_is_tensor_0d) {
   using t3 = Tensor3D<float, 1, 4, 6>;
   using t4 = Tensor4D<uint8_t, 2, 1, 1, 9>;
 
-  EXPECT_FALSE(is_tensor_0d<s0>::value);
-  EXPECT_FALSE(is_tensor_0d<s1>::value);
-  EXPECT_TRUE(is_tensor_0d<t0>::value);
-  EXPECT_FALSE(is_tensor_0d<t1>::value);
-  EXPECT_FALSE(is_tensor_0d<t2>::value);
-  EXPECT_FALSE(is_tensor_0d<t3>::value);
-  EXPECT_FALSE(is_tensor_0d<t4>::value);
+  EXPECT_FALSE((is_tensor_of_dim<0, s0>::value));
+  EXPECT_FALSE((is_tensor_of_dim<0, s1>::value));
+  EXPECT_TRUE((is_tensor_of_dim<0, t0>::value));
+  EXPECT_FALSE((is_tensor_of_dim<0, t1>::value));
+  EXPECT_FALSE((is_tensor_of_dim<0, t2>::value));
+  EXPECT_FALSE((is_tensor_of_dim<0, t3>::value));
+  EXPECT_FALSE((is_tensor_of_dim<0, t4>::value));
 }
 
 TEST(tensor, meta_is_tensor_1d) {
@@ -372,13 +372,13 @@ TEST(tensor, meta_is_tensor_1d) {
   using t3 = Tensor3D<float, 1, 4, 6>;
   using t4 = Tensor4D<uint8_t, 2, 1, 1, 9>;
 
-  EXPECT_FALSE(is_tensor_1d<s0>::value);
-  EXPECT_FALSE(is_tensor_1d<s1>::value);
-  EXPECT_FALSE(is_tensor_1d<t0>::value);
-  EXPECT_TRUE(is_tensor_1d<t1>::value);
-  EXPECT_FALSE(is_tensor_1d<t2>::value);
-  EXPECT_FALSE(is_tensor_1d<t3>::value);
-  EXPECT_FALSE(is_tensor_1d<t4>::value);
+  EXPECT_FALSE((is_tensor_of_dim<1, s0>::value));
+  EXPECT_FALSE((is_tensor_of_dim<1, s1>::value));
+  EXPECT_FALSE((is_tensor_of_dim<1, t0>::value));
+  EXPECT_TRUE((is_tensor_of_dim<1, t1>::value));
+  EXPECT_FALSE((is_tensor_of_dim<1, t2>::value));
+  EXPECT_FALSE((is_tensor_of_dim<1, t3>::value));
+  EXPECT_FALSE((is_tensor_of_dim<1, t4>::value));
 }
 
 TEST(tensor, meta_is_tensor_2d) {
@@ -390,13 +390,13 @@ TEST(tensor, meta_is_tensor_2d) {
   using t3 = Tensor3D<float, 1, 4, 6>;
   using t4 = Tensor4D<uint8_t, 2, 1, 1, 9>;
 
-  EXPECT_FALSE(is_tensor_2d<s0>::value);
-  EXPECT_FALSE(is_tensor_2d<s1>::value);
-  EXPECT_FALSE(is_tensor_2d<t0>::value);
-  EXPECT_FALSE(is_tensor_2d<t1>::value);
-  EXPECT_TRUE(is_tensor_2d<t2>::value);
-  EXPECT_FALSE(is_tensor_2d<t3>::value);
-  EXPECT_FALSE(is_tensor_2d<t4>::value);
+  EXPECT_FALSE((is_tensor_of_dim<2, s0>::value));
+  EXPECT_FALSE((is_tensor_of_dim<2, s1>::value));
+  EXPECT_FALSE((is_tensor_of_dim<2, t0>::value));
+  EXPECT_FALSE((is_tensor_of_dim<2, t1>::value));
+  EXPECT_TRUE((is_tensor_of_dim<2, t2>::value));
+  EXPECT_FALSE((is_tensor_of_dim<2, t3>::value));
+  EXPECT_FALSE((is_tensor_of_dim<2, t4>::value));
 }
 
 TEST(tensor, meta_is_tensor_3d) {
@@ -408,13 +408,13 @@ TEST(tensor, meta_is_tensor_3d) {
   using t3 = Tensor3D<float, 1, 4, 6>;
   using t4 = Tensor4D<uint8_t, 2, 1, 1, 9>;
 
-  EXPECT_FALSE(is_tensor_3d<s0>::value);
-  EXPECT_FALSE(is_tensor_3d<s1>::value);
-  EXPECT_FALSE(is_tensor_3d<t0>::value);
-  EXPECT_FALSE(is_tensor_3d<t1>::value);
-  EXPECT_FALSE(is_tensor_3d<t2>::value);
-  EXPECT_TRUE(is_tensor_3d<t3>::value);
-  EXPECT_FALSE(is_tensor_3d<t4>::value);
+  EXPECT_FALSE((is_tensor_of_dim<3, s0>::value));
+  EXPECT_FALSE((is_tensor_of_dim<3, s1>::value));
+  EXPECT_FALSE((is_tensor_of_dim<3, t0>::value));
+  EXPECT_FALSE((is_tensor_of_dim<3, t1>::value));
+  EXPECT_FALSE((is_tensor_of_dim<3, t2>::value));
+  EXPECT_TRUE((is_tensor_of_dim<3, t3>::value));
+  EXPECT_FALSE((is_tensor_of_dim<3, t4>::value));
 }
 
 TEST(tensor, meta_is_tensor_4d) {
@@ -426,13 +426,13 @@ TEST(tensor, meta_is_tensor_4d) {
   using t3 = Tensor3D<float, 1, 4, 6>;
   using t4 = Tensor4D<uint8_t, 2, 1, 1, 9>;
 
-  EXPECT_FALSE(is_tensor_4d<s0>::value);
-  EXPECT_FALSE(is_tensor_4d<s1>::value);
-  EXPECT_FALSE(is_tensor_4d<t0>::value);
-  EXPECT_FALSE(is_tensor_4d<t1>::value);
-  EXPECT_FALSE(is_tensor_4d<t2>::value);
-  EXPECT_FALSE(is_tensor_4d<t3>::value);
-  EXPECT_TRUE(is_tensor_4d<t4>::value);
+  EXPECT_FALSE((is_tensor_of_dim<4, s0>::value));
+  EXPECT_FALSE((is_tensor_of_dim<4, s1>::value));
+  EXPECT_FALSE((is_tensor_of_dim<4, t0>::value));
+  EXPECT_FALSE((is_tensor_of_dim<4, t1>::value));
+  EXPECT_FALSE((is_tensor_of_dim<4, t2>::value));
+  EXPECT_FALSE((is_tensor_of_dim<4, t3>::value));
+  EXPECT_TRUE((is_tensor_of_dim<4, t4>::value));
 }
 
 TEST(tensor, meta_replace_element_type) {

@@ -131,6 +131,8 @@ public:
             typename =
                 std::enable_if<conjunction_v<std::is_same<size_t, Indices>...>>>
   reference operator()(Indices... indices) {
+    static_assert(sizeof...(Indices) == rank(),
+                  "Incorrect number of arguments");
     size_t index = ravel_index(indices...);
     assert(0 <= index && index < size());
     return data[index];
@@ -141,11 +143,13 @@ private:
             typename =
                 std::enable_if<conjunction_v<std::is_same<size_t, Indices>...>>>
   constexpr size_t ravel_index(size_t index, Indices... indices) {
+    assert(0 <= index && index < shape()[Index]);
     return index * strides()[Index] + ravel_index<Index + 1>(indices...);
   }
 
-  template <size_t Unused = 0>
+  template <size_t Index = 0>
   constexpr size_t ravel_index(size_t index) {
+    assert(0 <= index && index < shape()[Index]);
     return index;
   }
 

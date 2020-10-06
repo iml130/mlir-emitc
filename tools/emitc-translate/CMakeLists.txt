@@ -4,12 +4,12 @@ set(LLVM_LINK_COMPONENTS
 if(${IREE_ENABLE_EMITC})
   # Dialects from iree::tools::init_mlir_passes_and_dialects
   set(dialect_libs
-    MLIRAffineOps
+    MLIRAffine
     MLIRAffineTransforms
     MLIRGPU
     MLIRIR
     MLIRLLVMIR
-    MLIRLinalgOps
+    MLIRLinalg
     MLIRLinalgTransforms
     MLIRQuant
     MLIRSCF
@@ -17,7 +17,7 @@ if(${IREE_ENABLE_EMITC})
     MLIRSDBM
     MLIRSPIRV
     MLIRSPIRVTransforms
-    MLIRStandardOps
+    MLIRStandard
     MLIRShape
     MLIRTransforms
     MLIRVector

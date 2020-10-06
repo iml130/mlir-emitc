@@ -11,5 +11,5 @@ add_mlir_library(MLIRTargetCpp
   LINK_LIBS PUBLIC
   MLIREmitC
   MLIRIR
-  MLIRStandardOps
+  MLIRStandard
   )

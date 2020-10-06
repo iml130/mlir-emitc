@@ -22,7 +22,6 @@
 #include <functional>
 #include <random>
 #include <type_traits>
-#include <vector>
 
 #include "emitc_tensor.h"
 
@@ -558,8 +557,8 @@ inline Src select(typename replace_element_type<bool, Src>::type pred,
 }
 
 // RngUniformOp
-template <typename Dest, typename T>
-inline Dest rng_uniform(T low, T high, std::vector<int64_t> shape) {
+template <typename Dest, typename T, size_t N>
+inline Dest rng_uniform(T low, T high, Tensor1D<int64_t, N> shape) {
   static_assert(std::is_integral<T>::value || std::is_floating_point<T>::value,
                 "Expected integer or floating point type");
   using uniform_distribution =
@@ -588,19 +587,22 @@ inline Dest rng_uniform(T low, T high, std::vector<int64_t> shape) {
 }
 
 // RngBitGeneratorOp
-template <typename T, int32_t Algorithm, int64_t N>
-std::tuple<std::vector<uint64_t>, std::vector<T>>
-rng_bit_generator(std::vector<uint64_t> state) {
+template <typename Dest>
+Dest rng_bit_generator(std::tuple_element<0, Dest> state) {
   // TODO implement correct algorithm; starting point would be
   // https://github.com/tensorflow/tensorflow/blob/6f59650012f8904745dffaba540afc794c6613be/tensorflow/compiler/xla/service/rng_bit_generator_expander.cc#L56
-  std::vector<uint64_t> newState(state);
-  std::vector<int64_t> shape{N};
+
+  using StateType = std::tuple_element<0, Dest>;
+  using TensorType = std::tuple_element<1, Dest>;
+  using T = typename TensorType::value_type;
+
+  StateType newState(state);
 
   T min = std::numeric_limits<T>::min();
   T max = std::numeric_limits<T>::max();
-  std::vector<T> resultVector = rng_uniform<T>(min, max, shape);
+  TensorType data = rng_uniform<TensorType, T>(min, max, result.shape());
 
-  return std::make_tuple(newState, resultVector);
+  return std::make_tuple(newState, data);
 }
 
 } // namespace mhlo

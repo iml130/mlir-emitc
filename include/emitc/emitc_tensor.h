@@ -10,7 +10,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// This file defines tensor classes used by EmitC
+// This file defines the tensor class used by EmitC
 
 #ifndef EMITC_TENSOR_H
 #define EMITC_TENSOR_H
@@ -21,7 +21,7 @@
 #include <cstddef>
 #include <vector>
 
-namespace {
+namespace detail {
 template <size_t N>
 constexpr size_t sum(std::array<size_t, N> arr) {
   size_t result = 0;
@@ -34,6 +34,7 @@ constexpr size_t sum(std::array<size_t, N> arr) {
 
 template <size_t N>
 constexpr size_t first(std::array<size_t, N> arr) {
+  static_assert(N > 0, "Cannot get the first element of an empty array");
   return arr[0];
 }
 
@@ -63,7 +64,7 @@ struct conjunction<B1, Bn...>
 
 template <class... B>
 constexpr bool conjunction_v = conjunction<B...>::value;
-} // namespace
+} // namespace detail
 
 template <typename T, size_t... Shape>
 class Tensor {
@@ -103,12 +104,15 @@ public:
     std::array<size_t, rank()> result;
     constexpr std::array<size_t, rank()> s = {Shape...};
 
-    result[rank() - 1] = 1;
-    size_t i = rank() - 2;
+    if (rank() == 0) {
+      return result;
+    }
 
-    do {
-      result[i] = result[i + 1] * s[i + 1];
-    } while (i-- > 0);
+    result[rank() - 1] = 1;
+
+    for (size_t i = rank() - 1; i > 0; i--) {
+      result[i - 1] = result[i] * s[i];
+    }
 
     return result;
   }
@@ -122,38 +126,40 @@ public:
   const_iterator end() const { return data.end(); }
 
   // Index into the flat data buffer.
-  reference operator[](size_t x) {
-    assert(0 <= x && x < size());
-    return data[x];
+  reference operator[](size_t index) {
+    assert(0 <= index && index < size());
+    return data[index];
   }
 
   template <typename... Indices,
-            typename =
-                std::enable_if<conjunction_v<std::is_same<size_t, Indices>...>>>
+            typename = std::enable_if<
+                detail::conjunction_v<std::is_same<size_t, Indices>...>>>
   reference operator()(Indices... indices) {
-    static_assert(sizeof...(Indices) == rank(),
-                  "Incorrect number of arguments");
     size_t index = ravel_index(indices...);
     assert(0 <= index && index < size());
     return data[index];
   }
 
+  template <typename... Indices,
+            typename = std::enable_if<
+                detail::conjunction_v<std::is_same<size_t, Indices>...>>>
+  constexpr size_t ravel_index(Indices... indices) {
+    static_assert(sizeof...(Indices) == rank(),
+                  "Incorrect number of arguments");
+    return _ravel_index({static_cast<size_t>(indices)...});
+  }
+
 private:
-  template <typename... Indices, size_t Index = 0,
-            typename =
-                std::enable_if<conjunction_v<std::is_same<size_t, Indices>...>>>
-  constexpr size_t ravel_index(size_t index, Indices... indices) {
-    assert(0 <= index && index < shape()[Index]);
-    return index * strides()[Index] + ravel_index<Index + 1>(indices...);
-  }
+  constexpr size_t _ravel_index(std::array<size_t, rank()> indices) {
+    std::array<size_t, rank()> s = strides();
 
-  template <size_t Index = 0>
-  constexpr size_t ravel_index(size_t index) {
-    assert(0 <= index && index < shape()[Index]);
-    return index;
-  }
+    size_t result = 0;
+    for (size_t i = 0; i < indices.size(); i++) {
+      result += indices[i] * s[i];
+    }
 
-  constexpr size_t ravel_index() { return 0; }
+    return result;
+  }
 
   std::vector<T> data;
 };
@@ -199,9 +205,6 @@ using IsTensor = typename std::enable_if_t<is_tensor<T>::value, bool>;
 template <size_t Dim, typename T>
 using IsTensorOfDim =
     typename std::enable_if_t<is_tensor_of_dim<Dim, T>::value, bool>;
-
-template <typename T>
-using IsTensor = typename std::enable_if_t<is_tensor<T>::value, bool>;
 
 template <typename T>
 struct get_element_type {
@@ -261,19 +264,18 @@ struct concat {};
 template <size_t Dim, typename T, size_t... Xs>
 struct concat<Dim, T, Tensor1D<T, Xs>...> {
   static_assert(0 <= Dim && Dim < 1, "Dimension index out of bounds");
-  using type = Tensor1D<T, sum<Xs...>()>;
+  using type = Tensor1D<T, detail::sum<Xs...>()>;
 };
 
 template <typename T, size_t Dim, size_t... Xs, size_t... Ys>
 struct concat<Dim, T, Tensor2D<T, Xs, Ys>...> {
   static_assert(0 <= Dim && Dim < 2, "Dimension index out of bounds");
-  static_assert((Dim == 0 && all_same({Ys...})) ||
-                    (Dim == 1 && all_same({Xs...})),
+  static_assert((Dim == 0 && detail::all_same({Ys...})) ||
+                    (Dim == 1 && detail::all_same({Xs...})),
                 "All dimensions except for the dimension index must match");
-  using type =
-      typename std::conditional_t<Dim == 0,
-                                  Tensor2D<T, sum({Xs...}), first({Ys...})>,
-                                  Tensor2D<T, first({Xs...}), sum({Ys...})>>;
+  using type = typename std::conditional_t<
+      Dim == 0, Tensor2D<T, detail::sum({Xs...}), detail::first({Ys...})>,
+      Tensor2D<T, detail::first({Xs...}), detail::sum({Ys...})>>;
 };
 
 #endif // EMITC_TENSOR_H

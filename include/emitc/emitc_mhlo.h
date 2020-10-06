@@ -386,15 +386,15 @@ inline Dest concatenate(Src1 input1, Src... inputs) {
   //    move b_ptr, c_ptr by JxD elements
 
   // take the product of all dimensions, starting at `Dimension`
-  auto calculate_shift = [](auto &shape) {
+  auto calculate_shift = [](const auto &shape) {
     size_t shift = 1;
     for (size_t i = Dimension; i < shape.size(); i++) {
       shift *= shape[i];
     }
     return shift;
   };
-  auto a_shift = calculate_shift(Src1::shape);
-  auto b_shift = calculate_shift(Rest::shape);
+  auto a_shift = calculate_shift(Src1::shape());
+  auto b_shift = calculate_shift(Rest::shape());
 
   for (auto a_ptr = input1.begin(), b_ptr = rest.begin(), c_ptr = z.begin();
        a_ptr != input1.end(); a_ptr += a_shift, b_ptr += b_shift) {

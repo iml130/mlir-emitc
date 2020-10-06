@@ -23,7 +23,7 @@
 
 namespace detail {
 template <size_t N>
-constexpr size_t sum(std::array<size_t, N> arr) {
+constexpr size_t sum(const std::array<size_t, N> arr) {
   size_t result = 0;
 
   for (size_t i = 0; i < arr.size(); i++) {
@@ -33,13 +33,13 @@ constexpr size_t sum(std::array<size_t, N> arr) {
 }
 
 template <size_t N>
-constexpr size_t first(std::array<size_t, N> arr) {
+constexpr size_t first(const std::array<size_t, N> arr) {
   static_assert(N > 0, "Cannot get the first element of an empty array");
   return arr[0];
 }
 
 template <size_t N>
-constexpr bool all_same(std::array<size_t, N> arr) {
+constexpr bool all_same(const std::array<size_t, N> arr) {
   if (arr.size() == 0) {
     return true;
   }
@@ -264,18 +264,21 @@ struct concat {};
 template <size_t Dim, typename T, size_t... Xs>
 struct concat<Dim, T, Tensor1D<T, Xs>...> {
   static_assert(0 <= Dim && Dim < 1, "Dimension index out of bounds");
-  using type = Tensor1D<T, detail::sum<Xs...>()>;
+  using type = Tensor1D<T, detail::sum<sizeof...(Xs)>({Xs...})>;
 };
 
 template <typename T, size_t Dim, size_t... Xs, size_t... Ys>
 struct concat<Dim, T, Tensor2D<T, Xs, Ys>...> {
   static_assert(0 <= Dim && Dim < 2, "Dimension index out of bounds");
-  static_assert((Dim == 0 && detail::all_same({Ys...})) ||
-                    (Dim == 1 && detail::all_same({Xs...})),
+  static_assert((Dim == 0 && detail::all_same<sizeof...(Ys)>({Ys...})) ||
+                    (Dim == 1 && detail::all_same<sizeof...(Xs)>({Xs...})),
                 "All dimensions except for the dimension index must match");
   using type = typename std::conditional_t<
-      Dim == 0, Tensor2D<T, detail::sum({Xs...}), detail::first({Ys...})>,
-      Tensor2D<T, detail::first({Xs...}), detail::sum({Ys...})>>;
+      Dim == 0,
+      Tensor2D<T, detail::sum<sizeof...(Xs)>({Xs...}),
+               detail::first<sizeof...(Ys)>({Ys...})>,
+      Tensor2D<T, detail::first<sizeof...(Xs)>({Xs...}),
+               detail::sum<sizeof...(Ys)>({Ys...})>>;
 };
 
 #endif // EMITC_TENSOR_H

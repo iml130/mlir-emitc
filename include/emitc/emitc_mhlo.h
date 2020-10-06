@@ -558,46 +558,33 @@ inline Src select(typename replace_element_type<bool, Src>::type pred,
 }
 
 // RngUniformOp
-template <typename T>
-using IsIntegral =
-    typename std::enable_if<std::is_integral<T>::value, bool>::type;
-template <typename T>
-using IsFloatingPoint =
-    typename std::enable_if<std::is_floating_point<T>::value, bool>::type;
+template <typename Dest, typename T>
+inline Dest rng_uniform(T low, T high, std::vector<int64_t> shape) {
+  static_assert(std::is_integral<T>::value || std::is_floating_point<T>::value,
+                "Expected integer or floating point type");
+  using uniform_distribution =
+      typename std::conditional<std::is_integral<T>::value,
+                                std::uniform_int_distribution<T>,
+                                std::uniform_real_distribution<T>>::type;
 
-// integer types
-template <typename T, IsIntegral<T> = true>
-std::vector<T> rng_uniform(T low, T high, std::vector<int64_t> shape) {
-  int64_t n = std::accumulate(shape.begin(), shape.end(), 1,
-                              std::multiplies<int64_t>());
-
-  std::random_device rd;
-  std::mt19937 gen(rd());
   // high value is exclusive in xla but inclusive in cpp
   // see https://www.tensorflow.org/xla/operation_semantics?hl=en#rnguniform and
   // https://en.cppreference.com/w/cpp/numeric/random/uniform_int_distribution
-  std::uniform_int_distribution<T> distribution(low, high - 1);
-  std::vector<T> result(n);
-  for (int64_t i = 0; i < n; i++) {
-    result[i] = distribution(gen);
+  if (std::is_integral<T>::value) {
+    high = high - 1;
   }
-  return result;
-}
 
-// floating point types
-template <typename T, IsFloatingPoint<T> = true>
-std::vector<T> rng_uniform(T low, T high, std::vector<int64_t> shape) {
-  int64_t n = std::accumulate(shape.begin(), shape.end(), 1,
-                              std::multiplies<int64_t>());
-
+  uniform_distribution distribution(low, high);
   std::random_device rd;
   std::mt19937 gen(rd());
-  std::uniform_real_distribution<T> distribution(low, high);
-  std::vector<T> result(n);
-  for (int64_t i = 0; i < n; i++) {
-    result[i] = distribution(gen);
+
+  Dest z;
+
+  for (size_t i = 0; i < z.size(); i++) {
+    z[i] = distribution(gen);
   }
-  return result;
+
+  return z;
 }
 
 // RngBitGeneratorOp

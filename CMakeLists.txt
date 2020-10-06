@@ -43,6 +43,11 @@ include(AddLLVM)
 include(AddMLIR)
 include(HandleLLVMOptions)
 
+# TODO: With LLVM_ENABLE_WARNINGS set to ON in HandleLLVMOptions, the
+# compilation of googletest fails. As a workaround, we remove the
+# `-Wcovered-switch-default` flag.
+string(REPLACE "-Wcovered-switch-default" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+
 if(${IREE_ENABLE_EMITC} AND ${IREE_MLIR_DEP_MODE} STREQUAL "BUNDLED")
   include_directories(${IREE_COMMON_INCLUDE_DIRS})
 elseif(${IREE_ENABLE_EMITC} AND ${IREE_MLIR_DEP_MODE} STREQUAL "INSTALLED")

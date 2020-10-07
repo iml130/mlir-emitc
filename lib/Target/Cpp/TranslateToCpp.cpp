@@ -106,6 +106,9 @@ struct CppEmitter {
   /// Return the existing or a new name for a Value.
   StringRef getOrCreateName(Value val);
 
+  /// Whether to map an mlir integer to a signed integer in C++
+  bool mapToSigned(IntegerType::SignednessSemantics val);
+
   /// RAII helper function to manage entering/exiting C++ scopes.
   struct Scope {
     Scope(CppEmitter &emitter) : mapperScope(emitter.mapper), emitter(emitter) {
@@ -143,10 +146,9 @@ static LogicalResult printConstantOp(CppEmitter &emitter,
                                      ConstantOp constantOp) {
   auto &os = emitter.ostream();
   emitter.emitType(constantOp.getType());
-  os << " " << emitter.getOrCreateName(constantOp.getResult()) << '{';
+  os << " " << emitter.getOrCreateName(constantOp.getResult());
   if (failed(emitter.emitAttribute(constantOp.getValue())))
     return constantOp.emitError("unable to emit constant value");
-  os << '}';
   return success();
 }
 
@@ -400,10 +402,33 @@ StringRef CppEmitter::getOrCreateName(Value val) {
   return *mapper.begin(val);
 }
 
+bool CppEmitter::mapToSigned(IntegerType::SignednessSemantics val) {
+  switch (val) {
+  case IntegerType::Signless:
+    return true;
+  case IntegerType::Signed:
+    return true;
+  case IntegerType::Unsigned:
+    return false;
+  }
+}
+
 bool CppEmitter::hasValueInScope(Value val) { return mapper.count(val); }
 
 LogicalResult CppEmitter::emitAttribute(Attribute attr) {
-  auto print = [&](APFloat val) {
+
+  auto printInt = [&](APInt val, bool isSigned) {
+    if (val.getBitWidth() == 1) {
+      if (val.getBoolValue())
+        os << "true";
+      else
+        os << "false";
+    } else {
+      val.print(os, isSigned);
+    }
+  };
+
+  auto printFloat = [&](APFloat val) {
     SmallString<128> strValue;
     // Use default values of toString except don't truncate zeros.
     val.toString(strValue, 0, 0, false);
@@ -419,32 +444,51 @@ LogicalResult CppEmitter::emitAttribute(Attribute attr) {
     };
     os << strValue;
   };
+
   // Print floating point attributes.
   if (auto fAttr = attr.dyn_cast<FloatAttr>()) {
-    print(fAttr.getValue());
+    printFloat(fAttr.getValue());
     return success();
   }
   if (auto dense = attr.dyn_cast<mlir::DenseFPElementsAttr>()) {
     os << '{';
-    interleaveComma(dense, os, [&](APFloat val) { print(val); });
+    interleaveComma(dense, os, [&](APFloat val) { printFloat(val); });
     os << '}';
     return success();
   }
 
   // Print int attributes.
   if (auto iAttr = attr.dyn_cast<IntegerAttr>()) {
-    auto value = iAttr.getValue();
-    if (value.getBitWidth() == 1)
-      os << value.getBoolValue();
-    else
-      os << value;
-    return success();
+    if (auto iType = iAttr.getType().dyn_cast<IntegerType>()) {
+      printInt(iAttr.getValue(), mapToSigned(iType.getSignedness()));
+      return success();
+    }
+    if (auto iType = iAttr.getType().dyn_cast<IndexType>()) {
+      printInt(iAttr.getValue(), false);
+      return success();
+    }
   }
   if (auto dense = attr.dyn_cast<DenseIntElementsAttr>()) {
-    os << '{';
-    interleaveComma(dense.getIntValues(), os);
-    os << '}';
-    return success();
+    if (auto iType = dense.getType()
+                         .cast<TensorType>()
+                         .getElementType()
+                         .cast<IntegerType>()) {
+      os << '{';
+      interleaveComma(dense, os, [&](APInt val) {
+        printInt(val, mapToSigned(iType.getSignedness()));
+      });
+      os << '}';
+      return success();
+    }
+    if (auto iType = dense.getType()
+                         .cast<TensorType>()
+                         .getElementType()
+                         .cast<IndexType>()) {
+      os << '{';
+      interleaveComma(dense, os, [&](APInt val) { printInt(val, false); });
+      os << '}';
+      return success();
+    }
   }
   if (auto sAttr = attr.dyn_cast<StringAttr>()) {
     os << sAttr.getValue();
@@ -554,17 +598,14 @@ LogicalResult CppEmitter::emitType(Type type) {
     switch (itype.getWidth()) {
     case 1:
       return (os << "bool"), success();
+    case 8:
+    case 16:
     case 32:
-      if (itype.getSignedness()) {
-        return (os << "uint32_t"), success();
-      } else {
-        return (os << "int32_t"), success();
-      }
     case 64:
-      if (itype.getSignedness()) {
-        return (os << "uint64_t"), success();
+      if (mapToSigned(itype.getSignedness())) {
+        return (os << "int" << itype.getWidth() << "_t"), success();
       } else {
-        return (os << "int64_t"), success();
+        return (os << "uint" << itype.getWidth() << "_t"), success();
       }
     default:
       return failure();

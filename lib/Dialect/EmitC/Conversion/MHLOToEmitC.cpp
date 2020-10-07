@@ -13,6 +13,7 @@
 #include "emitc/Dialect/EmitC/EmitCDialect.h"
 #include "emitc/Dialect/EmitC/Passes.h"
 #include "mlir-hlo/Dialect/mhlo/IR/hlo_ops.h"
+#include "mlir/Dialect/StandardOps/IR/Ops.h"
 #include "mlir/IR/Function.h"
 #include "mlir/IR/PatternMatch.h"
 #include "mlir/Pass/Pass.h"
@@ -34,37 +35,25 @@ private:
   matchAndRewrite(mhlo::BroadcastInDimOp broadcastInDimOp,
                   ArrayRef<Value> operands,
                   ConversionPatternRewriter &rewriter) const override {
-
-    // TODO: Generalize to other cases
+    auto loc = broadcastInDimOp.getLoc();
     auto broadcastDims = broadcastInDimOp.broadcast_dimensions();
-    if (broadcastDims.getType().getRank() != 1)
-      return broadcastInDimOp.emitError()
-             << "broadcast_dimensions with rank other than 1 not supported";
-    if (broadcastDims.getType().getShape().front() != 0)
-      return broadcastInDimOp.emitError()
-             << "broadcast_dimensions with size other than 0 not supported";
-    if (auto result = broadcastInDimOp.getResult()
-                          .getType()
-                          .dyn_cast<RankedTensorType>()) {
-      if (result.getRank() != 1)
-        return failure();
+    auto constOp = rewriter.create<ConstantOp>(loc, broadcastDims);
 
-      auto size = result.getShape().front();
+    std::vector<Value> newOperands(operands);
+    newOperands.push_back(constOp.getResult());
 
-      StringRef funcName = "mhlo::broadcast_in_dim";
-      StringAttr callee = rewriter.getStringAttr(funcName);
-      ArrayAttr args;
-      ArrayAttr templateArgs = rewriter.getArrayAttr(
-          {IntegerAttr::get(rewriter.getIntegerType(32), size)});
+    StringRef funcName = "mhlo::broadcast_in_dim";
+    StringAttr callee = rewriter.getStringAttr(funcName);
 
-      rewriter.replaceOpWithNewOp<emitc::CallOp>(
-          broadcastInDimOp, broadcastInDimOp.getType(), callee, args,
-          templateArgs, operands);
+    ArrayAttr args;
+    ArrayAttr templateArgs = rewriter.getArrayAttr(
+        {TypeAttr::get(broadcastInDimOp.getResult().getType())});
 
-      return success();
-    }
+    rewriter.replaceOpWithNewOp<emitc::CallOp>(
+        broadcastInDimOp, broadcastInDimOp.getType(), callee, args,
+        templateArgs, newOperands);
 
-    return failure();
+    return success();
   }
 };
 
@@ -607,7 +596,7 @@ namespace {
 struct ConvertMhloToEmitcPass
     : public PassWrapper<ConvertMhloToEmitcPass, FunctionPass> {
   void getDependentDialects(DialectRegistry &registry) const override {
-    registry.insert<emitc::EmitCDialect>();
+    registry.insert<emitc::EmitCDialect, mlir::StandardOpsDialect>();
   }
   /// Perform the lowering to EmitC dialect.
   void runOnFunction() override {
@@ -616,6 +605,7 @@ struct ConvertMhloToEmitcPass
 
     target.addLegalDialect<emitc::EmitCDialect>();
     target.addLegalDialect<mhlo::MhloDialect>();
+    target.addLegalOp<ConstantOp>();
     // clang-format off
     // MHLO unary elementwise ops
     target.addIllegalOp<mhlo::AbsOp,

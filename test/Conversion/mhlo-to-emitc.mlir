@@ -13,7 +13,8 @@ func @mhlo_bitcast_convert(%arg0: tensor<ui32>) -> tensor<i32> {
 }
 
 func @mhlo_broadcast_in_dim(%arg0: tensor<i32>) -> tensor<3xi32> {
-  // CHECK: emitc.call "mhlo::broadcast_in_dim"(%arg0) {template_args = [3 : i32]}
+  // CHECK: %{{.*}} = constant
+  // CHECK: emitc.call "mhlo::broadcast_in_dim"(%arg0, %{{.*}}) {template_args = [tensor<3xi32>]}
   %0 = "mhlo.broadcast_in_dim"(%arg0) {broadcast_dimensions = dense<> : tensor<0xi64>}: (tensor<i32>) -> tensor<3xi32>
   return %0 : tensor<3xi32>
 }

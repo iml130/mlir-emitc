@@ -600,7 +600,7 @@ Dest rng_bit_generator(std::tuple_element<0, Dest> state) {
 
   T min = std::numeric_limits<T>::min();
   T max = std::numeric_limits<T>::max();
-  TensorType data = rng_uniform<TensorType, T>(min, max, result.shape());
+  TensorType data = rng_uniform<TensorType, T>(min, max, TensorType::shape());
 
   return std::make_tuple(newState, data);
 }

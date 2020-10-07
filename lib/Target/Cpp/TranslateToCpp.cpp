@@ -338,7 +338,8 @@ static LogicalResult printReturnOp(CppEmitter &emitter, ReturnOp returnOp) {
 static LogicalResult printModule(CppEmitter &emitter, ModuleOp moduleOp) {
   CppEmitter::Scope scope(emitter);
   auto &os = emitter.ostream();
-  os << "#include \"emitc_mhlo.h\"\n\n";
+  os << "#include <cmath>\n\n";
+  os << "#include \"emitc_mhlo.h\"\n";
   os << "#include \"emitc_std.h\"\n\n";
   os << "// Forward declare functions.\n";
   for (FuncOp funcOp : moduleOp.getOps<FuncOp>()) {
@@ -429,20 +430,28 @@ LogicalResult CppEmitter::emitAttribute(Attribute attr) {
   };
 
   auto printFloat = [&](APFloat val) {
-    SmallString<128> strValue;
-    // Use default values of toString except don't truncate zeros.
-    val.toString(strValue, 0, 0, false);
-    switch (llvm::APFloatBase::SemanticsToEnum(val.getSemantics())) {
-    case llvm::APFloatBase::S_IEEEsingle:
-      os << "(float)";
-      break;
-    case llvm::APFloatBase::S_IEEEdouble:
-      os << "(double)";
-      break;
-    default:
-      break;
-    };
-    os << strValue;
+    if (val.isFinite()) {
+      SmallString<128> strValue;
+      // Use default values of toString except don't truncate zeros.
+      val.toString(strValue, 0, 0, false);
+      switch (llvm::APFloatBase::SemanticsToEnum(val.getSemantics())) {
+      case llvm::APFloatBase::S_IEEEsingle:
+        os << "(float)";
+        break;
+      case llvm::APFloatBase::S_IEEEdouble:
+        os << "(double)";
+        break;
+      default:
+        break;
+      };
+      os << strValue;
+    } else if (val.isNaN()) {
+      os << "NAN";
+    } else if (val.isInfinity()) {
+      if (val.isNegative())
+        os << "-";
+      os << "INFINITY";
+    }
   };
 
   // Print floating point attributes.

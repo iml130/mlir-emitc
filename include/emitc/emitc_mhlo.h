@@ -605,6 +605,97 @@ Dest rng_bit_generator(std::tuple_element<0, Dest> state) {
   return std::make_tuple(newState, data);
 }
 
+// ConvolutionOp
+template <typename Dest, typename Src, typename Weights>
+Dest convolution(Src input, Weights weights, int64_t batch_group_count,
+                 int64_t input_batch_dimension, int64_t input_feature_dimension,
+                 Tensor1D<int64_t, 2> input_spatial_dimensions,
+                 int64_t kernel_input_feature_dimension,
+                 int64_t kernel_output_feature_dimension,
+                 Tensor1D<int64_t, 2> kernel_spatial_dimensions,
+                 int64_t output_batch_dimension,
+                 int64_t output_feature_dimension,
+                 Tensor1D<int64_t, 2> output_spatial_dimensions,
+                 int64_t feature_group_count, Tensor2D<int64_t, 2, 2> padding,
+                 Tensor1D<int64_t, 2> rhs_dilation,
+                 Tensor1D<int64_t, 2> window_strides) {
+  static_assert(is_tensor<Src>::value, "Expected 4 dimensional input");
+  static_assert(is_tensor<Dest>::value, "Expected 4 dimensional output");
+  static_assert(is_tensor<Weights>::value, "Expected 4 dimensional weights");
+
+  assert(batch_group_count == 1);
+
+  assert(input_batch_dimension == 0);
+  assert(input_spatial_dimensions[0] == 1);
+  assert(input_spatial_dimensions[1] == 2);
+  assert(input_feature_dimension == 3);
+
+  assert(kernel_spatial_dimensions[0] == 0);
+  assert(kernel_spatial_dimensions[1] == 1);
+  assert(kernel_input_feature_dimension == 2);
+  assert(kernel_output_feature_dimension == 3);
+
+  assert(output_batch_dimension == 0);
+  assert(output_spatial_dimensions[0] == 1);
+  assert(output_spatial_dimensions[1] == 2);
+  assert(output_feature_dimension == 3);
+
+  assert(feature_group_count == 1);
+  assert(rhs_dilation[0] == 1);
+  assert(rhs_dilation[0] == 1);
+  assert(window_strides[0] == 1);
+  assert(window_strides[1] == 1);
+
+  const int N = input.dim(input_batch_dimension);
+  const int H_IN = input.dim(input_spatial_dimensions[0]);
+  const int W_IN = input.dim(input_spatial_dimensions[1]);
+  const int C_IN = input.dim(input_feature_dimension);
+
+  Dest output;
+  const int H_OUT = output.dim(output_spatial_dimensions[0]);
+  const int W_OUT = output.dim(output_spatial_dimensions[1]);
+  const int C_OUT = output.dim(output_feature_dimension);
+
+  const int K_H = weights.dim(kernel_spatial_dimensions[0]);
+  const int K_W = weights.dim(kernel_spatial_dimensions[1]);
+  const int S_H = window_strides[0];
+  const int S_W = window_strides[1];
+
+  const int pt = padding(0, 0);
+  const int pb = padding(0, 1);
+  const int pl = padding(1, 0);
+  const int pr = padding(1, 1);
+
+  const int H_PAD = pt + H_IN + pb;
+  const int W_PAD = pl + W_IN + pr;
+
+  // Convolution
+  for (int n = 0; n < N; n++) {
+    for (int h = -pt; h < H_PAD - K_H + 1; h += S_H) {
+      for (int w = -pt; w < W_PAD - K_W + 1; w += S_W) {
+        for (int kh = 0; kh < K_H; kh++) {
+          for (int kw = 0; kw < K_W; kw++) {
+            for (int c_in = 0; c_in < C_IN; c_in++) {
+              for (int c_out = 0; c_out < C_OUT; c_out++) {
+                int h_out = h / S_H;
+                int w_out = w / S_W;
+                int h_in = h - pt + kh;
+                int w_in = w - pl + kw;
+                if (h_in < 0 || h_in >= H_IN || w_in < 0 || w_in >= W_IN ||
+                    h_out < 0 || h_out >= H_OUT || w_out < 0 || w_out >= W_OUT)
+                  continue;
+                output(n, h_out, w_out, c_out) +=
+                    input(n, h_in, w_in, c_in) * weights(kh, kw, c_in, c_out);
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  return output;
+}
+
 } // namespace mhlo
 
 #endif // EMITC_MHLO_H

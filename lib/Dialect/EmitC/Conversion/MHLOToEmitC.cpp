@@ -65,17 +65,19 @@ public:
 
 private:
   LogicalResult
-  matchAndRewrite(mhlo::ConcatenateOp srcOp, ArrayRef<Value> operands,
+  matchAndRewrite(mhlo::ConcatenateOp concatenateOp, ArrayRef<Value> operands,
                   ConversionPatternRewriter &rewriter) const override {
-
-    // TODO: Take care of the op's dimension attribute.
 
     StringRef funcName = "mhlo::concatenate";
     StringAttr callee = rewriter.getStringAttr(funcName);
-    ArrayAttr args;
-    ArrayAttr templateArgs;
 
-    rewriter.replaceOpWithNewOp<emitc::CallOp>(srcOp, srcOp.getType(), callee,
+    ArrayAttr args;
+    ArrayAttr templateArgs = rewriter.getArrayAttr(
+        {rewriter.getI64IntegerAttr(concatenateOp.dimension()),
+         TypeAttr::get(concatenateOp.getResult().getType())});
+
+    rewriter.replaceOpWithNewOp<emitc::CallOp>(concatenateOp,
+                                               concatenateOp.getType(), callee,
                                                args, templateArgs, operands);
 
     return success();

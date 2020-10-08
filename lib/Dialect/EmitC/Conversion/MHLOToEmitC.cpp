@@ -541,7 +541,8 @@ void populateMhloToEmitcPatterns(MLIRContext *ctx,
   patterns.insert<BroadcastInDimOpConversion>(ctx);
   patterns.insert<ConvertOpConversion>(ctx);
   patterns.insert<ConcatenateOpConversion>(ctx);
-  patterns.insert<ReshapeOpConversion>(ctx);
+  patterns.insert<CallOpConversion<mhlo::ReshapeOp>>(
+      ctx, "mhlo::reshape", /*explicitResultType=*/true);
   patterns.insert<SelectOpConversion>(ctx);
 
   // Insert patterns for MHLO RNG ops.

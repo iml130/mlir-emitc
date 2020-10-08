@@ -19,6 +19,7 @@
 #include <cmath>
 #include <complex>
 #include <cstdint>
+#include <cstring>
 #include <functional>
 #include <random>
 #include <type_traits>

@@ -354,34 +354,6 @@ private:
   }
 };
 
-class ConvertOpConversion : public OpConversionPattern<mhlo::ConvertOp> {
-  using OpConversionPattern<mhlo::ConvertOp>::OpConversionPattern;
-
-public:
-  ConvertOpConversion(MLIRContext *ctx)
-      : OpConversionPattern<mhlo::ConvertOp>(ctx) {}
-
-private:
-  LogicalResult
-  matchAndRewrite(mhlo::ConvertOp convertOp, ArrayRef<Value> operands,
-                  ConversionPatternRewriter &rewriter) const override {
-    StringAttr callee = rewriter.getStringAttr("mhlo::convert");
-
-    Type elementType = convertOp.getType();
-    if (auto tensorType = elementType.dyn_cast<TensorType>()) {
-      elementType = tensorType.getElementType();
-    }
-    ArrayAttr args;
-    ArrayAttr templateArgs =
-        rewriter.getArrayAttr({TypeAttr::get(elementType)});
-
-    rewriter.replaceOpWithNewOp<emitc::CallOp>(
-        convertOp, convertOp.getType(), callee, args, templateArgs, operands);
-
-    return success();
-  }
-};
-
 class SelectOpConversion : public OpConversionPattern<mhlo::SelectOp> {
   using OpConversionPattern<mhlo::SelectOp>::OpConversionPattern;
 
@@ -496,7 +468,8 @@ void populateMhloToEmitcPatterns(MLIRContext *ctx,
   // Insert patterns for other MHLO ops.
   patterns.insert<BitcastConvertOpConversion>(ctx);
   patterns.insert<BroadcastInDimOpConversion>(ctx);
-  patterns.insert<ConvertOpConversion>(ctx);
+  patterns.insert<CallOpConversion<mhlo::ConvertOp>>(
+      ctx, "mhlo::convert", /*explicitResultType=*/true);
   patterns.insert<ConcatenateOpConversion>(ctx);
   patterns.insert<CallOpConversion<mhlo::ReshapeOp>>(
       ctx, "mhlo::reshape", /*explicitResultType=*/true);

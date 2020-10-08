@@ -43,7 +43,7 @@ func @mhlo_compare(%arg0: tensor<4xi32>, %arg1: tensor<4xi32>) -> tensor<4xi1> {
 }
 
 func @mhlo_convert(%arg0: tensor<ui32>) -> tensor<ui64> {
-  // CHECK: emitc.call "mhlo::convert"(%arg0) {template_args = [ui64]}
+  // CHECK: emitc.call "mhlo::convert"(%arg0) {template_args = [tensor<ui64>]}
   %0 = "mhlo.convert"(%arg0) : (tensor<ui32>) -> tensor<ui64>
   return %0 : tensor<ui64>
 }

@@ -291,10 +291,10 @@ func @mhlo_rng_uniform() -> () {
 func @mhlo_rng_bit_generator() -> () {
   %cst = "std.constant"() {value = dense<2> : tensor<3xui64>} : () -> tensor<3xui64>
 
-  // CHECK: emitc.call "mhlo::rng_bit_generator"(%cst) {template_args = [ui32, 2 : i32, 4]}
+  // CHECK: emitc.call "mhlo::rng_bit_generator"(%cst) {template_args = [tuple<tensor<3xui64>, tensor<2x2xui32>>, 2 : i32]}
   %0 = "mhlo.rng_bit_generator"(%cst) {rng_algorithm = 2 : i32} : (tensor<3xui64>) -> tuple<tensor<3xui64>, tensor<2x2xui32>>
   
-  // CHECK: emitc.call "mhlo::rng_bit_generator"(%cst) {template_args = [f64, 2 : i32, 42]}
+  // CHECK: emitc.call "mhlo::rng_bit_generator"(%cst) {template_args = [tuple<tensor<3xui64>, tensor<2x7x3xf64>>, 2 : i32]}
   %1 = "mhlo.rng_bit_generator"(%cst) {rng_algorithm = 2 : i32} : (tensor<3xui64>) -> tuple<tensor<3xui64>, tensor<2x7x3xf64>>
 
   return

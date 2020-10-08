@@ -590,13 +590,13 @@ inline Dest rng_uniform(T low, T high, Tensor1D<int64_t, N> shape) {
 }
 
 // RngBitGeneratorOp
-template <typename Dest>
-Dest rng_bit_generator(std::tuple_element<0, Dest> state) {
+template <typename Dest, int32_t RngAlgorithm>
+Dest rng_bit_generator(typename std::tuple_element<0, Dest>::type state) {
   // TODO implement correct algorithm; starting point would be
   // https://github.com/tensorflow/tensorflow/blob/6f59650012f8904745dffaba540afc794c6613be/tensorflow/compiler/xla/service/rng_bit_generator_expander.cc#L56
 
-  using StateType = std::tuple_element<0, Dest>;
-  using TensorType = std::tuple_element<1, Dest>;
+  using StateType = typename std::tuple_element<0, Dest>::type;
+  using TensorType = typename std::tuple_element<1, Dest>::type;
   using T = typename TensorType::value_type;
 
   StateType newState(state);

@@ -391,34 +391,19 @@ private:
   matchAndRewrite(mhlo::RngBitGeneratorOp rngBitGeneratorOp,
                   ArrayRef<Value> operands,
                   ConversionPatternRewriter &rewriter) const override {
-    typename mhlo::RngUniformOp::Adaptor srcAdapter(operands);
+    StringRef funcName = "mhlo::rng_bit_generator";
+    StringAttr callee = rewriter.getStringAttr(funcName);
 
-    StringAttr callee = rewriter.getStringAttr("mhlo::rng_bit_generator");
+    ArrayAttr args;
+    ArrayAttr templateArgs = rewriter.getArrayAttr(
+        {TypeAttr::get(rngBitGeneratorOp.getResult().getType()),
+         rewriter.getI32IntegerAttr(rngBitGeneratorOp.rng_algorithm())});
 
-    if (auto tupleType = rngBitGeneratorOp.getType().dyn_cast<TupleType>()) {
-      if (tupleType.getTypes().size() == 2) {
-        if (auto tensorType =
-                tupleType.getTypes()[1].dyn_cast<RankedTensorType>()) {
+    rewriter.replaceOpWithNewOp<emitc::CallOp>(
+        rngBitGeneratorOp, rngBitGeneratorOp.getType(), callee, args,
+        templateArgs, operands);
 
-          Type elementType = tensorType.getElementType();
-          int64_t size = tensorType.getNumElements();
-
-          ArrayAttr args;
-          ArrayAttr templateArgs =
-              rewriter.getArrayAttr({TypeAttr::get(elementType),
-                                     rngBitGeneratorOp.rng_algorithmAttr(),
-                                     rewriter.getI64IntegerAttr(size)});
-
-          rewriter.replaceOpWithNewOp<emitc::CallOp>(
-              rngBitGeneratorOp, rngBitGeneratorOp.getType(), callee, args,
-              templateArgs, operands);
-
-          return success();
-        }
-      }
-    }
-
-    return failure();
+    return success();
   }
 };
 

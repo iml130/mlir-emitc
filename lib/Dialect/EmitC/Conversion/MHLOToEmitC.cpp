@@ -221,45 +221,27 @@ private:
   LogicalResult
   matchAndRewrite(mhlo::SliceOp sliceOp, ArrayRef<Value> operands,
                   ConversionPatternRewriter &rewriter) const override {
-    StringAttr callee = rewriter.getStringAttr("mhlo::slice");
+    auto loc = sliceOp.getLoc();
+    auto startIndicesOp =
+        rewriter.create<ConstantOp>(loc, sliceOp.start_indices());
+    auto limitIndicesOp =
+        rewriter.create<ConstantOp>(loc, sliceOp.limit_indices());
+    auto stridesOp = rewriter.create<ConstantOp>(loc, sliceOp.strides());
 
-    auto operandTensorType =
-        sliceOp.getOperand().getType().cast<RankedTensorType>();
-    Type elementType = operandTensorType.getElementType();
-    auto inputShape = operandTensorType.getShape();
+    std::vector<Value> newOperands(operands);
+    newOperands.push_back(startIndicesOp.getResult());
+    newOperands.push_back(limitIndicesOp.getResult());
+    newOperands.push_back(stridesOp.getResult());
 
-    auto resultTensorType =
-        sliceOp.getResult().getType().cast<RankedTensorType>();
-    auto outputShape = resultTensorType.getShape();
-
-    std::vector<Attribute> template_args_;
-    template_args_.push_back(TypeAttr::get(elementType));
-    for (auto index : sliceOp.start_indices().getIntValues()) {
-      auto attr = rewriter.getI64IntegerAttr(index.getZExtValue());
-      template_args_.push_back(attr);
-    }
-    for (auto index : sliceOp.limit_indices().getIntValues()) {
-      auto attr = rewriter.getI64IntegerAttr(index.getZExtValue());
-      template_args_.push_back(attr);
-    }
-    for (auto index : sliceOp.strides().getIntValues()) {
-      auto attr = rewriter.getI64IntegerAttr(index.getZExtValue());
-      template_args_.push_back(attr);
-    }
-    for (auto value : inputShape) {
-      auto attr = rewriter.getI64IntegerAttr(value);
-      template_args_.push_back(attr);
-    }
-    for (auto value : outputShape) {
-      auto attr = rewriter.getI64IntegerAttr(value);
-      template_args_.push_back(attr);
-    }
+    StringRef funcName = "mhlo::slice";
+    StringAttr callee = rewriter.getStringAttr(funcName);
 
     ArrayAttr args;
-    ArrayAttr templateArgs = rewriter.getArrayAttr(template_args_);
+    ArrayAttr templateArgs =
+        rewriter.getArrayAttr({TypeAttr::get(sliceOp.getResult().getType())});
 
     rewriter.replaceOpWithNewOp<emitc::CallOp>(
-        sliceOp, sliceOp.getType(), callee, args, templateArgs, operands);
+        sliceOp, sliceOp.getType(), callee, args, templateArgs, newOperands);
 
     return success();
   }
@@ -395,31 +377,6 @@ private:
 
     rewriter.replaceOpWithNewOp<emitc::CallOp>(
         convertOp, convertOp.getType(), callee, args, templateArgs, operands);
-
-    return success();
-  }
-};
-
-class ReshapeOpConversion : public OpConversionPattern<mhlo::ReshapeOp> {
-  using OpConversionPattern<mhlo::ReshapeOp>::OpConversionPattern;
-
-public:
-  ReshapeOpConversion(MLIRContext *ctx)
-      : OpConversionPattern<mhlo::ReshapeOp>(ctx) {}
-
-private:
-  LogicalResult
-  matchAndRewrite(mhlo::ReshapeOp reshapeOp, ArrayRef<Value> operands,
-                  ConversionPatternRewriter &rewriter) const override {
-    StringAttr callee = rewriter.getStringAttr("mhlo::reshape");
-
-    // We might need to add arguments if tensor rank/shape get modelled in the
-    // translation
-    ArrayAttr args;
-    ArrayAttr templateArgs;
-
-    rewriter.replaceOpWithNewOp<emitc::CallOp>(
-        reshapeOp, reshapeOp.getType(), callee, args, templateArgs, operands);
 
     return success();
   }

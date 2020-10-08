@@ -452,8 +452,8 @@ void populateMhloToEmitcPatterns(MLIRContext *ctx,
   patterns.insert<CallOpConversion<mhlo::SubOp>>(ctx, "mhlo::sub");
 
   // Insert patterns for MHLO MHLO binary logical elementwise ops.
-  patterns.insert<CallOpConversion<mhlo::OrOp>>(ctx, "mhlo::or");
-  patterns.insert<CallOpConversion<mhlo::XorOp>>(ctx, "mhlo::xor");
+  patterns.insert<CallOpConversion<mhlo::OrOp>>(ctx, "mhlo::logical_or");
+  patterns.insert<CallOpConversion<mhlo::XorOp>>(ctx, "mhlo::logical_xor");
 
   // Insert patterns for MHLO tuple ops.
   patterns.insert<CompareOpConversion>(ctx);

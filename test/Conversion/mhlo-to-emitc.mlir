@@ -188,13 +188,13 @@ func @mhlo_sub(%arg0: tensor<f32>) -> tensor<f32> {
 }
 
 func @mhlo_or(%arg0: tensor<ui64>, %arg1: tensor<ui64>) -> tensor<ui64> {
-  // CHECK: emitc.call "mhlo::or"
+  // CHECK: emitc.call "mhlo::logical_or"(%arg0, %arg1)
   %0 = "mhlo.or"(%arg0, %arg1) : (tensor<ui64>, tensor<ui64>) -> tensor<ui64>
   return %0 : tensor<ui64>
 }
 
 func @mhlo_xor(%arg0: tensor<ui64>, %arg1: tensor<ui64>) -> tensor<ui64> {
-  // CHECK: emitc.call "mhlo::xor"
+  // CHECK: emitc.call "mhlo::logical_xor"(%arg0, %arg1)
   %0 = "mhlo.xor"(%arg0, %arg1) : (tensor<ui64>, tensor<ui64>) -> tensor<ui64>
   return %0 : tensor<ui64>
 }

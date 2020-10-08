@@ -87,8 +87,10 @@ class CallOpConversion : public OpConversionPattern<SrcOp> {
   using OpConversionPattern<SrcOp>::OpConversionPattern;
 
 public:
-  CallOpConversion(MLIRContext *ctx, StringRef funcName)
-      : OpConversionPattern<SrcOp>(ctx), funcName(funcName) {}
+  CallOpConversion(MLIRContext *ctx, StringRef funcName,
+                   bool explicitResultType = false)
+      : OpConversionPattern<SrcOp>(ctx), funcName(funcName),
+        explicitResultType(explicitResultType) {}
 
 private:
   LogicalResult
@@ -100,6 +102,11 @@ private:
     ArrayAttr args;
     ArrayAttr templateArgs;
 
+    if (explicitResultType) {
+      Type resultType = srcOp.getType();
+      templateArgs = rewriter.getArrayAttr({TypeAttr::get(resultType)});
+    }
+
     rewriter.replaceOpWithNewOp<emitc::CallOp>(srcOp, srcOp.getType(), callee,
                                                args, templateArgs, operands);
 
@@ -107,6 +114,8 @@ private:
   }
 
   StringRef funcName;
+  // If set, use the result type of the operation as the only template parameter
+  bool explicitResultType;
 };
 
 class CompareOpConversion : public OpConversionPattern<mhlo::CompareOp> {
@@ -453,42 +462,6 @@ private:
   }
 };
 
-class RngUniformOpConversion : public OpConversionPattern<mhlo::RngUniformOp> {
-  using OpConversionPattern<mhlo::RngUniformOp>::OpConversionPattern;
-
-public:
-  RngUniformOpConversion(MLIRContext *ctx)
-      : OpConversionPattern<mhlo::RngUniformOp>(ctx) {}
-
-private:
-  LogicalResult
-  matchAndRewrite(mhlo::RngUniformOp rngUniformOp, ArrayRef<Value> operands,
-                  ConversionPatternRewriter &rewriter) const override {
-    typename mhlo::RngUniformOp::Adaptor srcAdapter(operands);
-
-    StringAttr callee = rewriter.getStringAttr("mhlo::rng_uniform");
-
-    Type elementType = rngUniformOp.getType();
-    if (auto tensorType = elementType.dyn_cast<TensorType>()) {
-      elementType = tensorType.getElementType();
-    }
-    if (auto result =
-            rngUniformOp.getResult().getType().dyn_cast<RankedTensorType>()) {
-      ArrayAttr args;
-      ArrayAttr templateArgs =
-          rewriter.getArrayAttr({TypeAttr::get(elementType)});
-
-      rewriter.replaceOpWithNewOp<emitc::CallOp>(rngUniformOp,
-                                                 rngUniformOp.getType(), callee,
-                                                 args, templateArgs, operands);
-
-      return success();
-    }
-
-    return failure();
-  }
-};
-
 class RngBitGeneratorOpConversion
     : public OpConversionPattern<mhlo::RngBitGeneratorOp> {
   using OpConversionPattern<mhlo::RngBitGeneratorOp>::OpConversionPattern;
@@ -587,7 +560,8 @@ void populateMhloToEmitcPatterns(MLIRContext *ctx,
   patterns.insert<SelectOpConversion>(ctx);
 
   // Insert patterns for MHLO RNG ops.
-  patterns.insert<RngUniformOpConversion>(ctx);
+  patterns.insert<CallOpConversion<mhlo::RngUniformOp>>(
+      ctx, "mhlo::rng_uniform", /*explicitResultType=*/true);
   patterns.insert<RngBitGeneratorOpConversion>(ctx);
 }
 

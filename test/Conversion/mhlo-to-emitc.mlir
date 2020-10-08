@@ -267,14 +267,14 @@ func @mhlo_rng_uniform() -> () {
   %cst_0 = "std.constant"() {value = dense<100> : tensor<i32>} : () -> tensor<i32>
   %cst_1 = "std.constant"() {value = dense<2> : tensor<1xi64>} : () -> tensor<1xi64>
 
-  // CHECK: emitc.call "mhlo::rng_uniform"(%cst, %cst_0, %cst_1) {template_args = [i32]}
+  // CHECK: emitc.call "mhlo::rng_uniform"(%cst, %cst_0, %cst_1) {template_args = [tensor<2xi32>]}
   %0 = "mhlo.rng_uniform"(%cst, %cst_0, %cst_1) : (tensor<i32>, tensor<i32>, tensor<1xi64>) -> tensor<2xi32>
   
   %cst_2 = "std.constant"() {value = dense<-100.0> : tensor<f32>} : () -> tensor<f32>
   %cst_3 = "std.constant"() {value = dense<100.0> : tensor<f32>} : () -> tensor<f32>
   %cst_4 = "std.constant"() {value = dense<17> : tensor<1xi64>} : () -> tensor<1xi64>
 
-  // CHECK: emitc.call "mhlo::rng_uniform"(%cst_2, %cst_3, %cst_4) {template_args = [f32]}
+  // CHECK: emitc.call "mhlo::rng_uniform"(%cst_2, %cst_3, %cst_4) {template_args = [tensor<17xf32>]}
   %1 = "mhlo.rng_uniform"(%cst_2, %cst_3, %cst_4) : (tensor<f32>, tensor<f32>, tensor<1xi64>) -> tensor<17xf32>
 
   return

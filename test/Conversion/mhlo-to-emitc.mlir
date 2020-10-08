@@ -67,7 +67,7 @@ func @mhlo_floor(%arg0: tensor<2xf32>) -> tensor<2xf32> {
 }
 
 func @mhlo_is_finite(%arg0: tensor<4xf32>) -> tensor<4xi1> {
-  // CHECK: emitc.call "mhlo::isfinite"
+  // CHECK: emitc.call "mhlo::is_finite"
   %0 = "mhlo.is_finite"(%arg0) : (tensor<4xf32>) -> tensor<4xi1>
   return %0 : tensor<4xi1>
 }

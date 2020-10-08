@@ -417,7 +417,7 @@ void populateMhloToEmitcPatterns(MLIRContext *ctx,
   patterns.insert<CallOpConversion<mhlo::CosOp>>(ctx, "mhlo::cos");
   patterns.insert<CallOpConversion<mhlo::ExpOp>>(ctx, "mhlo::exponential");
   patterns.insert<CallOpConversion<mhlo::FloorOp>>(ctx, "mhlo::floor");
-  patterns.insert<CallOpConversion<mhlo::IsFiniteOp>>(ctx, "mhlo::isfinite");
+  patterns.insert<CallOpConversion<mhlo::IsFiniteOp>>(ctx, "mhlo::is_finite");
   patterns.insert<CallOpConversion<mhlo::LogOp>>(ctx, "mhlo::log");
   patterns.insert<CallOpConversion<mhlo::NegOp>>(ctx, "mhlo::negate");
   patterns.insert<CallOpConversion<mhlo::RoundOp>>(ctx, "mhlo::round");

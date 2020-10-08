@@ -824,13 +824,13 @@ TEST(mhlo, slice) {
 TEST(mhlo, dynamic_slice) {
   Tensor1D<float, 5> s1{0.0f, 1.0f, 2.0f, 3.0f, 4.0f};
   auto t1 =
-      mhlo::dynamic_slice<Tensor1D<float, 2>, Tensor1D<float, 5>>(s1, 2, {2});
+      mhlo::dynamic_slice<Tensor1D<float, 2>, Tensor1D<float, 5>>(s1, {2}, {2});
   EXPECT_THAT(t1, Pointwise(FloatEq(), {2.0f, 3.0f}));
 
   Tensor2D<float, 4, 3> s2{0.0f, 1.0f, 2.0f, 3.0f, 4.0f,  5.0f,
                            6.0f, 7.0f, 8.0f, 9.0f, 10.0f, 11.0f};
   auto t2 = mhlo::dynamic_slice<Tensor2D<float, 2, 2>, Tensor2D<float, 4, 3>>(
-      s2, 2, 1, {2, 2});
+      s2, {2}, {1}, {2, 2});
 
   EXPECT_THAT(t2, Pointwise(FloatEq(), {7.0f, 8.0f, 10.0f, 11.0f}));
 }

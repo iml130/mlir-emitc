@@ -277,38 +277,23 @@ private:
   LogicalResult
   matchAndRewrite(mhlo::DynamicSliceOp dynamicSliceOp, ArrayRef<Value> operands,
                   ConversionPatternRewriter &rewriter) const override {
-    StringAttr callee = rewriter.getStringAttr("mhlo::dynamic_slice");
+    auto loc = dynamicSliceOp.getLoc();
+    auto sliceSizes = dynamicSliceOp.slice_sizes();
+    auto constOp = rewriter.create<ConstantOp>(loc, sliceSizes);
 
-    auto operandTensorType =
-        dynamicSliceOp.getOperand(0).getType().cast<RankedTensorType>();
-    Type elementType = operandTensorType.getElementType();
-    auto inputShape = operandTensorType.getShape();
+    std::vector<Value> newOperands(operands);
+    newOperands.push_back(constOp.getResult());
 
-    auto resultTensorType =
-        dynamicSliceOp.getResult().getType().cast<RankedTensorType>();
-    auto outputShape = resultTensorType.getShape();
-
-    std::vector<Attribute> template_args_;
-    template_args_.push_back(TypeAttr::get(elementType));
-    for (auto size : dynamicSliceOp.slice_sizes().getIntValues()) {
-      auto attr = rewriter.getI64IntegerAttr(size.getZExtValue());
-      template_args_.push_back(attr);
-    }
-    for (auto value : inputShape) {
-      auto attr = rewriter.getI64IntegerAttr(value);
-      template_args_.push_back(attr);
-    }
-    for (auto value : outputShape) {
-      auto attr = rewriter.getI64IntegerAttr(value);
-      template_args_.push_back(attr);
-    }
+    StringRef funcName = "mhlo::dynamic_slice";
+    StringAttr callee = rewriter.getStringAttr(funcName);
 
     ArrayAttr args;
-    ArrayAttr templateArgs = rewriter.getArrayAttr(template_args_);
+    ArrayAttr templateArgs = rewriter.getArrayAttr(
+        {TypeAttr::get(dynamicSliceOp.getResult().getType())});
 
     rewriter.replaceOpWithNewOp<emitc::CallOp>(dynamicSliceOp,
                                                dynamicSliceOp.getType(), callee,
-                                               args, templateArgs, operands);
+                                               args, templateArgs, newOperands);
 
     return success();
   }

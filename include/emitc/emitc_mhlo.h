@@ -440,16 +440,16 @@ Dest slice(Src x, Tensor1D<int64_t, 2> start_indices,
 // DynamicSliceOp
 // Overload for 1d case
 template <typename Dest, typename Src, IsTensorOfDim<1, Src> = true>
-Dest dynamic_slice(Src x, int64_t start_index,
-                   Tensor1D<int64_t, 1> size_indices) {
+Dest dynamic_slice(Src x, Tensor<int32_t> start_index,
+                   Tensor1D<int64_t, 1> slice_sizes) {
   auto clamp = [](int64_t value, int64_t minValue, int64_t maxValue) {
     return std::max(minValue, std::min(maxValue, value));
   };
 
   int64_t dim_x = static_cast<int64_t>(Src::dim(0));
-  int64_t start_index_eff = clamp(start_index, 0, dim_x - size_indices[0]);
+  int64_t start_index_eff = clamp(start_index[0], 0, dim_x - slice_sizes[0]);
   Tensor1D<int64_t, 1> start_indices{start_index_eff};
-  Tensor1D<int64_t, 1> limit_indices{start_index_eff + size_indices[0]};
+  Tensor1D<int64_t, 1> limit_indices{start_index_eff + slice_sizes[0]};
   Tensor1D<int64_t, 1> strides{1};
 
   return slice<Dest, Src>(x, start_indices, limit_indices, strides);
@@ -457,19 +457,22 @@ Dest dynamic_slice(Src x, int64_t start_index,
 
 // Overload for 2d case
 template <typename Dest, typename Src, IsTensorOfDim<2, Src> = true>
-Dest dynamic_slice(Src x, int64_t start_index_x, int64_t start_index_y,
-                   Tensor1D<int64_t, 2> size_indices) {
+Dest dynamic_slice(Src x, Tensor<int32_t> start_index_x,
+                   Tensor<int32_t> start_index_y,
+                   Tensor1D<int64_t, 2> slice_sizes) {
   auto clamp = [](int64_t value, int64_t minValue, int64_t maxValue) {
     return std::max(minValue, std::min(maxValue, value));
   };
 
   int64_t dim_x = static_cast<int64_t>(Src::dim(0));
   int64_t dim_y = static_cast<int64_t>(Src::dim(1));
-  int64_t start_index_x_eff = clamp(start_index_x, 0, dim_x - size_indices[0]);
-  int64_t start_index_y_eff = clamp(start_index_y, 0, dim_y - size_indices[1]);
+  int64_t start_index_x_eff =
+      clamp(start_index_x[0], 0, dim_x - slice_sizes[0]);
+  int64_t start_index_y_eff =
+      clamp(start_index_y[0], 0, dim_y - slice_sizes[1]);
   Tensor1D<int64_t, 2> start_indices{start_index_x_eff, start_index_y_eff};
-  Tensor1D<int64_t, 2> limit_indices{start_index_x_eff + size_indices[0],
-                                     start_index_y_eff + size_indices[1]};
+  Tensor1D<int64_t, 2> limit_indices{start_index_x_eff + slice_sizes[0],
+                                     start_index_y_eff + slice_sizes[1]};
   Tensor1D<int64_t, 2> strides{1, 1};
 
   return slice<Dest, Src>(x, start_indices, limit_indices, strides);

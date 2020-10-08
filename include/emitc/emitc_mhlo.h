@@ -481,14 +481,15 @@ Dest dynamic_slice(Src x, Tensor<int32_t> start_index_x,
 // DynamicUpdateSliceOp
 // Overload for 1d case
 template <typename Update, typename Src, IsTensorOfDim<1, Src> = true>
-Src dynamic_update_slice(Src x, Update update, int64_t start_index) {
+Src dynamic_update_slice(Src x, Update update, Tensor<int32_t> start_index) {
   auto clamp = [](int64_t value, int64_t minValue, int64_t maxValue) {
     return std::max(minValue, std::min(maxValue, value));
   };
 
   Src z = x;
 
-  size_t start_index_eff = clamp(start_index, 0, Src::dim(0) - Update::dim(0));
+  size_t start_index_eff =
+      clamp(start_index[0], 0, Src::dim(0) - Update::dim(0));
 
   for (size_t i = 0; i < Update::dim(0); i++) {
     z(start_index_eff + i) = update(i);
@@ -499,8 +500,8 @@ Src dynamic_update_slice(Src x, Update update, int64_t start_index) {
 
 // Overload for 2d case
 template <typename Update, typename Src, IsTensorOfDim<2, Src> = true>
-Src dynamic_update_slice(Src x, Update update, int64_t start_index_x,
-                         int64_t start_index_y) {
+Src dynamic_update_slice(Src x, Update update, Tensor<int32_t> start_index_x,
+                         Tensor<int32_t> start_index_y) {
   auto clamp = [](int64_t value, int64_t minValue, int64_t maxValue) {
     return std::max(minValue, std::min(maxValue, value));
   };
@@ -508,9 +509,9 @@ Src dynamic_update_slice(Src x, Update update, int64_t start_index_x,
   Src z = x;
 
   size_t start_index_x_eff =
-      clamp(start_index_x, 0, Src::dim(0) - Update::dim(0));
+      clamp(start_index_x[0], 0, Src::dim(0) - Update::dim(0));
   size_t start_index_y_eff =
-      clamp(start_index_y, 0, Src::dim(1) - Update::dim(1));
+      clamp(start_index_y[0], 0, Src::dim(1) - Update::dim(1));
 
   for (size_t i = 0; i < Update::dim(0); i++) {
     for (size_t j = 0; j < Update::dim(1); j++) {

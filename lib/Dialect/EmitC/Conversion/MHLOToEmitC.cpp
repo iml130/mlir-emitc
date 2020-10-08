@@ -296,30 +296,14 @@ private:
   matchAndRewrite(mhlo::DynamicUpdateSliceOp dynamicUpdateSliceOp,
                   ArrayRef<Value> operands,
                   ConversionPatternRewriter &rewriter) const override {
-    StringAttr callee = rewriter.getStringAttr("mhlo::dynamic_update_slice");
+    typename mhlo::DynamicUpdateSliceOp::Adaptor adaptor(operands);
 
-    auto operandTensorType =
-        dynamicUpdateSliceOp.getOperand(0).getType().cast<RankedTensorType>();
-    Type elementType = operandTensorType.getElementType();
-    auto inputShape = operandTensorType.getShape();
-
-    auto updateTensorType =
-        dynamicUpdateSliceOp.getOperand(1).getType().cast<RankedTensorType>();
-    auto updateShape = updateTensorType.getShape();
-
-    std::vector<Attribute> template_args_;
-    template_args_.push_back(TypeAttr::get(elementType));
-    for (auto value : inputShape) {
-      auto attr = rewriter.getI64IntegerAttr(value);
-      template_args_.push_back(attr);
-    }
-    for (auto value : updateShape) {
-      auto attr = rewriter.getI64IntegerAttr(value);
-      template_args_.push_back(attr);
-    }
+    StringRef funcName = "mhlo::dynamic_update_slice";
+    StringAttr callee = rewriter.getStringAttr(funcName);
 
     ArrayAttr args;
-    ArrayAttr templateArgs = rewriter.getArrayAttr(template_args_);
+    ArrayAttr templateArgs =
+        rewriter.getArrayAttr({TypeAttr::get(adaptor.update().getType())});
 
     rewriter.replaceOpWithNewOp<emitc::CallOp>(
         dynamicUpdateSliceOp, dynamicUpdateSliceOp.getType(), callee, args,

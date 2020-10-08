@@ -839,7 +839,7 @@ TEST(mhlo, dynamic_update_slice) {
   Tensor1D<float, 5> s1{0.0f, 1.0f, 2.0f, 3.0f, 4.0f};
   Tensor1D<float, 2> u1{5.0f, 6.0f};
   auto t1 = mhlo::dynamic_update_slice<Tensor1D<float, 2>, Tensor1D<float, 5>>(
-      s1, u1, 2);
+      s1, u1, {2});
   EXPECT_THAT(t1, Pointwise(FloatEq(), {0.0f, 1.0f, 5.0f, 6.0f, 4.0f}));
 
   Tensor2D<float, 4, 3> s2{0.0f, 1.0f, 2.0f, 3.0f, 4.0f,  5.0f,
@@ -847,7 +847,7 @@ TEST(mhlo, dynamic_update_slice) {
   Tensor2D<float, 3, 2> u2{12.0f, 13.0f, 14.0f, 15.0f, 16.0f, 17.0f};
   auto t2 =
       mhlo::dynamic_update_slice<Tensor2D<float, 3, 2>, Tensor2D<float, 4, 3>>(
-          s2, u2, 1, 1);
+          s2, u2, {1}, {1});
 
   EXPECT_THAT(t2,
               Pointwise(FloatEq(), {0.0f, 1.0f, 2.0f, 3.0f, 12.0f, 13.0f, 6.0f,

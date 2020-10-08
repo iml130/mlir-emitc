@@ -263,9 +263,9 @@ func @mhlo_dynamic_update_slice(%arg0: tensor<12xi32>, %arg1: tensor<8x7xi32>) -
   %cst_0 = "std.constant"() {value = dense<3> : tensor<i64>} : () -> tensor<i64>
   %cst_1 = "std.constant"() {value = dense<1> : tensor<4xi32>} : () -> tensor<4xi32>
   %cst_2 = "std.constant"() {value = dense<1> : tensor<2x4xi32>} : () -> tensor<2x4xi32>
-  // CHECK: emitc.call "mhlo::dynamic_update_slice"(%arg0, %cst_1, %cst) {template_args = [i32, 12, 4]}
+  // CHECK: emitc.call "mhlo::dynamic_update_slice"(%arg0, %cst_1, %cst) {template_args = [tensor<4xi32>]}
   %0 = "mhlo.dynamic-update-slice"(%arg0, %cst_1, %cst) : (tensor<12xi32>, tensor<4xi32>, tensor<i64>) -> tensor<12xi32>
-  // CHECK: emitc.call "mhlo::dynamic_update_slice"(%arg1, %cst_2, %cst, %cst_0) {template_args = [i32, 8, 7, 2, 4]}
+  // CHECK: emitc.call "mhlo::dynamic_update_slice"(%arg1, %cst_2, %cst, %cst_0) {template_args = [tensor<2x4xi32>]}
   %1 = "mhlo.dynamic-update-slice"(%arg1, %cst_2, %cst, %cst_0) : (tensor<8x7xi32>, tensor<2x4xi32>, tensor<i64>, tensor<i64>) -> tensor<8x7xi32>
   return
 }

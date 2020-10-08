@@ -562,22 +562,25 @@ inline Src select(typename replace_element_type<bool, Src>::type pred,
 
 // RngUniformOp
 template <typename Dest, typename T, size_t N>
-inline Dest rng_uniform(T low, T high, Tensor1D<int64_t, N> shape) {
+inline Dest rng_uniform(Tensor<T> low, Tensor<T> high,
+                        Tensor1D<int64_t, N> shape) {
   static_assert(std::is_integral<T>::value || std::is_floating_point<T>::value,
                 "Expected integer or floating point type");
   using uniform_distribution =
       typename std::conditional<std::is_integral<T>::value,
                                 std::uniform_int_distribution<T>,
                                 std::uniform_real_distribution<T>>::type;
+  T lowValue = low[0];
+  T highValue = high[0];
 
   // high value is exclusive in xla but inclusive in cpp
   // see https://www.tensorflow.org/xla/operation_semantics?hl=en#rnguniform and
   // https://en.cppreference.com/w/cpp/numeric/random/uniform_int_distribution
   if (std::is_integral<T>::value) {
-    high = high - 1;
+    highValue = highValue - 1;
   }
 
-  uniform_distribution distribution(low, high);
+  uniform_distribution distribution(lowValue, highValue);
   std::random_device rd;
   std::mt19937 gen(rd());
 
@@ -602,9 +605,20 @@ Dest rng_bit_generator(typename std::tuple_element<0, Dest>::type state) {
 
   StateType newState(state);
 
-  T min = std::numeric_limits<T>::min();
-  T max = std::numeric_limits<T>::max();
-  TensorType data = rng_uniform<TensorType, T>(min, max, TensorType::shape());
+  T minValue = std::numeric_limits<T>::min();
+  T maxValue = std::numeric_limits<T>::max();
+
+  Tensor<T> min{minValue};
+  Tensor<T> max{maxValue};
+
+  std::array<size_t, TensorType::rank()> arrayShape = TensorType::shape();
+  Tensor<int64_t, TensorType::rank()> tensorShape;
+
+  for (size_t i = 0; i < TensorType::rank(); i++) {
+    tensorShape[i] = static_cast<int64_t>(arrayShape[i]);
+  }
+
+  TensorType data = rng_uniform<TensorType, T>(min, max, tensorShape);
 
   return std::make_tuple(newState, data);
 }

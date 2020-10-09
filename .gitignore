@@ -1,5 +1,6 @@
 # Build artifacts
-build*/
+build/
+build-*/
 
 # Visual Studio Code files
 .vscode/

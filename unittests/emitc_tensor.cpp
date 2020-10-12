@@ -354,13 +354,19 @@ TEST(tensor, meta_is_tensor_0d) {
   using t3 = Tensor3D<float, 1, 4, 6>;
   using t4 = Tensor4D<uint8_t, 2, 1, 1, 9>;
 
+  const bool b0 = is_tensor_of_dim<0, t0>::value;
+  const bool b1 = is_tensor_of_dim<0, t1>::value;
+  const bool b2 = is_tensor_of_dim<0, t2>::value;
+  const bool b3 = is_tensor_of_dim<0, t3>::value;
+  const bool b4 = is_tensor_of_dim<0, t4>::value;
+
   EXPECT_FALSE((is_tensor_of_dim<0, s0>::value));
   EXPECT_FALSE((is_tensor_of_dim<0, s1>::value));
-  EXPECT_TRUE((is_tensor_of_dim<0, t0>::value));
-  EXPECT_FALSE((is_tensor_of_dim<0, t1>::value));
-  EXPECT_FALSE((is_tensor_of_dim<0, t2>::value));
-  EXPECT_FALSE((is_tensor_of_dim<0, t3>::value));
-  EXPECT_FALSE((is_tensor_of_dim<0, t4>::value));
+  EXPECT_TRUE(b0);
+  EXPECT_FALSE(b1);
+  EXPECT_FALSE(b2);
+  EXPECT_FALSE(b3);
+  EXPECT_FALSE(b4);
 }
 
 TEST(tensor, meta_is_tensor_1d) {
@@ -372,13 +378,19 @@ TEST(tensor, meta_is_tensor_1d) {
   using t3 = Tensor3D<float, 1, 4, 6>;
   using t4 = Tensor4D<uint8_t, 2, 1, 1, 9>;
 
+  const bool b0 = is_tensor_of_dim<1, t0>::value;
+  const bool b1 = is_tensor_of_dim<1, t1>::value;
+  const bool b2 = is_tensor_of_dim<1, t2>::value;
+  const bool b3 = is_tensor_of_dim<1, t3>::value;
+  const bool b4 = is_tensor_of_dim<1, t4>::value;
+
   EXPECT_FALSE((is_tensor_of_dim<1, s0>::value));
   EXPECT_FALSE((is_tensor_of_dim<1, s1>::value));
-  EXPECT_FALSE((is_tensor_of_dim<1, t0>::value));
-  EXPECT_TRUE((is_tensor_of_dim<1, t1>::value));
-  EXPECT_FALSE((is_tensor_of_dim<1, t2>::value));
-  EXPECT_FALSE((is_tensor_of_dim<1, t3>::value));
-  EXPECT_FALSE((is_tensor_of_dim<1, t4>::value));
+  EXPECT_FALSE(b0);
+  EXPECT_TRUE(b1);
+  EXPECT_FALSE(b2);
+  EXPECT_FALSE(b3);
+  EXPECT_FALSE(b4);
 }
 
 TEST(tensor, meta_is_tensor_2d) {
@@ -390,13 +402,19 @@ TEST(tensor, meta_is_tensor_2d) {
   using t3 = Tensor3D<float, 1, 4, 6>;
   using t4 = Tensor4D<uint8_t, 2, 1, 1, 9>;
 
+  const bool b0 = is_tensor_of_dim<2, t0>::value;
+  const bool b1 = is_tensor_of_dim<2, t1>::value;
+  const bool b2 = is_tensor_of_dim<2, t2>::value;
+  const bool b3 = is_tensor_of_dim<2, t3>::value;
+  const bool b4 = is_tensor_of_dim<2, t4>::value;
+
   EXPECT_FALSE((is_tensor_of_dim<2, s0>::value));
   EXPECT_FALSE((is_tensor_of_dim<2, s1>::value));
-  EXPECT_FALSE((is_tensor_of_dim<2, t0>::value));
-  EXPECT_FALSE((is_tensor_of_dim<2, t1>::value));
-  EXPECT_TRUE((is_tensor_of_dim<2, t2>::value));
-  EXPECT_FALSE((is_tensor_of_dim<2, t3>::value));
-  EXPECT_FALSE((is_tensor_of_dim<2, t4>::value));
+  EXPECT_FALSE(b0);
+  EXPECT_FALSE(b1);
+  EXPECT_TRUE(b2);
+  EXPECT_FALSE(b3);
+  EXPECT_FALSE(b4);
 }
 
 TEST(tensor, meta_is_tensor_3d) {
@@ -408,13 +426,19 @@ TEST(tensor, meta_is_tensor_3d) {
   using t3 = Tensor3D<float, 1, 4, 6>;
   using t4 = Tensor4D<uint8_t, 2, 1, 1, 9>;
 
+  const bool b0 = is_tensor_of_dim<3, t0>::value;
+  const bool b1 = is_tensor_of_dim<3, t1>::value;
+  const bool b2 = is_tensor_of_dim<3, t2>::value;
+  const bool b3 = is_tensor_of_dim<3, t3>::value;
+  const bool b4 = is_tensor_of_dim<3, t4>::value;
+
   EXPECT_FALSE((is_tensor_of_dim<3, s0>::value));
   EXPECT_FALSE((is_tensor_of_dim<3, s1>::value));
-  EXPECT_FALSE((is_tensor_of_dim<3, t0>::value));
-  EXPECT_FALSE((is_tensor_of_dim<3, t1>::value));
-  EXPECT_FALSE((is_tensor_of_dim<3, t2>::value));
-  EXPECT_TRUE((is_tensor_of_dim<3, t3>::value));
-  EXPECT_FALSE((is_tensor_of_dim<3, t4>::value));
+  EXPECT_FALSE(b0);
+  EXPECT_FALSE(b1);
+  EXPECT_FALSE(b2);
+  EXPECT_TRUE(b3);
+  EXPECT_FALSE(b4);
 }
 
 TEST(tensor, meta_is_tensor_4d) {
@@ -426,13 +450,19 @@ TEST(tensor, meta_is_tensor_4d) {
   using t3 = Tensor3D<float, 1, 4, 6>;
   using t4 = Tensor4D<uint8_t, 2, 1, 1, 9>;
 
+  const bool b0 = is_tensor_of_dim<4, t0>::value;
+  const bool b1 = is_tensor_of_dim<4, t1>::value;
+  const bool b2 = is_tensor_of_dim<4, t2>::value;
+  const bool b3 = is_tensor_of_dim<4, t3>::value;
+  const bool b4 = is_tensor_of_dim<4, t4>::value;
+
   EXPECT_FALSE((is_tensor_of_dim<4, s0>::value));
   EXPECT_FALSE((is_tensor_of_dim<4, s1>::value));
-  EXPECT_FALSE((is_tensor_of_dim<4, t0>::value));
-  EXPECT_FALSE((is_tensor_of_dim<4, t1>::value));
-  EXPECT_FALSE((is_tensor_of_dim<4, t2>::value));
-  EXPECT_FALSE((is_tensor_of_dim<4, t3>::value));
-  EXPECT_TRUE((is_tensor_of_dim<4, t4>::value));
+  EXPECT_FALSE(b0);
+  EXPECT_FALSE(b1);
+  EXPECT_FALSE(b2);
+  EXPECT_FALSE(b3);
+  EXPECT_TRUE(b4);
 }
 
 TEST(tensor, meta_replace_element_type) {

@@ -147,8 +147,21 @@ static LogicalResult printConstantOp(CppEmitter &emitter,
   auto &os = emitter.ostream();
   emitter.emitType(constantOp.getType());
   os << " " << emitter.getOrCreateName(constantOp.getResult());
+
+  // Add braces for number literals only to avoid double brace intialization for
+  // tensors.
+  auto value = constantOp.getValue();
+  bool emitBraces = value.isa<FloatAttr>() || value.isa<IntegerAttr>();
+
+  if (emitBraces)
+    os << "{";
+
   if (failed(emitter.emitAttribute(constantOp.getValue())))
     return constantOp.emitError("unable to emit constant value");
+
+  if (emitBraces)
+    os << "}";
+
   return success();
 }
 

@@ -145,8 +145,7 @@ def EmitC_ForOp : EmitC_Op<"for",
 
   let skipDefaultBuilders = 1;
   let builders = [
-    OpBuilder<"OpBuilder &builder, OperationState &result, "
-              "Value lowerBound, Value upperBound, Value step, "
+    OpBuilder<"Value lowerBound, Value upperBound, Value step, "
               "ValueRange iterArgs = llvm::None, "
               "function_ref<void(OpBuilder &, Location, Value, ValueRange)>"
               "    = nullptr">
@@ -250,10 +249,8 @@ def EmitC_IfOp : EmitC_Op<"if",
 
   let skipDefaultBuilders = 1;
   let builders = [
-    OpBuilder<"OpBuilder &builder, OperationState &result, "
-              "Value cond, bool withElseRegion">,
-    OpBuilder<"OpBuilder &builder, OperationState &result, "
-              "TypeRange resultTypes, Value cond, bool withElseRegion">,
+    OpBuilder<"Value cond, bool withElseRegion">,
+    OpBuilder<"TypeRange resultTypes, Value cond, bool withElseRegion">,
     OpBuilder<
         "OpBuilder &builder, OperationState &result, TypeRange resultTypes, "
         "Value cond, "

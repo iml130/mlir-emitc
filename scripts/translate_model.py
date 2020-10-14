@@ -14,11 +14,9 @@
 
 import argparse
 
-# from pathlib import Path
 from shutil import which
 import subprocess
 
-# import sys
 import tempfile
 from typing import Optional
 
@@ -29,8 +27,8 @@ class Module(tf.Module):
     def __init__(self, model):
         self._model = model
 
-    def predict(self, x):
-        return self._model.call(x, training=False)
+    def predict(self, *args):
+        return self._model.call(list(args), training=False)
 
 
 def extract_tensor_specs(model, batch_size: Optional[int]):

@@ -638,9 +638,12 @@ Dest convolution(Src input, Weights weights, int64_t batch_group_count,
                  int64_t feature_group_count, Tensor2D<int64_t, 2, 2> padding,
                  Tensor1D<int64_t, 2> rhs_dilation,
                  Tensor1D<int64_t, 2> window_strides) {
-  static_assert(is_tensor<Src>::value, "Expected 4 dimensional input");
-  static_assert(is_tensor<Dest>::value, "Expected 4 dimensional output");
-  static_assert(is_tensor<Weights>::value, "Expected 4 dimensional weights");
+  static_assert(is_tensor_of_dim<4, Src>::value,
+                "Expected 4 dimensional input");
+  static_assert(is_tensor_of_dim<4, Dest>::value,
+                "Expected 4 dimensional output");
+  static_assert(is_tensor_of_dim<4, Weights>::value,
+                "Expected 4 dimensional weights");
 
   assert(batch_group_count == 1);
 
@@ -662,8 +665,6 @@ Dest convolution(Src input, Weights weights, int64_t batch_group_count,
   assert(feature_group_count == 1);
   assert(rhs_dilation[0] == 1);
   assert(rhs_dilation[0] == 1);
-  assert(window_strides[0] == 1);
-  assert(window_strides[1] == 1);
 
   const int N = input.dim(input_batch_dimension);
   const int H_IN = input.dim(input_spatial_dimensions[0]);
@@ -712,6 +713,26 @@ Dest convolution(Src input, Weights weights, int64_t batch_group_count,
       }
     }
   }
+  return output;
+}
+
+// DotOp
+template <typename Dest, typename Lhs, typename Rhs>
+Dest dot(Lhs lhs, Rhs rhs) {
+  static_assert(is_tensor_of_dim<2, Lhs>::value, "Expected 2 dimensional lhs");
+  static_assert(is_tensor_of_dim<2, Rhs>::value, "Expected 2 dimensional rhs");
+  static_assert(Lhs::dim(1) == Rhs::dim(0),
+                "Expected contracting dimension to match");
+  Dest output;
+
+  for (size_t m = 0; m < lhs.dim(0); m++) {
+    for (size_t n = 0; n < lhs.dim(1); n++) {
+      for (size_t k = 0; k < rhs.dim(1); k++) {
+        output(m, k) += lhs(m, n) * rhs(n, k);
+      }
+    }
+  }
+
   return output;
 }
 

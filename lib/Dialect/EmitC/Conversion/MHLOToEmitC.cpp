@@ -84,6 +84,90 @@ private:
   }
 };
 
+class ConvOpConversion : public OpConversionPattern<mhlo::ConvOp> {
+
+public:
+  ConvOpConversion(MLIRContext *ctx) : OpConversionPattern(ctx) {}
+
+private:
+  LogicalResult
+  matchAndRewrite(mhlo::ConvOp convOp, ArrayRef<Value> operands,
+                  ConversionPatternRewriter &rewriter) const override {
+    typename mhlo::ConvOp::Adaptor adaptor(operands);
+    auto loc = convOp.getLoc();
+    auto batchGroupCountOp =
+        rewriter.create<ConstantOp>(loc, convOp.batch_group_countAttr());
+    auto inputBatchDimensionOp = rewriter.create<ConstantOp>(
+        loc, convOp.dimension_numbers().input_batch_dimension());
+    auto inputFeatureDimensionOp = rewriter.create<ConstantOp>(
+        loc, convOp.dimension_numbers().input_feature_dimension());
+    auto inputSpatialDimensionsOp = rewriter.create<ConstantOp>(
+        loc, convOp.dimension_numbers().input_spatial_dimensions());
+    auto kernelInputFeatureDimensionOp = rewriter.create<ConstantOp>(
+        loc, convOp.dimension_numbers().kernel_input_feature_dimension());
+    auto kernelOutputFeatureDimensionOp = rewriter.create<ConstantOp>(
+        loc, convOp.dimension_numbers().kernel_output_feature_dimension());
+    auto kernelSpatialDimensionsOp = rewriter.create<ConstantOp>(
+        loc, convOp.dimension_numbers().kernel_spatial_dimensions());
+    auto outputBatchDimensionOp = rewriter.create<ConstantOp>(
+        loc, convOp.dimension_numbers().output_batch_dimension());
+    auto outputFeatureDimensionOp = rewriter.create<ConstantOp>(
+        loc, convOp.dimension_numbers().output_feature_dimension());
+    auto outputSpatialDimensionsOp = rewriter.create<ConstantOp>(
+        loc, convOp.dimension_numbers().output_spatial_dimensions());
+    auto featureGroupCountOp =
+        rewriter.create<ConstantOp>(loc, convOp.feature_group_countAttr());
+
+    // Taken from mlir-hlo
+    auto GetI64ElementsAttr = [&rewriter](ArrayRef<int64_t> values) {
+      RankedTensorType ty = RankedTensorType::get(
+          {static_cast<int64_t>(values.size())}, rewriter.getIntegerType(64));
+      return DenseIntElementsAttr::get(ty, values);
+    };
+
+    auto paddingValue = convOp.padding().getValueOr(GetI64ElementsAttr({0, 0}));
+    auto paddingOp = rewriter.create<ConstantOp>(loc, paddingValue);
+
+    auto rhsDilationValue =
+        convOp.rhs_dilation().getValueOr(GetI64ElementsAttr({1, 1}));
+    auto rhsDilationOp = rewriter.create<ConstantOp>(loc, rhsDilationValue);
+
+    auto windowStridesValue =
+        convOp.window_strides().getValueOr(GetI64ElementsAttr({1, 1}));
+    auto windowStridesOp = rewriter.create<ConstantOp>(loc, windowStridesValue);
+
+    std::vector<Value> newOperands(operands);
+    newOperands.push_back(batchGroupCountOp.getResult());
+    newOperands.push_back(inputBatchDimensionOp.getResult());
+    newOperands.push_back(inputFeatureDimensionOp.getResult());
+    newOperands.push_back(inputSpatialDimensionsOp.getResult());
+    newOperands.push_back(kernelInputFeatureDimensionOp.getResult());
+    newOperands.push_back(kernelOutputFeatureDimensionOp.getResult());
+    newOperands.push_back(kernelSpatialDimensionsOp.getResult());
+    newOperands.push_back(outputBatchDimensionOp.getResult());
+    newOperands.push_back(outputFeatureDimensionOp.getResult());
+    newOperands.push_back(outputSpatialDimensionsOp.getResult());
+    newOperands.push_back(featureGroupCountOp.getResult());
+    newOperands.push_back(paddingOp.getResult());
+    newOperands.push_back(rhsDilationOp.getResult());
+    newOperands.push_back(windowStridesOp.getResult());
+
+    StringRef funcName = "mhlo::convolution";
+    StringAttr callee = rewriter.getStringAttr(funcName);
+
+    ArrayAttr args;
+    ArrayAttr templateArgs =
+        rewriter.getArrayAttr({TypeAttr::get(convOp.getResult().getType()),
+                               TypeAttr::get(adaptor.lhs().getType()),
+                               TypeAttr::get(adaptor.rhs().getType())});
+
+    rewriter.replaceOpWithNewOp<emitc::CallOp>(convOp, convOp.getType(), callee,
+                                               args, templateArgs, newOperands);
+
+    return success();
+  }
+};
+
 template <typename SrcOp>
 class CallOpConversion : public OpConversionPattern<SrcOp> {
   using OpConversionPattern<SrcOp>::OpConversionPattern;
@@ -439,9 +523,12 @@ void populateMhloToEmitcPatterns(MLIRContext *ctx,
   // Insert patterns for other MHLO ops.
   patterns.insert<BitcastConvertOpConversion>(ctx);
   patterns.insert<BroadcastInDimOpConversion>(ctx);
+  patterns.insert<ConcatenateOpConversion>(ctx);
   patterns.insert<CallOpConversion<mhlo::ConvertOp>>(
       ctx, "mhlo::convert", /*explicitResultType=*/true);
-  patterns.insert<ConcatenateOpConversion>(ctx);
+  patterns.insert<ConvOpConversion>(ctx);
+  patterns.insert<CallOpConversion<mhlo::DotOp>>(ctx, "mhlo::dot",
+                                                 /*explicitResultType=*/true);
   patterns.insert<CallOpConversion<mhlo::ReshapeOp>>(
       ctx, "mhlo::reshape", /*explicitResultType=*/true);
   patterns.insert<SelectOpConversion>(ctx);
@@ -506,8 +593,10 @@ struct ConvertMhloToEmitcPass
     // other MHLO ops
     target.addIllegalOp<mhlo::BitcastConvertOp,
                         mhlo::BroadcastInDimOp,
-                        mhlo::ConvertOp,
                         mhlo::ConcatenateOp,
+                        mhlo::ConvertOp,
+                        mhlo::ConvOp,
+                        mhlo::DotOp,
                         mhlo::ReshapeOp,
                         mhlo::SelectOp>();
     // MHLO RNG ops

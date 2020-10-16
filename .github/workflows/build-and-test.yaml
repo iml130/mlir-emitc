@@ -51,9 +51,13 @@ jobs:
         cd ${EMITC}/build_debug
         cmake .. -DCMAKE_BUILD_TYPE=Debug -DLLVM_ENABLE_ASSERTIONS=ON -DMLIR_DIR=$GITHUB_WORKSPACE/${LLVM}/install/lib/cmake/mlir/ -DLLVM_DIR=$GITHUB_WORKSPACE/${LLVM}/install/lib/cmake/llvm/ -DCMAKE_LINKER=lld -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DLLVM_EXTERNAL_LIT=`pwd`/../../${LLVM}/build/bin/llvm-lit
         cmake --build . --target check-emitc -- -j$(nproc)
+        cmake --build . --target MLIREmitCAllTests -- -j$(nproc)
+        ./unittests/MLIREmitCAllTests
     - name: Build and test EmitC (Release)
       run: |
         mkdir -p ${EMITC}/build_release
         cd ${EMITC}/build_release
         cmake .. -DCMAKE_BUILD_TYPE=Release -DLLVM_ENABLE_ASSERTIONS=OFF -DMLIR_DIR=$GITHUB_WORKSPACE/${LLVM}/install/lib/cmake/mlir/ -DLLVM_DIR=$GITHUB_WORKSPACE/${LLVM}/install/lib/cmake/llvm/ -DCMAKE_LINKER=lld -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DLLVM_EXTERNAL_LIT=`pwd`/../../${LLVM}/build/bin/llvm-lit
         cmake --build . --target check-emitc -- -j$(nproc)
+        cmake --build . --target MLIREmitCAllTests -- -j$(nproc)
+        ./unittests/MLIREmitCAllTests

@@ -25,18 +25,19 @@ jobs:
       id: get-llvm-hash
       run: echo "llvm_hash=$(cat ${{ env.EMITC }}/build_tools/llvm_version.txt)" >> $GITHUB_ENV
       shell: bash
-    - name: Checkout LLVM
-      uses: actions/checkout@v2
-      with:
-        repository: llvm/llvm-project
-        path: ${{ env.LLVM }}
-        ref: ${{ env.llvm_hash }}
     - name: Cache LLVM
       id: cache-llvm
       uses: actions/cache@v2
       with:
         path: ${{ env.LLVM }}
         key: ${{ runner.os }}-llvm-20.04-install-${{ env.llvm_hash }}
+    - name: Checkout LLVM
+      if: steps.cache-llvm.outputs.cache-hit != 'true'
+      uses: actions/checkout@v2
+      with:
+        repository: llvm/llvm-project
+        path: ${{ env.LLVM }}
+        ref: ${{ env.llvm_hash }}
     - name: Rebuild and Install LLVM
       if: steps.cache-llvm.outputs.cache-hit != 'true'
       run: |

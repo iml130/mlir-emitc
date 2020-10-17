@@ -16,21 +16,25 @@ jobs:
     steps:
     - name: Configure Environment
       run: echo "$GITHUB_WORKSPACE/${LLVM}/install/bin" >> $GITHUB_PATH
+
     - name: Checkout EmitC
       uses: actions/checkout@v2
       with:
         path: ${{ env.EMITC }}
         submodules: 'true'
+
     - name: Get LLVM hash
       id: get-llvm-hash
       run: echo "llvm_hash=$(cat ${{ env.EMITC }}/build_tools/llvm_version.txt)" >> $GITHUB_ENV
       shell: bash
+
     - name: Cache LLVM
       id: cache-llvm
       uses: actions/cache@v2
       with:
         path: ${{ env.LLVM }}
         key: ${{ runner.os }}-llvm-20.04-install-${{ env.llvm_hash }}
+
     - name: Checkout LLVM
       if: steps.cache-llvm.outputs.cache-hit != 'true'
       uses: actions/checkout@v2
@@ -38,23 +42,54 @@ jobs:
         repository: llvm/llvm-project
         path: ${{ env.LLVM }}
         ref: ${{ env.llvm_hash }}
+
     - name: Rebuild and Install LLVM
       if: steps.cache-llvm.outputs.cache-hit != 'true'
       run: |
         mkdir -p ${LLVM}/build
         mkdir -p ${LLVM}/install
         cd ${LLVM}/build
-        cmake ../llvm -DLLVM_INSTALL_UTILS=ON -DLLVM_ENABLE_LLD=ON -DLLVM_ENABLE_PROJECTS=mlir -DLLVM_TARGETS_TO_BUILD="host" -DLLVM_INCLUDE_TOOLS=ON -DLLVM_BUILD_TOOLS=OFF -DLLVM_INCLUDE_TESTS=OFF -DCMAKE_INSTALL_PREFIX=../install -DCMAKE_BUILD_TYPE=Release -DLLVM_ENABLE_ASSERTIONS=On -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++
+        cmake ../llvm \
+          -DLLVM_INSTALL_UTILS=ON \
+          -DLLVM_ENABLE_LLD=ON \
+          -DLLVM_ENABLE_PROJECTS=mlir \
+          -DLLVM_TARGETS_TO_BUILD="host" \
+          -DLLVM_INCLUDE_TOOLS=ON \
+          -DLLVM_BUILD_TOOLS=OFF \
+          -DLLVM_INCLUDE_TESTS=OFF \
+          -DCMAKE_INSTALL_PREFIX=../install \
+          -DCMAKE_BUILD_TYPE=Release \
+          -DLLVM_ENABLE_ASSERTIONS=On \
+          -DCMAKE_C_COMPILER=clang \
+          -DCMAKE_CXX_COMPILER=clang++
         cmake --build . --target install -- -j$(nproc)
+
     - name: Build and test EmitC (Debug)
       run: |
         mkdir -p ${EMITC}/build_debug
         cd ${EMITC}/build_debug
-        cmake .. -DCMAKE_BUILD_TYPE=Debug -DLLVM_ENABLE_ASSERTIONS=ON -DMLIR_DIR=$GITHUB_WORKSPACE/${LLVM}/install/lib/cmake/mlir/ -DLLVM_DIR=$GITHUB_WORKSPACE/${LLVM}/install/lib/cmake/llvm/ -DCMAKE_LINKER=lld -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DLLVM_EXTERNAL_LIT=`pwd`/../../${LLVM}/build/bin/llvm-lit
+        cmake .. \
+          -DCMAKE_BUILD_TYPE=Debug \
+          -DLLVM_ENABLE_ASSERTIONS=ON \
+          -DMLIR_DIR=$GITHUB_WORKSPACE/${LLVM}/install/lib/cmake/mlir/ \
+          -DLLVM_DIR=$GITHUB_WORKSPACE/${LLVM}/install/lib/cmake/llvm/ \
+          -DCMAKE_LINKER=lld \
+          -DCMAKE_C_COMPILER=clang \
+          -DCMAKE_CXX_COMPILER=clang++ \
+          -DLLVM_EXTERNAL_LIT=`pwd`/../../${LLVM}/build/bin/llvm-lit
         cmake --build . --target check-emitc -- -j$(nproc)
+
     - name: Build and test EmitC (Release)
       run: |
         mkdir -p ${EMITC}/build_release
         cd ${EMITC}/build_release
-        cmake .. -DCMAKE_BUILD_TYPE=Release -DLLVM_ENABLE_ASSERTIONS=OFF -DMLIR_DIR=$GITHUB_WORKSPACE/${LLVM}/install/lib/cmake/mlir/ -DLLVM_DIR=$GITHUB_WORKSPACE/${LLVM}/install/lib/cmake/llvm/ -DCMAKE_LINKER=lld -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DLLVM_EXTERNAL_LIT=`pwd`/../../${LLVM}/build/bin/llvm-lit
+        cmake .. \
+          -DCMAKE_BUILD_TYPE=Release \
+          -DLLVM_ENABLE_ASSERTIONS=OFF \
+          -DMLIR_DIR=$GITHUB_WORKSPACE/${LLVM}/install/lib/cmake/mlir/ \
+          -DLLVM_DIR=$GITHUB_WORKSPACE/${LLVM}/install/lib/cmake/llvm/ \
+          -DCMAKE_LINKER=lld \
+          -DCMAKE_C_COMPILER=clang \
+          -DCMAKE_CXX_COMPILER=clang++ \
+          -DLLVM_EXTERNAL_LIT=`pwd`/../../${LLVM}/build/bin/llvm-lit
         cmake --build . --target check-emitc -- -j$(nproc)

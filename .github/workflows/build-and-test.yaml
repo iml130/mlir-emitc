@@ -10,13 +10,10 @@ env:
   LLVM: llvm
 
 jobs:
-  build:
-    name: Build and test EmitC
+  build-llvm:
+    name: Build LLVM
     runs-on: ubuntu-20.04
     steps:
-    - name: Configure Environment
-      run: echo "$GITHUB_WORKSPACE/${LLVM}/install/bin" >> $GITHUB_PATH
-
     - name: Checkout EmitC
       uses: actions/checkout@v2
       with:
@@ -63,6 +60,32 @@ jobs:
           -DCMAKE_C_COMPILER=clang \
           -DCMAKE_CXX_COMPILER=clang++
         cmake --build . --target install -- -j$(nproc)
+
+  build:
+    name: Build and test EmitC
+    needs: build-llvm
+    runs-on: ubuntu-20.04
+    steps:
+    - name: Configure Environment
+      run: echo "$GITHUB_WORKSPACE/${LLVM}/install/bin" >> $GITHUB_PATH
+
+    - name: Checkout EmitC
+      uses: actions/checkout@v2
+      with:
+        path: ${{ env.EMITC }}
+        submodules: 'true'
+
+    - name: Get LLVM hash
+      id: get-llvm-hash
+      run: echo "llvm_hash=$(cat ${{ env.EMITC }}/build_tools/llvm_version.txt)" >> $GITHUB_ENV
+      shell: bash
+
+    - name: Cache LLVM
+      id: cache-llvm
+      uses: actions/cache@v2
+      with:
+        path: ${{ env.LLVM }}
+        key: ${{ runner.os }}-llvm-20.04-install-${{ env.llvm_hash }}
 
     - name: Build and test EmitC (Debug)
       run: |

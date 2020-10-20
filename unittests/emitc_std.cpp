@@ -59,6 +59,20 @@ TEST(std, index_cast) {
   };
 
   EXPECT_THAT(lambda_2d(), Pointwise(Eq(), {1, 2, 4, 8}));
+
+  Tensor3D<size_t, 2, 1, 2> t3{1, 2, 4, 8};
+  auto lambda_3d = [&t3]() -> Tensor3D<int8_t, 2, 1, 2> {
+    return standard::index_cast<Tensor3D<int8_t, 2, 1, 2>>(t3);
+  };
+
+  EXPECT_THAT(lambda_3d(), Pointwise(Eq(), {1, 2, 4, 8}));
+
+  Tensor4D<size_t, 2, 1, 2, 1> t4{1, 2, 4, 8};
+  auto lambda_4d = [&t4]() -> Tensor4D<int8_t, 2, 1, 2, 1> {
+    return standard::index_cast<Tensor4D<int8_t, 2, 1, 2, 1>>(t4);
+  };
+
+  EXPECT_THAT(lambda_4d(), Pointwise(Eq(), {1, 2, 4, 8}));
 }
 
 TEST(std, splat) {
@@ -75,6 +89,21 @@ TEST(std, splat) {
   };
 
   EXPECT_THAT(lambda_2d(), Pointwise(FloatEq(), {1.5f, 1.5f, 1.5f, 1.5f}));
+
+  auto lambda_3d = []() -> Tensor3D<float, 2, 3, 1> {
+    return standard::splat<Tensor3D<float, 2, 3, 1>>(1.2f);
+  };
+
+  EXPECT_THAT(lambda_3d(),
+              Pointwise(FloatEq(), {1.2f, 1.2f, 1.2f, 1.2f, 1.2f, 1.2f}));
+
+  auto lambda_4d = []() -> Tensor4D<float, 2, 3, 1, 2> {
+    return standard::splat<Tensor4D<float, 2, 3, 1, 2>>(1.1f);
+  };
+
+  EXPECT_THAT(lambda_4d(),
+              Pointwise(FloatEq(), {1.1f, 1.1f, 1.1f, 1.1f, 1.1f, 1.1f, 1.1f,
+                                    1.1f, 1.1f, 1.1f, 1.1f, 1.1f}));
 }
 
 } // namespace

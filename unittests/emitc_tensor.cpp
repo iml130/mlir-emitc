@@ -127,6 +127,46 @@ TEST(tensor, default_constructor_2d) {
   EXPECT_EQ(0.0, tensor[3]);
 }
 
+TEST(tensor, tensor_default_constructor_3d) {
+  Tensor3D<float, 2, 1, 2> tensor;
+
+  // multi dimensional indexing
+  EXPECT_EQ(0.0, tensor(0, 0, 0));
+  EXPECT_EQ(0.0, tensor(0, 0 ,1));
+  EXPECT_EQ(0.0, tensor(1, 0, 0));
+  EXPECT_EQ(0.0, tensor(1, 0 ,1));
+
+  // flat indexing
+  EXPECT_EQ(0.0, tensor[0]);
+  EXPECT_EQ(0.0, tensor[1]);
+  EXPECT_EQ(0.0, tensor[2]);
+  EXPECT_EQ(0.0, tensor[3]);
+}
+
+TEST(tensor, tensor_default_constructor_4d) {
+  Tensor4D<float, 2, 1, 2, 2> tensor;
+
+  // multi dimensional indexing
+  EXPECT_EQ(0.0, tensor(0, 0, 0, 0));
+  EXPECT_EQ(0.0, tensor(0, 0 ,0, 1));
+  EXPECT_EQ(0.0, tensor(0, 0, 1, 0));
+  EXPECT_EQ(0.0, tensor(0, 0, 1 ,1));
+  EXPECT_EQ(0.0, tensor(1, 0, 0, 0));
+  EXPECT_EQ(0.0, tensor(1, 0 ,0, 1));
+  EXPECT_EQ(0.0, tensor(1, 0, 1, 0));
+  EXPECT_EQ(0.0, tensor(1, 0, 1 ,1));
+
+  // flat indexing
+  EXPECT_EQ(0.0, tensor[0]);
+  EXPECT_EQ(0.0, tensor[1]);
+  EXPECT_EQ(0.0, tensor[2]);
+  EXPECT_EQ(0.0, tensor[3]);
+  EXPECT_EQ(0.0, tensor[4]);
+  EXPECT_EQ(0.0, tensor[5]);
+  EXPECT_EQ(0.0, tensor[6]);
+  EXPECT_EQ(0.0, tensor[7]);
+}
+
 TEST(tensor, initializer_list_0d) {
   Tensor0D<float> tensor{1.0};
 
@@ -165,6 +205,46 @@ TEST(tensor, initializer_list_2d) {
   EXPECT_EQ(4, tensor[3]);
 }
 
+TEST(tensor, initializer_list_3d) {
+  Tensor3D<int32_t, 2, 1, 2> tensor{1, 2, 3, 4};
+
+  // multi dimensional indexing
+  EXPECT_EQ(1, tensor(0, 0, 0));
+  EXPECT_EQ(2, tensor(0, 0, 1));
+  EXPECT_EQ(3, tensor(1, 0, 0));
+  EXPECT_EQ(4, tensor(1, 0, 1));
+
+  // flat indexing (row major)
+  EXPECT_EQ(1, tensor[0]);
+  EXPECT_EQ(2, tensor[1]);
+  EXPECT_EQ(3, tensor[2]);
+  EXPECT_EQ(4, tensor[3]);
+}
+
+TEST(tensor, initializer_list_4d) {
+  Tensor4D<int32_t, 2, 1, 2, 2> tensor{1, 2, 3, 4, 5, 6, 7, 8};
+
+  // multi dimensional indexing
+  EXPECT_EQ(1, tensor(0, 0, 0, 0));
+  EXPECT_EQ(2, tensor(0, 0, 0, 1));
+  EXPECT_EQ(3, tensor(0, 0, 1, 0));
+  EXPECT_EQ(4, tensor(0, 0, 1, 1));
+  EXPECT_EQ(5, tensor(1, 0, 0, 0));
+  EXPECT_EQ(6, tensor(1, 0, 0, 1));
+  EXPECT_EQ(7, tensor(1, 0, 1, 0));
+  EXPECT_EQ(8, tensor(1, 0, 1, 1));
+
+  // flat indexing (row major)
+  EXPECT_EQ(1, tensor[0]);
+  EXPECT_EQ(2, tensor[1]);
+  EXPECT_EQ(3, tensor[2]);
+  EXPECT_EQ(4, tensor[3]);
+  EXPECT_EQ(5, tensor[4]);
+  EXPECT_EQ(6, tensor[5]);
+  EXPECT_EQ(7, tensor[6]);
+  EXPECT_EQ(8, tensor[7]);
+}
+
 TEST(tensor, wrong_size_initializer_list) {
   auto lambda_0d = []() -> void { Tensor0D<float> t{0.0, 1.0}; };
   EXPECT_DEATH(lambda_0d();, "");
@@ -176,6 +256,16 @@ TEST(tensor, wrong_size_initializer_list) {
     Tensor2D<int8_t, 2, 3> t{0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
   };
   EXPECT_DEATH(lambda_2d();, "");
+
+  auto lambda_3d = []() -> void {
+    Tensor3D<int8_t, 2, 3, 1> t{0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+  };
+  EXPECT_DEATH(lambda_3d();, "");
+
+  auto lambda_4d = []() -> void {
+    Tensor4D<int8_t, 2, 3, 1, 2> t{0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+  };
+  EXPECT_DEATH(lambda_4d();, "");
 }
 
 TEST(tensor, dimension_1d) {

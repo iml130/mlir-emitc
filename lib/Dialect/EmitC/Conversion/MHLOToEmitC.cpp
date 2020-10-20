@@ -482,6 +482,8 @@ void populateMhloToEmitcPatterns(MLIRContext *ctx,
   /// Insert patterns for MHLO unary elementwise ops.
   patterns.insert<CallOpConversion<mhlo::AbsOp>>(ctx, "mhlo::abs");
   patterns.insert<CallOpConversion<mhlo::CeilOp>>(ctx, "mhlo::ceil");
+  patterns.insert<CallOpConversion<mhlo::ConvertOp>>(
+      ctx, "mhlo::convert", /*explicitResultType=*/true);
   patterns.insert<CallOpConversion<mhlo::CosOp>>(ctx, "mhlo::cos");
   patterns.insert<CallOpConversion<mhlo::ExpOp>>(ctx, "mhlo::exponential");
   patterns.insert<CallOpConversion<mhlo::FloorOp>>(ctx, "mhlo::floor");
@@ -524,8 +526,6 @@ void populateMhloToEmitcPatterns(MLIRContext *ctx,
   patterns.insert<BitcastConvertOpConversion>(ctx);
   patterns.insert<BroadcastInDimOpConversion>(ctx);
   patterns.insert<ConcatenateOpConversion>(ctx);
-  patterns.insert<CallOpConversion<mhlo::ConvertOp>>(
-      ctx, "mhlo::convert", /*explicitResultType=*/true);
   patterns.insert<ConvOpConversion>(ctx);
   patterns.insert<CallOpConversion<mhlo::DotOp>>(ctx, "mhlo::dot",
                                                  /*explicitResultType=*/true);
@@ -558,6 +558,7 @@ struct ConvertMhloToEmitcPass
     // MHLO unary elementwise ops
     target.addIllegalOp<mhlo::AbsOp,
                         mhlo::CeilOp,
+                        mhlo::ConvertOp,
                         mhlo::CosOp,
                         mhlo::ExpOp,
                         mhlo::FloorOp,
@@ -594,7 +595,6 @@ struct ConvertMhloToEmitcPass
     target.addIllegalOp<mhlo::BitcastConvertOp,
                         mhlo::BroadcastInDimOp,
                         mhlo::ConcatenateOp,
-                        mhlo::ConvertOp,
                         mhlo::ConvOp,
                         mhlo::DotOp,
                         mhlo::ReshapeOp,

@@ -38,6 +38,12 @@ inline T extract_element(Tensor2D<T, DimX, DimY> x, size_t indexX,
   return x(indexX, indexY);
 }
 
+template <typename T, size_t DimX, size_t DimY, size_t DimZ>
+inline T extract_element(Tensor3D<T, DimX, DimY, DimZ> x, size_t indexX,
+                         size_t indexY, size_t indexZ) {
+  return x(indexX, indexY, indexZ);
+}
+
 // IndexCastOp
 template <typename Dest, typename Src>
 inline Dest index_cast(Src x) {

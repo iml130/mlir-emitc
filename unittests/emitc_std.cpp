@@ -26,11 +26,13 @@ TEST(std, extract_element) {
   Tensor1D<int32_t, 2> t1{1, 2};
   Tensor2D<uint16_t, 1, 4> t2{10, 11, 12, 13};
   Tensor2D<uint16_t, 2, 2> t3{10, 11, 12, 13};
+  Tensor3D<uint32_t, 2, 1, 2> t4{10, 11, 12, 13};
 
   EXPECT_EQ(1.0, standard::extract_element(t0));
   EXPECT_EQ(2, standard::extract_element(t1, 1));
   EXPECT_EQ(12, standard::extract_element(t2, 0, 2));
   EXPECT_EQ(12, standard::extract_element(t3, 1, 0));
+  EXPECT_EQ(12, standard::extract_element(t4, 1, 0, 0));
 }
 
 TEST(std, index_cast) {

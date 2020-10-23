@@ -3,7 +3,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+#      https://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -11,6 +11,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# Bash script to build MLIR.
 # Drived from/inspired by MLIR NPComp and TensorFlow's MLIR-HLO.
 
 if [[ $# -ne 3 ]] ; then
@@ -18,7 +19,7 @@ if [[ $# -ne 3 ]] ; then
   exit 1
 fi
 
-# LLVM source
+# LLVM source, build and install directories.
 LLVM_SRC_DIR="$1"
 build_dir="$2"
 install_dir="$3"
@@ -35,6 +36,7 @@ echo "Install MLIR to $install_dir"
 mkdir -p "$build_dir"
 mkdir -p "$install_dir"
 
+# Build and install LLVM/MLIR.
 echo "Beginning build (commands will echo)"
 set -x
 

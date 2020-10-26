@@ -22,26 +22,9 @@
 namespace standard {
 
 // ExtractElementOp
-template <typename T>
-inline T extract_element(Tensor0D<T> x) {
-  return x();
-}
-
-template <typename T, size_t DimX>
-inline T extract_element(Tensor1D<T, DimX> x, size_t indexX) {
-  return x(indexX);
-}
-
-template <typename T, size_t DimX, size_t DimY>
-inline T extract_element(Tensor2D<T, DimX, DimY> x, size_t indexX,
-                         size_t indexY) {
-  return x(indexX, indexY);
-}
-
-template <typename T, size_t DimX, size_t DimY, size_t DimZ>
-inline T extract_element(Tensor3D<T, DimX, DimY, DimZ> x, size_t indexX,
-                         size_t indexY, size_t indexZ) {
-  return x(indexX, indexY, indexZ);
+template <typename T, size_t... Shape, typename... Indices>
+inline T extract_element(Tensor<T, Shape...> x, Indices... indices) {
+  return x(indices...);
 }
 
 // IndexCastOp

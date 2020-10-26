@@ -25,6 +25,8 @@ using ::testing::Pointwise;
 
 const float EPSILON = 5e-4;
 
+// Unary elementwise ops
+
 TEST(mhlo, abs) {
   EXPECT_EQ(1, mhlo::abs(-1));
 
@@ -57,98 +59,6 @@ TEST(mhlo, ceil) {
   EXPECT_THAT(mhlo::ceil(t2), Pointwise(Eq(), {3.0, 2.0, 0.0, 2.0}));
   EXPECT_THAT(mhlo::ceil(t3), Pointwise(Eq(), {3.0, 2.0, 0.0, 2.0}));
   EXPECT_THAT(mhlo::ceil(t4), Pointwise(Eq(), {3.0, 2.0, 0.0, 2.0}));
-}
-
-TEST(mhlo, bitcast_convert) {
-  uint8_t a = 128;
-  int8_t b = -128;
-  EXPECT_EQ(b, mhlo::bitcast_convert<int8_t>(a));
-
-  Tensor0D<int16_t> t0{-1};
-  auto lambda_0d = [&t0]() {
-    return mhlo::bitcast_convert<Tensor0D<uint16_t>>(t0);
-  };
-  EXPECT_THAT(lambda_0d(), Pointwise(Eq(), {65535}));
-
-  Tensor1D<uint16_t, 2> t1{1, 2};
-  auto lambda_1d = [&t1]() {
-    return mhlo::bitcast_convert<Tensor1D<int16_t, 2>>(t1);
-  };
-
-  EXPECT_THAT(lambda_1d(), Pointwise(Eq(), {1, 2}));
-
-  Tensor2D<int8_t, 2, 2> t2{0, -4, 3, -12};
-  auto lambda_2d = [&t2]() {
-    return mhlo::bitcast_convert<Tensor2D<uint8_t, 2, 2>>(t2);
-  };
-
-  EXPECT_THAT(lambda_2d(), Pointwise(DoubleEq(), {0, 252, 3, 244}));
-
-  Tensor3D<int8_t, 2, 1, 2> t3{0, -4, 3, -12};
-  auto lambda_3d = [&t3]() {
-    return mhlo::bitcast_convert<Tensor3D<uint8_t, 2, 1, 2>>(t3);
-  };
-
-  EXPECT_THAT(lambda_3d(), Pointwise(DoubleEq(), {0, 252, 3, 244}));
-
-  Tensor4D<int8_t, 2, 1, 2, 2> t4{0, -4, 3, -12, -11, 0, 2, -4};
-  auto lambda_4d = [&t4]() {
-    return mhlo::bitcast_convert<Tensor4D<uint8_t, 2, 1, 2, 2>>(t4);
-  };
-
-  EXPECT_THAT(lambda_4d(),
-              Pointwise(DoubleEq(), {0, 252, 3, 244, 245, 0, 2, 252}));
-}
-
-TEST(mhlo, compare) {
-  auto lambda = []() { return mhlo::compare<int, std::less>(-1, 3); };
-  EXPECT_EQ(true, lambda());
-
-  Tensor0D<int> s0{-3};
-  Tensor0D<int> t0{-8};
-
-  auto lambda_0d = [&s0, &t0]() {
-    return mhlo::compare<Tensor0D<int>, std::less_equal>(s0, t0);
-  };
-
-  EXPECT_THAT(lambda_0d(), Pointwise(Eq(), {false}));
-
-  Tensor1D<float, 2> s1{-1.3f, 2.4f};
-  Tensor1D<float, 2> t1{0.2f, 2.4f};
-
-  auto lambda_1d = [&s1, &t1]() {
-    return mhlo::compare<Tensor1D<float, 2>, std::equal_to>(s1, t1);
-  };
-
-  EXPECT_THAT(lambda_1d(), Pointwise(Eq(), {false, true}));
-
-  Tensor2D<long, 2, 2> s2{3, 1, 4, 9};
-  Tensor2D<long, 2, 2> t2{-2, 1, 6, -10};
-
-  auto lambda_2d = [&s2, &t2]() {
-    return mhlo::compare<Tensor2D<long, 2, 2>, std::greater_equal>(s2, t2);
-  };
-
-  EXPECT_THAT(lambda_2d(), Pointwise(Eq(), {true, true, false, true}));
-
-  Tensor3D<long, 2, 1, 2> s3{3, 1, 4, 9};
-  Tensor3D<long, 2, 1, 2> t3{-2, 1, 6, -10};
-
-  auto lambda_3d = [&s3, &t3]() {
-    return mhlo::compare<Tensor3D<long, 2, 1, 2>, std::greater_equal>(s3, t3);
-  };
-
-  EXPECT_THAT(lambda_3d(), Pointwise(Eq(), {true, true, false, true}));
-
-  Tensor4D<int, 2, 1, 2, 2> s4{3, 1, 4, 9, 10, 12, -4, 8};
-  Tensor4D<int, 2, 1, 2, 2> t4{-2, 1, 6, -10, 9, 13, 4, 10};
-
-  auto lambda_4d = [&s4, &t4]() {
-    return mhlo::compare<Tensor4D<int, 2, 1, 2, 2>, std::greater_equal>(s4, t4);
-  };
-
-  EXPECT_THAT(lambda_4d(), Pointwise(Eq(), {true, true, false, true, true,
-                                            false, false, false}));
 }
 
 TEST(mhlo, convert) {
@@ -203,6 +113,89 @@ TEST(mhlo, cos) {
   EXPECT_THAT(mhlo::cos(t1), Pointwise(FloatNear(EPSILON), {0.0f, 0.0f}));
   EXPECT_THAT(mhlo::cos(t2), Pointwise(FloatNear(EPSILON),
                                        {1.0f, 1.0f, 0.8775826f, 0.8775826f}));
+}
+
+TEST(mhlo, exponential) {
+  EXPECT_NEAR(M_Ef32, mhlo::exponential(1.0f), EPSILON);
+
+  Tensor0D<float> t0{0.0f};
+  Tensor1D<float, 2> t1{M_LN2f32, M_LN10f32};
+  Tensor2D<double, 2, 2> t2{1.0f, 2.0f, 3.0f, 4.0f};
+
+  EXPECT_THAT(mhlo::exponential(t0), Pointwise(FloatNear(EPSILON), {1.0f}));
+  EXPECT_THAT(mhlo::exponential(t1),
+              Pointwise(FloatNear(EPSILON), {2.0f, 10.0f}));
+  EXPECT_THAT(mhlo::exponential(t2),
+              Pointwise(FloatNear(EPSILON),
+                        {2.718281f, 7.389056f, 20.085536f, 54.598150f}));
+}
+
+TEST(mhlo, floor) {
+  EXPECT_EQ(0.0, mhlo::floor(0.7));
+
+  Tensor0D<float> t0{0.7f};
+  Tensor1D<float, 2> t1{1.6f, 2.0f};
+  Tensor2D<double, 2, 2> t2{2.1, 1.6, 0.0, 2.0};
+
+  EXPECT_THAT(mhlo::floor(t0), Pointwise(Eq(), {0.0f}));
+  EXPECT_THAT(mhlo::floor(t1), Pointwise(Eq(), {1.0f, 2.0f}));
+  EXPECT_THAT(mhlo::floor(t2), Pointwise(Eq(), {2.0, 1.0, 0.0, 2.0}));
+}
+
+TEST(mhlo, is_finite) {
+  EXPECT_EQ(true, mhlo::is_finite(0.0f));
+
+  Tensor0D<float> t0{M_PIf32};
+  Tensor1D<float, 2> t1{M_PI_2f32, INFINITY};
+  Tensor2D<double, 2, 2> t2{INFINITY, -INFINITY, NAN, -0.0f};
+
+  EXPECT_THAT(mhlo::is_finite(t0), Pointwise(Eq(), {true}));
+  EXPECT_THAT(mhlo::is_finite(t1), Pointwise(Eq(), {true, false}));
+  EXPECT_THAT(mhlo::is_finite(t2),
+              Pointwise(Eq(), {false, false, false, true}));
+}
+
+TEST(mhlo, log) {
+  EXPECT_NEAR(0.0f, mhlo::log(1.0f), EPSILON);
+
+  Tensor0D<float> t0{M_Ef32};
+  Tensor1D<float, 2> t1{M_Ef32 * M_Ef32, M_Ef32 * M_Ef32 * M_Ef32};
+  Tensor2D<double, 2, 2> t2{1.0f, 2.0f, 3.0f, 4.0f};
+
+  EXPECT_THAT(mhlo::log(t0), Pointwise(FloatNear(EPSILON), {1.0f}));
+  EXPECT_THAT(mhlo::log(t1), Pointwise(FloatNear(EPSILON), {2.0f, 3.0f}));
+  // clang-format off
+  EXPECT_THAT(mhlo::log(t2), Pointwise(FloatNear(EPSILON), {0.0f,
+  0.693147f, 1.098612f, 1.386294f}));
+  // clang-format on
+}
+
+TEST(mhlo, negate) {
+  EXPECT_EQ(1, mhlo::negate(-1));
+
+  Tensor0D<int> s0{-3};
+
+  auto lambda_0d = [&s0]() -> Tensor0D<int> {
+    return mhlo::negate<Tensor0D<int>>(s0);
+  };
+
+  EXPECT_THAT(lambda_0d(), Pointwise(Eq(), {3}));
+
+  Tensor1D<float, 2> s1{-1.3f, 2.4f};
+
+  auto lambda_1d = [&s1]() -> Tensor1D<float, 2> {
+    return mhlo::negate<Tensor1D<float, 2>>(s1);
+  };
+
+  EXPECT_THAT(lambda_1d(), Pointwise(FloatEq(), {1.3f, -2.4f}));
+
+  Tensor2D<long, 2, 2> s2{3, 1, -4, 0};
+
+  auto lambda_2d = [&s2]() -> Tensor2D<long, 2, 2> {
+    return mhlo::negate<Tensor2D<long, 2, 2>>(s2);
+  };
+
+  EXPECT_THAT(lambda_2d(), Pointwise(Eq(), {-3, -1, 4, 0}));
 }
 
 TEST(mhlo, round) {
@@ -282,6 +275,9 @@ TEST(mhlo, tanh) {
               Pointwise(FloatNear(EPSILON), {0.0f, 0.761594f, -0.761594f, 0.0f,
                                              0.996272f, -0.562593f}));
 }
+
+
+// Binary elementwise ops
 
 TEST(mhlo, add) {
   EXPECT_EQ(2, mhlo::add(-1, 3));
@@ -437,61 +433,6 @@ TEST(mhlo, div) {
   EXPECT_THAT(lambda_4d(), Pointwise(Eq(), {-1, 7, -5, -7, 2, 1}));
 }
 
-TEST(mhlo, exponential) {
-  EXPECT_NEAR(M_Ef32, mhlo::exponential(1.0f), EPSILON);
-
-  Tensor0D<float> t0{0.0f};
-  Tensor1D<float, 2> t1{M_LN2f32, M_LN10f32};
-  Tensor2D<double, 2, 2> t2{1.0f, 2.0f, 3.0f, 4.0f};
-
-  EXPECT_THAT(mhlo::exponential(t0), Pointwise(FloatNear(EPSILON), {1.0f}));
-  EXPECT_THAT(mhlo::exponential(t1),
-              Pointwise(FloatNear(EPSILON), {2.0f, 10.0f}));
-  EXPECT_THAT(mhlo::exponential(t2),
-              Pointwise(FloatNear(EPSILON),
-                        {2.718281f, 7.389056f, 20.085536f, 54.598150f}));
-}
-
-TEST(mhlo, floor) {
-  EXPECT_EQ(0.0, mhlo::floor(0.7));
-
-  Tensor0D<float> t0{0.7f};
-  Tensor1D<float, 2> t1{1.6f, 2.0f};
-  Tensor2D<double, 2, 2> t2{2.1, 1.6, 0.0, 2.0};
-
-  EXPECT_THAT(mhlo::floor(t0), Pointwise(Eq(), {0.0f}));
-  EXPECT_THAT(mhlo::floor(t1), Pointwise(Eq(), {1.0f, 2.0f}));
-  EXPECT_THAT(mhlo::floor(t2), Pointwise(Eq(), {2.0, 1.0, 0.0, 2.0}));
-}
-
-TEST(mhlo, is_finite) {
-  EXPECT_EQ(true, mhlo::is_finite(0.0f));
-
-  Tensor0D<float> t0{M_PIf32};
-  Tensor1D<float, 2> t1{M_PI_2f32, INFINITY};
-  Tensor2D<double, 2, 2> t2{INFINITY, -INFINITY, NAN, -0.0f};
-
-  EXPECT_THAT(mhlo::is_finite(t0), Pointwise(Eq(), {true}));
-  EXPECT_THAT(mhlo::is_finite(t1), Pointwise(Eq(), {true, false}));
-  EXPECT_THAT(mhlo::is_finite(t2),
-              Pointwise(Eq(), {false, false, false, true}));
-}
-
-TEST(mhlo, log) {
-  EXPECT_NEAR(0.0f, mhlo::log(1.0f), EPSILON);
-
-  Tensor0D<float> t0{M_Ef32};
-  Tensor1D<float, 2> t1{M_Ef32 * M_Ef32, M_Ef32 * M_Ef32 * M_Ef32};
-  Tensor2D<double, 2, 2> t2{1.0f, 2.0f, 3.0f, 4.0f};
-
-  EXPECT_THAT(mhlo::log(t0), Pointwise(FloatNear(EPSILON), {1.0f}));
-  EXPECT_THAT(mhlo::log(t1), Pointwise(FloatNear(EPSILON), {2.0f, 3.0f}));
-  // clang-format off
-  EXPECT_THAT(mhlo::log(t2), Pointwise(FloatNear(EPSILON), {0.0f,
-  0.693147f, 1.098612f, 1.386294f}));
-  // clang-format on
-}
-
 TEST(mhlo, max) {
   EXPECT_EQ(3, mhlo::max(-1, 3));
 
@@ -585,65 +526,6 @@ TEST(mhlo, mul) {
   EXPECT_THAT(lambda_2d(), Pointwise(Eq(), {-6, 8, 24, -90}));
 }
 
-TEST(mhlo, negate) {
-  EXPECT_EQ(1, mhlo::negate(-1));
-
-  Tensor0D<int> s0{-3};
-
-  auto lambda_0d = [&s0]() -> Tensor0D<int> {
-    return mhlo::negate<Tensor0D<int>>(s0);
-  };
-
-  EXPECT_THAT(lambda_0d(), Pointwise(Eq(), {3}));
-
-  Tensor1D<float, 2> s1{-1.3f, 2.4f};
-
-  auto lambda_1d = [&s1]() -> Tensor1D<float, 2> {
-    return mhlo::negate<Tensor1D<float, 2>>(s1);
-  };
-
-  EXPECT_THAT(lambda_1d(), Pointwise(FloatEq(), {1.3f, -2.4f}));
-
-  Tensor2D<long, 2, 2> s2{3, 1, -4, 0};
-
-  auto lambda_2d = [&s2]() -> Tensor2D<long, 2, 2> {
-    return mhlo::negate<Tensor2D<long, 2, 2>>(s2);
-  };
-
-  EXPECT_THAT(lambda_2d(), Pointwise(Eq(), {-3, -1, 4, 0}));
-}
-
-TEST(mhlo, or) {
-  EXPECT_EQ(1, mhlo::logical_or(2, 3));
-
-  Tensor0D<int> s0{2};
-  Tensor0D<int> t0{8};
-
-  auto lambda_0d = [&s0, &t0]() -> Tensor0D<int> {
-    return mhlo::logical_or<Tensor0D<int>>(s0, t0);
-  };
-
-  EXPECT_THAT(lambda_0d(), Pointwise(Eq(), {1}));
-
-  Tensor1D<int8_t, 2> s1{-1, 0};
-  Tensor1D<int8_t, 2> t1{0, 0};
-
-  auto lambda_1d = [&s1, &t1]() -> Tensor1D<int8_t, 2> {
-    return mhlo::logical_or<Tensor1D<int8_t, 2>>(s1, t1);
-  };
-
-  EXPECT_THAT(lambda_1d(), Pointwise(Eq(), {1, 0}));
-
-  Tensor2D<long, 2, 2> s2{0, 2, 0, -1};
-  Tensor2D<long, 2, 2> t2{0, 0, -2, -2};
-
-  auto lambda_2d = [&s2, &t2]() -> Tensor2D<long, 2, 2> {
-    return mhlo::logical_or<Tensor2D<long, 2, 2>>(s2, t2);
-  };
-
-  EXPECT_THAT(lambda_2d(), Pointwise(Eq(), {0, 1, 1, 1}));
-}
-
 TEST(mhlo, pow) {
   EXPECT_EQ(9, mhlo::pow(3, 2));
 
@@ -673,41 +555,6 @@ TEST(mhlo, pow) {
   };
 
   EXPECT_THAT(lambda_2d(), Pointwise(Eq(), {1, 1, 64, 0}));
-}
-
-TEST(mhlo, select) {
-  EXPECT_EQ(-1, mhlo::select(true, -1, 3));
-  EXPECT_EQ(3, mhlo::select(false, -1, 3));
-
-  Tensor0D<int> s0{-3};
-  Tensor0D<int> t0{8};
-  Tensor0D<bool> p0{true};
-
-  auto lambda_0d = [&p0, &s0, &t0]() -> Tensor0D<int> {
-    return mhlo::select<Tensor0D<int>>(p0, s0, t0);
-  };
-
-  EXPECT_THAT(lambda_0d(), Pointwise(Eq(), {-3}));
-
-  Tensor1D<float, 2> s1{-1.3f, 2.4f};
-  Tensor1D<float, 2> t1{0.2f, -3.7f};
-  Tensor1D<bool, 2> p1{true, false};
-
-  auto lambda_1d = [&p1, &s1, &t1]() -> Tensor1D<float, 2> {
-    return mhlo::select<Tensor1D<float, 2>>(p1, s1, t1);
-  };
-
-  EXPECT_THAT(lambda_1d(), Pointwise(FloatEq(), {-1.3f, -3.7f}));
-
-  Tensor2D<long, 2, 2> s2{3, 1, 4, 9};
-  Tensor2D<long, 2, 2> t2{-2, 8, 6, -10};
-  Tensor2D<bool, 2, 2> p2{false, true, true, false};
-
-  auto lambda_2d = [&p2, &s2, &t2]() -> Tensor2D<long, 2, 2> {
-    return mhlo::select<Tensor2D<long, 2, 2>>(p2, s2, t2);
-  };
-
-  EXPECT_THAT(lambda_2d(), Pointwise(Eq(), {-2, 1, 4, -10}));
 }
 
 TEST(mhlo, shift_left) {
@@ -803,6 +650,40 @@ TEST(mhlo, sub) {
   EXPECT_THAT(lambda_2d(), Pointwise(Eq(), {5, -7, -2, 19}));
 }
 
+
+// Binary logical elementwise ops
+
+TEST(mhlo, or) {
+  EXPECT_EQ(1, mhlo::logical_or(2, 3));
+
+  Tensor0D<int> s0{2};
+  Tensor0D<int> t0{8};
+
+  auto lambda_0d = [&s0, &t0]() -> Tensor0D<int> {
+    return mhlo::logical_or<Tensor0D<int>>(s0, t0);
+  };
+
+  EXPECT_THAT(lambda_0d(), Pointwise(Eq(), {1}));
+
+  Tensor1D<int8_t, 2> s1{-1, 0};
+  Tensor1D<int8_t, 2> t1{0, 0};
+
+  auto lambda_1d = [&s1, &t1]() -> Tensor1D<int8_t, 2> {
+    return mhlo::logical_or<Tensor1D<int8_t, 2>>(s1, t1);
+  };
+
+  EXPECT_THAT(lambda_1d(), Pointwise(Eq(), {1, 0}));
+
+  Tensor2D<long, 2, 2> s2{0, 2, 0, -1};
+  Tensor2D<long, 2, 2> t2{0, 0, -2, -2};
+
+  auto lambda_2d = [&s2, &t2]() -> Tensor2D<long, 2, 2> {
+    return mhlo::logical_or<Tensor2D<long, 2, 2>>(s2, t2);
+  };
+
+  EXPECT_THAT(lambda_2d(), Pointwise(Eq(), {0, 1, 1, 1}));
+}
+
 TEST(mhlo, xor) {
   EXPECT_EQ(1, mhlo::logical_xor(2, 3));
 
@@ -832,6 +713,163 @@ TEST(mhlo, xor) {
   };
 
   EXPECT_THAT(lambda_2d(), Pointwise(Eq(), {0, 1, 1, 1}));
+}
+
+
+// Tuple ops
+
+TEST(mhlo, compare) {
+  auto lambda = []() { return mhlo::compare<int, std::less>(-1, 3); };
+  EXPECT_EQ(true, lambda());
+
+  Tensor0D<int> s0{-3};
+  Tensor0D<int> t0{-8};
+
+  auto lambda_0d = [&s0, &t0]() {
+    return mhlo::compare<Tensor0D<int>, std::less_equal>(s0, t0);
+  };
+
+  EXPECT_THAT(lambda_0d(), Pointwise(Eq(), {false}));
+
+  Tensor1D<float, 2> s1{-1.3f, 2.4f};
+  Tensor1D<float, 2> t1{0.2f, 2.4f};
+
+  auto lambda_1d = [&s1, &t1]() {
+    return mhlo::compare<Tensor1D<float, 2>, std::equal_to>(s1, t1);
+  };
+
+  EXPECT_THAT(lambda_1d(), Pointwise(Eq(), {false, true}));
+
+  Tensor2D<long, 2, 2> s2{3, 1, 4, 9};
+  Tensor2D<long, 2, 2> t2{-2, 1, 6, -10};
+
+  auto lambda_2d = [&s2, &t2]() {
+    return mhlo::compare<Tensor2D<long, 2, 2>, std::greater_equal>(s2, t2);
+  };
+
+  EXPECT_THAT(lambda_2d(), Pointwise(Eq(), {true, true, false, true}));
+
+  Tensor3D<long, 2, 1, 2> s3{3, 1, 4, 9};
+  Tensor3D<long, 2, 1, 2> t3{-2, 1, 6, -10};
+
+  auto lambda_3d = [&s3, &t3]() {
+    return mhlo::compare<Tensor3D<long, 2, 1, 2>, std::greater_equal>(s3, t3);
+  };
+
+  EXPECT_THAT(lambda_3d(), Pointwise(Eq(), {true, true, false, true}));
+
+  Tensor4D<int, 2, 1, 2, 2> s4{3, 1, 4, 9, 10, 12, -4, 8};
+  Tensor4D<int, 2, 1, 2, 2> t4{-2, 1, 6, -10, 9, 13, 4, 10};
+
+  auto lambda_4d = [&s4, &t4]() {
+    return mhlo::compare<Tensor4D<int, 2, 1, 2, 2>, std::greater_equal>(s4, t4);
+  };
+
+  EXPECT_THAT(lambda_4d(), Pointwise(Eq(), {true, true, false, true, true,
+                                            false, false, false}));
+}
+
+
+// Slice ops
+
+TEST(mhlo, slice) {
+  Tensor1D<float, 5> s1{0.0f, 1.0f, 2.0f, 3.0f, 4.0f};
+  auto t1 =
+      mhlo::slice<Tensor1D<float, 2>, Tensor1D<float, 5>>(s1, {2}, {4}, {1});
+  EXPECT_THAT(t1, Pointwise(FloatEq(), {2.0f, 3.0f}));
+
+  auto t1_strided =
+      mhlo::slice<Tensor1D<float, 2>, Tensor1D<float, 5>>(s1, {1}, {4}, {2});
+  EXPECT_THAT(t1_strided, Pointwise(FloatEq(), {1.0f, 3.0f}));
+
+  Tensor2D<float, 4, 3> s2{0.0f, 1.0f, 2.0f, 3.0f, 4.0f,  5.0f,
+                           6.0f, 7.0f, 8.0f, 9.0f, 10.0f, 11.0f};
+  auto t2 = mhlo::slice<Tensor2D<float, 2, 2>, Tensor2D<float, 4, 3>>(
+      s2, {2, 1}, {4, 3}, {1, 1});
+
+  EXPECT_THAT(t2, Pointwise(FloatEq(), {7.0f, 8.0f, 10.0f, 11.0f}));
+
+  auto t2_strided = mhlo::slice<Tensor2D<float, 2, 2>, Tensor2D<float, 4, 3>>(
+      s2, {1, 0}, {4, 3}, {2, 2});
+
+  EXPECT_THAT(t2_strided, Pointwise(FloatEq(), {3.0f, 5.0f, 9.0f, 11.0f}));
+}
+
+TEST(mhlo, dynamic_slice) {
+  Tensor1D<float, 5> s1{0.0f, 1.0f, 2.0f, 3.0f, 4.0f};
+  auto t1 =
+      mhlo::dynamic_slice<Tensor1D<float, 2>, Tensor1D<float, 5>>(s1, {2}, {2});
+  EXPECT_THAT(t1, Pointwise(FloatEq(), {2.0f, 3.0f}));
+
+  Tensor2D<float, 4, 3> s2{0.0f, 1.0f, 2.0f, 3.0f, 4.0f,  5.0f,
+                           6.0f, 7.0f, 8.0f, 9.0f, 10.0f, 11.0f};
+  auto t2 = mhlo::dynamic_slice<Tensor2D<float, 2, 2>, Tensor2D<float, 4, 3>>(
+      s2, {2}, {1}, {2, 2});
+
+  EXPECT_THAT(t2, Pointwise(FloatEq(), {7.0f, 8.0f, 10.0f, 11.0f}));
+}
+
+TEST(mhlo, dynamic_update_slice) {
+  Tensor1D<float, 5> s1{0.0f, 1.0f, 2.0f, 3.0f, 4.0f};
+  Tensor1D<float, 2> u1{5.0f, 6.0f};
+  auto t1 = mhlo::dynamic_update_slice<Tensor1D<float, 2>, Tensor1D<float, 5>>(
+      s1, u1, {2});
+  EXPECT_THAT(t1, Pointwise(FloatEq(), {0.0f, 1.0f, 5.0f, 6.0f, 4.0f}));
+
+  Tensor2D<float, 4, 3> s2{0.0f, 1.0f, 2.0f, 3.0f, 4.0f,  5.0f,
+                           6.0f, 7.0f, 8.0f, 9.0f, 10.0f, 11.0f};
+  Tensor2D<float, 3, 2> u2{12.0f, 13.0f, 14.0f, 15.0f, 16.0f, 17.0f};
+  auto t2 =
+      mhlo::dynamic_update_slice<Tensor2D<float, 3, 2>, Tensor2D<float, 4, 3>>(
+          s2, u2, {1}, {1});
+
+  EXPECT_THAT(t2,
+              Pointwise(FloatEq(), {0.0f, 1.0f, 2.0f, 3.0f, 12.0f, 13.0f, 6.0f,
+                                    14.0f, 15.0f, 9.0f, 16.0f, 17.0f}));
+}
+
+
+// Other ops
+
+TEST(mhlo, bitcast_convert) {
+  uint8_t a = 128;
+  int8_t b = -128;
+  EXPECT_EQ(b, mhlo::bitcast_convert<int8_t>(a));
+
+  Tensor0D<int16_t> t0{-1};
+  auto lambda_0d = [&t0]() {
+    return mhlo::bitcast_convert<Tensor0D<uint16_t>>(t0);
+  };
+  EXPECT_THAT(lambda_0d(), Pointwise(Eq(), {65535}));
+
+  Tensor1D<uint16_t, 2> t1{1, 2};
+  auto lambda_1d = [&t1]() {
+    return mhlo::bitcast_convert<Tensor1D<int16_t, 2>>(t1);
+  };
+
+  EXPECT_THAT(lambda_1d(), Pointwise(Eq(), {1, 2}));
+
+  Tensor2D<int8_t, 2, 2> t2{0, -4, 3, -12};
+  auto lambda_2d = [&t2]() {
+    return mhlo::bitcast_convert<Tensor2D<uint8_t, 2, 2>>(t2);
+  };
+
+  EXPECT_THAT(lambda_2d(), Pointwise(DoubleEq(), {0, 252, 3, 244}));
+
+  Tensor3D<int8_t, 2, 1, 2> t3{0, -4, 3, -12};
+  auto lambda_3d = [&t3]() {
+    return mhlo::bitcast_convert<Tensor3D<uint8_t, 2, 1, 2>>(t3);
+  };
+
+  EXPECT_THAT(lambda_3d(), Pointwise(DoubleEq(), {0, 252, 3, 244}));
+
+  Tensor4D<int8_t, 2, 1, 2, 2> t4{0, -4, 3, -12, -11, 0, 2, -4};
+  auto lambda_4d = [&t4]() {
+    return mhlo::bitcast_convert<Tensor4D<uint8_t, 2, 1, 2, 2>>(t4);
+  };
+
+  EXPECT_THAT(lambda_4d(),
+              Pointwise(DoubleEq(), {0, 252, 3, 244, 245, 0, 2, 252}));
 }
 
 TEST(mhlo, broadcast_in_dim) {
@@ -919,80 +957,6 @@ TEST(mhlo, concatenate) {
                                     5.0f, 6.0f, 10.0f, 11.0f, 12.0f}));
 }
 
-TEST(mhlo, reshape) {
-  Tensor0D<int> s0{-3};
-  auto t0 = mhlo::reshape<Tensor1D<int, 1>>(s0);
-  auto t0_1 = mhlo::reshape<Tensor2D<int, 1, 1>>(s0);
-  EXPECT_THAT(t0, Pointwise(Eq(), {-3}));
-  EXPECT_THAT(t0_1, Pointwise(Eq(), {-3}));
-
-  Tensor1D<float, 2> s1{-1.3f, 2.4f};
-  auto t1 = mhlo::reshape<Tensor2D<float, 1, 2>>(s1);
-
-  EXPECT_THAT(t1, Pointwise(FloatEq(), {-1.3f, 2.4f}));
-
-  Tensor2D<long, 2, 2> s2{3, 1, 4, 9};
-  auto t2 = mhlo::reshape<Tensor1D<long, 4>>(s2);
-
-  EXPECT_THAT(t2, Pointwise(Eq(), {3, 1, 4, 9}));
-}
-
-TEST(mhlo, slice) {
-  Tensor1D<float, 5> s1{0.0f, 1.0f, 2.0f, 3.0f, 4.0f};
-  auto t1 =
-      mhlo::slice<Tensor1D<float, 2>, Tensor1D<float, 5>>(s1, {2}, {4}, {1});
-  EXPECT_THAT(t1, Pointwise(FloatEq(), {2.0f, 3.0f}));
-
-  auto t1_strided =
-      mhlo::slice<Tensor1D<float, 2>, Tensor1D<float, 5>>(s1, {1}, {4}, {2});
-  EXPECT_THAT(t1_strided, Pointwise(FloatEq(), {1.0f, 3.0f}));
-
-  Tensor2D<float, 4, 3> s2{0.0f, 1.0f, 2.0f, 3.0f, 4.0f,  5.0f,
-                           6.0f, 7.0f, 8.0f, 9.0f, 10.0f, 11.0f};
-  auto t2 = mhlo::slice<Tensor2D<float, 2, 2>, Tensor2D<float, 4, 3>>(
-      s2, {2, 1}, {4, 3}, {1, 1});
-
-  EXPECT_THAT(t2, Pointwise(FloatEq(), {7.0f, 8.0f, 10.0f, 11.0f}));
-
-  auto t2_strided = mhlo::slice<Tensor2D<float, 2, 2>, Tensor2D<float, 4, 3>>(
-      s2, {1, 0}, {4, 3}, {2, 2});
-
-  EXPECT_THAT(t2_strided, Pointwise(FloatEq(), {3.0f, 5.0f, 9.0f, 11.0f}));
-}
-
-TEST(mhlo, dynamic_slice) {
-  Tensor1D<float, 5> s1{0.0f, 1.0f, 2.0f, 3.0f, 4.0f};
-  auto t1 =
-      mhlo::dynamic_slice<Tensor1D<float, 2>, Tensor1D<float, 5>>(s1, {2}, {2});
-  EXPECT_THAT(t1, Pointwise(FloatEq(), {2.0f, 3.0f}));
-
-  Tensor2D<float, 4, 3> s2{0.0f, 1.0f, 2.0f, 3.0f, 4.0f,  5.0f,
-                           6.0f, 7.0f, 8.0f, 9.0f, 10.0f, 11.0f};
-  auto t2 = mhlo::dynamic_slice<Tensor2D<float, 2, 2>, Tensor2D<float, 4, 3>>(
-      s2, {2}, {1}, {2, 2});
-
-  EXPECT_THAT(t2, Pointwise(FloatEq(), {7.0f, 8.0f, 10.0f, 11.0f}));
-}
-
-TEST(mhlo, dynamic_update_slice) {
-  Tensor1D<float, 5> s1{0.0f, 1.0f, 2.0f, 3.0f, 4.0f};
-  Tensor1D<float, 2> u1{5.0f, 6.0f};
-  auto t1 = mhlo::dynamic_update_slice<Tensor1D<float, 2>, Tensor1D<float, 5>>(
-      s1, u1, {2});
-  EXPECT_THAT(t1, Pointwise(FloatEq(), {0.0f, 1.0f, 5.0f, 6.0f, 4.0f}));
-
-  Tensor2D<float, 4, 3> s2{0.0f, 1.0f, 2.0f, 3.0f, 4.0f,  5.0f,
-                           6.0f, 7.0f, 8.0f, 9.0f, 10.0f, 11.0f};
-  Tensor2D<float, 3, 2> u2{12.0f, 13.0f, 14.0f, 15.0f, 16.0f, 17.0f};
-  auto t2 =
-      mhlo::dynamic_update_slice<Tensor2D<float, 3, 2>, Tensor2D<float, 4, 3>>(
-          s2, u2, {1}, {1});
-
-  EXPECT_THAT(t2,
-              Pointwise(FloatEq(), {0.0f, 1.0f, 2.0f, 3.0f, 12.0f, 13.0f, 6.0f,
-                                    14.0f, 15.0f, 9.0f, 16.0f, 17.0f}));
-}
-
 /// Taken from
 /// https://github.com/google/iree/blob/efd78a0b47a46457a644f43d98617d3e279b2a79/iree/test/e2e/xla_ops/convolution.mlir#L33
 TEST(mhlo, convolution) {
@@ -1031,6 +995,59 @@ TEST(mhlo, convolution) {
       padding, rhs_dilation, window_strides);
 
   EXPECT_THAT(result, Pointwise(FloatNear(EPSILON), expected_result));
+}
+
+TEST(mhlo, reshape) {
+  Tensor0D<int> s0{-3};
+  auto t0 = mhlo::reshape<Tensor1D<int, 1>>(s0);
+  auto t0_1 = mhlo::reshape<Tensor2D<int, 1, 1>>(s0);
+  EXPECT_THAT(t0, Pointwise(Eq(), {-3}));
+  EXPECT_THAT(t0_1, Pointwise(Eq(), {-3}));
+
+  Tensor1D<float, 2> s1{-1.3f, 2.4f};
+  auto t1 = mhlo::reshape<Tensor2D<float, 1, 2>>(s1);
+
+  EXPECT_THAT(t1, Pointwise(FloatEq(), {-1.3f, 2.4f}));
+
+  Tensor2D<long, 2, 2> s2{3, 1, 4, 9};
+  auto t2 = mhlo::reshape<Tensor1D<long, 4>>(s2);
+
+  EXPECT_THAT(t2, Pointwise(Eq(), {3, 1, 4, 9}));
+}
+
+TEST(mhlo, select) {
+  EXPECT_EQ(-1, mhlo::select(true, -1, 3));
+  EXPECT_EQ(3, mhlo::select(false, -1, 3));
+
+  Tensor0D<int> s0{-3};
+  Tensor0D<int> t0{8};
+  Tensor0D<bool> p0{true};
+
+  auto lambda_0d = [&p0, &s0, &t0]() -> Tensor0D<int> {
+    return mhlo::select<Tensor0D<int>>(p0, s0, t0);
+  };
+
+  EXPECT_THAT(lambda_0d(), Pointwise(Eq(), {-3}));
+
+  Tensor1D<float, 2> s1{-1.3f, 2.4f};
+  Tensor1D<float, 2> t1{0.2f, -3.7f};
+  Tensor1D<bool, 2> p1{true, false};
+
+  auto lambda_1d = [&p1, &s1, &t1]() -> Tensor1D<float, 2> {
+    return mhlo::select<Tensor1D<float, 2>>(p1, s1, t1);
+  };
+
+  EXPECT_THAT(lambda_1d(), Pointwise(FloatEq(), {-1.3f, -3.7f}));
+
+  Tensor2D<long, 2, 2> s2{3, 1, 4, 9};
+  Tensor2D<long, 2, 2> t2{-2, 8, 6, -10};
+  Tensor2D<bool, 2, 2> p2{false, true, true, false};
+
+  auto lambda_2d = [&p2, &s2, &t2]() -> Tensor2D<long, 2, 2> {
+    return mhlo::select<Tensor2D<long, 2, 2>>(p2, s2, t2);
+  };
+
+  EXPECT_THAT(lambda_2d(), Pointwise(Eq(), {-2, 1, 4, -10}));
 }
 
 } // namespace

@@ -1,45 +1,17 @@
 // RUN: emitc-opt -convert-mhlo-to-emitc %s | FileCheck %s
 
+// Unary elementwise ops
+
 func @float_abs(%arg0: tensor<2xf32>) -> tensor<2xf32> {
   // CHECK: emitc.call "mhlo::abs"
   %0 = "mhlo.abs"(%arg0) : (tensor<2xf32>) -> tensor<2xf32>
   return %0 : tensor<2xf32>
 }
 
-func @mhlo_bitcast_convert(%arg0: tensor<ui32>) -> tensor<i32> {
-  // CHECK: emitc.call "mhlo::bitcast_convert"(%arg0) {template_args = [tensor<i32>]}
-  %0 = "mhlo.bitcast_convert"(%arg0) : (tensor<ui32>) -> tensor<i32>
-  return %0 : tensor<i32>
-}
-
-func @mhlo_broadcast_in_dim(%arg0: tensor<i32>) -> tensor<3xi32> {
-  // CHECK: %{{.*}} = constant
-  // CHECK: emitc.call "mhlo::broadcast_in_dim"(%arg0, %{{.*}}) {template_args = [tensor<3xi32>]}
-  %0 = "mhlo.broadcast_in_dim"(%arg0) {broadcast_dimensions = dense<> : tensor<0xi64>}: (tensor<i32>) -> tensor<3xi32>
-  return %0 : tensor<3xi32>
-}
-
 func @mhlo_ceil(%arg0: tensor<2xf32>) -> tensor<2xf32> {
   // CHECK: emitc.call "mhlo::ceil"
   %0 = "mhlo.ceil"(%arg0) : (tensor<2xf32>) -> tensor<2xf32>
   return %0 : tensor<2xf32>
-}
-
-func @mhlo_compare(%arg0: tensor<4xi32>, %arg1: tensor<4xi32>) -> tensor<4xi1> {
-  // CHECK: emitc.call "mhlo::compare"(%arg0, %arg1) {template_args = [tensor<4xi32>, "std::less"]}
-  %0 = "mhlo.compare"(%arg0, %arg1) {comparison_direction = "LT"} : (tensor<4xi32>, tensor<4xi32>) -> tensor<4xi1>
-  // CHECK: emitc.call "mhlo::compare"(%arg0, %arg1) {template_args = [tensor<4xi32>, "std::less_equal"]}
-  %1 = "mhlo.compare"(%arg0, %arg1) {comparison_direction = "LE"} : (tensor<4xi32>, tensor<4xi32>) -> tensor<4xi1>
-  // CHECK: emitc.call "mhlo::compare"(%arg0, %arg1) {template_args = [tensor<4xi32>, "std::greater"]}
-  %2 = "mhlo.compare"(%arg0, %arg1) {comparison_direction = "GT"} : (tensor<4xi32>, tensor<4xi32>) -> tensor<4xi1>
-  // CHECK: emitc.call "mhlo::compare"(%arg0, %arg1) {template_args = [tensor<4xi32>, "std::greater_equal"]}
-  %3 = "mhlo.compare"(%arg0, %arg1) {comparison_direction = "GE"} : (tensor<4xi32>, tensor<4xi32>) -> tensor<4xi1>
-  // CHECK: emitc.call "mhlo::compare"(%arg0, %arg1) {template_args = [tensor<4xi32>, "std::equal_to"]}
-  %4 = "mhlo.compare"(%arg0, %arg1) {comparison_direction = "EQ"} : (tensor<4xi32>, tensor<4xi32>) -> tensor<4xi1>
-  // CHECK: emitc.call "mhlo::compare"(%arg0, %arg1) {template_args = [tensor<4xi32>, "std::not_equal_to"]}
-  %5 = "mhlo.compare"(%arg0, %arg1) {comparison_direction = "NE"} : (tensor<4xi32>, tensor<4xi32>) -> tensor<4xi1>
-  
-  return %0 : tensor<4xi1>
 }
 
 func @mhlo_convert(%arg0: tensor<ui32>) -> tensor<ui64> {
@@ -84,12 +56,6 @@ func @mhlo_negate(%arg0: tensor<2xf32>) -> tensor<2xf32> {
   return %0 : tensor<2xf32>
 }
 
-func @mhlo_reshape(%arg0: tensor<12xf32>) -> tensor<2x3x2xf32> {
-  // CHECK: emitc.call "mhlo::reshape"(%arg0) {template_args = [tensor<2x3x2xf32>]}
-  %0 = "mhlo.reshape"(%arg0) : (tensor<12xf32>) -> tensor<2x3x2xf32>
-  return %0 : tensor<2x3x2xf32>
-}
-
 func @mhlo_round(%arg0: tensor<2xf32>) -> tensor<2xf32> {
   // CHECK: emitc.call "mhlo::round"
   %0 = "mhlo.round_nearest_afz"(%arg0) : (tensor<2xf32>) -> tensor<2xf32>
@@ -102,6 +68,11 @@ func @mhlo_sine(%arg0: tensor<2xf32>) -> tensor<2xf32> {
   return %0 : tensor<2xf32>
 }
 
+func @mhlo_sqrt(%arg0: tensor<2xf32>) -> tensor<2xf32> {
+  // CHECK: emitc.call "mhlo::sqrt"
+  %0 = "mhlo.sqrt"(%arg0) : (tensor<2xf32>) -> tensor<2xf32>
+  return %0 : tensor<2xf32>
+}
 
 func @mhlo_tanh(%arg0: tensor<2xf32>) -> tensor<2xf32> {
   // CHECK: emitc.call "mhlo::tanh"
@@ -109,17 +80,8 @@ func @mhlo_tanh(%arg0: tensor<2xf32>) -> tensor<2xf32> {
   return %0 : tensor<2xf32>
 }
 
-func @mhlo_select(%arg0: tensor<2xf32>, %arg1: tensor<2xf32>, %arg2: tensor<2xi1>) -> tensor<2xf32> {
-  // CHECK: emitc.call "mhlo::select"(%arg2, %arg0, %arg1)
-  %1 = "mhlo.select"(%arg2, %arg0, %arg1) : (tensor<2xi1>, tensor<2xf32>, tensor<2xf32>) -> tensor<2xf32>
-  return %1 : tensor<2xf32>
-}
 
-func @mhlo_sqrt(%arg0: tensor<2xf32>) -> tensor<2xf32> {
-  // CHECK: emitc.call "mhlo::sqrt"
-  %0 = "mhlo.sqrt"(%arg0) : (tensor<2xf32>) -> tensor<2xf32>
-  return %0 : tensor<2xf32>
-}
+// Binary elementwise ops
 
 func @mhlo_add_i64(%arg0: tensor<i64>) -> tensor<i64> {
   // CHECK: emitc.call "mhlo::add"
@@ -187,6 +149,9 @@ func @mhlo_sub(%arg0: tensor<f32>) -> tensor<f32> {
   return %0 : tensor<f32>
 }
 
+
+// Binary logical elementwise ops
+
 func @mhlo_or(%arg0: tensor<ui64>, %arg1: tensor<ui64>) -> tensor<ui64> {
   // CHECK: emitc.call "mhlo::logical_or"(%arg0, %arg1)
   %0 = "mhlo.or"(%arg0, %arg1) : (tensor<ui64>, tensor<ui64>) -> tensor<ui64>
@@ -198,6 +163,9 @@ func @mhlo_xor(%arg0: tensor<ui64>, %arg1: tensor<ui64>) -> tensor<ui64> {
   %0 = "mhlo.xor"(%arg0, %arg1) : (tensor<ui64>, tensor<ui64>) -> tensor<ui64>
   return %0 : tensor<ui64>
 }
+
+
+// Tuple ops
 
 func @mhlo_tuple(%arg0: tensor<i32>, %arg1: tensor<ui64>) -> (tuple<tensor<i32>, tensor<ui64>, tensor<i32>, tensor<ui64>>) {
   // CHECK: emitc.call "std::make_tuple"()
@@ -226,11 +194,25 @@ func @mhlo_tuple_unpack(%arg0: tensor<i32>, %arg1: tensor<ui64>) -> (tuple<tenso
   return %1, %2 : tuple<tensor<i32>, tensor<ui64>>, tensor<i32>
 }
 
-func @mhlo_concaternate(%arg0: tensor<1xf32>, %arg1: tensor<2xf32>) -> tensor<3xf32> {
-  // CHECK: emitc.call "mhlo::concatenate"
-  %0 = "mhlo.concatenate"(%arg0, %arg1) {dimension = 0 : i64} : (tensor<1xf32>, tensor<2xf32>) -> tensor<3xf32>
-  return %0 : tensor<3xf32>
+func @mhlo_compare(%arg0: tensor<4xi32>, %arg1: tensor<4xi32>) -> tensor<4xi1> {
+  // CHECK: emitc.call "mhlo::compare"(%arg0, %arg1) {template_args = [tensor<4xi32>, "std::less"]}
+  %0 = "mhlo.compare"(%arg0, %arg1) {comparison_direction = "LT"} : (tensor<4xi32>, tensor<4xi32>) -> tensor<4xi1>
+  // CHECK: emitc.call "mhlo::compare"(%arg0, %arg1) {template_args = [tensor<4xi32>, "std::less_equal"]}
+  %1 = "mhlo.compare"(%arg0, %arg1) {comparison_direction = "LE"} : (tensor<4xi32>, tensor<4xi32>) -> tensor<4xi1>
+  // CHECK: emitc.call "mhlo::compare"(%arg0, %arg1) {template_args = [tensor<4xi32>, "std::greater"]}
+  %2 = "mhlo.compare"(%arg0, %arg1) {comparison_direction = "GT"} : (tensor<4xi32>, tensor<4xi32>) -> tensor<4xi1>
+  // CHECK: emitc.call "mhlo::compare"(%arg0, %arg1) {template_args = [tensor<4xi32>, "std::greater_equal"]}
+  %3 = "mhlo.compare"(%arg0, %arg1) {comparison_direction = "GE"} : (tensor<4xi32>, tensor<4xi32>) -> tensor<4xi1>
+  // CHECK: emitc.call "mhlo::compare"(%arg0, %arg1) {template_args = [tensor<4xi32>, "std::equal_to"]}
+  %4 = "mhlo.compare"(%arg0, %arg1) {comparison_direction = "EQ"} : (tensor<4xi32>, tensor<4xi32>) -> tensor<4xi1>
+  // CHECK: emitc.call "mhlo::compare"(%arg0, %arg1) {template_args = [tensor<4xi32>, "std::not_equal_to"]}
+  %5 = "mhlo.compare"(%arg0, %arg1) {comparison_direction = "NE"} : (tensor<4xi32>, tensor<4xi32>) -> tensor<4xi1>
+
+  return %0 : tensor<4xi1>
 }
+
+
+// Slice ops
 
 func @mhlo_slice(%arg0: tensor<12xi32>, %arg1: tensor<8x7xi32>) -> tensor<4x3xi32> {
   // CHECK: %{{.*}} = constant
@@ -269,6 +251,43 @@ func @mhlo_dynamic_update_slice(%arg0: tensor<12xi32>, %arg1: tensor<8x7xi32>) -
   %1 = "mhlo.dynamic-update-slice"(%arg1, %cst_2, %cst, %cst_0) : (tensor<8x7xi32>, tensor<2x4xi32>, tensor<i64>, tensor<i64>) -> tensor<8x7xi32>
   return
 }
+
+
+// Other ops
+
+func @mhlo_bitcast_convert(%arg0: tensor<ui32>) -> tensor<i32> {
+  // CHECK: emitc.call "mhlo::bitcast_convert"(%arg0) {template_args = [tensor<i32>]}
+  %0 = "mhlo.bitcast_convert"(%arg0) : (tensor<ui32>) -> tensor<i32>
+  return %0 : tensor<i32>
+}
+
+func @mhlo_broadcast_in_dim(%arg0: tensor<i32>) -> tensor<3xi32> {
+  // CHECK: %{{.*}} = constant
+  // CHECK: emitc.call "mhlo::broadcast_in_dim"(%arg0, %{{.*}}) {template_args = [tensor<3xi32>]}
+  %0 = "mhlo.broadcast_in_dim"(%arg0) {broadcast_dimensions = dense<> : tensor<0xi64>}: (tensor<i32>) -> tensor<3xi32>
+  return %0 : tensor<3xi32>
+}
+
+func @mhlo_concaternate(%arg0: tensor<1xf32>, %arg1: tensor<2xf32>) -> tensor<3xf32> {
+  // CHECK: emitc.call "mhlo::concatenate"
+  %0 = "mhlo.concatenate"(%arg0, %arg1) {dimension = 0 : i64} : (tensor<1xf32>, tensor<2xf32>) -> tensor<3xf32>
+  return %0 : tensor<3xf32>
+}
+
+func @mhlo_reshape(%arg0: tensor<12xf32>) -> tensor<2x3x2xf32> {
+  // CHECK: emitc.call "mhlo::reshape"(%arg0) {template_args = [tensor<2x3x2xf32>]}
+  %0 = "mhlo.reshape"(%arg0) : (tensor<12xf32>) -> tensor<2x3x2xf32>
+  return %0 : tensor<2x3x2xf32>
+}
+
+func @mhlo_select(%arg0: tensor<2xf32>, %arg1: tensor<2xf32>, %arg2: tensor<2xi1>) -> tensor<2xf32> {
+  // CHECK: emitc.call "mhlo::select"(%arg2, %arg0, %arg1)
+  %1 = "mhlo.select"(%arg2, %arg0, %arg1) : (tensor<2xi1>, tensor<2xf32>, tensor<2xf32>) -> tensor<2xf32>
+  return %1 : tensor<2xf32>
+}
+
+
+// RNG ops
 
 func @mhlo_rng_uniform() -> () {
   %cst = "std.constant"() {value = dense<-100> : tensor<i32>} : () -> tensor<i32>

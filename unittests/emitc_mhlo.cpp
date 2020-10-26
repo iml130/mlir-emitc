@@ -997,6 +997,17 @@ TEST(mhlo, convolution) {
   EXPECT_THAT(result, Pointwise(FloatNear(EPSILON), expected_result));
 }
 
+TEST(mhlo, dot) {
+  Tensor2D<int, 2, 2> a2{1, 0, 0, 1};
+  Tensor2D<int, 2, 2> b2{4, 1, 2, 2};
+
+  auto lambda_2d = [&a2, &b2]() -> Tensor2D<int, 2, 2> {
+    return mhlo::dot<Tensor2D<int, 2, 2>>(a2, b2);
+  };
+
+  EXPECT_THAT(lambda_2d(), Pointwise(Eq(), {4, 1, 2, 2}));
+}
+
 TEST(mhlo, reshape) {
   Tensor0D<int> s0{-3};
   auto t0 = mhlo::reshape<Tensor1D<int, 1>>(s0);

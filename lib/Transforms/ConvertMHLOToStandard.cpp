@@ -50,7 +50,7 @@ struct ConvertMHLOToStandardPass
     OwningRewritePatternList patterns;
     populateMhloToStdPatterns(&getContext(), patterns);
 
-    if (failed(applyPartialConversion(getFunction(), target, patterns)))
+    if (failed(applyPartialConversion(getFunction(), target, std::move(patterns))))
       signalPassFailure();
   }
 };

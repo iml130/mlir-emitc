@@ -24,13 +24,6 @@ inline void registerEmitCDialect(DialectRegistry &registry) {
   registry.insert<emitc::EmitCDialect>();
 }
 
-// This function should be called before creating any MLIRContext if one expect
-// all the possible dialects to be made available to the context automatically.
-inline void registerEmitCDialect() {
-  static bool initOnce =
-      ([]() { registerEmitCDialect(getGlobalDialectRegistry()); }(), true);
-  (void)initOnce;
-}
 } // namespace mlir
 
 #endif // MLIR_INITDIALECT_H

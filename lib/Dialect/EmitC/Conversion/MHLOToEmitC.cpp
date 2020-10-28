@@ -159,8 +159,6 @@ private:
   LogicalResult
   matchAndRewrite(SrcOp srcOp, ArrayRef<Value> operands,
                   ConversionPatternRewriter &rewriter) const override {
-    typename SrcOp::Adaptor srcAdapter(operands);
-
     StringAttr callee = rewriter.getStringAttr(funcName);
     ArrayAttr args;
     ArrayAttr templateArgs;
@@ -194,24 +192,25 @@ private:
                   ConversionPatternRewriter &rewriter) const override {
     StringAttr callee = rewriter.getStringAttr("mhlo::compare");
 
-    llvm::StringRef comparisonDirection = compareOp.comparison_direction();
-    llvm::StringRef functionName =
-        llvm::StringSwitch<llvm::StringRef>(comparisonDirection)
-            .Case("EQ", "std::equal_to")
-            .Case("NE", "std::not_equal_to")
-            .Case("GE", "std::greater_equal")
-            .Case("GT", "std::greater")
-            .Case("LE", "std::less_equal")
-            .Case("LT", "std::less")
-            .Default("");
+    StringRef comparisonDirection = compareOp.comparison_direction();
+    Optional<StringRef> functionName =
+        StringSwitch<Optional<StringRef>>(comparisonDirection)
+            .Case("EQ", StringRef("std::equal_to"))
+            .Case("NE", StringRef("std::not_equal_to"))
+            .Case("GE", StringRef("std::greater_equal"))
+            .Case("GT", StringRef("std::greater"))
+            .Case("LE", StringRef("std::less_equal"))
+            .Case("LT", StringRef("std::less"))
+            .Default(None);
 
-    if (functionName.equals(""))
+    if (!functionName.hasValue())
       return failure();
 
     Type elementType = compareOp.getOperand(0).getType();
     ArrayAttr args;
     ArrayAttr templateArgs = rewriter.getArrayAttr(
-        {TypeAttr::get(elementType), rewriter.getStringAttr(functionName)});
+        {TypeAttr::get(elementType),
+         rewriter.getStringAttr(functionName.getValue())});
 
     rewriter.replaceOpWithNewOp<emitc::CallOp>(
         compareOp, compareOp.getType(), callee, args, templateArgs, operands);

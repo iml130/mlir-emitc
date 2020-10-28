@@ -13,7 +13,6 @@
 #include "emitc/Dialect/EmitC/EmitCDialect.h"
 #include "emitc/Dialect/EmitC/Passes.h"
 #include "mlir-hlo/Dialect/mhlo/IR/hlo_ops.h"
-#include "mlir/Dialect/StandardOps/IR/Ops.h"
 #include "mlir/IR/Function.h"
 #include "mlir/IR/PatternMatch.h"
 #include "mlir/Pass/Pass.h"
@@ -35,23 +34,25 @@ private:
   matchAndRewrite(mhlo::BroadcastInDimOp broadcastInDimOp,
                   ArrayRef<Value> operands,
                   ConversionPatternRewriter &rewriter) const override {
-    auto loc = broadcastInDimOp.getLoc();
-    auto broadcastDims = broadcastInDimOp.broadcast_dimensions();
-    auto constOp = rewriter.create<ConstantOp>(loc, broadcastDims);
-
-    std::vector<Value> newOperands(operands);
-    newOperands.push_back(constOp.getResult());
-
     StringRef funcName = "mhlo::broadcast_in_dim";
     StringAttr callee = rewriter.getStringAttr(funcName);
 
-    ArrayAttr args;
+    SmallVector<Attribute, 4> args_ = llvm::to_vector<4>(
+        llvm::map_range(llvm::seq<int64_t>(0, operands.size()),
+                        [&rewriter](int64_t i) -> Attribute {
+                          return rewriter.getIndexAttr(i);
+                        }));
+
+    args_.push_back(broadcastInDimOp.broadcast_dimensions());
+
+    ArrayAttr args = rewriter.getArrayAttr(args_);
+
     ArrayAttr templateArgs = rewriter.getArrayAttr(
         {TypeAttr::get(broadcastInDimOp.getResult().getType())});
 
     rewriter.replaceOpWithNewOp<emitc::CallOp>(
         broadcastInDimOp, broadcastInDimOp.getType(), callee, args,
-        templateArgs, newOperands);
+        templateArgs, operands);
 
     return success();
   }
@@ -94,29 +95,29 @@ private:
   matchAndRewrite(mhlo::ConvOp convOp, ArrayRef<Value> operands,
                   ConversionPatternRewriter &rewriter) const override {
     typename mhlo::ConvOp::Adaptor adaptor(operands);
-    auto loc = convOp.getLoc();
-    auto batchGroupCountOp =
-        rewriter.create<ConstantOp>(loc, convOp.batch_group_countAttr());
-    auto inputBatchDimensionOp = rewriter.create<ConstantOp>(
-        loc, convOp.dimension_numbers().input_batch_dimension());
-    auto inputFeatureDimensionOp = rewriter.create<ConstantOp>(
-        loc, convOp.dimension_numbers().input_feature_dimension());
-    auto inputSpatialDimensionsOp = rewriter.create<ConstantOp>(
-        loc, convOp.dimension_numbers().input_spatial_dimensions());
-    auto kernelInputFeatureDimensionOp = rewriter.create<ConstantOp>(
-        loc, convOp.dimension_numbers().kernel_input_feature_dimension());
-    auto kernelOutputFeatureDimensionOp = rewriter.create<ConstantOp>(
-        loc, convOp.dimension_numbers().kernel_output_feature_dimension());
-    auto kernelSpatialDimensionsOp = rewriter.create<ConstantOp>(
-        loc, convOp.dimension_numbers().kernel_spatial_dimensions());
-    auto outputBatchDimensionOp = rewriter.create<ConstantOp>(
-        loc, convOp.dimension_numbers().output_batch_dimension());
-    auto outputFeatureDimensionOp = rewriter.create<ConstantOp>(
-        loc, convOp.dimension_numbers().output_feature_dimension());
-    auto outputSpatialDimensionsOp = rewriter.create<ConstantOp>(
-        loc, convOp.dimension_numbers().output_spatial_dimensions());
-    auto featureGroupCountOp =
-        rewriter.create<ConstantOp>(loc, convOp.feature_group_countAttr());
+
+    StringRef funcName = "mhlo::convolution";
+    StringAttr callee = rewriter.getStringAttr(funcName);
+
+    SmallVector<Attribute, 4> args_ = llvm::to_vector<4>(
+        llvm::map_range(llvm::seq<int64_t>(0, operands.size()),
+                        [&rewriter](int64_t i) -> Attribute {
+                          return rewriter.getIndexAttr(i);
+                        }));
+
+    args_.push_back(convOp.batch_group_countAttr());
+    args_.push_back(convOp.dimension_numbers().input_batch_dimension());
+    args_.push_back(convOp.dimension_numbers().input_feature_dimension());
+    args_.push_back(convOp.dimension_numbers().input_spatial_dimensions());
+    args_.push_back(
+        convOp.dimension_numbers().kernel_input_feature_dimension());
+    args_.push_back(
+        convOp.dimension_numbers().kernel_output_feature_dimension());
+    args_.push_back(convOp.dimension_numbers().kernel_spatial_dimensions());
+    args_.push_back(convOp.dimension_numbers().output_batch_dimension());
+    args_.push_back(convOp.dimension_numbers().output_feature_dimension());
+    args_.push_back(convOp.dimension_numbers().output_spatial_dimensions());
+    args_.push_back(convOp.feature_group_countAttr());
 
     // Taken from mlir-hlo
     auto GetI64ElementsAttr = [&rewriter](ArrayRef<int64_t> values) {
@@ -125,44 +126,20 @@ private:
       return DenseIntElementsAttr::get(ty, values);
     };
 
-    auto paddingValue = convOp.padding().getValueOr(GetI64ElementsAttr({0, 0}));
-    auto paddingOp = rewriter.create<ConstantOp>(loc, paddingValue);
+    args_.push_back(convOp.padding().getValueOr(GetI64ElementsAttr({0, 0})));
+    args_.push_back(
+        convOp.rhs_dilation().getValueOr(GetI64ElementsAttr({1, 1})));
+    args_.push_back(
+        convOp.window_strides().getValueOr(GetI64ElementsAttr({1, 1})));
 
-    auto rhsDilationValue =
-        convOp.rhs_dilation().getValueOr(GetI64ElementsAttr({1, 1}));
-    auto rhsDilationOp = rewriter.create<ConstantOp>(loc, rhsDilationValue);
-
-    auto windowStridesValue =
-        convOp.window_strides().getValueOr(GetI64ElementsAttr({1, 1}));
-    auto windowStridesOp = rewriter.create<ConstantOp>(loc, windowStridesValue);
-
-    std::vector<Value> newOperands(operands);
-    newOperands.push_back(batchGroupCountOp.getResult());
-    newOperands.push_back(inputBatchDimensionOp.getResult());
-    newOperands.push_back(inputFeatureDimensionOp.getResult());
-    newOperands.push_back(inputSpatialDimensionsOp.getResult());
-    newOperands.push_back(kernelInputFeatureDimensionOp.getResult());
-    newOperands.push_back(kernelOutputFeatureDimensionOp.getResult());
-    newOperands.push_back(kernelSpatialDimensionsOp.getResult());
-    newOperands.push_back(outputBatchDimensionOp.getResult());
-    newOperands.push_back(outputFeatureDimensionOp.getResult());
-    newOperands.push_back(outputSpatialDimensionsOp.getResult());
-    newOperands.push_back(featureGroupCountOp.getResult());
-    newOperands.push_back(paddingOp.getResult());
-    newOperands.push_back(rhsDilationOp.getResult());
-    newOperands.push_back(windowStridesOp.getResult());
-
-    StringRef funcName = "mhlo::convolution";
-    StringAttr callee = rewriter.getStringAttr(funcName);
-
-    ArrayAttr args;
+    ArrayAttr args = rewriter.getArrayAttr(args_);
     ArrayAttr templateArgs =
         rewriter.getArrayAttr({TypeAttr::get(convOp.getResult().getType()),
                                TypeAttr::get(adaptor.lhs().getType()),
                                TypeAttr::get(adaptor.rhs().getType())});
 
     rewriter.replaceOpWithNewOp<emitc::CallOp>(convOp, convOp.getType(), callee,
-                                               args, templateArgs, newOperands);
+                                               args, templateArgs, operands);
 
     return success();
   }
@@ -307,27 +284,25 @@ private:
   LogicalResult
   matchAndRewrite(mhlo::SliceOp sliceOp, ArrayRef<Value> operands,
                   ConversionPatternRewriter &rewriter) const override {
-    auto loc = sliceOp.getLoc();
-    auto startIndicesOp =
-        rewriter.create<ConstantOp>(loc, sliceOp.start_indices());
-    auto limitIndicesOp =
-        rewriter.create<ConstantOp>(loc, sliceOp.limit_indices());
-    auto stridesOp = rewriter.create<ConstantOp>(loc, sliceOp.strides());
-
-    std::vector<Value> newOperands(operands);
-    newOperands.push_back(startIndicesOp.getResult());
-    newOperands.push_back(limitIndicesOp.getResult());
-    newOperands.push_back(stridesOp.getResult());
-
     StringRef funcName = "mhlo::slice";
     StringAttr callee = rewriter.getStringAttr(funcName);
 
-    ArrayAttr args;
+    SmallVector<Attribute, 4> args_ = llvm::to_vector<4>(
+        llvm::map_range(llvm::seq<int64_t>(0, operands.size()),
+                        [&rewriter](int64_t i) -> Attribute {
+                          return rewriter.getIndexAttr(i);
+                        }));
+
+    args_.push_back(sliceOp.start_indices());
+    args_.push_back(sliceOp.limit_indices());
+    args_.push_back(sliceOp.strides());
+
+    ArrayAttr args = rewriter.getArrayAttr(args_);
     ArrayAttr templateArgs =
         rewriter.getArrayAttr({TypeAttr::get(sliceOp.getResult().getType())});
 
     rewriter.replaceOpWithNewOp<emitc::CallOp>(
-        sliceOp, sliceOp.getType(), callee, args, templateArgs, newOperands);
+        sliceOp, sliceOp.getType(), callee, args, templateArgs, operands);
 
     return success();
   }
@@ -345,23 +320,25 @@ private:
   LogicalResult
   matchAndRewrite(mhlo::DynamicSliceOp dynamicSliceOp, ArrayRef<Value> operands,
                   ConversionPatternRewriter &rewriter) const override {
-    auto loc = dynamicSliceOp.getLoc();
-    auto sliceSizes = dynamicSliceOp.slice_sizes();
-    auto constOp = rewriter.create<ConstantOp>(loc, sliceSizes);
-
-    std::vector<Value> newOperands(operands);
-    newOperands.push_back(constOp.getResult());
-
     StringRef funcName = "mhlo::dynamic_slice";
     StringAttr callee = rewriter.getStringAttr(funcName);
 
-    ArrayAttr args;
+    SmallVector<Attribute, 4> args_ = llvm::to_vector<4>(
+        llvm::map_range(llvm::seq<int64_t>(0, operands.size()),
+                        [&rewriter](int64_t i) -> Attribute {
+                          return rewriter.getIndexAttr(i);
+                        }));
+
+    args_.push_back(dynamicSliceOp.slice_sizes());
+
+    ArrayAttr args = rewriter.getArrayAttr(args_);
+
     ArrayAttr templateArgs = rewriter.getArrayAttr(
         {TypeAttr::get(dynamicSliceOp.getResult().getType())});
 
     rewriter.replaceOpWithNewOp<emitc::CallOp>(dynamicSliceOp,
                                                dynamicSliceOp.getType(), callee,
-                                               args, templateArgs, newOperands);
+                                               args, templateArgs, operands);
 
     return success();
   }
@@ -544,7 +521,7 @@ namespace {
 struct ConvertMhloToEmitcPass
     : public PassWrapper<ConvertMhloToEmitcPass, FunctionPass> {
   void getDependentDialects(DialectRegistry &registry) const override {
-    registry.insert<emitc::EmitCDialect, mlir::StandardOpsDialect>();
+    registry.insert<emitc::EmitCDialect>();
   }
   /// Perform the lowering to EmitC dialect.
   void runOnFunction() override {
@@ -553,7 +530,6 @@ struct ConvertMhloToEmitcPass
 
     target.addLegalDialect<emitc::EmitCDialect>();
     target.addLegalDialect<mhlo::MhloDialect>();
-    target.addLegalOp<ConstantOp>();
     // clang-format off
     // MHLO unary elementwise ops
     target.addIllegalOp<mhlo::AbsOp,
@@ -607,7 +583,8 @@ struct ConvertMhloToEmitcPass
     OwningRewritePatternList patterns;
     populateMhloToEmitcPatterns(&getContext(), patterns);
 
-    if (failed(applyPartialConversion(getFunction(), target, std::move(patterns))))
+    if (failed(
+            applyPartialConversion(getFunction(), target, std::move(patterns))))
       signalPassFailure();
   }
 };

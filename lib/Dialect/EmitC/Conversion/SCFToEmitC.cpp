@@ -100,7 +100,8 @@ struct ConvertScfToEmitcPass
     OwningRewritePatternList patterns;
     populateScfToEmitcPatterns(&getContext(), patterns);
 
-    if (failed(applyPartialConversion(getFunction(), target, std::move(patterns))))
+    if (failed(
+            applyPartialConversion(getFunction(), target, std::move(patterns))))
       signalPassFailure();
   }
 };

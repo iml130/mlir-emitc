@@ -129,7 +129,8 @@ struct ConvertStdToEmitcPass
     OwningRewritePatternList patterns;
     populateStdToEmitcPatterns(&getContext(), patterns);
 
-    if (failed(applyPartialConversion(getFunction(), target, std::move(patterns))))
+    if (failed(
+            applyPartialConversion(getFunction(), target, std::move(patterns))))
       signalPassFailure();
   }
 };

@@ -1,4 +1,4 @@
-//===- ConvertMHLOToStandard.cpp - MHLO const to std conversion --*- C++ -*-===//
+//===- ConvertMHLOToStandard.cpp - MHLO const to std conversion -*- C++ -*-===//
 //
 // This file is licensed under the Apache License v2.0 with LLVM Exceptions.
 // See https://llvm.org/LICENSE.txt for license information.
@@ -22,14 +22,13 @@
 namespace mlir {
 namespace {
 #include "generated_legalize_to_standard.inc"
-}  // namespace
+} // namespace
 namespace mhlo {
 
 void populateMhloToStdPatterns(MLIRContext *ctx,
                                OwningRewritePatternList &patterns) {
   patterns.insert<GeneratedConvert0>(ctx);
 }
-
 
 namespace {
 
@@ -50,7 +49,8 @@ struct ConvertMHLOToStandardPass
     OwningRewritePatternList patterns;
     populateMhloToStdPatterns(&getContext(), patterns);
 
-    if (failed(applyPartialConversion(getFunction(), target, std::move(patterns))))
+    if (failed(
+            applyPartialConversion(getFunction(), target, std::move(patterns))))
       signalPassFailure();
   }
 };

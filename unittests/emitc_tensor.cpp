@@ -132,9 +132,9 @@ TEST(tensor, tensor_default_constructor_3d) {
 
   // multi dimensional indexing
   EXPECT_EQ(0.0, tensor(0, 0, 0));
-  EXPECT_EQ(0.0, tensor(0, 0 ,1));
+  EXPECT_EQ(0.0, tensor(0, 0, 1));
   EXPECT_EQ(0.0, tensor(1, 0, 0));
-  EXPECT_EQ(0.0, tensor(1, 0 ,1));
+  EXPECT_EQ(0.0, tensor(1, 0, 1));
 
   // flat indexing
   EXPECT_EQ(0.0, tensor[0]);
@@ -148,13 +148,13 @@ TEST(tensor, tensor_default_constructor_4d) {
 
   // multi dimensional indexing
   EXPECT_EQ(0.0, tensor(0, 0, 0, 0));
-  EXPECT_EQ(0.0, tensor(0, 0 ,0, 1));
+  EXPECT_EQ(0.0, tensor(0, 0, 0, 1));
   EXPECT_EQ(0.0, tensor(0, 0, 1, 0));
-  EXPECT_EQ(0.0, tensor(0, 0, 1 ,1));
+  EXPECT_EQ(0.0, tensor(0, 0, 1, 1));
   EXPECT_EQ(0.0, tensor(1, 0, 0, 0));
-  EXPECT_EQ(0.0, tensor(1, 0 ,0, 1));
+  EXPECT_EQ(0.0, tensor(1, 0, 0, 1));
   EXPECT_EQ(0.0, tensor(1, 0, 1, 0));
-  EXPECT_EQ(0.0, tensor(1, 0, 1 ,1));
+  EXPECT_EQ(0.0, tensor(1, 0, 1, 1));
 
   // flat indexing
   EXPECT_EQ(0.0, tensor[0]);

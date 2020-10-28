@@ -42,9 +42,7 @@ namespace emitc {
 #define GEN_PASS_REGISTRATION
 #include "emitc/Dialect/EmitC/Passes.h.inc"
 
-inline void registerAllEmitCPasses() {
- registerEmitCPasses();
-}
+inline void registerAllEmitCPasses() { registerEmitCPasses(); }
 
 } // namespace emitc
 } // namespace mlir

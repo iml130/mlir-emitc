@@ -85,7 +85,8 @@ struct MHLOToMHLOTransform
     OwningRewritePatternList patterns;
     populateMhloToMhloPatterns(&getContext(), patterns);
 
-    if (failed(applyPartialConversion(getFunction(), target, std::move(patterns))))
+    if (failed(
+            applyPartialConversion(getFunction(), target, std::move(patterns))))
       signalPassFailure();
   }
 };

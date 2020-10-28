@@ -276,7 +276,6 @@ TEST(mhlo, tanh) {
                                              0.996272f, -0.562593f}));
 }
 
-
 // Binary elementwise ops
 
 TEST(mhlo, add) {
@@ -650,7 +649,6 @@ TEST(mhlo, sub) {
   EXPECT_THAT(lambda_2d(), Pointwise(Eq(), {5, -7, -2, 19}));
 }
 
-
 // Binary logical elementwise ops
 
 TEST(mhlo, or) {
@@ -715,7 +713,6 @@ TEST(mhlo, xor) {
   EXPECT_THAT(lambda_2d(), Pointwise(Eq(), {0, 1, 1, 1}));
 }
 
-
 // Tuple ops
 
 TEST(mhlo, compare) {
@@ -768,7 +765,6 @@ TEST(mhlo, compare) {
   EXPECT_THAT(lambda_4d(), Pointwise(Eq(), {true, true, false, true, true,
                                             false, false, false}));
 }
-
 
 // Slice ops
 
@@ -827,7 +823,6 @@ TEST(mhlo, dynamic_update_slice) {
               Pointwise(FloatEq(), {0.0f, 1.0f, 2.0f, 3.0f, 12.0f, 13.0f, 6.0f,
                                     14.0f, 15.0f, 9.0f, 16.0f, 17.0f}));
 }
-
 
 // Other ops
 

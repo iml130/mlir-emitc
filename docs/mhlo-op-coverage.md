@@ -42,15 +42,14 @@ The table below shows the supported MHLO ops.
 | tuple                 | :heavy_check_mark: | |
 | compare               | :heavy_check_mark: | |
 | **Slice ops**
-| slice                 | :heavy_check_mark: | |
-| dynamic-slice         | :heavy_check_mark: | |
-| dynamic-update-slice  | :heavy_check_mark: | |
+| slice                 | :white_check_mark: | Only for 1D or 2D inputs |
+| dynamic-slice         | :white_check_mark: | Only for 1D or 2D inputs |
+| dynamic-update-slice  | :white_check_mark: | Only for 1D or 2D inputs |
 | **Other ops**
 | bitcast_convert       | :heavy_check_mark: | |
-| broadcast_in_dim      | :heavy_check_mark: | |
+| broadcast_in_dim      | :white_check_mark: | Only for 1D inputs |
 | concatenate           | :heavy_check_mark: | |
-| convolution           | :heavy_check_mark: | |
-| dot                   | :heavy_check_mark: | |
+| convolution           | :white_check_mark: | No support for grouped/dilated convolutions, only for `NHWC` layout |
+| dot                   | :white_check_mark: | Only the `Matrix times Matrix` case |
 | reshape               | :heavy_check_mark: | |
 | select                | :heavy_check_mark: | |
-

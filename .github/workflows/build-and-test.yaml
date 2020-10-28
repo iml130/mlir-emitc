@@ -3,6 +3,7 @@ name: Build and test
 on:
   push:
     paths-ignore:
+    - 'docs/**'
     - 'scripts/**'
 
 env:

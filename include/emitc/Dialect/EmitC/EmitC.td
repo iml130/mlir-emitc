@@ -145,10 +145,10 @@ def EmitC_ForOp : EmitC_Op<"for",
 
   let skipDefaultBuilders = 1;
   let builders = [
-    OpBuilder<"Value lowerBound, Value upperBound, Value step, "
-              "ValueRange iterArgs = llvm::None, "
-              "function_ref<void(OpBuilder &, Location, Value, ValueRange)>"
-              "    = nullptr">
+    OpBuilderDAG<(ins "Value":$lowerBound, "Value":$upperBound, "Value":$step,
+      CArg<"ValueRange", "llvm::None">:$iterArgs,
+      CArg<"function_ref<void(OpBuilder &, Location, Value, ValueRange)>",
+           "nullptr">)>
   ];
 
   let extraClassDeclaration = [{
@@ -249,19 +249,19 @@ def EmitC_IfOp : EmitC_Op<"if",
 
   let skipDefaultBuilders = 1;
   let builders = [
-    OpBuilder<"Value cond, bool withElseRegion">,
-    OpBuilder<"TypeRange resultTypes, Value cond, bool withElseRegion">,
-    OpBuilder<
-        "OpBuilder &builder, OperationState &result, TypeRange resultTypes, "
-        "Value cond, "
-        "function_ref<void(OpBuilder &, Location)> thenBuilder "
-        "    = buildTerminatedBody, "
-        "function_ref<void(OpBuilder &, Location)> elseBuilder = nullptr">,
-    OpBuilder<
-        "OpBuilder &builder, OperationState &result, Value cond, "
-        "function_ref<void(OpBuilder &, Location)> thenBuilder "
-        "    = buildTerminatedBody, "
-        "function_ref<void(OpBuilder &, Location)> elseBuilder = nullptr">
+    OpBuilderDAG<(ins "Value":$cond, "bool":$withElseRegion)>,
+    OpBuilderDAG<(ins "TypeRange":$resultTypes, "Value":$cond,
+      "bool":$withElseRegion)>,
+    OpBuilderDAG<(ins "TypeRange":$resultTypes, "Value":$cond,
+      CArg<"function_ref<void(OpBuilder &, Location)>",
+           "buildTerminatedBody">:$thenBuilder,
+      CArg<"function_ref<void(OpBuilder &, Location)>",
+           "nullptr">:$elseBuilder)>,
+    OpBuilderDAG<(ins "Value":$cond,
+      CArg<"function_ref<void(OpBuilder &, Location)>",
+           "buildTerminatedBody">:$thenBuilder,
+      CArg<"function_ref<void(OpBuilder &, Location)>",
+           "nullptr">:$elseBuilder)>
   ];
 
   let extraClassDeclaration = [{
@@ -298,10 +298,7 @@ def EmitC_YieldOp : EmitC_Op<"yield", [NoSideEffect, ReturnLike, Terminator]> {
   }];
 
   let arguments = (ins Variadic<AnyType>:$results);
-  let builders = [
-    OpBuilder<"OpBuilder &builder, OperationState &result",
-              [{ /* nothing to do */ }]>
-  ];
+  let builders = [OpBuilderDAG<(ins), [{ /* nothing to do */ }]>];
   // Override default verifier (defined in SCF_Op), no custom verification
   // needed.
   //let verifier = ?;

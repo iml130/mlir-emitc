@@ -16,6 +16,9 @@
 
 namespace {
 
+using ::testing::Eq;
+using ::testing::Pointwise;
+
 TEST(tensor, tensor_of_bool) {
   Tensor0D<bool> t0{false};
   Tensor1D<bool, 2> t1{false, true};
@@ -591,6 +594,41 @@ TEST(tensor, meta_replace_element_type) {
   EXPECT_TRUE(check_t2);
   EXPECT_TRUE(check_t3);
   EXPECT_TRUE(check_t4);
+}
+
+TEST(tensor, ravel_index) {
+  Tensor0D<uint16_t> t0;
+  Tensor1D<int8_t, 12> t1;
+  Tensor2D<double, 3, 7> t2;
+  Tensor3D<float, 2, 4, 6> t3;
+  Tensor4D<uint8_t, 2, 3, 4, 9> t4;
+
+  EXPECT_EQ(t0.ravel_index(), 0);
+  EXPECT_EQ(t1.ravel_index(0), 0);
+  EXPECT_EQ(t1.ravel_index(7), 7);
+  EXPECT_EQ(t2.ravel_index(0, 2), 2);
+  EXPECT_EQ(t2.ravel_index(2, 3), 17);
+  EXPECT_EQ(t3.ravel_index(0, 2, 0), 12);
+  EXPECT_EQ(t3.ravel_index(1, 3, 4), 46);
+  EXPECT_EQ(t4.ravel_index(1, 0, 0, 3), 111);
+  EXPECT_EQ(t4.ravel_index(1, 2, 3, 4), 211);
+}
+
+TEST(tensor, unravel_index) {
+  Tensor0D<uint16_t> t0;
+  Tensor1D<int8_t, 12> t1;
+  Tensor2D<double, 3, 7> t2;
+  Tensor3D<float, 2, 4, 6> t3;
+  Tensor4D<uint8_t, 2, 3, 4, 9> t4;
+
+  EXPECT_THAT(t1.unravel_index(0), Pointwise(Eq(), {0}));
+  EXPECT_THAT(t1.unravel_index(7), Pointwise(Eq(), {7}));
+  EXPECT_THAT(t2.unravel_index(2), Pointwise(Eq(), {0, 2}));
+  EXPECT_THAT(t2.unravel_index(17), Pointwise(Eq(), {2, 3}));
+  EXPECT_THAT(t3.unravel_index(12), Pointwise(Eq(), {0, 2, 0}));
+  EXPECT_THAT(t3.unravel_index(46), Pointwise(Eq(), {1, 3, 4}));
+  EXPECT_THAT(t4.unravel_index(111), Pointwise(Eq(), {1, 0, 0, 3}));
+  EXPECT_THAT(t4.unravel_index(211), Pointwise(Eq(), {1, 2, 3, 4}));
 }
 
 } // namespace

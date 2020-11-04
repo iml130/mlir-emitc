@@ -247,6 +247,12 @@ func @mhlo_dynamic_update_slice(%arg0: tensor<12xi32>, %arg1: tensor<8x7xi32>) -
 
 // Other ops
 
+func @mhlo_batch_norm_inference(%arg0: tensor<4x2xf32>, %arg1: tensor<2xf32>, %arg2: tensor<2xf32>, %arg3: tensor<2xf32>, %arg4: tensor<2xf32>) -> tensor<4x2xf32> {
+  // CHECK: emitc.call "mhlo::batch_norm_inference"(%arg0, %arg1, %arg2, %arg3, %arg4) {args = [0 : index, 1 : index, 2 : index, 3 : index, 4 : index, 1.000000e-03 : f32, 1], template_args = [tensor<4x2xf32>, tensor<2xf32>]}
+  %0 = "mhlo.batch_norm_inference"(%arg0, %arg1, %arg2, %arg3, %arg4) {epsilon = 0.001 : f32, feature_index = 1 : i64} : (tensor<4x2xf32>, tensor<2xf32>, tensor<2xf32>, tensor<2xf32>, tensor<2xf32>) -> tensor<4x2xf32>
+  return %0 : tensor<4x2xf32>
+}
+
 func @mhlo_bitcast_convert(%arg0: tensor<ui32>) -> tensor<i32> {
   // CHECK: emitc.call "mhlo::bitcast_convert"(%arg0) {template_args = [tensor<i32>]}
   %0 = "mhlo.bitcast_convert"(%arg0) : (tensor<ui32>) -> tensor<i32>
@@ -265,12 +271,12 @@ func @mhlo_concaternate(%arg0: tensor<1xf32>, %arg1: tensor<2xf32>) -> tensor<3x
   return %0 : tensor<3xf32>
 }
 
-// Initial taken over from
+// Initially taken over from
 // https://github.com/tensorflow/mlir-hlo/blob/31c1c3aa1ffa12b1fb2d9988ad8cc0b2de9cd581/tests/hlo-legalize-to-lhlo.mlir#L552-L580
-func @mhlo_conv(%input: tensor<3x5x5x3xf32>, %filter : tensor<2x2x3x4xf32>) -> tensor<3x5x5x4xf32> {
+func @mhlo_conv(%arg0: tensor<3x5x5x3xf32>, %arg1 : tensor<2x2x3x4xf32>) -> tensor<3x5x5x4xf32> {
   %c0 = constant 0 : index
-  // CHECK: emitc.call "mhlo::convolution"
-  %out = "mhlo.convolution"(%filter, %input) {
+  // CHECK: emitc.call "mhlo::convolution"(%arg1, %arg0)
+  %out = "mhlo.convolution"(%arg1, %arg0) {
     batch_group_count = 1 : i64,
     dimension_numbers = {
       input_batch_dimension = 0 : i64,

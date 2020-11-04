@@ -624,6 +624,28 @@ Dest rng_bit_generator(typename std::tuple_element<0, Dest>::type state) {
   return std::make_tuple(newState, data);
 }
 
+// BatchNormInferenceOp
+template <typename Src, typename Feature>
+Src batch_norm_inference(Src input, Feature scale, Feature offset, Feature mean,
+                         Feature variance, float epsilon,
+                         int64_t feature_index) {
+  static_assert(is_tensor_of_dim<1, Feature>::value,
+                "Expected 1 dimensional statistic features");
+  assert(0 <= feature_index &&
+         static_cast<size_t>(feature_index) < Src::rank());
+  assert(Src::dim(feature_index) == Feature::dim(0));
+  assert(epsilon > 0);
+
+  Src output;
+  for (size_t i = 0; i < Src::size(); i++) {
+    auto multi_index = input.unravel_index(i);
+    size_t f_index = multi_index[feature_index];
+    auto value = (input[i] - mean[f_index]) / sqrt(variance[f_index] + epsilon);
+    output[i] = value * scale[f_index] + offset[f_index];
+  }
+  return output;
+}
+
 // ConvolutionOp
 template <typename Dest, typename Src, typename Weights>
 Dest convolution(Src input, Weights weights, int64_t batch_group_count,

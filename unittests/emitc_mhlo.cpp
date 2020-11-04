@@ -826,6 +826,18 @@ TEST(mhlo, dynamic_update_slice) {
 
 // Other ops
 
+TEST(mhlo, batch_norm_inference) {
+  Tensor<float, 4, 2> input{0.0f, 1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f};
+  Tensor<float, 4, 2> expected_result{-3.0f, 2.0f,  1.0f, 6.0f,
+                                      5.0f,  10.0f, 9.0f, 14.0f};
+  Tensor<float, 4, 2> result =
+      mhlo::batch_norm_inference<Tensor<float, 4, 2>, Tensor<float, 2>>(
+          input, {1.0f, 2.0f}, {1.0f, 2.0f}, {2.0f, 1.0f}, {0.249f, 0.999f},
+          0.001f, 1);
+
+  EXPECT_THAT(result, Pointwise(FloatNear(EPSILON), expected_result));
+}
+
 TEST(mhlo, bitcast_convert) {
   uint8_t a = 128;
   int8_t b = -128;

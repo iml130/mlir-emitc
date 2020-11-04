@@ -46,6 +46,7 @@ The table below shows the supported MHLO ops.
 | dynamic-slice         | :white_check_mark: | Only for 1D or 2D inputs |
 | dynamic-update-slice  | :white_check_mark: | Only for 1D or 2D inputs |
 | **Other ops**
+| batch_norm_inference  | :heavy_check_mark: | |
 | bitcast_convert       | :heavy_check_mark: | |
 | broadcast_in_dim      | :white_check_mark: | Only for 1D inputs |
 | concatenate           | :heavy_check_mark: | |

@@ -23,6 +23,44 @@ namespace emitc {
 
 namespace {
 
+class BatchNormInferenceOpConversion
+    : public OpConversionPattern<mhlo::BatchNormInferenceOp> {
+
+public:
+  BatchNormInferenceOpConversion(MLIRContext *ctx) : OpConversionPattern(ctx) {}
+
+private:
+  LogicalResult
+  matchAndRewrite(mhlo::BatchNormInferenceOp batchNormInferenceOp,
+                  ArrayRef<Value> operands,
+                  ConversionPatternRewriter &rewriter) const override {
+    typename mhlo::BatchNormInferenceOp::Adaptor adaptor(operands);
+
+    StringRef funcName = "mhlo::batch_norm_inference";
+    StringAttr callee = rewriter.getStringAttr(funcName);
+
+    SmallVector<Attribute, 4> args_ = llvm::to_vector<4>(
+        llvm::map_range(llvm::seq<int64_t>(0, operands.size()),
+                        [&rewriter](int64_t i) -> Attribute {
+                          return rewriter.getIndexAttr(i);
+                        }));
+
+    args_.push_back(batchNormInferenceOp.epsilonAttr());
+    args_.push_back(batchNormInferenceOp.feature_indexAttr());
+
+    ArrayAttr args = rewriter.getArrayAttr(args_);
+    ArrayAttr templateArgs = rewriter.getArrayAttr(
+        {TypeAttr::get(batchNormInferenceOp.getResult().getType()),
+         TypeAttr::get(adaptor.scale().getType())});
+
+    rewriter.replaceOpWithNewOp<emitc::CallOp>(
+        batchNormInferenceOp, batchNormInferenceOp.getType(), callee, args,
+        templateArgs, operands);
+
+    return success();
+  }
+};
+
 class BroadcastInDimOpConversion
     : public OpConversionPattern<mhlo::BroadcastInDimOp> {
 
@@ -499,6 +537,7 @@ void populateMhloToEmitcPatterns(MLIRContext *ctx,
   patterns.insert<DynamicUpdateSliceOpConversion>(ctx);
 
   // Insert patterns for other MHLO ops.
+  patterns.insert<BatchNormInferenceOpConversion>(ctx);
   patterns.insert<BitcastConvertOpConversion>(ctx);
   patterns.insert<BroadcastInDimOpConversion>(ctx);
   patterns.insert<ConcatenateOpConversion>(ctx);
@@ -567,7 +606,8 @@ struct ConvertMhloToEmitcPass
                         mhlo::DynamicUpdateSliceOp,
                         mhlo::SliceOp>();
     // other MHLO ops
-    target.addIllegalOp<mhlo::BitcastConvertOp,
+    target.addIllegalOp<mhlo::BatchNormInferenceOp,
+                        mhlo::BitcastConvertOp,
                         mhlo::BroadcastInDimOp,
                         mhlo::ConcatenateOp,
                         mhlo::ConvOp,

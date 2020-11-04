@@ -149,8 +149,26 @@ public:
     return _ravel_index({static_cast<size_t>(indices)...});
   }
 
+  constexpr std::array<size_t, rank()> unravel_index(size_t index) {
+    assert(index < size());
+
+    std::array<size_t, rank()> s = strides();
+
+    std::array<size_t, rank()> result;
+    for (size_t i = 0; i < rank(); i++) {
+      result[i] = index / s[i];
+      index = index % s[i];
+    }
+
+    return result;
+  }
+
 private:
   constexpr size_t _ravel_index(std::array<size_t, rank()> indices) {
+    for (size_t i = 0; i < rank(); i++) {
+      assert(indices[i] < dim(i));
+    }
+
     std::array<size_t, rank()> s = strides();
 
     size_t result = 0;

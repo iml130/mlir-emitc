@@ -356,6 +356,42 @@ broadcast_in_dim(Src x, Tensor1D<int64_t, Src::rank()> broadcast_dimensions) {
   return z;
 }
 
+// ClampOp
+template <typename Min, typename Src, typename Max>
+inline Src clamp(Min min, Src operand, Max max) {
+  static_assert(
+      std::is_same<Min, Src>::value ||
+          (is_tensor_of_dim<0, Min>::value &&
+           std::is_same<typename get_element_type<Src>::type,
+                        typename get_element_type<Min>::type>::value),
+      "Expected the same type for min and operand or a 0-dim tensor of the "
+      "same element type for min");
+  static_assert(
+      std::is_same<Max, Src>::value ||
+          (is_tensor_of_dim<0, Max>::value &&
+           std::is_same<typename get_element_type<Src>::type,
+                        typename get_element_type<Min>::type>::value),
+      "Expected the same type for min and operand or a 0-dim tensor of the "
+      "same element type for max");
+
+  const bool broadcast_min = !std::is_same<Min, Src>::value;
+  const bool broadcast_max = !std::is_same<Max, Src>::value;
+
+  Src result;
+  for (size_t index = 0; index < Src::size(); index++) {
+    const auto value_min = broadcast_min ? min[0] : min[index];
+    const auto value_max = broadcast_max ? max[0] : max[index];
+
+    auto value = operand[index];
+    value = value < value_min ? value_min : value;
+    value = value > value_max ? value_max : value;
+
+    result[index] = value;
+  }
+
+  return result;
+}
+
 // ConcatenateOp
 template <int64_t Dimension, typename Dest, typename Src>
 inline Dest concatenate(Src input) {

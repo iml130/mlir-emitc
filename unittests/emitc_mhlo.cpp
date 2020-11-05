@@ -895,6 +895,25 @@ TEST(mhlo, broadcast_in_dim) {
   // TODO add more tests once higher dimensions are supported
 }
 
+TEST(mhlo, clamp) {
+  Tensor<float, 2, 1> operand{-1.0f, 1.0f};
+  Tensor<float, 2, 1> min{0.0f, 0.0f};
+  Tensor<float, 2, 1> max{3.0f, 0.0f};
+  Tensor<float, 2, 1> expected_result{0.0, 0.0f};
+  Tensor<float, 2, 1> result = mhlo::clamp(min, operand, max);
+
+  EXPECT_THAT(result, Pointwise(FloatEq(), expected_result));
+
+  // broadcasting
+  Tensor<int32_t, 4, 2, 1> operand_b{0, 1, 2, 3, 4, 5, 6, 7};
+  Tensor<int32_t> min_b{2};
+  Tensor<int32_t> max_b{5};
+  Tensor<int32_t, 4, 2, 1> expected_result_b{2, 2, 2, 3, 4, 5, 5, 5};
+  Tensor<int32_t, 4, 2, 1> result_b = mhlo::clamp(min_b, operand_b, max_b);
+
+  EXPECT_THAT(result_b, Pointwise(Eq(), expected_result_b));
+}
+
 TEST(mhlo, concatenate) {
   Tensor1D<int, 1> t1{1};
   Tensor1D<int, 2> t2{2, 3};

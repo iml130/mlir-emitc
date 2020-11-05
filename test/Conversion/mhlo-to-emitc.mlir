@@ -265,6 +265,18 @@ func @mhlo_broadcast_in_dim(%arg0: tensor<i32>) -> tensor<3xi32> {
   return %0 : tensor<3xi32>
 }
 
+func @mhlo_clamp(%arg0: tensor<2x1xf32>, %arg1: tensor<2x1xf32>, %arg2: tensor<2x1xf32>) -> tensor<2x1xf32> {
+  // CHECK: emitc.call "mhlo::clamp"(%arg0, %arg1, %arg2) {template_args = [tensor<2x1xf32>, tensor<2x1xf32>, tensor<2x1xf32>]}
+  %0 = "mhlo.clamp"(%arg0, %arg1, %arg2) : (tensor<2x1xf32>, tensor<2x1xf32>, tensor<2x1xf32>) -> tensor<2x1xf32>
+  return %0 : tensor<2x1xf32>
+}
+
+func @mhlo_clamp_broadcast(%arg0: tensor<i32>, %arg1: tensor<4x2x1xi32>, %arg2: tensor<i32>) -> tensor<4x2x1xi32> {
+  // CHECK: emitc.call "mhlo::clamp"(%arg0, %arg1, %arg2) {template_args = [tensor<i32>, tensor<4x2x1xi32>, tensor<i32>]}
+  %0 = "mhlo.clamp"(%arg0, %arg1, %arg2) : (tensor<i32>, tensor<4x2x1xi32>, tensor<i32>) -> tensor<4x2x1xi32>
+  return %0 : tensor<4x2x1xi32>
+}
+
 func @mhlo_concaternate(%arg0: tensor<1xf32>, %arg1: tensor<2xf32>) -> tensor<3xf32> {
   // CHECK: emitc.call "mhlo::concatenate"
   %0 = "mhlo.concatenate"(%arg0, %arg1) {dimension = 0 : i64} : (tensor<1xf32>, tensor<2xf32>) -> tensor<3xf32>

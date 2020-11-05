@@ -49,6 +49,7 @@ The table below shows the supported MHLO ops.
 | batch_norm_inference  | :heavy_check_mark: | |
 | bitcast_convert       | :heavy_check_mark: | |
 | broadcast_in_dim      | :white_check_mark: | Only for 1D inputs |
+| clamp                 | :heavy_check_mark: | |
 | concatenate           | :heavy_check_mark: | |
 | convolution           | :white_check_mark: | No support for grouped/dilated convolutions, only for `NHWC` layout |
 | dot                   | :white_check_mark: | Only the `Matrix times Matrix` case |

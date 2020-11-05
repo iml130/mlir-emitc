@@ -96,6 +96,33 @@ private:
   }
 };
 
+class ClampOpConversion : public OpConversionPattern<mhlo::ClampOp> {
+
+public:
+  ClampOpConversion(MLIRContext *ctx) : OpConversionPattern(ctx) {}
+
+private:
+  LogicalResult
+  matchAndRewrite(mhlo::ClampOp clampOp, ArrayRef<Value> operands,
+                  ConversionPatternRewriter &rewriter) const override {
+    typename mhlo::ClampOp::Adaptor adaptor(operands);
+
+    StringRef funcName = "mhlo::clamp";
+    StringAttr callee = rewriter.getStringAttr(funcName);
+
+    ArrayAttr args;
+    ArrayAttr templateArgs =
+        rewriter.getArrayAttr({TypeAttr::get(adaptor.min().getType()),
+                               TypeAttr::get(adaptor.operand().getType()),
+                               TypeAttr::get(adaptor.max().getType())});
+
+    rewriter.replaceOpWithNewOp<emitc::CallOp>(
+        clampOp, clampOp.getType(), callee, args, templateArgs, operands);
+
+    return success();
+  }
+};
+
 class ConcatenateOpConversion
     : public OpConversionPattern<mhlo::ConcatenateOp> {
 
@@ -540,6 +567,7 @@ void populateMhloToEmitcPatterns(MLIRContext *ctx,
   patterns.insert<BatchNormInferenceOpConversion>(ctx);
   patterns.insert<BitcastConvertOpConversion>(ctx);
   patterns.insert<BroadcastInDimOpConversion>(ctx);
+  patterns.insert<ClampOpConversion>(ctx);
   patterns.insert<ConcatenateOpConversion>(ctx);
   patterns.insert<ConvOpConversion>(ctx);
   patterns.insert<CallOpConversion<mhlo::DotOp>>(ctx, "mhlo::dot",
@@ -609,6 +637,7 @@ struct ConvertMhloToEmitcPass
     target.addIllegalOp<mhlo::BatchNormInferenceOp,
                         mhlo::BitcastConvertOp,
                         mhlo::BroadcastInDimOp,
+                        mhlo::ClampOp,
                         mhlo::ConcatenateOp,
                         mhlo::ConvOp,
                         mhlo::DotOp,

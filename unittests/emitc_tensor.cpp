@@ -603,15 +603,15 @@ TEST(tensor, ravel_index) {
   Tensor3D<float, 2, 4, 6> t3;
   Tensor4D<uint8_t, 2, 3, 4, 9> t4;
 
-  EXPECT_EQ(t0.ravel_index(), 0);
-  EXPECT_EQ(t1.ravel_index(0), 0);
-  EXPECT_EQ(t1.ravel_index(7), 7);
-  EXPECT_EQ(t2.ravel_index(0, 2), 2);
-  EXPECT_EQ(t2.ravel_index(2, 3), 17);
-  EXPECT_EQ(t3.ravel_index(0, 2, 0), 12);
-  EXPECT_EQ(t3.ravel_index(1, 3, 4), 46);
-  EXPECT_EQ(t4.ravel_index(1, 0, 0, 3), 111);
-  EXPECT_EQ(t4.ravel_index(1, 2, 3, 4), 211);
+  EXPECT_EQ(t0.ravel_index({}), 0);
+  EXPECT_EQ(t1.ravel_index({0}), 0);
+  EXPECT_EQ(t1.ravel_index({7}), 7);
+  EXPECT_EQ(t2.ravel_index({0, 2}), 2);
+  EXPECT_EQ(t2.ravel_index({2, 3}), 17);
+  EXPECT_EQ(t3.ravel_index({0, 2, 0}), 12);
+  EXPECT_EQ(t3.ravel_index({1, 3, 4}), 46);
+  EXPECT_EQ(t4.ravel_index({1, 0, 0, 3}), 111);
+  EXPECT_EQ(t4.ravel_index({1, 2, 3, 4}), 211);
 }
 
 TEST(tensor, unravel_index) {

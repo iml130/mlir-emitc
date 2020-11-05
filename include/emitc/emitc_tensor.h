@@ -135,18 +135,27 @@ public:
             typename = std::enable_if<
                 detail::conjunction_v<std::is_same<size_t, Indices>...>>>
   reference operator()(Indices... indices) {
-    size_t index = ravel_index(indices...);
-    assert(0 <= index && index < size());
+    static_assert(sizeof...(Indices) == rank(),
+                  "Incorrect number of arguments");
+    size_t index = ravel_index({static_cast<size_t>(indices)...});
+
+    assert(index < size());
     return data[index];
   }
 
-  template <typename... Indices,
-            typename = std::enable_if<
-                detail::conjunction_v<std::is_same<size_t, Indices>...>>>
-  constexpr size_t ravel_index(Indices... indices) {
-    static_assert(sizeof...(Indices) == rank(),
-                  "Incorrect number of arguments");
-    return _ravel_index({static_cast<size_t>(indices)...});
+  constexpr size_t ravel_index(std::array<size_t, rank()> indices) {
+    for (size_t i = 0; i < rank(); i++) {
+      assert(indices[i] < dim(i));
+    }
+
+    std::array<size_t, rank()> s = strides();
+
+    size_t result = 0;
+    for (size_t i = 0; i < indices.size(); i++) {
+      result += indices[i] * s[i];
+    }
+
+    return result;
   }
 
   constexpr std::array<size_t, rank()> unravel_index(size_t index) {
@@ -164,21 +173,6 @@ public:
   }
 
 private:
-  constexpr size_t _ravel_index(std::array<size_t, rank()> indices) {
-    for (size_t i = 0; i < rank(); i++) {
-      assert(indices[i] < dim(i));
-    }
-
-    std::array<size_t, rank()> s = strides();
-
-    size_t result = 0;
-    for (size_t i = 0; i < indices.size(); i++) {
-      result += indices[i] * s[i];
-    }
-
-    return result;
-  }
-
   std::vector<T> data;
 };
 

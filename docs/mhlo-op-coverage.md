@@ -51,7 +51,7 @@ The table below shows the supported MHLO ops.
 | broadcast_in_dim      | :white_check_mark: | Only for 1D inputs |
 | clamp                 | :heavy_check_mark: | |
 | concatenate           | :heavy_check_mark: | |
-| convolution           | :white_check_mark: | No support for grouped/dilated convolutions, only for `NHWC` layout |
+| convolution           | :white_check_mark: | No support for dilated convolutions, only for `NHWC` layout. Untested for grouped convolutions except for the depthwise case |
 | dot                   | :white_check_mark: | Only the `Matrix times Matrix` case |
 | reshape               | :heavy_check_mark: | |
 | select                | :heavy_check_mark: | |

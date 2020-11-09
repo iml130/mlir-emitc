@@ -193,6 +193,8 @@ private:
 
     args_.push_back(convOp.padding().getValueOr(GetI64ElementsAttr({0, 0})));
     args_.push_back(
+        convOp.lhs_dilation().getValueOr(GetI64ElementsAttr({1, 1})));
+    args_.push_back(
         convOp.rhs_dilation().getValueOr(GetI64ElementsAttr({1, 1})));
     args_.push_back(
         convOp.window_strides().getValueOr(GetI64ElementsAttr({1, 1})));

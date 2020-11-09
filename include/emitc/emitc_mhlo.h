@@ -683,6 +683,11 @@ Src batch_norm_inference(Src input, Feature scale, Feature offset, Feature mean,
 }
 
 // ConvolutionOp
+// TODO replicate ConvDimensionNumbers struct
+// TODO implement general dimension numbers
+// TODO implement lhs_dilation
+// TODO implement rhs_dilation
+// TODO implement batch_group_count
 template <typename Dest, typename Src, typename Weights>
 Dest convolution(Src input, Weights weights, int64_t batch_group_count,
                  int64_t input_batch_dimension, int64_t input_feature_dimension,
@@ -694,6 +699,7 @@ Dest convolution(Src input, Weights weights, int64_t batch_group_count,
                  int64_t output_feature_dimension,
                  Tensor1D<int64_t, 2> output_spatial_dimensions,
                  int64_t feature_group_count, Tensor2D<int64_t, 2, 2> padding,
+                 Tensor1D<int64_t, 2> lhs_dilation,
                  Tensor1D<int64_t, 2> rhs_dilation,
                  Tensor1D<int64_t, 2> window_strides) {
   static_assert(is_tensor_of_dim<4, Src>::value,
@@ -720,7 +726,13 @@ Dest convolution(Src input, Weights weights, int64_t batch_group_count,
   assert(output_spatial_dimensions[1] == 2);
   assert(output_feature_dimension == 3);
 
-  assert(feature_group_count == 1);
+  assert(input.dim(input_feature_dimension) % feature_group_count == 0);
+  assert(weights.dim(kernel_input_feature_dimension) ==
+         input.dim(input_feature_dimension) / feature_group_count);
+
+  assert(lhs_dilation[0] == 1);
+  assert(lhs_dilation[0] == 1);
+
   assert(rhs_dilation[0] == 1);
   assert(rhs_dilation[0] == 1);
 
@@ -729,10 +741,14 @@ Dest convolution(Src input, Weights weights, int64_t batch_group_count,
   const int W_IN = input.dim(input_spatial_dimensions[1]);
   const int C_IN = input.dim(input_feature_dimension);
 
+  assert(C_IN % feature_group_count == 0);
+  const int G_IN = C_IN / feature_group_count;
+
   Dest output;
-  const int H_OUT = output.dim(output_spatial_dimensions[0]);
-  const int W_OUT = output.dim(output_spatial_dimensions[1]);
+
   const int C_OUT = output.dim(output_feature_dimension);
+  assert(C_OUT % feature_group_count == 0);
+  const int G_OUT = C_OUT / feature_group_count;
 
   const int K_H = weights.dim(kernel_spatial_dimensions[0]);
   const int K_W = weights.dim(kernel_spatial_dimensions[1]);
@@ -747,23 +763,30 @@ Dest convolution(Src input, Weights weights, int64_t batch_group_count,
   const int H_PAD = pt + H_IN + pb;
   const int W_PAD = pl + W_IN + pr;
 
+  // TODO test grouped convolutions
+  assert(feature_group_count == 1 || feature_group_count == C_OUT);
+
   // Convolution
   for (int n = 0; n < N; n++) {
-    for (int h = -pt; h < H_PAD - K_H + 1; h += S_H) {
-      for (int w = -pt; w < W_PAD - K_W + 1; w += S_W) {
+    for (int h_pad = 0; h_pad < H_PAD - K_H + 1; h_pad += S_H) {
+      for (int w_pad = 0; w_pad < W_PAD - K_W + 1; w_pad += S_W) {
         for (int kh = 0; kh < K_H; kh++) {
           for (int kw = 0; kw < K_W; kw++) {
-            for (int c_in = 0; c_in < C_IN; c_in++) {
-              for (int c_out = 0; c_out < C_OUT; c_out++) {
-                int h_out = h / S_H;
-                int w_out = w / S_W;
-                int h_in = h - pt + kh;
-                int w_in = w - pl + kw;
-                if (h_in < 0 || h_in >= H_IN || w_in < 0 || w_in >= W_IN ||
-                    h_out < 0 || h_out >= H_OUT || w_out < 0 || w_out >= W_OUT)
-                  continue;
-                output(n, h_out, w_out, c_out) +=
-                    input(n, h_in, w_in, c_in) * weights(kh, kw, c_in, c_out);
+            for (int g = 0; g < feature_group_count; g++) {
+              for (int g_in = 0; g_in < G_IN; g_in++) {
+                for (int g_out = 0; g_out < G_OUT; g_out++) {
+                  const int h_out = h_pad / S_H;
+                  const int w_out = w_pad / S_W;
+                  const int c_out = g * G_OUT + g_out;
+                  const int h_in = h_pad - pt + kh;
+                  const int w_in = w_pad - pl + kw;
+                  const int c_in = g * G_IN + g_in;
+
+                  if (h_in < 0 || h_in >= H_IN || w_in < 0 || w_in >= W_IN)
+                    continue;
+                  output(n, h_out, w_out, c_out) +=
+                      input(n, h_in, w_in, c_in) * weights(kh, kw, g_in, c_out);
+                }
               }
             }
           }

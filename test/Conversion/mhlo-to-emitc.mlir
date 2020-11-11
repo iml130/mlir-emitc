@@ -321,6 +321,16 @@ func @mhlo_reshape(%arg0: tensor<12xf32>) -> tensor<2x3x2xf32> {
   return %0 : tensor<2x3x2xf32>
 }
 
+func @mhlo_pad(%arg0: tensor<2x3xf32>, %arg1: tensor<f32>) -> tensor<4x7xf32> {
+  // CHECK: emitc.call "mhlo::pad"(%arg0, %arg1)
+  %0 = "mhlo.pad"(%arg0, %arg1) {
+    edge_padding_low = dense<-1> : tensor<2xi64>,
+    edge_padding_high = dense<1> : tensor<2xi64>,
+    interior_padding = dense<2> : tensor<2xi64>
+  } : (tensor<2x3xf32>, tensor<f32>) -> tensor<4x7xf32>
+  return %0 : tensor<4x7xf32>
+}
+
 func @mhlo_select(%arg0: tensor<2xf32>, %arg1: tensor<2xf32>, %arg2: tensor<2xi1>) -> tensor<2xf32> {
   // CHECK: emitc.call "mhlo::select"(%arg2, %arg0, %arg1)
   %1 = "mhlo.select"(%arg2, %arg0, %arg1) : (tensor<2xi1>, tensor<2xf32>, tensor<2xf32>) -> tensor<2xf32>

@@ -578,6 +578,70 @@ inline Dest reshape(Src x) {
   return z;
 }
 
+// PadOp
+// TODO support negative edge padding
+template <typename Dest, typename Src>
+inline Dest pad(Src operand,
+                Tensor<typename get_element_type<Src>::type> padding_value,
+                Tensor<int64_t, Src::rank()> edge_padding_low,
+                Tensor<int64_t, Src::rank()> edge_padding_high,
+                Tensor<int64_t, Src::rank()> interior_padding) {
+  assert(std::all_of(interior_padding.begin(), interior_padding.end(),
+                     [](int64_t i) { return i >= 0; }));
+
+  assert(std::all_of(edge_padding_low.begin(), edge_padding_low.end(),
+                     [](int64_t i) { return i >= 0; }));
+  assert(std::all_of(edge_padding_high.begin(), edge_padding_high.end(),
+                     [](int64_t i) { return i >= 0; }));
+
+  Dest result;
+
+  auto interior = [&interior_padding](std::array<size_t, Src::rank()> index) {
+    for (size_t i = 0; i < index.size(); i++) {
+      if (index[i] % (interior_padding[i] + 1) != 0) {
+        return true;
+      }
+    }
+    return false;
+  };
+
+  auto out_of_bounds = [](std::array<size_t, Src::rank()> index) {
+    for (size_t i = 0; i < index.size(); i++) {
+      if (index[i] < 0 || index[i] >= Src::dim(i)) {
+        return true;
+      }
+    }
+    return false;
+  };
+
+  for (size_t i = 0; i < result.size(); i++) {
+    auto index = result.unravel_index(i);
+
+    // shift by low padding
+    for (size_t j = 0; j < index.size(); j++) {
+      index[j] -= edge_padding_low[j];
+    }
+
+    if (interior(index)) {
+      result[i] = padding_value();
+    } else {
+      // squeeze by interrior padding
+      for (size_t j = 0; j < index.size(); j++) {
+        size_t pad = interior_padding[j];
+        assert(index[j] % (pad + 1) == 0);
+        index[j] /= (pad + 1);
+      }
+
+      if (out_of_bounds(index)) {
+        result[i] = padding_value();
+      } else {
+        result[i] = operand[operand.ravel_index(index)];
+      }
+    }
+  }
+  return result;
+}
+
 // SelectOp
 template <typename Src, IsScalar<Src> = true>
 inline Src select(typename replace_element_type<bool, Src>::type pred,

@@ -467,6 +467,40 @@ private:
   }
 };
 
+class PadOpConversion : public OpConversionPattern<mhlo::PadOp> {
+  using OpConversionPattern<mhlo::PadOp>::OpConversionPattern;
+
+public:
+  PadOpConversion(MLIRContext *ctx) : OpConversionPattern<mhlo::PadOp>(ctx) {}
+
+private:
+  LogicalResult
+  matchAndRewrite(mhlo::PadOp padOp, ArrayRef<Value> operands,
+                  ConversionPatternRewriter &rewriter) const override {
+    StringAttr callee = rewriter.getStringAttr("mhlo::pad");
+
+    SmallVector<Attribute, 4> args_ = llvm::to_vector<4>(
+        llvm::map_range(llvm::seq<int64_t>(0, operands.size()),
+                        [&rewriter](int64_t i) -> Attribute {
+                          return rewriter.getIndexAttr(i);
+                        }));
+
+    args_.push_back(padOp.edge_padding_lowAttr());
+    args_.push_back(padOp.edge_padding_highAttr());
+    args_.push_back(padOp.interior_paddingAttr());
+
+    ArrayAttr args = rewriter.getArrayAttr(args_);
+
+    Type resultType = padOp.getResult().getType();
+    ArrayAttr templateArgs = rewriter.getArrayAttr({TypeAttr::get(resultType)});
+
+    rewriter.replaceOpWithNewOp<emitc::CallOp>(padOp, padOp.getType(), callee,
+                                               args, templateArgs, operands);
+
+    return success();
+  }
+};
+
 class SelectOpConversion : public OpConversionPattern<mhlo::SelectOp> {
   using OpConversionPattern<mhlo::SelectOp>::OpConversionPattern;
 
@@ -574,6 +608,7 @@ void populateMhloToEmitcPatterns(MLIRContext *ctx,
   patterns.insert<ConvOpConversion>(ctx);
   patterns.insert<CallOpConversion<mhlo::DotOp>>(ctx, "mhlo::dot",
                                                  /*explicitResultType=*/true);
+  patterns.insert<PadOpConversion>(ctx);
   patterns.insert<CallOpConversion<mhlo::ReshapeOp>>(
       ctx, "mhlo::reshape", /*explicitResultType=*/true);
   patterns.insert<SelectOpConversion>(ctx);
@@ -643,6 +678,7 @@ struct ConvertMhloToEmitcPass
                         mhlo::ConcatenateOp,
                         mhlo::ConvOp,
                         mhlo::DotOp,
+                        mhlo::PadOp,
                         mhlo::ReshapeOp,
                         mhlo::SelectOp>();
     // MHLO RNG ops

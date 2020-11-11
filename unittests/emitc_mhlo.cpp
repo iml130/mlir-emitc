@@ -1100,6 +1100,33 @@ TEST(mhlo, reshape) {
   EXPECT_THAT(t2, Pointwise(Eq(), {3, 1, 4, 9}));
 }
 
+TEST(mhlo, pad) {
+  Tensor<int32_t, 2, 3> operand{1, 2, 3, 4, 5, 6};
+  Tensor<int32_t> value{0};
+
+  Tensor<int32_t, 3, 6> expected_result0{0, 1, 2, 3, 0, 0, 0, 4, 5,
+                                         6, 0, 0, 0, 0, 0, 0, 0, 0};
+  Tensor<int32_t, 3, 6> result0 =
+      mhlo::pad<Tensor<int32_t, 3, 6>>(operand, value, {0, 1}, {1, 2}, {0, 0});
+
+  EXPECT_THAT(result0, Pointwise(Eq(), expected_result0));
+
+  Tensor<int32_t, 3, 5> expected_result1{1, 0, 2, 0, 3, 0, 0, 0,
+                                         0, 0, 4, 0, 5, 0, 6};
+  Tensor<int32_t, 3, 5> result1 =
+      mhlo::pad<Tensor<int32_t, 3, 5>>(operand, value, {0, 0}, {0, 0}, {1, 1});
+
+  EXPECT_THAT(result1, Pointwise(Eq(), expected_result1));
+
+  Tensor<int32_t, 4, 8> expected_result2{0, 1, 0, 2, 0, 3, 0, 0, 0, 0, 0,
+                                         0, 0, 0, 0, 0, 0, 4, 0, 5, 0, 6,
+                                         0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+  Tensor<int32_t, 4, 8> result2 =
+      mhlo::pad<Tensor<int32_t, 4, 8>>(operand, value, {0, 1}, {1, 2}, {1, 1});
+
+  EXPECT_THAT(result2, Pointwise(Eq(), expected_result2));
+}
+
 TEST(mhlo, select) {
   EXPECT_EQ(-1, mhlo::select(true, -1, 3));
   EXPECT_EQ(3, mhlo::select(false, -1, 3));

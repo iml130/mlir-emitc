@@ -15,132 +15,16 @@
 #include "mlir/IR/Operation.h"
 #include "mlir/IR/StandardTypes.h"
 #include "llvm/ADT/DenseMap.h"
-#include "llvm/ADT/ScopedHashTable.h"
 #include "llvm/ADT/StringExtras.h"
 #include "llvm/ADT/StringMap.h"
 #include "llvm/Support/Debug.h"
 #include "llvm/Support/FormatVariadic.h"
-#include <stack>
 
 #define DEBUG_TYPE "translate-to-cpp"
 
 using namespace mlir;
+using namespace mlir::emitc;
 using llvm::formatv;
-
-/// Convenience functions to produce interleaved output with functions returning
-/// a LogicalResult. This is different than those in STL as functions used on
-/// each element doesn't return a string.
-template <typename ForwardIterator, typename UnaryFunctor,
-          typename NullaryFunctor>
-inline LogicalResult
-interleaveWithError(ForwardIterator begin, ForwardIterator end,
-                    UnaryFunctor each_fn, NullaryFunctor between_fn) {
-  if (begin == end)
-    return success();
-  if (failed(each_fn(*begin)))
-    return failure();
-  ++begin;
-  for (; begin != end; ++begin) {
-    between_fn();
-    if (failed(each_fn(*begin)))
-      return failure();
-  }
-  return success();
-}
-
-template <typename Container, typename UnaryFunctor, typename NullaryFunctor>
-inline LogicalResult interleaveWithError(const Container &c,
-                                         UnaryFunctor each_fn,
-                                         NullaryFunctor between_fn) {
-  return interleaveWithError(c.begin(), c.end(), each_fn, between_fn);
-}
-
-template <typename Container, typename UnaryFunctor>
-inline LogicalResult interleaveCommaWithError(const Container &c,
-                                              raw_ostream &os,
-                                              UnaryFunctor each_fn) {
-  return interleaveWithError(c.begin(), c.end(), each_fn,
-                             [&]() { os << ", "; });
-}
-
-namespace {
-/// Emitter that uses dialect specific emitters to emit C++ code.
-struct CppEmitter {
-  explicit CppEmitter(raw_ostream &os);
-
-  /// Emits attribute or returns failure.
-  LogicalResult emitAttribute(Attribute attr);
-
-  /// Emits operation 'op' with/without training semicolon or returns failure.
-  LogicalResult emitOperation(Operation &op, bool trailingSemicolon = true);
-
-  /// Emits type 'type' or returns failure.
-  LogicalResult emitType(Type type);
-
-  /// Emits array of types as a std::tuple of the emitted types.
-  /// - emits void for an empty array;
-  /// - emits the type of the only element for arrays of size one;
-  /// - emits a std::tuple otherwise;
-  LogicalResult emitTypes(ArrayRef<Type> types);
-
-  /// Emits array of types as a std::tuple of the emitted types independently of
-  /// the array size.
-  LogicalResult emitTupleType(ArrayRef<Type> types);
-
-  /// Emits the variable declaration and assignment prefix for 'op'.
-  /// - emits separate variable followed by std::tie for multi-valued operation;
-  /// - emits single type followed by variable for single result;
-  /// - emits nothing if no value produced by op;
-  /// Emits final '=' operator where a type is produced. Returns failure if
-  /// any result type could not be converted.
-  LogicalResult emitAssignPrefix(Operation &op);
-
-  /// Emits the operands and atttributes of the operation. All operands are
-  /// emitted first and then all attributes in alphabetical order.
-  LogicalResult emitOperandsAndAttributes(Operation &op,
-                                          ArrayRef<StringRef> exclude = {});
-
-  /// Emits the operands of the operation. All operands are emitted in order.
-  LogicalResult emitOperands(Operation &op);
-
-  /// Return the existing or a new name for a Value.
-  StringRef getOrCreateName(Value val);
-
-  /// Whether to map an mlir integer to a signed integer in C++
-  bool mapToSigned(IntegerType::SignednessSemantics val);
-
-  /// RAII helper function to manage entering/exiting C++ scopes.
-  struct Scope {
-    Scope(CppEmitter &emitter) : mapperScope(emitter.mapper), emitter(emitter) {
-      emitter.valueInScopeCount.push(emitter.valueInScopeCount.top());
-    }
-    ~Scope() { emitter.valueInScopeCount.pop(); }
-
-  private:
-    llvm::ScopedHashTableScope<Value, std::string> mapperScope;
-    CppEmitter &emitter;
-  };
-
-  /// Returns wether the Value is assigned to a C++ variable in the scope.
-  bool hasValueInScope(Value val);
-
-  /// Returns the output stream.
-  raw_ostream &ostream() { return os; };
-
-private:
-  using ValMapper = llvm::ScopedHashTable<Value, std::string>;
-
-  /// Output stream to emit to.
-  raw_ostream &os;
-
-  /// Map from value to name of C++ variable that contain the name.
-  ValMapper mapper;
-
-  /// The number of values in the current scope. This is used to declare the
-  /// names of values in a scope.
-  std::stack<int64_t> valueInScopeCount;
-};
-} // namespace
 
 static LogicalResult printConstantOp(CppEmitter &emitter,
                                      ConstantOp constantOp) {
@@ -165,7 +49,7 @@ static LogicalResult printConstantOp(CppEmitter &emitter,
   return success();
 }
 
-static LogicalResult printCallOp(CppEmitter &emitter, CallOp callOp) {
+static LogicalResult printCallOp(CppEmitter &emitter, mlir::CallOp callOp) {
   if (failed(emitter.emitAssignPrefix(*callOp.getOperation())))
     return failure();
 
@@ -584,7 +468,7 @@ LogicalResult CppEmitter::emitAssignPrefix(Operation &op) {
 }
 
 static LogicalResult printOperation(CppEmitter &emitter, Operation &op) {
-  if (auto callOp = dyn_cast<CallOp>(op))
+  if (auto callOp = dyn_cast<mlir::CallOp>(op))
     return printCallOp(emitter, callOp);
   if (auto callOp = dyn_cast<emitc::CallOp>(op))
     return printCallOp(emitter, callOp);

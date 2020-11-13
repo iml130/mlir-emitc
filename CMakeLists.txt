@@ -17,25 +17,34 @@ project(mlir-emitc LANGUAGES CXX C)
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 14)
 
+#-------------------------------------------------------------------------------
+# Options and definitions
+#-------------------------------------------------------------------------------
+
+option(EMITC_BUILD_EMBEDDED "Build EmitC as part of another project" OFF)
 option(EMITC_ENABLE_HLO "Enables building MLIR-HLO." ON)
 option(EMITC_INCLUDE_TESTS "Generate build targets for the MLIR EmitC unit tests." ON)
 # TODO: Set to MLIR or LLVM default
 #       ${LLVM_INCLUDE_TESTS})
 
-if(${EMITC_ENABLE_HLO})
-  message(STATUS "Building MLIR-HLO")
+if(EMITC_ENABLE_HLO)
+  message(STATUS "Building EmitC with MLIR-HLO conversions")
   add_definitions(-DEMITC_BUILD_HLO)
 endif()
 
-if(${IREE_ENABLE_EMITC})
+if(IREE_ENABLE_EMITC)
   message(STATUS "Building EmitC (with reduced deps) for use within IREE")
   add_definitions(-DIREE_BUILD_EMITC)
 endif()
 
-if(${IREE_ENABLE_EMITC} AND ${IREE_MLIR_DEP_MODE} STREQUAL "BUNDLED")
-  list(APPEND CMAKE_MODULE_PATH "${CMAKE_BINARY_DIR}/lib/cmake/mlir")
-  list(APPEND CMAKE_MODULE_PATH "${CMAKE_BINARY_DIR}/third_party/llvm-project/llvm/lib/cmake/llvm/")
-else()
+#-------------------------------------------------------------------------------
+# MLIR/LLVM configuration
+#-------------------------------------------------------------------------------
+
+# Find MLIR if we are building standalone. If building as part of another
+# project, let it handle the MLIR dependency. The dependent project might
+# use a bundled version of MLIR instead of installing, for instance.
+if(NOT EMITC_BUILD_EMBEDDED)
   find_package(MLIR REQUIRED CONFIG)
 
   message(STATUS "Using MLIRConfig.cmake in: ${MLIR_DIR}")
@@ -48,6 +57,7 @@ else()
   list(APPEND CMAKE_MODULE_PATH "${MLIR_CMAKE_DIR}")
   list(APPEND CMAKE_MODULE_PATH "${LLVM_CMAKE_DIR}")
 endif()
+
 include(TableGen)
 include(AddLLVM)
 include(AddMLIR)
@@ -58,29 +68,38 @@ include(HandleLLVMOptions)
 # `-Wcovered-switch-default` flag.
 string(REPLACE "-Wcovered-switch-default" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 
-if(${IREE_ENABLE_EMITC} AND ${IREE_MLIR_DEP_MODE} STREQUAL "BUNDLED")
-  include_directories(${IREE_COMMON_INCLUDE_DIRS})
-elseif(${IREE_ENABLE_EMITC} AND ${IREE_MLIR_DEP_MODE} STREQUAL "INSTALLED")
-  include_directories(${iree_SOURCE_DIR})
-  include_directories(${iree_BINARY_DIR})
-  include_directories(${LLVM_INCLUDE_DIRS})
-  include_directories(${MLIR_INCLUDE_DIRS})
-else()
-  include_directories(${LLVM_INCLUDE_DIRS})
-  include_directories(${MLIR_INCLUDE_DIRS})
-endif()
+include_directories(${LLVM_INCLUDE_DIRS})
+include_directories(${MLIR_INCLUDE_DIRS})
 include_directories(${PROJECT_SOURCE_DIR}/include)
 include_directories(${PROJECT_BINARY_DIR}/include)
 link_directories(${LLVM_BUILD_LIBRARY_DIR})
 add_definitions(${LLVM_DEFINITIONS})
 
-if(${EMITC_ENABLE_HLO})
+#-------------------------------------------------------------------------------
+# Dependent projects and dependencies
+#-------------------------------------------------------------------------------
+
+# If building as part of IREE, add IREE specific includes.
+if(IREE_ENABLE_EMITC AND IREE_MLIR_DEP_MODE STREQUAL "BUNDLED")
+  include_directories(${IREE_COMMON_INCLUDE_DIRS})
+elseif(IREE_ENABLE_EMITC AND IREE_MLIR_DEP_MODE STREQUAL "INSTALLED")
+  include_directories(${iree_SOURCE_DIR})
+  include_directories(${iree_BINARY_DIR})
+endif()
+
+# Configure MHLO if we are building standalone. If building as part of
+# another, let it handle the submodule and includes.
+if(EMITC_ENABLE_HLO AND NOT EMITC_BUILD_EMBEDDED)
   add_subdirectory(third_party/mlir-hlo EXCLUDE_FROM_ALL)
   include_directories(${mlir-hlo_SOURCE_DIR}/include)
   include_directories(${mlir-hlo_BINARY_DIR}/include)
 endif()
 
-if(${EMITC_INCLUDE_TESTS})
+#-------------------------------------------------------------------------------
+# Directory setup
+#-------------------------------------------------------------------------------
+
+if(EMITC_INCLUDE_TESTS)
   # With `LLVM_INSTALL_UTILS` set to `ON`, the LLVM/MLIR build dir contains a
   # gtest, added in llvm/utils/unittest/CMakeLists.txt. However, LLVM ships
   # gooletest version 1.8, whereas we require a more recent version. Therefore,

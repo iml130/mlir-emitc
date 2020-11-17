@@ -9,6 +9,7 @@ add_mlir_library(MLIRMHLOToEmitC
 
   DEPENDS
   MLIREmitCIncGen
+  MLIREmitCPassIncGen
   MLIRhlo_opsIncGen
 
   LINK_COMPONENTS
@@ -25,6 +26,7 @@ add_mlir_library(MLIRSCFToEmitC
 
   DEPENDS
   MLIREmitCIncGen
+  MLIREmitCPassIncGen
 
   LINK_COMPONENTS
   Core
@@ -40,6 +42,7 @@ add_mlir_library(MLIRStdToEmitC
 
   DEPENDS
   MLIREmitCIncGen
+  MLIREmitCPassIncGen
 
   LINK_COMPONENTS
   Core

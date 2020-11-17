@@ -80,7 +80,6 @@ add_llvm_executable(emitc-opt
 
   DEPENDS
   ${LIBS}
-  MLIREmitCPassIncGen
   ${HLO_LIBS_DEPS}
   )
 target_link_libraries(emitc-opt PRIVATE ${LIBS})

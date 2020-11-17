@@ -4,22 +4,24 @@ set(LLVM_OPTIONAL_SOURCES
   StdToEmitC.cpp
 )
 
-add_mlir_library(MLIRMHLOToEmitC
-  MHLOToEmitC.cpp
+if(EMITC_ENABLE_HLO)
+  add_mlir_library(MLIRMHLOToEmitC
+    MHLOToEmitC.cpp
 
-  DEPENDS
-  MLIREmitCIncGen
-  MLIREmitCPassIncGen
-  MLIRhlo_opsIncGen
+    DEPENDS
+    MLIREmitCIncGen
+    MLIREmitCPassIncGen
+    MLIRhlo_opsIncGen
 
-  LINK_COMPONENTS
-  Core
+    LINK_COMPONENTS
+    Core
 
-  LINK_LIBS PUBLIC
-  MLIRIR
-  MLIRPass
-  MLIRTransformUtils
-)
+    LINK_LIBS PUBLIC
+    MLIRIR
+    MLIRPass
+    MLIRTransformUtils
+  )
+endif()
 
 add_mlir_library(MLIRSCFToEmitC
   SCFToEmitC.cpp

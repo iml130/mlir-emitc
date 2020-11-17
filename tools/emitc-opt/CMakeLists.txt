@@ -32,8 +32,9 @@ else()
   get_property(conversion_libs GLOBAL PROPERTY MLIR_CONVERSION_LIBS)
 endif()
 
-if(${EMITC_ENABLE_HLO})
+if(EMITC_ENABLE_HLO)
   set(HLO_LIBS
+    MLIRMHLOToEmitC
     MLIREmitCTransforms
     MhloRegisterDialects
     AllMhloPasses
@@ -69,7 +70,6 @@ set(LIBS
   MLIRSupport
   MLIRIR
   MLIREmitC
-  MLIRMHLOToEmitC
   MLIRSCFToEmitC
   MLIRStdToEmitC
   ${HLO_LIBS}

@@ -11,10 +11,12 @@
 
 include "mlir/Pass/PassBase.td"
 
+#ifdef EMITC_BUILD_HLO
 def ConvertMHLOToEmitCPass : Pass<"convert-mhlo-to-emitc", "FuncOp"> {
   let summary = "Convert from MHLO dialect to EmitC dialect.";
   let constructor = "createConvertMhloToEmitcPass()";
 }
+#endif
 
 def ConvertScfToEmitCPass : Pass<"convert-scf-to-emitc", "FuncOp"> {
   let summary = "Convert SCF dialect to EmitC dialect, replacing IfOp and ForOp.";
@@ -26,6 +28,7 @@ def ConvertStdToEmitCPass : Pass<"convert-std-to-emitc", "FuncOp"> {
   let constructor = "createConvertStdToEmitcPass()";
 }
 
+#ifdef EMITC_BUILD_HLO
 // TODO: This could be moved to separate file.
 def ConvertMHLOToStandardPass : Pass<"convert-mhlo-const-to-std", "FuncOp"> {
   let summary = "Converting MHLO constant to std.";
@@ -38,5 +41,6 @@ def MHLOToMHLOPass : Pass<"preprocess-mhlo-for-emitc", "FuncOp"> {
   let summary = "Apply MHLO to MHLO transformations for some ops.";
   let constructor = "createMHLOToMHLOPass()";
 }
+#endif
 
 #endif // MLIR_DIALECT_EMITC_PASSES

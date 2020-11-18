@@ -54,5 +54,6 @@ The table below shows the supported MHLO ops.
 | convolution           | :white_check_mark: | No support for dilated convolutions, only for `NHWC` layout. Untested for grouped convolutions except for the depthwise case |
 | dot                   | :white_check_mark: | Only the `Matrix times Matrix` case |
 | pad                   | :white_check_mark: | No support for negative edge padding |
+| reduce                | :white_check_mark: | No support for variadic arguments |
 | reshape               | :heavy_check_mark: | |
 | select                | :heavy_check_mark: | |

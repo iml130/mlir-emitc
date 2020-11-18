@@ -23,6 +23,7 @@
 #include <functional>
 #include <random>
 #include <type_traits>
+#include <vector>
 
 #include "emitc_tensor.h"
 
@@ -642,6 +643,58 @@ inline Dest pad(Src operand,
   return result;
 }
 
+// ReduceOp
+template <typename Dest, size_t Dimension, typename Src, typename Computation>
+inline Dest
+reduce(Src operand, Tensor<typename get_element_type<Src>::type> initValue,
+       Tensor<int64_t, Dimension> dimensions, Computation computation) {
+  static_assert(is_tensor<Src>::value, "Expected tensor argument");
+  static_assert(is_tensor<Dest>::value, "Expected tensor result");
+
+  using ET_Src = typename get_element_type<Src>::type;
+  using ET_Dest = typename get_element_type<Src>::type;
+
+  static_assert(std::is_same<ET_Src, ET_Dest>::value, "Element type mismatch");
+
+  static_assert(Src::rank() == Dest::rank() + Dimension,
+                "source rank must equal dest rank + dimension size");
+
+  std::vector<size_t> retainedDimensions(Src::rank());
+  std::iota(retainedDimensions.begin(), retainedDimensions.end(), 0);
+
+  retainedDimensions.erase(
+      std::remove_if(retainedDimensions.begin(), retainedDimensions.end(),
+                     [&dimensions](size_t i) {
+                       return std::find(dimensions.begin(), dimensions.end(),
+                                        i) != dimensions.end();
+                     }),
+      retainedDimensions.end());
+
+  assert(retainedDimensions.size() == Dest::rank());
+
+  Dest result;
+  std::fill(result.begin(), result.end(), initValue());
+
+  for (size_t i = 0; i < operand.size(); i++) {
+    auto value = Tensor<ET_Src>{operand[i]};
+    auto index = operand.unravel_index(i);
+
+    std::array<size_t, Dest::rank()> reducedIndex;
+    size_t j = 0;
+    for (size_t dim : retainedDimensions) {
+      reducedIndex[j++] = index[dim];
+    }
+
+    auto reductionValue =
+        Tensor<ET_Src>{result[result.ravel_index(reducedIndex)]};
+    Tensor<ET_Dest> resultValue = computation(reductionValue, value);
+
+    result[result.ravel_index(reducedIndex)] = resultValue();
+  }
+
+  return result;
+}
+
 // SelectOp
 template <typename Src, IsScalar<Src> = true>
 inline Src select(typename replace_element_type<bool, Src>::type pred,
@@ -675,7 +728,8 @@ inline Dest rng_uniform(Tensor<T> low, Tensor<T> high,
   T highValue = high[0];
 
   // high value is exclusive in xla but inclusive in cpp
-  // see https://www.tensorflow.org/xla/operation_semantics?hl=en#rnguniform and
+  // see https://www.tensorflow.org/xla/operation_semantics?hl=en#rnguniform
+  // and
   // https://en.cppreference.com/w/cpp/numeric/random/uniform_int_distribution
   if (std::is_integral<T>::value) {
     highValue = highValue - 1;

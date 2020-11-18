@@ -13,6 +13,7 @@
 #include "emitc/Dialect/EmitC/EmitCDialect.h"
 #include "emitc/Dialect/EmitC/Passes.h"
 #include "mlir-hlo/Dialect/mhlo/IR/hlo_ops.h"
+#include "mlir/IR/BlockAndValueMapping.h"
 #include "mlir/IR/Function.h"
 #include "mlir/IR/PatternMatch.h"
 #include "mlir/Pass/Pass.h"
@@ -622,17 +623,53 @@ void populateMhloToEmitcPatterns(MLIRContext *ctx,
 namespace {
 
 struct ConvertMhloToEmitcPass
-    : public PassWrapper<ConvertMhloToEmitcPass, FunctionPass> {
+    : public PassWrapper<ConvertMhloToEmitcPass, OperationPass<ModuleOp>> {
   void getDependentDialects(DialectRegistry &registry) const override {
     registry.insert<emitc::EmitCDialect>();
   }
   /// Perform the lowering to EmitC dialect.
-  void runOnFunction() override {
+  void runOnOperation() override {
+    // TODO split into separate passes
+    // Convert region ops
+    SymbolTable symbolTable(getOperation());
+    for (auto func : getOperation().getOps<FuncOp>()) {
+      // Insert just after the function.
+      Block::iterator insertPt(func.getOperation()->getNextNode());
 
+      int count = 0;
+      auto funcWalkResult = func.walk([&](mhlo::ReduceOp op) {
+        std::string funcName =
+            Twine(op.getParentOfType<FuncOp>().getName(), "_lambda_")
+                .concat(Twine(count++))
+                .str();
+
+        Optional<FuncOp> outlinedFunc = outlineRegionImpl(op, funcName);
+
+        if (!outlinedFunc.hasValue()) {
+          return WalkResult::interrupt();
+        }
+
+        symbolTable.insert(outlinedFunc.getValue(), insertPt);
+
+        if (failed(convertToReduceCall(op, outlinedFunc.getValue()))) {
+          return WalkResult::interrupt();
+        }
+        return WalkResult::advance();
+      });
+      if (funcWalkResult.wasInterrupted())
+        return signalPassFailure();
+    }
+
+    // Convert other ops
     ConversionTarget target(getContext());
 
     target.addLegalDialect<emitc::EmitCDialect>();
     target.addLegalDialect<mhlo::MhloDialect>();
+    target.addLegalDialect<StandardOpsDialect>();
+    target.addLegalOp<FuncOp>();
+    target.addLegalOp<ModuleOp>();
+    target.addLegalOp<ModuleTerminatorOp>();
+
     // clang-format off
     // MHLO unary elementwise ops
     target.addIllegalOp<mhlo::AbsOp,
@@ -670,6 +707,9 @@ struct ConvertMhloToEmitcPass
     target.addIllegalOp<mhlo::DynamicSliceOp,
                         mhlo::DynamicUpdateSliceOp,
                         mhlo::SliceOp>();
+    // MHLO region ops
+    target.addIllegalOp<mhlo::ReduceOp,
+                        mhlo::ReturnOp>();
     // other MHLO ops
     target.addIllegalOp<mhlo::BatchNormInferenceOp,
                         mhlo::BitcastConvertOp,
@@ -689,15 +729,102 @@ struct ConvertMhloToEmitcPass
     OwningRewritePatternList patterns;
     populateMhloToEmitcPatterns(&getContext(), patterns);
 
-    if (failed(
-            applyPartialConversion(getFunction(), target, std::move(patterns))))
+    if (failed(applyPartialConversion(getOperation(), target,
+                                      std::move(patterns))))
       signalPassFailure();
+  }
+
+private:
+  Optional<FuncOp> outlineRegionImpl(mhlo::ReduceOp &reduceOp,
+                                     std::string functionName) {
+    Location loc = reduceOp.getLoc();
+    // Create a builder with no insertion point, insertion will happen
+    // separately due to symbol table manipulation.
+    OpBuilder builder(reduceOp.getContext());
+
+    Region &region = reduceOp.getRegion();
+
+    auto &blocks = region.getBlocks();
+
+    if (blocks.size() > 1) {
+      return None;
+    }
+
+    Block &block = blocks.front();
+    auto terminator = block.getTerminator();
+    auto returnOp = dyn_cast_or_null<mhlo::ReturnOp>(terminator);
+    if (!returnOp) {
+      return None;
+    }
+
+    auto inputs = region.getArgumentTypes();
+    auto results = returnOp.getOperandTypes();
+
+    FunctionType type =
+        FunctionType::get(inputs, results, reduceOp.getContext());
+    auto outlinedFunc = builder.create<FuncOp>(loc, functionName, type);
+
+    Region &outlinedRegion = outlinedFunc.getRegion();
+
+    BlockAndValueMapping map;
+    region.cloneInto(&outlinedRegion, map);
+
+    outlinedFunc.walk([](mhlo::ReturnOp op) {
+      OpBuilder replacer(op);
+      replacer.create<ReturnOp>(op.getLoc(), op.getOperands());
+      op.erase();
+    });
+    return outlinedFunc;
+  }
+
+  LogicalResult convertToReduceCall(mhlo::ReduceOp &reduceOp, FuncOp &funcOp) {
+    if (reduceOp.getNumResults() > 1) {
+      return reduceOp.emitWarning()
+             << "Variadic case is not supported in the header implemenetation";
+    }
+
+    OpBuilder builder(reduceOp);
+    auto ctx = reduceOp.getContext();
+
+    auto operands = reduceOp.getOperands();
+
+    StringRef funcName = "mhlo::reduce";
+    StringAttr callee = StringAttr::get(funcName, ctx);
+
+    SmallVector<Attribute, 2> args_ = llvm::to_vector<2>(llvm::map_range(
+        llvm::seq<int64_t>(0, operands.size()), [&ctx](int64_t i) -> Attribute {
+          return IntegerAttr::get(IndexType::get(ctx), i);
+        }));
+
+    args_.push_back(reduceOp.dimensions());
+    args_.push_back(SymbolRefAttr::get(funcOp.getName(), ctx));
+
+    ArrayAttr args = ArrayAttr::get(args_, ctx);
+
+    SmallVector<Attribute, 2> templateArgs_ =
+        llvm::to_vector<2>(llvm::map_range(
+            llvm::seq<size_t>(0, reduceOp.getNumResults()),
+            [&reduceOp](size_t i) -> Attribute {
+              return TypeAttr::get(reduceOp.getResults()[i].getType());
+            }));
+
+    templateArgs_.push_back(IntegerAttr::get(IntegerType::get(64, ctx),
+                                             reduceOp.dimensions().size()));
+
+    ArrayAttr templateArgs = ArrayAttr::get(templateArgs_, ctx);
+
+    emitc::CallOp callOp = builder.create<emitc::CallOp>(
+        reduceOp.getLoc(), reduceOp.getResultTypes(), callee, args,
+        templateArgs, operands);
+    reduceOp.replaceAllUsesWith(callOp);
+    reduceOp.erase();
+    return success();
   }
 };
 
 } // namespace
 
-std::unique_ptr<mlir::OperationPass<mlir::FuncOp>>
+std::unique_ptr<mlir::OperationPass<mlir::ModuleOp>>
 createConvertMhloToEmitcPass() {
   return std::make_unique<ConvertMhloToEmitcPass>();
 }

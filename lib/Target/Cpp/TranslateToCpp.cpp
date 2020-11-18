@@ -82,7 +82,10 @@ static LogicalResult printCallOp(CppEmitter &emitter, emitc::CallOp callOp) {
         return success();
       }
     }
-    return emitter.emitAttribute(attr);
+    if (failed(emitter.emitAttribute(attr))) {
+      return op.emitError() << "unable to emit attribute " << attr;
+    }
+    return success();
   };
 
   if (callOp.template_args()) {
@@ -398,6 +401,13 @@ LogicalResult CppEmitter::emitAttribute(Attribute attr) {
   }
   if (auto sAttr = attr.dyn_cast<StringAttr>()) {
     os << sAttr.getValue();
+    return success();
+  }
+  if (auto sAttr = attr.dyn_cast<SymbolRefAttr>()) {
+    if (sAttr.getNestedReferences().size() > 1) {
+      return failure();
+    }
+    os << sAttr.getRootReference();
     return success();
   }
   if (auto type = attr.dyn_cast<TypeAttr>()) {

@@ -18,7 +18,7 @@
 namespace mlir {
 namespace emitc {
 
-std::unique_ptr<OperationPass<FuncOp>> createConvertMhloToEmitcPass();
+std::unique_ptr<OperationPass<ModuleOp>> createConvertMhloToEmitcPass();
 std::unique_ptr<OperationPass<FuncOp>> createConvertScfToEmitcPass();
 std::unique_ptr<OperationPass<FuncOp>> createConvertStdToEmitcPass();
 std::unique_ptr<OperationPass<FuncOp>> createMHLOToMHLOPass();

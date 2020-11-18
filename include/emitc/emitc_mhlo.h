@@ -345,16 +345,44 @@ inline Src logical_xor(Src x, Src y) {
 
   return binary<Src>(x, y, f);
 }
+
 /// Functions for other MHLO ops.
 // BroadcastInDimOp
 template <typename Dest, typename Src>
 inline Dest
-broadcast_in_dim(Src x, Tensor1D<int64_t, Src::rank()> broadcast_dimensions) {
-  static_assert(Src::rank() == 0, "Only 0-dim operand supported so far");
+broadcast_in_dim(Src operand,
+                 Tensor1D<int64_t, Src::rank()> broadcast_dimensions) {
+  static_assert(is_tensor<Src>::value, "Expected tensor argument");
+  static_assert(is_tensor<Dest>::value, "Expected tensor result");
 
-  Dest z;
-  std::fill(z.begin(), z.end(), x[0]);
-  return z;
+  std::vector<size_t> retainedDimensions(Dest::rank());
+  std::iota(retainedDimensions.begin(), retainedDimensions.end(), 0);
+
+  retainedDimensions.erase(
+      std::remove_if(retainedDimensions.begin(), retainedDimensions.end(),
+                     [&broadcast_dimensions](size_t i) {
+                       return std::find(broadcast_dimensions.begin(),
+                                        broadcast_dimensions.end(),
+                                        i) == broadcast_dimensions.end();
+                     }),
+      retainedDimensions.end());
+
+  assert(retainedDimensions.size() == Src::rank());
+
+  Dest result;
+  for (size_t i = 0; i < result.size(); i++) {
+    auto index = result.unravel_index(i);
+
+    // reverse mapping with broadcast_dimensions
+    std::array<size_t, Src::rank()> reversedIndex;
+    for (size_t j = 0; j < reversedIndex.size(); j++) {
+      reversedIndex[j] = index[broadcast_dimensions(j)];
+    }
+
+    result[i] = operand[operand.ravel_index(reversedIndex)];
+  }
+
+  return result;
 }
 
 // ClampOp

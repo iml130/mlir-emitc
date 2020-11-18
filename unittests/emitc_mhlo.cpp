@@ -892,7 +892,17 @@ TEST(mhlo, broadcast_in_dim) {
       mhlo::broadcast_in_dim<Tensor2D<int, 2, 3>>(t0, b0);
   EXPECT_THAT(result2, Pointwise(Eq(), expected_result2));
 
-  // TODO add more tests once higher dimensions are supported
+  Tensor<int, 2> t1{1, 2};
+
+  Tensor<int, 3, 2> expected_result3{1, 2, 1, 2, 1, 2};
+  Tensor2D<int, 3, 2> result3 =
+      mhlo::broadcast_in_dim<Tensor2D<int, 3, 2>>(t1, {1});
+  EXPECT_THAT(result3, Pointwise(Eq(), expected_result3));
+
+  Tensor<int, 2, 3> expected_result4{1, 1, 1, 2, 2, 2};
+  Tensor2D<int, 2, 3> result4 =
+      mhlo::broadcast_in_dim<Tensor2D<int, 2, 3>>(t1, {0});
+  EXPECT_THAT(result4, Pointwise(Eq(), expected_result4));
 }
 
 TEST(mhlo, clamp) {

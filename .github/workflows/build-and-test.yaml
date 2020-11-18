@@ -5,6 +5,10 @@ on:
     paths-ignore:
     - 'docs/**'
     - 'scripts/**'
+  pull_request:
+    branches:
+      - main
+      - develop
 
 env:
   EMITC: emitc

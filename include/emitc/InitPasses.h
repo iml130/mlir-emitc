@@ -14,6 +14,7 @@
 #ifndef EMITC_INITPASSES_H
 #define EMITC_INITPASSES_H
 
+#include "emitc/Conversion/Passes.h"
 #include "emitc/Dialect/EmitC/Passes.h"
 #include "mlir/Conversion/Passes.h"
 #include "mlir/Transforms/Passes.h"
@@ -21,14 +22,6 @@
 #include <cstdlib>
 
 namespace mlir {
-
-#ifdef EMITC_BUILD_HLO
-// TODO: Remove
-namespace mhlo {
-extern std::unique_ptr<OperationPass<FuncOp>> createConvertMHLOToStandardPass();
-} // namespace mhlo
-#endif
-
 namespace emitc {
 
 // This function may be called to register the MLIR passes with the

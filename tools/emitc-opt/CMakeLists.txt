@@ -39,6 +39,7 @@ if(${EMITC_ENABLE_HLO})
     AllMhloPasses
     )
   set(HLO_LIBS_DEPS
+    MLIREmitCMHLOPassIncGen
     MLIREmitCPassIncGen
     MLIRLmhloPassIncGen
     MLIRMhloPassIncGen

@@ -26,11 +26,4 @@ def ConvertStdToEmitCPass : Pass<"convert-std-to-emitc", "FuncOp"> {
   let constructor = "createConvertStdToEmitcPass()";
 }
 
-// TODO: This could be moved to separate file.
-def ConvertMHLOToStandardPass : Pass<"convert-mhlo-const-to-std", "FuncOp"> {
-  let summary = "Converting MHLO constant to std.";
-  let constructor = "mhlo::createConvertMHLOToStandardPass()";
-  let dependentDialects = ["StandardOpsDialect"];
-}
-
 #endif // EMITC_DIALECT_EMITC_PASSES

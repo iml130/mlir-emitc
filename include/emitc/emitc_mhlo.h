@@ -12,8 +12,8 @@
 
 // This file defines functions used by EmitC
 
-#ifndef EMITC_MHLO_H
-#define EMITC_MHLO_H
+#ifndef EMITC_EMITC_MHLO_H
+#define EMITC_EMITC_MHLO_H
 
 #include <algorithm>
 #include <cmath>
@@ -985,4 +985,4 @@ Dest dot(Lhs lhs, Rhs rhs) {
 
 } // namespace mhlo
 
-#endif // EMITC_MHLO_H
+#endif // EMITC_EMITC_MHLO_H

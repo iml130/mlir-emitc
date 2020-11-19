@@ -10,8 +10,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef MLIR_DIALECT_EMITC_PASSES_H
-#define MLIR_DIALECT_EMITC_PASSES_H
+#ifndef EMITC_DIALECT_EMITC_PASSES_H
+#define EMITC_DIALECT_EMITC_PASSES_H
 
 #include "mlir/Pass/Pass.h"
 
@@ -25,4 +25,4 @@ std::unique_ptr<OperationPass<FuncOp>> createConvertStdToEmitcPass();
 } // namespace emitc
 } // namespace mlir
 
-#endif // MLIR_DIALECT_EMITC_PASSES_H
+#endif // EMITC_DIALECT_EMITC_PASSES_H

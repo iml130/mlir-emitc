@@ -11,8 +11,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef MLIR_INITTRANSLATION_H
-#define MLIR_INITTRANSLATION_H
+#ifndef EMITC_INITTRANSLATION_H
+#define EMITC_INITTRANSLATION_H
 
 namespace mlir {
 
@@ -30,4 +30,4 @@ inline void registerEmitCTranslation() {
 }
 } // namespace mlir
 
-#endif // MLIR_INITTRANSLATION_H
+#endif // EMITC_INITTRANSLATION_H

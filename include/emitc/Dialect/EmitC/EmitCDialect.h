@@ -10,8 +10,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef MLIR_DIALECT_EMITC_EMITCDIALECT_H
-#define MLIR_DIALECT_EMITC_EMITCDIALECT_H
+#ifndef EMITC_DIALECT_EMITC_EMITCDIALECT_H
+#define EMITC_DIALECT_EMITC_EMITCDIALECT_H
 
 #include "mlir/IR/Builders.h"
 #include "mlir/IR/Dialect.h"
@@ -78,4 +78,4 @@ ValueVector buildLoopNest(OpBuilder &builder, Location loc, ValueRange lbs,
 } // namespace emitc
 } // namespace mlir
 
-#endif // MLIR_DIALECT_EMITC_EMITCDIALECT_H
+#endif // EMITC_DIALECT_EMITC_EMITCDIALECT_H

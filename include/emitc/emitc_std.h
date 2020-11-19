@@ -12,8 +12,8 @@
 
 // This file defines functions used by EmitC
 
-#ifndef EMITC_STD_H
-#define EMITC_STD_H
+#ifndef EMITC_EMITC_STD_H
+#define EMITC_EMITC_STD_H
 
 #include <vector>
 
@@ -50,4 +50,4 @@ inline Dest splat(Src x) {
 
 } // namespace standard
 
-#endif // EMITC_STD_H
+#endif // EMITC_EMITC_STD_H

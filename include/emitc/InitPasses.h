@@ -11,8 +11,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef MLIR_INITPASSES_H
-#define MLIR_INITPASSES_H
+#ifndef EMITC_INITPASSES_H
+#define EMITC_INITPASSES_H
 
 #include "emitc/Dialect/EmitC/Passes.h"
 #include "mlir/Conversion/Passes.h"
@@ -47,4 +47,4 @@ inline void registerAllEmitCPasses() { registerEmitCPasses(); }
 } // namespace emitc
 } // namespace mlir
 
-#endif // MLIR_INITPASSES_H
+#endif // EMITC_INITPASSES_H

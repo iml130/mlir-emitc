@@ -10,8 +10,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef MLIR_TARGET_CPP_H
-#define MLIR_TARGET_CPP_H
+#ifndef EMITC_TARGET_CPP_H
+#define EMITC_TARGET_CPP_H
 
 #include "mlir/IR/Value.h"
 #include "llvm/ADT/ScopedHashTable.h"
@@ -142,4 +142,4 @@ LogicalResult TranslateToCpp(Operation &op, raw_ostream &os,
 } // namespace emitc
 } // namespace mlir
 
-#endif // MLIR_TARGET_CPP_H
+#endif // EMITC_TARGET_CPP_H

@@ -6,8 +6,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef MLIR_DIALECT_EMITC_PASSES
-#define MLIR_DIALECT_EMITC_PASSES
+#ifndef EMITC_DIALECT_EMITC_PASSES
+#define EMITC_DIALECT_EMITC_PASSES
 
 include "mlir/Pass/PassBase.td"
 
@@ -33,4 +33,4 @@ def ConvertMHLOToStandardPass : Pass<"convert-mhlo-const-to-std", "FuncOp"> {
   let dependentDialects = ["StandardOpsDialect"];
 }
 
-#endif // MLIR_DIALECT_EMITC_PASSES
+#endif // EMITC_DIALECT_EMITC_PASSES

@@ -11,17 +11,17 @@
 
 include "mlir/Pass/PassBase.td"
 
-def ConvertMHLOToEmitCPass : Pass<"convert-mhlo-to-emitc", "ModuleOp"> {
+def ConvertMHLOToEmitC : Pass<"convert-mhlo-to-emitc", "ModuleOp"> {
   let summary = "Convert from MHLO dialect to EmitC dialect.";
   let constructor = "createConvertMhloToEmitcPass()";
 }
 
-def ConvertScfToEmitCPass : Pass<"convert-scf-to-emitc", "FuncOp"> {
+def ConvertSCFToEmitC : Pass<"convert-scf-to-emitc", "FuncOp"> {
   let summary = "Convert SCF dialect to EmitC dialect, replacing IfOp and ForOp.";
   let constructor = "createConvertScfToEmitcPass()";
 }
 
-def ConvertStdToEmitCPass : Pass<"convert-std-to-emitc", "FuncOp"> {
+def ConvertStdToEmitC : Pass<"convert-std-to-emitc", "FuncOp"> {
   let summary = "Convert std dialect to EmitC dialect, replacing IndexCastOp.";
   let constructor = "createConvertStdToEmitcPass()";
 }

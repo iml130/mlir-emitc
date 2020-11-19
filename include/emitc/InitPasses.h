@@ -46,7 +46,7 @@ namespace emitc {
 #include "emitc/Conversion/Passes.h.inc"
 
 inline void registerAllEmitCPasses() {
-  registerConvertMHLOToStandardPassPass();
+  registerConvertMHLOToStandardPass();
   registerEmitCPasses();
 }
 

@@ -33,10 +33,4 @@ def ConvertMHLOToStandardPass : Pass<"convert-mhlo-const-to-std", "FuncOp"> {
   let dependentDialects = ["StandardOpsDialect"];
 }
 
-// TODO: This could be moved to separate file.
-def MHLOToMHLOPass : Pass<"preprocess-mhlo-for-emitc", "FuncOp"> {
-  let summary = "Apply MHLO to MHLO transformations for some ops.";
-  let constructor = "createMHLOToMHLOPass()";
-}
-
 #endif // MLIR_DIALECT_EMITC_PASSES

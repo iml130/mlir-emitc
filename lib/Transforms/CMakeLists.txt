@@ -6,7 +6,6 @@ include_directories(BEFORE
 
 add_mlir_library(MLIREmitCTransforms
   ConvertMHLOToStandard.cpp
-  MHLOToMHLO.cpp
 
   DEPENDS
   MLIRLmhloPassIncGen

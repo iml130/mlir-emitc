@@ -4,7 +4,7 @@ include_directories(BEFORE
   ${mlir-hlo_BINARY_DIR}/lib/Dialect/mhlo/transforms
   )
 
-add_mlir_library(MLIREmitCTransforms
+add_mlir_library(MLIREmitCConversion
   MHLOToStd.cpp
 
   DEPENDS

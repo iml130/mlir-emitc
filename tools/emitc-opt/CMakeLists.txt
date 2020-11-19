@@ -34,7 +34,7 @@ endif()
 
 if(${EMITC_ENABLE_HLO})
   set(HLO_LIBS
-    MLIREmitCTransforms
+    MLIREmitCConversion
     MhloRegisterDialects
     AllMhloPasses
     )

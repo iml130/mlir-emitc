@@ -32,6 +32,12 @@ func @mhlo_exponential(%arg0: tensor<2xf32>) -> tensor<2xf32> {
   return %0 : tensor<2xf32>
 }
 
+func @mhlo_exponential_minus_one(%arg0: tensor<2xf32>) -> tensor<2xf32> {
+  // CHECK: emitc.call "mhlo::exponential_minus_one"
+  %0 = "mhlo.exponential_minus_one"(%arg0) : (tensor<2xf32>) -> tensor<2xf32>
+  return %0 : tensor<2xf32>
+}
+
 func @mhlo_floor(%arg0: tensor<2xf32>) -> tensor<2xf32> {
   // CHECK: emitc.call "mhlo::floor"
   %0 = "mhlo.floor"(%arg0) : (tensor<2xf32>) -> tensor<2xf32>
@@ -47,6 +53,12 @@ func @mhlo_is_finite(%arg0: tensor<4xf32>) -> tensor<4xi1> {
 func @mhlo_log(%arg0: tensor<2xf32>) -> tensor<2xf32> {
   // CHECK: emitc.call "mhlo::log"
   %0 = "mhlo.log"(%arg0) : (tensor<2xf32>) -> tensor<2xf32>
+  return %0 : tensor<2xf32>
+}
+
+func @mhlo_log_plus_one(%arg0: tensor<2xf32>) -> tensor<2xf32> {
+  // CHECK: emitc.call "mhlo::log_plus_one"
+  %0 = "mhlo.log_plus_one"(%arg0) : (tensor<2xf32>) -> tensor<2xf32>
   return %0 : tensor<2xf32>
 }
 

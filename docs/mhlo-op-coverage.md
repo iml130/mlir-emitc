@@ -10,11 +10,11 @@ The table below shows the supported MHLO ops.
 | convert               | :heavy_check_mark: | |
 | cosine                | :heavy_check_mark: | |
 | exponential           | :heavy_check_mark: | |
-| exponential_minus_one | :white_check_mark: | `--preprocess-mhlo-for-emitc`|
+| exponential_minus_one | :heavy_check_mark: | |
 | floor                 | :heavy_check_mark: | |
 | is_finite             | :heavy_check_mark: | |
 | log                   | :heavy_check_mark: | |
-| log_plus_one          | :white_check_mark: | `--preprocess-mhlo-for-emitc`|
+| log_plus_one          | :heavy_check_mark: | |
 | negate                | :heavy_check_mark: | |
 | round_nearest_afz     | :heavy_check_mark: | |
 | sine                  | :heavy_check_mark: | |

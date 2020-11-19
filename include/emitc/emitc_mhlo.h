@@ -114,6 +114,16 @@ inline Src exponential(Src x) {
   return unary<Src>(x, f);
 }
 
+// Expm1Op
+template <typename Src>
+inline Src exponential_minus_one(Src x) {
+  using ET_Src = typename get_element_type<Src>::type;
+
+  auto f = static_cast<ET_Src (*)(ET_Src)>(std::expm1);
+
+  return unary<Src>(x, f);
+}
+
 // FloorOp
 template <typename Src>
 inline Src floor(Src x) {
@@ -144,6 +154,16 @@ inline Src log(Src x) {
   using ET_Src = typename get_element_type<Src>::type;
 
   auto f = static_cast<ET_Src (*)(ET_Src)>(std::log);
+
+  return unary<Src>(x, f);
+}
+
+// Log1pOp
+template <typename Src>
+inline Src log_plus_one(Src x) {
+  using ET_Src = typename get_element_type<Src>::type;
+
+  auto f = static_cast<ET_Src (*)(ET_Src)>(std::log1p);
 
   return unary<Src>(x, f);
 }

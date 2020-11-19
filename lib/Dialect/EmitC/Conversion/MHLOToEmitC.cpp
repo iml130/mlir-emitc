@@ -564,9 +564,11 @@ void populateMhloToEmitcPatterns(MLIRContext *ctx,
       ctx, "mhlo::convert", /*explicitResultType=*/true);
   patterns.insert<CallOpConversion<mhlo::CosOp>>(ctx, "mhlo::cos");
   patterns.insert<CallOpConversion<mhlo::ExpOp>>(ctx, "mhlo::exponential");
+  patterns.insert<CallOpConversion<mhlo::Expm1Op>>(ctx, "mhlo::exponential_minus_one");
   patterns.insert<CallOpConversion<mhlo::FloorOp>>(ctx, "mhlo::floor");
   patterns.insert<CallOpConversion<mhlo::IsFiniteOp>>(ctx, "mhlo::is_finite");
   patterns.insert<CallOpConversion<mhlo::LogOp>>(ctx, "mhlo::log");
+  patterns.insert<CallOpConversion<mhlo::Log1pOp>>(ctx, "mhlo::log_plus_one");
   patterns.insert<CallOpConversion<mhlo::NegOp>>(ctx, "mhlo::negate");
   patterns.insert<CallOpConversion<mhlo::RoundOp>>(ctx, "mhlo::round");
   patterns.insert<CallOpConversion<mhlo::SinOp>>(ctx, "mhlo::sin");
@@ -677,9 +679,11 @@ struct ConvertMhloToEmitcPass
                         mhlo::ConvertOp,
                         mhlo::CosOp,
                         mhlo::ExpOp,
+                        mhlo::Expm1Op,
                         mhlo::FloorOp,
                         mhlo::IsFiniteOp,
                         mhlo::LogOp,
+                        mhlo::Log1pOp,
                         mhlo::NegOp,
                         mhlo::RoundOp,
                         mhlo::SinOp,

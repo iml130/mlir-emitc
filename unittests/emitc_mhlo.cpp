@@ -130,6 +130,22 @@ TEST(mhlo, exponential) {
                         {2.718281f, 7.389056f, 20.085536f, 54.598150f}));
 }
 
+TEST(mhlo, exponential_minus_one) {
+  EXPECT_NEAR(M_Ef32 - 1, mhlo::exponential_minus_one(1.0f), EPSILON);
+
+  Tensor0D<float> t0{0.0f};
+  Tensor1D<float, 2> t1{M_LN2f32, M_LN10f32};
+  Tensor2D<double, 2, 2> t2{1.0f, 2.0f, 3.0f, 4.0f};
+
+  EXPECT_THAT(mhlo::exponential_minus_one(t0),
+              Pointwise(FloatNear(EPSILON), {0.0f}));
+  EXPECT_THAT(mhlo::exponential_minus_one(t1),
+              Pointwise(FloatNear(EPSILON), {1.0f, 9.0f}));
+  EXPECT_THAT(mhlo::exponential_minus_one(t2),
+              Pointwise(FloatNear(EPSILON),
+                        {1.718281f, 6.389056f, 19.085536f, 53.598150f}));
+}
+
 TEST(mhlo, floor) {
   EXPECT_EQ(0.0, mhlo::floor(0.7));
 
@@ -166,6 +182,22 @@ TEST(mhlo, log) {
   EXPECT_THAT(mhlo::log(t1), Pointwise(FloatNear(EPSILON), {2.0f, 3.0f}));
   // clang-format off
   EXPECT_THAT(mhlo::log(t2), Pointwise(FloatNear(EPSILON), {0.0f,
+  0.693147f, 1.098612f, 1.386294f}));
+  // clang-format on
+}
+
+TEST(mhlo, log_plus_one) {
+  EXPECT_NEAR(0.693147f, mhlo::log_plus_one(1.0f), EPSILON);
+
+  Tensor0D<float> t0{M_Ef32 - 1};
+  Tensor1D<float, 2> t1{M_Ef32 * M_Ef32, M_Ef32 * M_Ef32 * M_Ef32};
+  Tensor2D<double, 2, 2> t2{0.0f, 1.0f, 2.0f, 3.0f};
+
+  EXPECT_THAT(mhlo::log_plus_one(t0), Pointwise(FloatNear(EPSILON), {1.0f}));
+  EXPECT_THAT(mhlo::log_plus_one(t1),
+              Pointwise(FloatNear(EPSILON), {2.126928f, 3.048587f}));
+  // clang-format off
+  EXPECT_THAT(mhlo::log_plus_one(t2), Pointwise(FloatNear(EPSILON), {0.0f,
   0.693147f, 1.098612f, 1.386294f}));
   // clang-format on
 }

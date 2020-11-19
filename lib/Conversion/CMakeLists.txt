@@ -19,6 +19,5 @@ add_mlir_library(MLIREmitCConversion
   LINK_LIBS PUBLIC
   MLIRPass
   MLIRTransformUtils
-  MhloRegisterDialects
   )
 endif()

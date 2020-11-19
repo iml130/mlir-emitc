@@ -42,12 +42,18 @@ namespace emitc {
 #define GEN_PASS_REGISTRATION
 #include "emitc/Dialect/EmitC/Passes.h.inc"
 
+#ifdef EMITC_BUILD_HLO
 #define GEN_PASS_REGISTRATION
 #include "emitc/Conversion/Passes.h.inc"
+#endif // EMITC_BUILD_HLO
 
 inline void registerAllEmitCPasses() {
+#ifdef EMITC_BUILD_HLO
   registerConvertMHLOToStandardPass();
-  registerEmitCPasses();
+  registerConvertMHLOToEmitCPass();
+#endif // EMITC_BUILD_HLO
+  registerConvertSCFToEmitCPass();
+  registerConvertStdToEmitCPass();
 }
 
 } // namespace emitc

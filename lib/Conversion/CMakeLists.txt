@@ -1,8 +1,12 @@
 if(${EMITC_ENABLE_HLO})
 
 include_directories(BEFORE
-  ${mlir-hlo_BINARY_DIR}/lib/Dialect/mhlo/transforms
+  ${CMAKE_CURRENT_BINARY_DIR}
   )
+
+set(LLVM_TARGET_DEFINITIONS MHLOToStd.td)
+mlir_tablegen(MHLOToStd.inc -gen-rewriters)
+add_public_tablegen_target(MLIRMHLOToStdIncGen)
 
 add_mlir_library(MLIREmitCConversion
   MHLOToStd.cpp
@@ -10,7 +14,7 @@ add_mlir_library(MLIREmitCConversion
   DEPENDS
   MLIRLmhloPassIncGen
   MLIRMhloPassIncGen
-  MLIRMhloLegalizeToStandardIncGen
+  MLIRMHLOToStdIncGen
 
   LINK_LIBS PUBLIC
   MLIRPass

@@ -21,7 +21,7 @@
 
 namespace mlir {
 namespace {
-#include "generated_legalize_to_standard.inc"
+#include "MHLOToStd.inc"
 } // namespace
 namespace mhlo {
 

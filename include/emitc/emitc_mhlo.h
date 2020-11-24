@@ -743,6 +743,77 @@ reduce(Src operand, Tensor<typename get_element_type<Src>::type> initValue,
   return result;
 }
 
+// ReduceWindowOp
+template <typename Dest, typename Src, typename Computation>
+inline Dest reduce_window(
+    Src operand, Tensor<typename get_element_type<Src>::type> initValue,
+    Tensor<int64_t, Src::rank()> window_dimensions,
+    Tensor<int64_t, Src::rank()> window_strides,
+    Tensor<int64_t, Src::rank()> base_dilations,
+    Tensor<int64_t, Src::rank()> window_dilations,
+    Tensor<int64_t, 2, Src::rank()> padding, Computation computation) {
+  static_assert(is_tensor<Src>::value, "Expected tensor argument");
+  static_assert(is_tensor<Dest>::value, "Expected tensor result");
+
+  using ET_Src = typename get_element_type<Src>::type;
+  using ET_Dest = typename get_element_type<Src>::type;
+
+  static_assert(std::is_same<ET_Src, ET_Dest>::value, "Element type mismatch");
+  static_assert(Src::rank() == Dest::rank(), "Ranks must match");
+
+  assert(std::all_of(window_dimensions.begin(), window_dimensions.end(),
+                     [](int64_t i) { return i > 0; }));
+  assert(std::all_of(base_dilations.begin(), base_dilations.end(),
+                     [](int64_t i) { return i == 1; }));
+  assert(std::all_of(window_dilations.begin(), window_dilations.end(),
+                     [](int64_t i) { return i == 1; }));
+
+  auto out_of_bounds = [](std::array<size_t, Src::rank()> index) {
+    for (size_t i = 0; i < index.size(); i++) {
+      if (index[i] < 0 || index[i] >= Src::dim(i)) {
+        return true;
+      }
+    }
+    return false;
+  };
+
+  std::array<size_t, Src::rank()> windowDimensionsArr;
+  for (size_t j = 0; j < windowDimensionsArr.size(); j++) {
+    windowDimensionsArr[j] = static_cast<size_t>(window_dimensions[j]);
+  }
+
+  Dest result;
+  std::fill(result.begin(), result.end(), initValue());
+
+  for (size_t i = 0; i < result.size(); i++) {
+    auto index = result.unravel_index(i);
+
+    std::array<size_t, Src::rank()> baseIndex;
+    for (size_t j = 0; j < baseIndex.size(); j++) {
+      baseIndex[j] = index[j] * window_strides[j];
+    }
+
+    // iterate over input window
+    for (auto &inputIndex : operand.window(baseIndex, windowDimensionsArr)) {
+      // get input value (check out of bounds access)
+      auto value =
+          out_of_bounds(inputIndex)
+              ? initValue
+              : Tensor<ET_Src>{operand[operand.ravel_index(inputIndex)]};
+
+      // get reduction value
+      auto reductionValue = Tensor<ET_Src>{result[result.ravel_index(index)]};
+      // run computation
+      Tensor<ET_Dest> resultValue = computation(reductionValue, value);
+
+      // update result value
+      result[result.ravel_index(index)] = resultValue();
+    }
+  }
+
+  return result;
+}
+
 // SelectOp
 template <typename Src, IsScalar<Src> = true>
 inline Src select(typename replace_element_type<bool, Src>::type pred,

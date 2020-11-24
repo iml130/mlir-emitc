@@ -19,6 +19,7 @@
 #include <array>
 #include <cassert>
 #include <cstddef>
+#include <numeric>
 #include <vector>
 
 namespace detail {
@@ -112,6 +113,39 @@ public:
 
     for (size_t i = rank() - 1; i > 0; i--) {
       result[i - 1] = result[i] * s[i];
+    }
+
+    return result;
+  }
+
+  std::vector<std::array<size_t, rank()>>
+  window(std::array<size_t, rank()> index, std::array<size_t, rank()> sizes) {
+    std::vector<std::vector<size_t>> iotas;
+    for (auto &size : sizes) {
+      std::vector<size_t> range(size);
+      std::iota(range.begin(), range.end(), 0);
+      iotas.push_back(range);
+    }
+
+    std::vector<std::array<size_t, rank()>> result;
+
+    // Taken from https://stackoverflow.com/a/5279601
+    auto product = [](size_t a, std::vector<size_t> &b) {
+      return a * b.size();
+    };
+    const int N = std::accumulate(iotas.begin(), iotas.end(), 1, product);
+    for (int n = 0; n < N; ++n) {
+      std::array<size_t, rank()> u;
+      div_t q{n, 0};
+      for (int i = iotas.size() - 1; 0 <= i; --i) {
+        q = div(q.quot, iotas[i].size());
+        u[i] = iotas[i][q.rem];
+      }
+
+      for (size_t i = 0; i < index.size(); i++) {
+        u[i] += index[i];
+      }
+      result.push_back(u);
     }
 
     return result;

@@ -1224,6 +1224,23 @@ TEST(mhlo, reduce) {
   EXPECT_THAT(result1_012, Pointwise(Eq(), expected_result1_012));
 }
 
+TEST(mhlo, reduce_window) {
+  Tensor<int32_t> c0{std::numeric_limits<int32_t>::min()};
+  Tensor<int32_t, 4, 8> t0{1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11,
+                           12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22,
+                           23, 24, 25, 26, 27, 28, 29, 30, 31, 32};
+
+  auto max = [](Tensor<int32_t> a, Tensor<int32_t> b) {
+    return mhlo::max(a, b);
+  };
+
+  Tensor<int32_t, 2, 4> expected_result0{10, 12, 14, 16, 26, 28, 30, 32};
+  Tensor<int32_t, 2, 4> result0 = mhlo::reduce_window<Tensor<int32_t, 2, 4>>(
+      t0, c0, {2, 2}, {2, 2}, {1, 1}, {1, 1}, {0, 0, 0, 0}, max);
+
+  EXPECT_THAT(result0, Pointwise(Eq(), expected_result0));
+}
+
 TEST(mhlo, select) {
   EXPECT_EQ(-1, mhlo::select(true, -1, 3));
   EXPECT_EQ(3, mhlo::select(false, -1, 3));

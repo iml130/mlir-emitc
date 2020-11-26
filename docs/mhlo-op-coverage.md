@@ -55,5 +55,6 @@ The table below shows the supported MHLO ops.
 | dot                   | :white_check_mark: | Only the `Matrix times Matrix` case |
 | pad                   | :white_check_mark: | No support for negative edge padding |
 | reduce                | :white_check_mark: | No support for variadic arguments |
+| reduce_window         | :white_check_mark: | No support for dilation |
 | reshape               | :heavy_check_mark: | |
 | select                | :heavy_check_mark: | |

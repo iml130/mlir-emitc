@@ -185,7 +185,7 @@ private:
     args_.push_back(convOp.dimension_numbers().output_spatial_dimensions());
     args_.push_back(convOp.feature_group_countAttr());
 
-    // Taken from mlir-hlo
+    // Adopted from mlir-hlo
     auto GetI64ElementsAttr = [&rewriter](ArrayRef<int64_t> values) {
       RankedTensorType ty = RankedTensorType::get(
           {static_cast<int64_t>(values.size())}, rewriter.getIntegerType(64));
@@ -859,7 +859,7 @@ private:
     StringRef funcName = "mhlo::reduce_window";
     StringAttr callee = StringAttr::get(funcName, ctx);
 
-    // Taken from mlir-hlo
+    // Adopted from mlir-hlo
     auto GetI64ElementsAttr = [&ctx](int64_t value, size_t count) {
       RankedTensorType ty = RankedTensorType::get({static_cast<int64_t>(count)},
                                                   IntegerType::get(64, ctx));

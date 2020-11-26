@@ -768,9 +768,10 @@ inline Dest reduce_window(
   assert(std::all_of(window_dilations.begin(), window_dilations.end(),
                      [](int64_t i) { return i == 1; }));
 
-  auto out_of_bounds = [](std::array<int64_t, Src::rank()> index) {
+  auto out_of_bounds = [&padding](std::array<size_t, Src::rank()> index) {
     for (size_t i = 0; i < index.size(); i++) {
-      if (index[i] < 0 || index[i] >= static_cast<int64_t>(Src::dim(i))) {
+      if (index[i] < static_cast<size_t>(padding(0, i)) ||
+          index[i] >= Src::dim(i) + static_cast<size_t>(padding(0, i))) {
         return true;
       }
     }
@@ -788,9 +789,9 @@ inline Dest reduce_window(
   for (size_t i = 0; i < result.size(); i++) {
     auto index = result.unravel_index(i);
 
-    std::array<int64_t, Src::rank()> baseIndex;
+    std::array<size_t, Src::rank()> baseIndex;
     for (size_t j = 0; j < baseIndex.size(); j++) {
-      baseIndex[j] = index[j] * window_strides(j) - padding(0, j);
+      baseIndex[j] = index[j] * window_strides(j);
     }
 
     // iterate over input window
@@ -802,8 +803,8 @@ inline Dest reduce_window(
       } else {
         std::array<size_t, Src::rank()> _index;
         for (size_t j = 0; j < inputIndex.size(); j++) {
-          assert(inputIndex[j] >= 0);
-          _index[j] = static_cast<size_t>(inputIndex[j]);
+          assert(inputIndex[j] >= static_cast<size_t>(padding(0, j)));
+          _index[j] = inputIndex[j] - static_cast<size_t>(padding(0, j));
         }
         value[0] = operand[operand.ravel_index(_index)];
       }

@@ -1025,7 +1025,7 @@ TEST(mhlo, concatenate) {
                                     5.0f, 6.0f, 10.0f, 11.0f, 12.0f}));
 }
 
-/// Taken from
+/// Adapted from
 /// https://github.com/google/iree/blob/efd78a0b47a46457a644f43d98617d3e279b2a79/iree/test/e2e/xla_ops/convolution.mlir#L33
 TEST(mhlo, convolution) {
   using InputType = Tensor4D<float, 1, 4, 5, 2>;  // N H W C

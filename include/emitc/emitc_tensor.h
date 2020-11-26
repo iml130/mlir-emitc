@@ -118,8 +118,8 @@ public:
     return result;
   }
 
-  std::vector<std::array<int64_t, rank()>>
-  window(std::array<int64_t, rank()> index, std::array<size_t, rank()> sizes) {
+  std::vector<std::array<size_t, rank()>>
+  window(std::array<size_t, rank()> index, std::array<size_t, rank()> sizes) {
     std::vector<std::vector<size_t>> iotas;
     for (auto &size : sizes) {
       std::vector<size_t> range(size);
@@ -127,13 +127,12 @@ public:
       iotas.push_back(range);
     }
 
-    std::vector<std::array<int64_t, rank()>> result;
+    std::vector<std::array<size_t, rank()>> result;
 
-    // Taken from https://stackoverflow.com/a/5279601
     int resultSize =
         std::accumulate(sizes.begin(), sizes.end(), 1, std::multiplies<int>{});
     for (int n = 0; n < resultSize; ++n) {
-      std::array<int64_t, rank()> u;
+      std::array<size_t, rank()> u;
       div_t q{n, 0};
       for (int i = iotas.size() - 1; 0 <= i; --i) {
         q = div(q.quot, iotas[i].size());

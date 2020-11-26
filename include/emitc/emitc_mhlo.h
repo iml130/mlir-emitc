@@ -759,7 +759,7 @@ inline Dest reduce_window(
   using ET_Dest = typename get_element_type<Src>::type;
 
   static_assert(std::is_same<ET_Src, ET_Dest>::value, "Element type mismatch");
-  static_assert(Src::rank() == Dest::rank(), "Ranks must match");
+  static_assert(Src::rank() == Dest::rank(), "Rank mismatch");
 
   assert(std::all_of(window_dimensions.begin(), window_dimensions.end(),
                      [](int64_t i) { return i > 0; }));
@@ -768,9 +768,9 @@ inline Dest reduce_window(
   assert(std::all_of(window_dilations.begin(), window_dilations.end(),
                      [](int64_t i) { return i == 1; }));
 
-  auto out_of_bounds = [](std::array<size_t, Src::rank()> index) {
+  auto out_of_bounds = [](std::array<int64_t, Src::rank()> index) {
     for (size_t i = 0; i < index.size(); i++) {
-      if (index[i] < 0 || index[i] >= Src::dim(i)) {
+      if (index[i] < 0 || index[i] >= static_cast<int64_t>(Src::dim(i))) {
         return true;
       }
     }
@@ -788,18 +788,25 @@ inline Dest reduce_window(
   for (size_t i = 0; i < result.size(); i++) {
     auto index = result.unravel_index(i);
 
-    std::array<size_t, Src::rank()> baseIndex;
+    std::array<int64_t, Src::rank()> baseIndex;
     for (size_t j = 0; j < baseIndex.size(); j++) {
-      baseIndex[j] = index[j] * window_strides[j];
+      baseIndex[j] = index[j] * window_strides(j) - padding(0, j);
     }
 
     // iterate over input window
     for (auto &inputIndex : operand.window(baseIndex, windowDimensionsArr)) {
       // get input value (check out of bounds access)
-      auto value =
-          out_of_bounds(inputIndex)
-              ? initValue
-              : Tensor<ET_Src>{operand[operand.ravel_index(inputIndex)]};
+      Tensor<ET_Src> value;
+      if (out_of_bounds(inputIndex)) {
+        value[0] = initValue[0];
+      } else {
+        std::array<size_t, Src::rank()> _index;
+        for (size_t j = 0; j < inputIndex.size(); j++) {
+          assert(inputIndex[j] >= 0);
+          _index[j] = static_cast<size_t>(inputIndex[j]);
+        }
+        value[0] = operand[operand.ravel_index(_index)];
+      }
 
       // get reduction value
       auto reductionValue = Tensor<ET_Src>{result[result.ravel_index(index)]};

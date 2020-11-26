@@ -1239,6 +1239,31 @@ TEST(mhlo, reduce_window) {
       t0, c0, {2, 2}, {2, 2}, {1, 1}, {1, 1}, {0, 0, 0, 0}, max);
 
   EXPECT_THAT(result0, Pointwise(Eq(), expected_result0));
+
+  Tensor<int32_t, 3, 7> expected_result1{10, 11, 12, 13, 14, 15, 16,
+                                         18, 19, 20, 21, 22, 23, 24,
+                                         26, 27, 28, 29, 30, 31, 32};
+  Tensor<int32_t, 3, 7> result1 = mhlo::reduce_window<Tensor<int32_t, 3, 7>>(
+      t0, c0, {2, 2}, {1, 1}, {1, 1}, {1, 1}, {0, 0, 0, 0}, max);
+
+  EXPECT_THAT(result1, Pointwise(Eq(), expected_result1));
+
+  auto min = [](Tensor<float> a, Tensor<float> b) { return mhlo::min(a, b); };
+
+  Tensor<float> c1{std::numeric_limits<float>::max()};
+  Tensor<float, 5> t1{10000.0f, 1000.0f, 100.0f, 10.0f, 1.0f};
+
+  Tensor<float, 2> expected_result2{100.0f, 1.0f};
+  Tensor<float, 2> result2 = mhlo::reduce_window<Tensor<float, 2>>(
+      t1, c1, {3}, {2}, {1}, {1}, {0, 0}, min);
+
+  EXPECT_THAT(result2, Pointwise(Eq(), expected_result2));
+
+  Tensor<float, 3> expected_result3{1000.0f, 10.0f, 1.0f};
+  Tensor<float, 3> result3 = mhlo::reduce_window<Tensor<float, 3>>(
+      t1, c1, {3}, {2}, {1}, {1}, {1, 1}, min);
+
+  EXPECT_THAT(result3, Pointwise(Eq(), expected_result3));
 }
 
 TEST(mhlo, select) {

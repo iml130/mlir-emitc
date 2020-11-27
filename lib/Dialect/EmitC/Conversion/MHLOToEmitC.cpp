@@ -97,33 +97,6 @@ private:
   }
 };
 
-class ClampOpConversion : public OpConversionPattern<mhlo::ClampOp> {
-
-public:
-  ClampOpConversion(MLIRContext *ctx) : OpConversionPattern(ctx) {}
-
-private:
-  LogicalResult
-  matchAndRewrite(mhlo::ClampOp clampOp, ArrayRef<Value> operands,
-                  ConversionPatternRewriter &rewriter) const override {
-    typename mhlo::ClampOp::Adaptor adaptor(operands);
-
-    StringRef funcName = "mhlo::clamp";
-    StringAttr callee = rewriter.getStringAttr(funcName);
-
-    ArrayAttr args;
-    ArrayAttr templateArgs =
-        rewriter.getArrayAttr({TypeAttr::get(adaptor.min().getType()),
-                               TypeAttr::get(adaptor.operand().getType()),
-                               TypeAttr::get(adaptor.max().getType())});
-
-    rewriter.replaceOpWithNewOp<emitc::CallOp>(
-        clampOp, clampOp.getType(), callee, args, templateArgs, operands);
-
-    return success();
-  }
-};
-
 class ConcatenateOpConversion
     : public OpConversionPattern<mhlo::ConcatenateOp> {
 
@@ -219,9 +192,11 @@ class CallOpConversion : public OpConversionPattern<SrcOp> {
 
 public:
   CallOpConversion(MLIRContext *ctx, StringRef funcName,
-                   bool explicitResultType = false)
+                   bool explicitResultType = false,
+                   bool explicitOperandTypes = false)
       : OpConversionPattern<SrcOp>(ctx), funcName(funcName),
-        explicitResultType(explicitResultType) {}
+        explicitResultType(explicitResultType),
+        explicitOperandTypes(explicitOperandTypes) {}
 
 private:
   LogicalResult
@@ -229,12 +204,22 @@ private:
                   ConversionPatternRewriter &rewriter) const override {
     StringAttr callee = rewriter.getStringAttr(funcName);
     ArrayAttr args;
-    ArrayAttr templateArgs;
+
+    SmallVector<Attribute, 4> templateArgs_;
 
     if (explicitResultType) {
-      Type resultType = srcOp.getType();
-      templateArgs = rewriter.getArrayAttr({TypeAttr::get(resultType)});
+      Type type = srcOp.getType();
+      templateArgs_.push_back(TypeAttr::get(type));
     }
+
+    if (explicitOperandTypes) {
+      for (auto &operand : operands) {
+        Type type = operand.getType();
+        templateArgs_.push_back(TypeAttr::get(type));
+      }
+    }
+
+    ArrayAttr templateArgs = ArrayAttr::get(templateArgs_, srcOp.getContext());
 
     rewriter.replaceOpWithNewOp<emitc::CallOp>(srcOp, srcOp.getType(), callee,
                                                args, templateArgs, operands);
@@ -243,8 +228,10 @@ private:
   }
 
   StringRef funcName;
-  // If set, use the result type of the operation as the only template parameter
+  // If set, use the result type of the operation as template parameter
   bool explicitResultType;
+  // If set, use the operand types as (additional) template parameters
+  bool explicitOperandTypes;
 };
 
 class CompareOpConversion : public OpConversionPattern<mhlo::CompareOp> {
@@ -282,29 +269,6 @@ private:
 
     rewriter.replaceOpWithNewOp<emitc::CallOp>(
         compareOp, compareOp.getType(), callee, args, templateArgs, operands);
-
-    return success();
-  }
-};
-
-class TupleOpConversion : public OpConversionPattern<mhlo::TupleOp> {
-  using OpConversionPattern<mhlo::TupleOp>::OpConversionPattern;
-
-public:
-  TupleOpConversion(MLIRContext *ctx)
-      : OpConversionPattern<mhlo::TupleOp>(ctx) {}
-
-private:
-  LogicalResult
-  matchAndRewrite(mhlo::TupleOp tupleOp, ArrayRef<Value> operands,
-                  ConversionPatternRewriter &rewriter) const override {
-    StringAttr callee = rewriter.getStringAttr("std::make_tuple");
-
-    ArrayAttr args;
-    ArrayAttr templateArgs;
-
-    rewriter.replaceOpWithNewOp<emitc::CallOp>(
-        tupleOp, tupleOp.getType(), callee, args, templateArgs, operands);
 
     return success();
   }
@@ -441,33 +405,6 @@ private:
   }
 };
 
-class BitcastConvertOpConversion
-    : public OpConversionPattern<mhlo::BitcastConvertOp> {
-  using OpConversionPattern<mhlo::BitcastConvertOp>::OpConversionPattern;
-
-public:
-  BitcastConvertOpConversion(MLIRContext *ctx)
-      : OpConversionPattern<mhlo::BitcastConvertOp>(ctx) {}
-
-private:
-  LogicalResult
-  matchAndRewrite(mhlo::BitcastConvertOp bitcastConvertOp,
-                  ArrayRef<Value> operands,
-                  ConversionPatternRewriter &rewriter) const override {
-    StringAttr callee = rewriter.getStringAttr("mhlo::bitcast_convert");
-
-    ArrayAttr args;
-    Type resultType = bitcastConvertOp.getResult().getType();
-    ArrayAttr templateArgs = rewriter.getArrayAttr({TypeAttr::get(resultType)});
-
-    rewriter.replaceOpWithNewOp<emitc::CallOp>(
-        bitcastConvertOp, bitcastConvertOp.getType(), callee, args,
-        templateArgs, operands);
-
-    return success();
-  }
-};
-
 class PadOpConversion : public OpConversionPattern<mhlo::PadOp> {
   using OpConversionPattern<mhlo::PadOp>::OpConversionPattern;
 
@@ -497,28 +434,6 @@ private:
 
     rewriter.replaceOpWithNewOp<emitc::CallOp>(padOp, padOp.getType(), callee,
                                                args, templateArgs, operands);
-
-    return success();
-  }
-};
-
-class SelectOpConversion : public OpConversionPattern<mhlo::SelectOp> {
-  using OpConversionPattern<mhlo::SelectOp>::OpConversionPattern;
-
-public:
-  SelectOpConversion(MLIRContext *ctx)
-      : OpConversionPattern<mhlo::SelectOp>(ctx) {}
-
-private:
-  LogicalResult
-  matchAndRewrite(mhlo::SelectOp selectOp, ArrayRef<Value> operands,
-                  ConversionPatternRewriter &rewriter) const override {
-    StringAttr callee = rewriter.getStringAttr("mhlo::select");
-    ArrayAttr args;
-    ArrayAttr templateArgs;
-
-    rewriter.replaceOpWithNewOp<emitc::CallOp>(
-        selectOp, selectOp.getType(), callee, args, templateArgs, operands);
 
     return success();
   }
@@ -595,7 +510,7 @@ void populateMhloToEmitcPatterns(MLIRContext *ctx,
 
   // Insert patterns for MHLO tuple ops.
   patterns.insert<CompareOpConversion>(ctx);
-  patterns.insert<TupleOpConversion>(ctx);
+  patterns.insert<CallOpConversion<mhlo::TupleOp>>(ctx, "std::make_tuple");
   patterns.insert<GetTupleElementOpConversion>(ctx);
 
   // Insert patterns for MHLO slice ops.
@@ -605,9 +520,12 @@ void populateMhloToEmitcPatterns(MLIRContext *ctx,
 
   // Insert patterns for other MHLO ops.
   patterns.insert<BatchNormInferenceOpConversion>(ctx);
-  patterns.insert<BitcastConvertOpConversion>(ctx);
+  patterns.insert<CallOpConversion<mhlo::BitcastConvertOp>>(
+      ctx, "mhlo::bitcast_convert", /*explicitResultType=*/true);
   patterns.insert<BroadcastInDimOpConversion>(ctx);
-  patterns.insert<ClampOpConversion>(ctx);
+  patterns.insert<CallOpConversion<mhlo::ClampOp>>(
+      ctx, "mhlo::clamp", /*explicitResultType=*/false,
+      /*explicitOperandTypes=*/true);
   patterns.insert<ConcatenateOpConversion>(ctx);
   patterns.insert<ConvOpConversion>(ctx);
   patterns.insert<CallOpConversion<mhlo::DotOp>>(ctx, "mhlo::dot",
@@ -615,7 +533,7 @@ void populateMhloToEmitcPatterns(MLIRContext *ctx,
   patterns.insert<PadOpConversion>(ctx);
   patterns.insert<CallOpConversion<mhlo::ReshapeOp>>(
       ctx, "mhlo::reshape", /*explicitResultType=*/true);
-  patterns.insert<SelectOpConversion>(ctx);
+  patterns.insert<CallOpConversion<mhlo::SelectOp>>(ctx, "mhlo::select");
 
   // Insert patterns for MHLO RNG ops.
   patterns.insert<CallOpConversion<mhlo::RngUniformOp>>(

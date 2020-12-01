@@ -1,4 +1,4 @@
-// RUN: emitc-opt -convert-mhlo-to-emitc %s | FileCheck %s
+// RUN: emitc-opt -convert-mhlo-region-ops-to-emitc -convert-mhlo-to-emitc %s | FileCheck %s
 
 // Unary elementwise ops
 

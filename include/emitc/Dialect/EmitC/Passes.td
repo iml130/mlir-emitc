@@ -11,7 +11,12 @@
 
 include "mlir/Pass/PassBase.td"
 
-def ConvertMHLOToEmitC : Pass<"convert-mhlo-to-emitc", "ModuleOp"> {
+def ConvertMHLORegionOpsToEmitC : Pass<"convert-mhlo-region-ops-to-emitc", "ModuleOp"> {
+  let summary = "Convert MHLO operations containing regions to EmitC dialect.";
+  let constructor = "createConvertMhloRegionOpsToEmitcPass()";
+}
+
+def ConvertMHLOToEmitC : FunctionPass<"convert-mhlo-to-emitc"> {
   let summary = "Convert from MHLO dialect to EmitC dialect.";
   let constructor = "createConvertMhloToEmitcPass()";
 }

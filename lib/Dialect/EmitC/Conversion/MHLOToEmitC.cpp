@@ -24,6 +24,23 @@ namespace emitc {
 
 namespace {
 
+/// common functions
+// Adopted from mlir-hlo
+DenseIntElementsAttr i64ElementsAttr(int64_t value, size_t count,
+                                     MLIRContext *ctx) {
+  RankedTensorType ty = RankedTensorType::get({static_cast<int64_t>(count)},
+                                              IntegerType::get(64, ctx));
+  SmallVector<int64_t, 4> values(count, value);
+  return DenseIntElementsAttr::get(ty, values);
+}
+
+SmallVector<Attribute, 2> indexSequence(int64_t n, MLIRContext *ctx) {
+  return llvm::to_vector<2>(
+      llvm::map_range(llvm::seq<int64_t>(0, n), [&ctx](int64_t i) -> Attribute {
+        return IntegerAttr::get(IndexType::get(ctx), i);
+      }));
+}
+
 class BatchNormInferenceOpConversion
     : public OpConversionPattern<mhlo::BatchNormInferenceOp> {
 
@@ -40,11 +57,8 @@ private:
     StringRef funcName = "mhlo::batch_norm_inference";
     StringAttr callee = rewriter.getStringAttr(funcName);
 
-    SmallVector<Attribute, 4> args_ = llvm::to_vector<4>(
-        llvm::map_range(llvm::seq<int64_t>(0, operands.size()),
-                        [&rewriter](int64_t i) -> Attribute {
-                          return rewriter.getIndexAttr(i);
-                        }));
+    SmallVector<Attribute, 2> args_ =
+        indexSequence(operands.size(), batchNormInferenceOp.getContext());
 
     args_.push_back(batchNormInferenceOp.epsilonAttr());
     args_.push_back(batchNormInferenceOp.feature_indexAttr());
@@ -76,11 +90,8 @@ private:
     StringRef funcName = "mhlo::broadcast_in_dim";
     StringAttr callee = rewriter.getStringAttr(funcName);
 
-    SmallVector<Attribute, 4> args_ = llvm::to_vector<4>(
-        llvm::map_range(llvm::seq<int64_t>(0, operands.size()),
-                        [&rewriter](int64_t i) -> Attribute {
-                          return rewriter.getIndexAttr(i);
-                        }));
+    SmallVector<Attribute, 2> args_ =
+        indexSequence(operands.size(), broadcastInDimOp.getContext());
 
     args_.push_back(broadcastInDimOp.broadcast_dimensions());
 
@@ -134,15 +145,13 @@ private:
   matchAndRewrite(mhlo::ConvOp convOp, ArrayRef<Value> operands,
                   ConversionPatternRewriter &rewriter) const override {
     typename mhlo::ConvOp::Adaptor adaptor(operands);
+    auto ctx = convOp.getContext();
 
     StringRef funcName = "mhlo::convolution";
     StringAttr callee = rewriter.getStringAttr(funcName);
 
-    SmallVector<Attribute, 4> args_ = llvm::to_vector<4>(
-        llvm::map_range(llvm::seq<int64_t>(0, operands.size()),
-                        [&rewriter](int64_t i) -> Attribute {
-                          return rewriter.getIndexAttr(i);
-                        }));
+    SmallVector<Attribute, 2> args_ =
+        indexSequence(operands.size(), convOp.getContext());
 
     args_.push_back(convOp.batch_group_countAttr());
     args_.push_back(convOp.dimension_numbers().input_batch_dimension());
@@ -158,20 +167,13 @@ private:
     args_.push_back(convOp.dimension_numbers().output_spatial_dimensions());
     args_.push_back(convOp.feature_group_countAttr());
 
-    // Adopted from mlir-hlo
-    auto GetI64ElementsAttr = [&rewriter](ArrayRef<int64_t> values) {
-      RankedTensorType ty = RankedTensorType::get(
-          {static_cast<int64_t>(values.size())}, rewriter.getIntegerType(64));
-      return DenseIntElementsAttr::get(ty, values);
-    };
-
-    args_.push_back(convOp.padding().getValueOr(GetI64ElementsAttr({0, 0})));
+    args_.push_back(convOp.padding().getValueOr(i64ElementsAttr(0, 2, ctx)));
     args_.push_back(
-        convOp.lhs_dilation().getValueOr(GetI64ElementsAttr({1, 1})));
+        convOp.lhs_dilation().getValueOr(i64ElementsAttr(1, 2, ctx)));
     args_.push_back(
-        convOp.rhs_dilation().getValueOr(GetI64ElementsAttr({1, 1})));
+        convOp.rhs_dilation().getValueOr(i64ElementsAttr(1, 2, ctx)));
     args_.push_back(
-        convOp.window_strides().getValueOr(GetI64ElementsAttr({1, 1})));
+        convOp.window_strides().getValueOr(i64ElementsAttr(1, 2, ctx)));
 
     ArrayAttr args = rewriter.getArrayAttr(args_);
     ArrayAttr templateArgs =
@@ -289,7 +291,6 @@ private:
                   ConversionPatternRewriter &rewriter) const override {
     auto index = getTupleElementOp.index();
 
-    // TODO: Consider adding template arguments to CallOp
     StringAttr callee = rewriter.getStringAttr("std::get");
 
     ArrayAttr args;
@@ -318,11 +319,8 @@ private:
     StringRef funcName = "mhlo::slice";
     StringAttr callee = rewriter.getStringAttr(funcName);
 
-    SmallVector<Attribute, 4> args_ = llvm::to_vector<4>(
-        llvm::map_range(llvm::seq<int64_t>(0, operands.size()),
-                        [&rewriter](int64_t i) -> Attribute {
-                          return rewriter.getIndexAttr(i);
-                        }));
+    SmallVector<Attribute, 2> args_ =
+        indexSequence(operands.size(), sliceOp.getContext());
 
     args_.push_back(sliceOp.start_indices());
     args_.push_back(sliceOp.limit_indices());
@@ -354,11 +352,8 @@ private:
     StringRef funcName = "mhlo::dynamic_slice";
     StringAttr callee = rewriter.getStringAttr(funcName);
 
-    SmallVector<Attribute, 4> args_ = llvm::to_vector<4>(
-        llvm::map_range(llvm::seq<int64_t>(0, operands.size()),
-                        [&rewriter](int64_t i) -> Attribute {
-                          return rewriter.getIndexAttr(i);
-                        }));
+    SmallVector<Attribute, 2> args_ =
+        indexSequence(operands.size(), dynamicSliceOp.getContext());
 
     args_.push_back(dynamicSliceOp.slice_sizes());
 
@@ -417,15 +412,12 @@ private:
                   ConversionPatternRewriter &rewriter) const override {
     StringAttr callee = rewriter.getStringAttr("mhlo::pad");
 
-    SmallVector<Attribute, 4> args_ = llvm::to_vector<4>(
-        llvm::map_range(llvm::seq<int64_t>(0, operands.size()),
-                        [&rewriter](int64_t i) -> Attribute {
-                          return rewriter.getIndexAttr(i);
-                        }));
+    SmallVector<Attribute, 2> args_ =
+        indexSequence(operands.size(), padOp.getContext());
 
-    args_.push_back(padOp.edge_padding_lowAttr());
-    args_.push_back(padOp.edge_padding_highAttr());
-    args_.push_back(padOp.interior_paddingAttr());
+    args_.push_back(padOp.edge_padding_low());
+    args_.push_back(padOp.edge_padding_high());
+    args_.push_back(padOp.interior_padding());
 
     ArrayAttr args = rewriter.getArrayAttr(args_);
 
@@ -551,6 +543,7 @@ struct ConvertMhloToEmitcPass
   /// Perform the lowering to EmitC dialect.
   void runOnOperation() override {
     // TODO split into separate passes
+
     // Convert region ops
     SymbolTable symbolTable(getOperation());
     for (auto func : getOperation().getOps<FuncOp>()) {
@@ -558,7 +551,6 @@ struct ConvertMhloToEmitcPass
       Block::iterator insertPt(func.getOperation()->getNextNode());
 
       int count = 0;
-      // Convert mhlo ops with regions
       // ReduceOp
       auto funcWalkResult = func.walk([&](mhlo::ReduceOp op) {
         std::string funcName =
@@ -740,10 +732,8 @@ private:
     StringRef funcName = "mhlo::reduce";
     StringAttr callee = StringAttr::get(funcName, ctx);
 
-    SmallVector<Attribute, 2> args_ = llvm::to_vector<2>(llvm::map_range(
-        llvm::seq<int64_t>(0, operands.size()), [&ctx](int64_t i) -> Attribute {
-          return IntegerAttr::get(IndexType::get(ctx), i);
-        }));
+    SmallVector<Attribute, 2> args_ =
+        indexSequence(operands.size(), op.getContext());
 
     args_.push_back(op.dimensions());
     args_.push_back(SymbolRefAttr::get(funcOp.getName(), ctx));
@@ -777,26 +767,17 @@ private:
     StringRef funcName = "mhlo::reduce_window";
     StringAttr callee = StringAttr::get(funcName, ctx);
 
-    // Adopted from mlir-hlo
-    auto GetI64ElementsAttr = [&ctx](int64_t value, size_t count) {
-      RankedTensorType ty = RankedTensorType::get({static_cast<int64_t>(count)},
-                                                  IntegerType::get(64, ctx));
-      SmallVector<int64_t, 4> values(count, value);
-      return DenseIntElementsAttr::get(ty, values);
-    };
-
-    SmallVector<Attribute, 2> args_ = llvm::to_vector<2>(llvm::map_range(
-        llvm::seq<int64_t>(0, operands.size()), [&ctx](int64_t i) -> Attribute {
-          return IntegerAttr::get(IndexType::get(ctx), i);
-        }));
+    SmallVector<Attribute, 2> args_ = indexSequence(operands.size(), ctx);
 
     size_t dim = op.getResult().getType().cast<RankedTensorType>().getRank();
     args_.push_back(op.window_dimensions());
-    args_.push_back(op.window_strides().getValueOr(GetI64ElementsAttr(1, dim)));
-    args_.push_back(op.base_dilations().getValueOr(GetI64ElementsAttr(1, dim)));
     args_.push_back(
-        op.window_dilations().getValueOr(GetI64ElementsAttr(1, dim)));
-    args_.push_back(op.padding().getValueOr(GetI64ElementsAttr(0, 2 * dim)));
+        op.window_strides().getValueOr(i64ElementsAttr(1, dim, ctx)));
+    args_.push_back(
+        op.base_dilations().getValueOr(i64ElementsAttr(1, dim, ctx)));
+    args_.push_back(
+        op.window_dilations().getValueOr(i64ElementsAttr(1, dim, ctx)));
+    args_.push_back(op.padding().getValueOr(i64ElementsAttr(0, 2 * dim, ctx)));
     args_.push_back(SymbolRefAttr::get(funcOp.getName(), ctx));
 
     ArrayAttr args = ArrayAttr::get(args_, ctx);

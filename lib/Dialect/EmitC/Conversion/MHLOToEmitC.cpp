@@ -13,7 +13,6 @@
 #include "emitc/Dialect/EmitC/EmitCDialect.h"
 #include "emitc/Dialect/EmitC/Passes.h"
 #include "mlir-hlo/Dialect/mhlo/IR/hlo_ops.h"
-#include "mlir/IR/BlockAndValueMapping.h"
 #include "mlir/IR/Function.h"
 #include "mlir/IR/PatternMatch.h"
 #include "mlir/Pass/Pass.h"
@@ -24,8 +23,8 @@ namespace emitc {
 
 namespace {
 
-/// common functions
-// Adopted from mlir-hlo
+/// Common functions
+/// Adopted from mlir-hlo
 DenseIntElementsAttr i64ElementsAttr(int64_t value, size_t count,
                                      MLIRContext *ctx) {
   RankedTensorType ty = RankedTensorType::get({static_cast<int64_t>(count)},
@@ -536,70 +535,12 @@ void populateMhloToEmitcPatterns(MLIRContext *ctx,
 namespace {
 
 struct ConvertMhloToEmitcPass
-    : public PassWrapper<ConvertMhloToEmitcPass, OperationPass<ModuleOp>> {
+    : public PassWrapper<ConvertMhloToEmitcPass, FunctionPass> {
   void getDependentDialects(DialectRegistry &registry) const override {
     registry.insert<emitc::EmitCDialect>();
   }
   /// Perform the lowering to EmitC dialect.
-  void runOnOperation() override {
-    // TODO split into separate passes
-
-    // Convert region ops
-    SymbolTable symbolTable(getOperation());
-    for (auto func : getOperation().getOps<FuncOp>()) {
-      // Insert just after the function.
-      Block::iterator insertPt(func.getOperation()->getNextNode());
-
-      int count = 0;
-      // ReduceOp
-      auto funcWalkResult = func.walk([&](mhlo::ReduceOp op) {
-        std::string funcName =
-            Twine(op.getParentOfType<FuncOp>().getName(), "_lambda_")
-                .concat(Twine(count++))
-                .str();
-
-        Optional<FuncOp> outlinedFunc =
-            outlineRegionImpl<mhlo::ReduceOp>(op, funcName);
-
-        if (!outlinedFunc.hasValue()) {
-          return WalkResult::interrupt();
-        }
-
-        symbolTable.insert(outlinedFunc.getValue(), insertPt);
-
-        if (failed(convertToCall(op, outlinedFunc.getValue()))) {
-          return WalkResult::interrupt();
-        }
-        return WalkResult::advance();
-      });
-      if (funcWalkResult.wasInterrupted())
-        return signalPassFailure();
-
-      // ReduceWindowOp
-      funcWalkResult = func.walk([&](mhlo::ReduceWindowOp op) {
-        std::string funcName =
-            Twine(op.getParentOfType<FuncOp>().getName(), "_lambda_")
-                .concat(Twine(count++))
-                .str();
-
-        Optional<FuncOp> outlinedFunc =
-            outlineRegionImpl<mhlo::ReduceWindowOp>(op, funcName);
-
-        if (!outlinedFunc.hasValue()) {
-          return WalkResult::interrupt();
-        }
-
-        symbolTable.insert(outlinedFunc.getValue(), insertPt);
-
-        if (failed(convertToCall(op, outlinedFunc.getValue()))) {
-          return WalkResult::interrupt();
-        }
-        return WalkResult::advance();
-      });
-      if (funcWalkResult.wasInterrupted())
-        return signalPassFailure();
-    }
-
+  void runOnFunction() override {
     // Convert other ops
     ConversionTarget target(getContext());
 
@@ -671,132 +612,15 @@ struct ConvertMhloToEmitcPass
     OwningRewritePatternList patterns;
     populateMhloToEmitcPatterns(&getContext(), patterns);
 
-    if (failed(applyPartialConversion(getOperation(), target,
-                                      std::move(patterns))))
+    if (failed(
+            applyPartialConversion(getFunction(), target, std::move(patterns))))
       signalPassFailure();
-  }
-
-private:
-  template <typename OpType>
-  Optional<FuncOp> outlineRegionImpl(OpType &op, std::string functionName) {
-    Location loc = op.getLoc();
-    // Create a builder with no insertion point, insertion will happen
-    // separately due to symbol table manipulation.
-    OpBuilder builder(op.getContext());
-
-    Region &region = op.getRegion();
-
-    auto &blocks = region.getBlocks();
-
-    if (blocks.size() > 1) {
-      return None;
-    }
-
-    Block &block = blocks.front();
-    auto terminator = block.getTerminator();
-    auto returnOp = dyn_cast_or_null<mhlo::ReturnOp>(terminator);
-    if (!returnOp) {
-      return None;
-    }
-
-    auto inputs = region.getArgumentTypes();
-    auto results = returnOp.getOperandTypes();
-
-    FunctionType type = FunctionType::get(inputs, results, op.getContext());
-    auto outlinedFunc = builder.create<FuncOp>(loc, functionName, type);
-
-    Region &outlinedRegion = outlinedFunc.getRegion();
-
-    BlockAndValueMapping map;
-    region.cloneInto(&outlinedRegion, map);
-
-    outlinedFunc.walk([](mhlo::ReturnOp returnOp) {
-      OpBuilder replacer(returnOp);
-      replacer.create<ReturnOp>(returnOp.getLoc(), returnOp.getOperands());
-      returnOp.erase();
-    });
-    return outlinedFunc;
-  }
-
-  LogicalResult convertToCall(mhlo::ReduceOp &op, FuncOp &funcOp) {
-    if (op.getNumResults() > 1) {
-      return op.emitWarning()
-             << "Variadic case is not supported in the header implemenetation";
-    }
-
-    OpBuilder builder(op);
-    auto ctx = op.getContext();
-
-    auto operands = op.getOperands();
-
-    StringRef funcName = "mhlo::reduce";
-    StringAttr callee = StringAttr::get(funcName, ctx);
-
-    SmallVector<Attribute, 2> args_ =
-        indexSequence(operands.size(), op.getContext());
-
-    args_.push_back(op.dimensions());
-    args_.push_back(SymbolRefAttr::get(funcOp.getName(), ctx));
-
-    ArrayAttr args = ArrayAttr::get(args_, ctx);
-
-    SmallVector<Attribute, 2> templateArgs_ = llvm::to_vector<2>(
-        llvm::map_range(llvm::seq<size_t>(0, op.getNumResults()),
-                        [&op](size_t i) -> Attribute {
-                          return TypeAttr::get(op.getResults()[i].getType());
-                        }));
-
-    templateArgs_.push_back(
-        IntegerAttr::get(IntegerType::get(64, ctx), op.dimensions().size()));
-
-    ArrayAttr templateArgs = ArrayAttr::get(templateArgs_, ctx);
-
-    emitc::CallOp callOp = builder.create<emitc::CallOp>(
-        op.getLoc(), op.getResultTypes(), callee, args, templateArgs, operands);
-    op.replaceAllUsesWith(callOp);
-    op.erase();
-    return success();
-  }
-
-  LogicalResult convertToCall(mhlo::ReduceWindowOp &op, FuncOp &funcOp) {
-    OpBuilder builder(op);
-    auto ctx = op.getContext();
-
-    auto operands = op.getOperands();
-
-    StringRef funcName = "mhlo::reduce_window";
-    StringAttr callee = StringAttr::get(funcName, ctx);
-
-    SmallVector<Attribute, 2> args_ = indexSequence(operands.size(), ctx);
-
-    size_t dim = op.getResult().getType().cast<RankedTensorType>().getRank();
-    args_.push_back(op.window_dimensions());
-    args_.push_back(
-        op.window_strides().getValueOr(i64ElementsAttr(1, dim, ctx)));
-    args_.push_back(
-        op.base_dilations().getValueOr(i64ElementsAttr(1, dim, ctx)));
-    args_.push_back(
-        op.window_dilations().getValueOr(i64ElementsAttr(1, dim, ctx)));
-    args_.push_back(op.padding().getValueOr(i64ElementsAttr(0, 2 * dim, ctx)));
-    args_.push_back(SymbolRefAttr::get(funcOp.getName(), ctx));
-
-    ArrayAttr args = ArrayAttr::get(args_, ctx);
-
-    ArrayAttr templateArgs =
-        ArrayAttr::get({TypeAttr::get(op.getResult().getType())}, ctx);
-
-    emitc::CallOp callOp = builder.create<emitc::CallOp>(
-        op.getLoc(), op.getType(), callee, args, templateArgs, operands);
-    op.replaceAllUsesWith(callOp);
-    op.erase();
-    return success();
   }
 };
 
 } // namespace
 
-std::unique_ptr<mlir::OperationPass<mlir::ModuleOp>>
-createConvertMhloToEmitcPass() {
+std::unique_ptr<FunctionPass> createConvertMhloToEmitcPass() {
   return std::make_unique<ConvertMhloToEmitcPass>();
 }
 

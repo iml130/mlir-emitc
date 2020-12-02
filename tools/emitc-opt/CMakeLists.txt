@@ -35,6 +35,7 @@ endif()
 if(${EMITC_ENABLE_HLO})
   set(HLO_LIBS
     MLIRMHLOToEmitC
+    MLIRMHLORegionOpsToEmitC
     MLIREmitCConversion
     MhloRegisterDialects
     AllMhloPasses

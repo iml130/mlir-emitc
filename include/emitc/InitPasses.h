@@ -42,6 +42,7 @@ namespace emitc {
 
 inline void registerAllEmitCPasses() {
 #ifdef EMITC_BUILD_HLO
+  registerConvertMHLORegionOpsToEmitCPass();
   registerConvertMHLOToStandardPass();
   registerConvertMHLOToEmitCPass();
 #endif // EMITC_BUILD_HLO

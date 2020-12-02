@@ -46,7 +46,7 @@ The `emitc-opt` tool enables conversions via the following options:
 | option                                   |                                                                 |
 | :--------------------------------------- |:--------------------------------------------------------------- |
 | `--convert-mhlo-region-ops-to-emitc `    | Convert MHLO operations containing regions to EmitC dialect.    |
-| `--convert-mhlo-to-emitc `               | Convert from MHLO dialect to EmitC dialect                      |
+| `--convert-mhlo-to-emitc `               | Convert from MHLO dialect to EmitC dialect.                     |
 | `--convert-scf-to-emitc`                 | Convert SCF dialect to EmitC dialect, replacing IfOp and ForOp. |
 | `--convert-std-to-emitc `                | Convert std dialect to EmitC dialect, replacing IndexCastOp.    |
 

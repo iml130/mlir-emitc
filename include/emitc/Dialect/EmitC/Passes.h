@@ -24,6 +24,9 @@ std::unique_ptr<FunctionPass> createConvertMhloToEmitcPass();
 std::unique_ptr<OperationPass<FuncOp>> createConvertScfToEmitcPass();
 std::unique_ptr<OperationPass<FuncOp>> createConvertStdToEmitcPass();
 
+#define GEN_PASS_REGISTRATION
+#include "emitc/Dialect/EmitC/Passes.h.inc"
+
 } // namespace emitc
 } // namespace mlir
 

@@ -32,14 +32,6 @@ namespace emitc {
 // individual passes.
 // The global registry is interesting to interact with the command-line tools.
 
-#define GEN_PASS_REGISTRATION
-#include "emitc/Dialect/EmitC/Passes.h.inc"
-
-#ifdef EMITC_BUILD_HLO
-#define GEN_PASS_REGISTRATION
-#include "emitc/Conversion/Passes.h.inc"
-#endif // EMITC_BUILD_HLO
-
 inline void registerAllEmitCPasses() {
 #ifdef EMITC_BUILD_HLO
   registerConvertMHLORegionOpsToEmitCPass();

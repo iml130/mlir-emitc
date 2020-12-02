@@ -23,7 +23,7 @@ namespace mlir {
 namespace {
 #include "MHLOToStd.inc"
 } // namespace
-namespace mhlo {
+namespace emitc {
 
 void populateMhloToStdPatterns(MLIRContext *ctx,
                                OwningRewritePatternList &patterns) {
@@ -62,5 +62,5 @@ createConvertMHLOToStandardPass() {
   return std::make_unique<ConvertMHLOToStandardPass>();
 }
 
-} // namespace mhlo
+} // namespace emitc
 } // namespace mlir

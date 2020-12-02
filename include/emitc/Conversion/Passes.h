@@ -1,4 +1,5 @@
-//===- Passes.h - Conversion Passes ------------------------------*- C++ -*-===//
+//===- Passes.h - Conversion Passes ------------------------------*- C++
+//-*-===//
 //
 // This file is licensed under the Apache License v2.0 with LLVM Exceptions.
 // See https://llvm.org/LICENSE.txt for license information.
@@ -12,13 +13,17 @@
 #include "mlir/Pass/Pass.h"
 
 namespace mlir {
-namespace mhlo {
+namespace emitc {
 
 #ifdef EMITC_BUILD_HLO
 std::unique_ptr<OperationPass<FuncOp>> createConvertMHLOToStandardPass();
-#endif //EMITC_BUILD_HLO
 
-} // namespace mhlo
+#define GEN_PASS_REGISTRATION
+#include "emitc/Conversion/Passes.h.inc"
+
+#endif // EMITC_BUILD_HLO
+
+} // namespace emitc
 } // namespace mlir
 
 #endif // EMITC_CONVERSION_PASSES_H

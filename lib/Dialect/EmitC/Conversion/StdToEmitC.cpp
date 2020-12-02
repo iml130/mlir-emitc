@@ -10,6 +10,7 @@
 //
 //===----------------------------------------------------------------------===//
 
+#include "PassDetail.h"
 #include "emitc/Dialect/EmitC/EmitCDialect.h"
 #include "emitc/Dialect/EmitC/Passes.h"
 #include "mlir/Dialect/StandardOps/IR/Ops.h"
@@ -110,11 +111,8 @@ void populateStdToEmitcPatterns(MLIRContext *ctx,
 
 namespace {
 
-struct ConvertStdToEmitcPass
-    : public PassWrapper<ConvertStdToEmitcPass, FunctionPass> {
-  void getDependentDialects(DialectRegistry &registry) const override {
-    registry.insert<emitc::EmitCDialect>();
-  }
+struct ConvertStdToEmitCPass
+    : public ConvertStdToEmitCBase<ConvertStdToEmitCPass> {
   /// Perform the lowering to EmitC dialect.
   void runOnFunction() override {
 
@@ -137,9 +135,8 @@ struct ConvertStdToEmitcPass
 
 } // namespace
 
-std::unique_ptr<mlir::OperationPass<mlir::FuncOp>>
-createConvertStdToEmitcPass() {
-  return std::make_unique<ConvertStdToEmitcPass>();
+std::unique_ptr<FunctionPass> createConvertStdToEmitCPass() {
+  return std::make_unique<ConvertStdToEmitCPass>();
 }
 
 } // namespace emitc

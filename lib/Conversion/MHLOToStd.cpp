@@ -10,6 +10,7 @@
 //
 //===----------------------------------------------------------------------===//
 
+#include "PassDetail.h"
 #include "emitc/Dialect/EmitC/Passes.h"
 #include "mlir-hlo/Dialect/mhlo/IR/hlo_ops.h"
 #include "mlir-hlo/Dialect/mhlo/transforms/passes.h"
@@ -33,10 +34,7 @@ void populateMhloToStdPatterns(MLIRContext *ctx,
 namespace {
 
 struct ConvertMHLOToStandardPass
-    : public PassWrapper<ConvertMHLOToStandardPass, FunctionPass> {
-  void getDependentDialects(DialectRegistry &registry) const override {
-    registry.insert<StandardOpsDialect>();
-  }
+    : public ConvertMHLOToStandardBase<ConvertMHLOToStandardPass> {
   /// Only lower HLO ConstOp to StandardDialect.
   void runOnFunction() override {
 
@@ -57,8 +55,7 @@ struct ConvertMHLOToStandardPass
 
 } // namespace
 
-std::unique_ptr<mlir::OperationPass<mlir::FuncOp>>
-createConvertMHLOToStandardPass() {
+std::unique_ptr<FunctionPass> createConvertMHLOToStandardPass() {
   return std::make_unique<ConvertMHLOToStandardPass>();
 }
 

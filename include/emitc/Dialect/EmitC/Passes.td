@@ -13,22 +13,26 @@ include "mlir/Pass/PassBase.td"
 
 def ConvertMHLORegionOpsToEmitC : Pass<"convert-mhlo-region-ops-to-emitc", "ModuleOp"> {
   let summary = "Convert MHLO operations containing regions to EmitC dialect.";
-  let constructor = "createConvertMhloRegionOpsToEmitcPass()";
+  let constructor = "createConvertMhloRegionOpsToEmitCPass()";
+  let dependentDialects = ["BuiltinDialect", "EmitCDialect"];
 }
 
 def ConvertMHLOToEmitC : FunctionPass<"convert-mhlo-to-emitc"> {
   let summary = "Convert from MHLO dialect to EmitC dialect.";
-  let constructor = "createConvertMhloToEmitcPass()";
+  let constructor = "createConvertMhloToEmitCPass()";
+  let dependentDialects = ["EmitCDialect"];
 }
 
-def ConvertSCFToEmitC : Pass<"convert-scf-to-emitc", "FuncOp"> {
+def ConvertSCFToEmitC : FunctionPass<"convert-scf-to-emitc"> {
   let summary = "Convert SCF dialect to EmitC dialect, replacing IfOp and ForOp.";
-  let constructor = "createConvertScfToEmitcPass()";
+  let constructor = "createConvertScfToEmitCPass()";
+  let dependentDialects = ["EmitCDialect"];
 }
 
-def ConvertStdToEmitC : Pass<"convert-std-to-emitc", "FuncOp"> {
+def ConvertStdToEmitC : FunctionPass<"convert-std-to-emitc"> {
   let summary = "Convert std dialect to EmitC dialect, replacing IndexCastOp.";
-  let constructor = "createConvertStdToEmitcPass()";
+  let constructor = "createConvertStdToEmitCPass()";
+  let dependentDialects = ["EmitCDialect"];
 }
 
 #endif // EMITC_DIALECT_EMITC_PASSES

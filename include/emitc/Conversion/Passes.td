@@ -11,7 +11,7 @@
 
 include "mlir/Pass/PassBase.td"
 
-def ConvertMHLOToStandard : Pass<"convert-mhlo-const-to-std", "FuncOp"> {
+def ConvertMHLOToStandard : FunctionPass<"convert-mhlo-const-to-std"> {
   let summary = "Converting MHLO constant to std.";
   let constructor = "createConvertMHLOToStandardPass()";
   let dependentDialects = ["StandardOpsDialect"];

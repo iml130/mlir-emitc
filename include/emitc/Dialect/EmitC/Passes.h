@@ -19,10 +19,13 @@ namespace mlir {
 namespace emitc {
 
 std::unique_ptr<OperationPass<ModuleOp>>
-createConvertMhloRegionOpsToEmitcPass();
-std::unique_ptr<FunctionPass> createConvertMhloToEmitcPass();
-std::unique_ptr<OperationPass<FuncOp>> createConvertScfToEmitcPass();
-std::unique_ptr<OperationPass<FuncOp>> createConvertStdToEmitcPass();
+createConvertMhloRegionOpsToEmitCPass();
+std::unique_ptr<FunctionPass> createConvertMhloToEmitCPass();
+std::unique_ptr<FunctionPass> createConvertScfToEmitCPass();
+std::unique_ptr<FunctionPass> createConvertStdToEmitCPass();
+
+#define GEN_PASS_REGISTRATION
+#include "emitc/Dialect/EmitC/Passes.h.inc"
 
 } // namespace emitc
 } // namespace mlir

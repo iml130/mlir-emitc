@@ -7,10 +7,11 @@
 //===----------------------------------------------------------------------===//
 //
 // This file implements logic for converting MHLO ops containing regions to the
-// EmitC dialect by outlining the regions module level functions.
+// EmitC dialect by outlining the regions to module level functions.
 //
 //===----------------------------------------------------------------------===//
 
+#include "PassDetail.h"
 #include "emitc/Dialect/EmitC/EmitCDialect.h"
 #include "emitc/Dialect/EmitC/Passes.h"
 #include "mlir-hlo/Dialect/mhlo/IR/hlo_ops.h"
@@ -40,13 +41,8 @@ SmallVector<Attribute, 2> indexSequence(int64_t n, MLIRContext *ctx) {
       }));
 }
 
-struct ConvertMhloRegionOpsToEmitcPass
-    : public PassWrapper<ConvertMhloRegionOpsToEmitcPass,
-                         OperationPass<ModuleOp>> {
-  void getDependentDialects(DialectRegistry &registry) const override {
-    registry.insert<emitc::EmitCDialect>();
-    registry.insert<BuiltinDialect>();
-  }
+struct ConvertMhloRegionOpsToEmitCPass
+    : public ConvertMHLORegionOpsToEmitCBase<ConvertMhloRegionOpsToEmitCPass> {
   /// Perform the lowering to EmitC dialect.
   void runOnOperation() override {
     // Convert region ops
@@ -226,8 +222,8 @@ private:
 } // namespace
 
 std::unique_ptr<OperationPass<mlir::ModuleOp>>
-createConvertMhloRegionOpsToEmitcPass() {
-  return std::make_unique<ConvertMhloRegionOpsToEmitcPass>();
+createConvertMhloRegionOpsToEmitCPass() {
+  return std::make_unique<ConvertMhloRegionOpsToEmitCPass>();
 }
 
 } // namespace emitc

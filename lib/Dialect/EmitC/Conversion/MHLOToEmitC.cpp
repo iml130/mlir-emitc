@@ -10,6 +10,7 @@
 //
 //===----------------------------------------------------------------------===//
 
+#include "PassDetail.h"
 #include "emitc/Dialect/EmitC/EmitCDialect.h"
 #include "emitc/Dialect/EmitC/Passes.h"
 #include "mlir-hlo/Dialect/mhlo/IR/hlo_ops.h"
@@ -534,11 +535,8 @@ void populateMhloToEmitcPatterns(MLIRContext *ctx,
 
 namespace {
 
-struct ConvertMhloToEmitcPass
-    : public PassWrapper<ConvertMhloToEmitcPass, FunctionPass> {
-  void getDependentDialects(DialectRegistry &registry) const override {
-    registry.insert<emitc::EmitCDialect>();
-  }
+struct ConvertMhloToEmitCPass
+    : public ConvertMHLOToEmitCBase<ConvertMhloToEmitCPass> {
   /// Perform the lowering to EmitC dialect.
   void runOnFunction() override {
     // Convert other ops
@@ -620,8 +618,8 @@ struct ConvertMhloToEmitcPass
 
 } // namespace
 
-std::unique_ptr<FunctionPass> createConvertMhloToEmitcPass() {
-  return std::make_unique<ConvertMhloToEmitcPass>();
+std::unique_ptr<FunctionPass> createConvertMhloToEmitCPass() {
+  return std::make_unique<ConvertMhloToEmitCPass>();
 }
 
 } // namespace emitc

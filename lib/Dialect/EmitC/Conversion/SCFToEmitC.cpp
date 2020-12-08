@@ -10,6 +10,7 @@
 //
 //===----------------------------------------------------------------------===//
 
+#include "PassDetail.h"
 #include "emitc/Dialect/EmitC/EmitCDialect.h"
 #include "emitc/Dialect/EmitC/Passes.h"
 #include "mlir/Dialect/SCF/SCF.h"
@@ -83,11 +84,8 @@ void populateScfToEmitcPatterns(MLIRContext *ctx,
 
 namespace {
 
-struct ConvertScfToEmitcPass
-    : public PassWrapper<ConvertScfToEmitcPass, FunctionPass> {
-  void getDependentDialects(DialectRegistry &registry) const override {
-    registry.insert<emitc::EmitCDialect>();
-  }
+struct ConvertScfToEmitCPass
+    : public ConvertSCFToEmitCBase<ConvertScfToEmitCPass> {
   /// Perform the lowering to EmitC dialect.
   void runOnFunction() override {
 
@@ -108,9 +106,8 @@ struct ConvertScfToEmitcPass
 
 } // namespace
 
-std::unique_ptr<mlir::OperationPass<mlir::FuncOp>>
-createConvertScfToEmitcPass() {
-  return std::make_unique<ConvertScfToEmitcPass>();
+std::unique_ptr<FunctionPass> createConvertScfToEmitCPass() {
+  return std::make_unique<ConvertScfToEmitCPass>();
 }
 
 } // namespace emitc

@@ -9,8 +9,8 @@
 #include "emitc/Dialect/EmitC/EmitCDialect.h"
 #include "emitc/Target/Cpp.h"
 #include "mlir/Dialect/StandardOps/IR/Ops.h"
+#include "mlir/IR/BuiltinOps.h"
 #include "mlir/IR/Dialect.h"
-#include "mlir/IR/Module.h"
 #include "mlir/Translation.h"
 
 using namespace mlir;

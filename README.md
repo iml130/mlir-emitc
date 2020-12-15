@@ -22,6 +22,8 @@ git submodule update --init
 
 The setup assumes that you have built LLVM and MLIR in `$BUILD_DIR` and installed them to `$PREFIX`. You can use the `build_tools/build.sh` shell script to configure, build and install LLVM and MLIR.
 
+**Note**: The hash of the latest tested LLVM version is given in [`build_tools/llvm_version.txt`](https://github.com/iml130/mlir-emitc/blob/main/build_tools/llvm_version.txt). Since MLIR evolves fast, it is possible that EmitC fails to build with a newer LLVM.
+
 To build and launch the tests, run
 ```shell
 mkdir build && cd build
@@ -29,7 +31,7 @@ cmake -G Ninja -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ .. -DMLIR_D
 cmake --build . --target check-emitc
 ```
 
-**Note**: If don't use `build_tools/build.sh`, make sure to pass `-DLLVM_INSTALL_UTILS=ON` when building LLVM with CMake in order to install `FileCheck` to the chosen installation prefix.
+**Note**: If you don't use `build_tools/build.sh`, make sure to pass `-DLLVM_INSTALL_UTILS=ON` when building LLVM with CMake in order to install `FileCheck` to the chosen installation prefix.
 
 To additionally build and execute the unittests, run
 ```shell

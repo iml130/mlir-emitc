@@ -14,6 +14,7 @@
 #include "emitc/Dialect/EmitC/EmitCDialect.h"
 #include "emitc/Dialect/EmitC/Passes.h"
 #include "mlir/Dialect/StandardOps/IR/Ops.h"
+#include "mlir/Dialect/Tensor/IR/Tensor.h"
 #include "mlir/IR/BuiltinOps.h"
 #include "mlir/IR/PatternMatch.h"
 #include "mlir/Pass/Pass.h"
@@ -24,16 +25,16 @@ namespace emitc {
 
 namespace {
 class ExtractElementOpConversion
-    : public OpConversionPattern<ExtractElementOp> {
-  using OpConversionPattern<ExtractElementOp>::OpConversionPattern;
+    : public OpConversionPattern<mlir::tensor::ExtractOp> {
+  using OpConversionPattern<mlir::tensor::ExtractOp>::OpConversionPattern;
 
 public:
   ExtractElementOpConversion(MLIRContext *ctx)
-      : OpConversionPattern<ExtractElementOp>(ctx) {}
+      : OpConversionPattern<mlir::tensor::ExtractOp>(ctx) {}
 
 private:
   LogicalResult
-  matchAndRewrite(ExtractElementOp indexCastOp, ArrayRef<Value> operands,
+  matchAndRewrite(mlir::tensor::ExtractOp indexCastOp, ArrayRef<Value> operands,
                   ConversionPatternRewriter &rewriter) const override {
     StringAttr callee = rewriter.getStringAttr("standard::extract_element");
 
@@ -120,7 +121,7 @@ struct ConvertStdToEmitCPass
 
     target.addLegalDialect<emitc::EmitCDialect>();
     target.addLegalDialect<StandardOpsDialect>();
-    target.addIllegalOp<ExtractElementOp>();
+    target.addIllegalOp<mlir::tensor::ExtractOp>();
     target.addIllegalOp<IndexCastOp>();
     target.addIllegalOp<SplatOp>();
 

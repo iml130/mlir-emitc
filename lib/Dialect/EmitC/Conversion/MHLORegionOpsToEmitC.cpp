@@ -29,7 +29,7 @@ namespace {
 DenseIntElementsAttr i64ElementsAttr(int64_t value, size_t count,
                                      MLIRContext *ctx) {
   RankedTensorType ty = RankedTensorType::get({static_cast<int64_t>(count)},
-                                              IntegerType::get(64, ctx));
+                                              IntegerType::get(ctx, 64));
   SmallVector<int64_t, 4> values(count, value);
   return DenseIntElementsAttr::get(ty, values);
 }
@@ -128,7 +128,7 @@ private:
     auto inputs = region.getArgumentTypes();
     auto results = returnOp.getOperandTypes();
 
-    FunctionType type = FunctionType::get(inputs, results, op.getContext());
+    FunctionType type = FunctionType::get(op.getContext(), inputs, results);
     auto outlinedFunc = builder.create<FuncOp>(loc, functionName, type);
 
     Region &outlinedRegion = outlinedFunc.getRegion();
@@ -173,7 +173,7 @@ private:
                         }));
 
     templateArgs_.push_back(
-        IntegerAttr::get(IntegerType::get(64, ctx), op.dimensions().size()));
+        IntegerAttr::get(IntegerType::get(ctx, 64), op.dimensions().size()));
 
     ArrayAttr templateArgs = ArrayAttr::get(templateArgs_, ctx);
 

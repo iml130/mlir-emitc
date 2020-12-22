@@ -29,7 +29,7 @@ namespace {
 DenseIntElementsAttr i64ElementsAttr(int64_t value, size_t count,
                                      MLIRContext *ctx) {
   RankedTensorType ty = RankedTensorType::get({static_cast<int64_t>(count)},
-                                              IntegerType::get(64, ctx));
+                                              IntegerType::get(ctx, 64));
   SmallVector<int64_t, 4> values(count, value);
   return DenseIntElementsAttr::get(ty, values);
 }

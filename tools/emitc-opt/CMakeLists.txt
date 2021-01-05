@@ -21,11 +21,11 @@ if(${IREE_ENABLE_EMITC})
     )
   # Passes from iree::tools::init_mlir_passes_and_dialects
   set(conversion_libs
-    MLIRGPUToSPIRVTransforms
+    MLIRGPUToSPIRV
     MLIRLinalgToLLVM
-    MLIRLinalgToSPIRVTransforms
+    MLIRLinalgToSPIRV
     MLIRSCFToGPU
-    MLIRStandardToSPIRVTransforms
+    MLIRStandardToSPIRV
     )
 else()
   get_property(dialect_libs GLOBAL PROPERTY MLIR_DIALECT_LIBS)

@@ -12,14 +12,14 @@
 
 #include "gmock/gmock.h"
 
-#include "emitc/emitc_tensor.h"
+#include "emitc/emitc_types.h"
 
 namespace {
 
 using ::testing::Eq;
 using ::testing::Pointwise;
 
-TEST(tensor, tensor_of_bool) {
+TEST(types, tensor_of_bool) {
   Tensor0D<bool> t0{false};
   Tensor1D<bool, 2> t1{false, true};
   Tensor2D<bool, 2, 2> t2{false, true, false, true};
@@ -92,7 +92,7 @@ TEST(tensor, tensor_of_bool) {
   EXPECT_TRUE(t2(1, 1));
 }
 
-TEST(tensor, default_constructor_0d) {
+TEST(types, default_constructor_0d) {
   Tensor0D<float> tensor;
 
   // multi dimensional indexing
@@ -102,7 +102,7 @@ TEST(tensor, default_constructor_0d) {
   EXPECT_EQ(0.0, tensor[0]);
 }
 
-TEST(tensor, default_constructor_1d) {
+TEST(types, default_constructor_1d) {
   Tensor1D<float, 2> tensor;
 
   // multi dimensional indexing
@@ -114,7 +114,7 @@ TEST(tensor, default_constructor_1d) {
   EXPECT_EQ(0.0, tensor[1]);
 }
 
-TEST(tensor, default_constructor_2d) {
+TEST(types, default_constructor_2d) {
   Tensor2D<float, 2, 2> tensor;
 
   // multi dimensional indexing
@@ -130,7 +130,7 @@ TEST(tensor, default_constructor_2d) {
   EXPECT_EQ(0.0, tensor[3]);
 }
 
-TEST(tensor, tensor_default_constructor_3d) {
+TEST(types, tensor_default_constructor_3d) {
   Tensor3D<float, 2, 1, 2> tensor;
 
   // multi dimensional indexing
@@ -146,7 +146,7 @@ TEST(tensor, tensor_default_constructor_3d) {
   EXPECT_EQ(0.0, tensor[3]);
 }
 
-TEST(tensor, tensor_default_constructor_4d) {
+TEST(types, tensor_default_constructor_4d) {
   Tensor4D<float, 2, 1, 2, 2> tensor;
 
   // multi dimensional indexing
@@ -170,7 +170,7 @@ TEST(tensor, tensor_default_constructor_4d) {
   EXPECT_EQ(0.0, tensor[7]);
 }
 
-TEST(tensor, initializer_list_0d) {
+TEST(types, initializer_list_0d) {
   Tensor0D<float> tensor{1.0};
 
   // multi dimensional indexing
@@ -180,7 +180,7 @@ TEST(tensor, initializer_list_0d) {
   EXPECT_EQ(1.0, tensor[0]);
 }
 
-TEST(tensor, initializer_list_1d) {
+TEST(types, initializer_list_1d) {
   Tensor1D<float, 2> tensor{1.0, 2.0};
 
   // multi dimensional indexing
@@ -192,7 +192,7 @@ TEST(tensor, initializer_list_1d) {
   EXPECT_EQ(2.0, tensor[1]);
 }
 
-TEST(tensor, initializer_list_2d) {
+TEST(types, initializer_list_2d) {
   Tensor2D<int32_t, 2, 2> tensor{1, 2, 3, 4};
 
   // multi dimensional indexing
@@ -208,7 +208,7 @@ TEST(tensor, initializer_list_2d) {
   EXPECT_EQ(4, tensor[3]);
 }
 
-TEST(tensor, initializer_list_3d) {
+TEST(types, initializer_list_3d) {
   Tensor3D<int32_t, 2, 1, 2> tensor{1, 2, 3, 4};
 
   // multi dimensional indexing
@@ -224,7 +224,7 @@ TEST(tensor, initializer_list_3d) {
   EXPECT_EQ(4, tensor[3]);
 }
 
-TEST(tensor, initializer_list_4d) {
+TEST(types, initializer_list_4d) {
   Tensor4D<int32_t, 2, 1, 2, 2> tensor{1, 2, 3, 4, 5, 6, 7, 8};
 
   // multi dimensional indexing
@@ -248,7 +248,7 @@ TEST(tensor, initializer_list_4d) {
   EXPECT_EQ(8, tensor[7]);
 }
 
-TEST(tensor, wrong_size_initializer_list) {
+TEST(types, wrong_size_initializer_list) {
   auto lambda_0d = []() -> void { Tensor0D<float> t{0.0, 1.0}; };
   EXPECT_DEATH(lambda_0d();, "");
 
@@ -271,7 +271,7 @@ TEST(tensor, wrong_size_initializer_list) {
   EXPECT_DEATH(lambda_4d();, "");
 }
 
-TEST(tensor, dimension_1d) {
+TEST(types, dimension_1d) {
   Tensor1D<float, 2> tensor;
 
   EXPECT_EQ(2, tensor.dim(0));
@@ -281,7 +281,7 @@ TEST(tensor, dimension_1d) {
   EXPECT_EQ(13, tensor2.dim(0));
 }
 
-TEST(tensor, dimension_2d) {
+TEST(types, dimension_2d) {
   Tensor2D<float, 4, 12> tensor;
 
   EXPECT_EQ(4, tensor.dim(0));
@@ -293,7 +293,7 @@ TEST(tensor, dimension_2d) {
   EXPECT_EQ(16, tensor2.dim(1));
 }
 
-TEST(tensor, dimension_3d) {
+TEST(types, dimension_3d) {
   Tensor3D<float, 2, 1, 7> tensor;
 
   EXPECT_EQ(2, tensor.dim(0));
@@ -307,7 +307,7 @@ TEST(tensor, dimension_3d) {
   EXPECT_EQ(24, tensor2.dim(2));
 }
 
-TEST(tensor, dimension_4d) {
+TEST(types, dimension_4d) {
   Tensor4D<float, 2, 1, 4, 5> tensor;
 
   EXPECT_EQ(2, tensor.dim(0));
@@ -323,7 +323,7 @@ TEST(tensor, dimension_4d) {
   EXPECT_EQ(8, tensor2.dim(3));
 }
 
-TEST(tensor, size_0d) {
+TEST(types, size_0d) {
   Tensor0D<float> tensor;
 
   EXPECT_EQ(1, tensor.size());
@@ -333,7 +333,7 @@ TEST(tensor, size_0d) {
   EXPECT_EQ(1, tensor2.size());
 }
 
-TEST(tensor, size_1d) {
+TEST(types, size_1d) {
   Tensor1D<float, 2> tensor;
 
   EXPECT_EQ(2, tensor.size());
@@ -343,7 +343,7 @@ TEST(tensor, size_1d) {
   EXPECT_EQ(13, tensor2.size());
 }
 
-TEST(tensor, size_2d) {
+TEST(types, size_2d) {
   Tensor2D<float, 4, 12> tensor;
 
   EXPECT_EQ(48, tensor.size());
@@ -353,7 +353,7 @@ TEST(tensor, size_2d) {
   EXPECT_EQ(1024, tensor2.size());
 }
 
-TEST(tensor, size_3d) {
+TEST(types, size_3d) {
   Tensor3D<float, 4, 3, 5> tensor;
 
   EXPECT_EQ(60, tensor.size());
@@ -363,7 +363,7 @@ TEST(tensor, size_3d) {
   EXPECT_EQ(512, tensor2.size());
 }
 
-TEST(tensor, size_4d) {
+TEST(types, size_4d) {
   Tensor4D<float, 4, 2, 1, 3> tensor;
 
   EXPECT_EQ(24, tensor.size());
@@ -373,7 +373,7 @@ TEST(tensor, size_4d) {
   EXPECT_EQ(60, tensor2.size());
 }
 
-TEST(tensor, meta_get_element_type) {
+TEST(types, meta_get_element_type) {
   using s0 = float;
   using s1 = int32_t;
   using t0 = Tensor0D<uint16_t>;
@@ -402,7 +402,7 @@ TEST(tensor, meta_get_element_type) {
   EXPECT_TRUE(check_t4);
 }
 
-TEST(tensor, meta_is_scalar) {
+TEST(types, meta_is_scalar) {
   using s0 = float;
   using s1 = int32_t;
   using t0 = Tensor0D<uint16_t>;
@@ -420,7 +420,7 @@ TEST(tensor, meta_is_scalar) {
   EXPECT_FALSE(is_scalar<t4>::value);
 }
 
-TEST(tensor, meta_is_tensor) {
+TEST(types, meta_is_tensor) {
   using s0 = float;
   using s1 = int32_t;
   using t0 = Tensor0D<uint16_t>;
@@ -438,7 +438,7 @@ TEST(tensor, meta_is_tensor) {
   EXPECT_TRUE(is_tensor<t4>::value);
 }
 
-TEST(tensor, meta_is_tensor_0d) {
+TEST(types, meta_is_tensor_0d) {
   using s0 = float;
   using s1 = int32_t;
   using t0 = Tensor0D<uint16_t>;
@@ -462,7 +462,7 @@ TEST(tensor, meta_is_tensor_0d) {
   EXPECT_FALSE(b4);
 }
 
-TEST(tensor, meta_is_tensor_1d) {
+TEST(types, meta_is_tensor_1d) {
   using s0 = float;
   using s1 = int32_t;
   using t0 = Tensor0D<uint16_t>;
@@ -486,7 +486,7 @@ TEST(tensor, meta_is_tensor_1d) {
   EXPECT_FALSE(b4);
 }
 
-TEST(tensor, meta_is_tensor_2d) {
+TEST(types, meta_is_tensor_2d) {
   using s0 = float;
   using s1 = int32_t;
   using t0 = Tensor0D<uint16_t>;
@@ -510,7 +510,7 @@ TEST(tensor, meta_is_tensor_2d) {
   EXPECT_FALSE(b4);
 }
 
-TEST(tensor, meta_is_tensor_3d) {
+TEST(types, meta_is_tensor_3d) {
   using s0 = float;
   using s1 = int32_t;
   using t0 = Tensor0D<uint16_t>;
@@ -534,7 +534,7 @@ TEST(tensor, meta_is_tensor_3d) {
   EXPECT_FALSE(b4);
 }
 
-TEST(tensor, meta_is_tensor_4d) {
+TEST(types, meta_is_tensor_4d) {
   using s0 = float;
   using s1 = int32_t;
   using t0 = Tensor0D<uint16_t>;
@@ -558,7 +558,7 @@ TEST(tensor, meta_is_tensor_4d) {
   EXPECT_TRUE(b4);
 }
 
-TEST(tensor, meta_replace_element_type) {
+TEST(types, meta_replace_element_type) {
   using s0 = float;
   using s1 = int32_t;
   using t0 = Tensor0D<uint16_t>;
@@ -596,7 +596,7 @@ TEST(tensor, meta_replace_element_type) {
   EXPECT_TRUE(check_t4);
 }
 
-TEST(tensor, ravel_index) {
+TEST(types, ravel_index) {
   Tensor0D<uint16_t> t0;
   Tensor1D<int8_t, 12> t1;
   Tensor2D<double, 3, 7> t2;
@@ -614,7 +614,7 @@ TEST(tensor, ravel_index) {
   EXPECT_EQ(t4.ravel_index({1, 2, 3, 4}), 211);
 }
 
-TEST(tensor, unravel_index) {
+TEST(types, unravel_index) {
   Tensor0D<uint16_t> t0;
   Tensor1D<int8_t, 12> t1;
   Tensor2D<double, 3, 7> t2;

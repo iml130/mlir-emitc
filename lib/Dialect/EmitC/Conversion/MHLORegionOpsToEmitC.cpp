@@ -55,7 +55,7 @@ struct ConvertMhloRegionOpsToEmitCPass
       // ReduceOp
       auto funcWalkResult = func.walk([&](mhlo::ReduceOp op) {
         std::string funcName =
-            Twine(op.getParentOfType<FuncOp>().getName(), "_lambda_")
+            Twine(op->getParentOfType<FuncOp>().getName(), "_lambda_")
                 .concat(Twine(count++))
                 .str();
 
@@ -79,7 +79,7 @@ struct ConvertMhloRegionOpsToEmitCPass
       // ReduceWindowOp
       funcWalkResult = func.walk([&](mhlo::ReduceWindowOp op) {
         std::string funcName =
-            Twine(op.getParentOfType<FuncOp>().getName(), "_lambda_")
+            Twine(op->getParentOfType<FuncOp>().getName(), "_lambda_")
                 .concat(Twine(count++))
                 .str();
 

@@ -12,8 +12,8 @@
 
 // This file defines the tensor class used by EmitC
 
-#ifndef EMITC_EMITC_TENSOR_H
-#define EMITC_EMITC_TENSOR_H
+#ifndef EMITC_EMITC_TYPES_H
+#define EMITC_EMITC_TYPES_H
 
 #include <algorithm>
 #include <array>
@@ -324,4 +324,4 @@ struct concat<Dim, T, Tensor2D<T, Xs, Ys>...> {
                detail::sum<sizeof...(Ys)>({Ys...})>>;
 };
 
-#endif // EMITC_EMITC_TENSOR_H
+#endif // EMITC_EMITC_TYPES_H

@@ -17,7 +17,7 @@
 
 #include <vector>
 
-#include "emitc_tensor.h"
+#include "emitc_types.h"
 
 namespace standard {
 

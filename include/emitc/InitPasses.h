@@ -40,6 +40,7 @@ inline void registerAllEmitCPasses() {
 #endif // EMITC_BUILD_HLO
   registerConvertSCFToEmitCPass();
   registerConvertStdToEmitCPass();
+  registerConvertTensorToEmitCPass();
 }
 
 } // namespace emitc

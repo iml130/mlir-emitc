@@ -3,6 +3,7 @@ set(LLVM_OPTIONAL_SOURCES
   MHLORegionOpsToEmitC.cpp
   SCFToEmitC.cpp
   StdToEmitC.cpp
+  TensorToEmitC.cpp
 )
 
 if(EMITC_ENABLE_HLO)
@@ -59,6 +60,22 @@ add_mlir_library(MLIRSCFToEmitC
 
 add_mlir_library(MLIRStdToEmitC
   StdToEmitC.cpp
+
+  DEPENDS
+  MLIREmitCIncGen
+  MLIREmitCPassIncGen
+
+  LINK_COMPONENTS
+  Core
+
+  LINK_LIBS PUBLIC
+  MLIRIR
+  MLIRPass
+  MLIRTransformUtils
+)
+
+add_mlir_library(MLIRTensorToEmitC
+  TensorToEmitC.cpp
 
   DEPENDS
   MLIREmitCIncGen

@@ -30,8 +30,14 @@ def ConvertSCFToEmitC : FunctionPass<"convert-scf-to-emitc"> {
 }
 
 def ConvertStdToEmitC : FunctionPass<"convert-std-to-emitc"> {
-  let summary = "Convert std dialect to EmitC dialect, replacing IndexCastOp.";
+  let summary = "Convert std dialect to EmitC dialect, replacing IndexCastOp and SplatOp.";
   let constructor = "createConvertStdToEmitCPass()";
+  let dependentDialects = ["EmitCDialect"];
+}
+
+def ConvertTensorToEmitC : FunctionPass<"convert-tensor-to-emitc"> {
+  let summary = "Convert tensor dialect to EmitC dialect, replacing ExtractOp.";
+  let constructor = "createConvertTensorToEmitCPass()";
   let dependentDialects = ["EmitCDialect"];
 }
 

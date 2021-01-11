@@ -21,12 +21,6 @@
 
 namespace standard {
 
-// ExtractElementOp
-template <typename T, size_t... Shape, typename... Indices>
-inline T extract_element(Tensor<T, Shape...> x, Indices... indices) {
-  return x(indices...);
-}
-
 // IndexCastOp
 template <typename Dest, typename Src>
 inline Dest index_cast(Src x) {

@@ -31,7 +31,7 @@ cmake -G Ninja -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ .. -DMLIR_D
 cmake --build . --target check-emitc
 ```
 
-**Note**: If you don't use `build_tools/build.sh`, make sure to pass `-DLLVM_INSTALL_UTILS=ON` when building LLVM with CMake in order to install `FileCheck` to the chosen installation prefix.
+**Note**: If you don't use `build_tools/build_mlir.sh`, make sure to pass `-DLLVM_INSTALL_UTILS=ON` when building LLVM with CMake in order to install `FileCheck` to the chosen installation prefix.
 
 To additionally build and execute the unittests, run
 ```shell

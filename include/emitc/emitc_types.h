@@ -102,7 +102,7 @@ public:
   }
 
   static constexpr std::array<size_t, rank()> strides() {
-    std::array<size_t, rank()> result;
+    std::array<size_t, rank()> result = {};
     constexpr std::array<size_t, rank()> s = {Shape...};
 
     if (rank() == 0) {
@@ -132,7 +132,7 @@ public:
     int resultSize =
         std::accumulate(sizes.begin(), sizes.end(), 1, std::multiplies<int>{});
     for (int n = 0; n < resultSize; ++n) {
-      std::array<size_t, rank()> u;
+      std::array<size_t, rank()> u = {};
       div_t q{n, 0};
       for (int i = iotas.size() - 1; 0 <= i; --i) {
         q = div(q.quot, iotas[i].size());
@@ -194,7 +194,7 @@ public:
 
     std::array<size_t, rank()> s = strides();
 
-    std::array<size_t, rank()> result;
+    std::array<size_t, rank()> result = {};
     for (size_t i = 0; i < rank(); i++) {
       result[i] = index / s[i];
       index = index % s[i];

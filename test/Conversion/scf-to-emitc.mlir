@@ -54,9 +54,9 @@ func @std_if_yield(%arg0: i1, %arg1: f32) -> (f32, f32)
 func @std_for(%arg0 : index, %arg1 : index, %arg2 : index) {
   scf.for %i0 = %arg0 to %arg1 step %arg2 {
     scf.for %i1 = %arg0 to %arg1 step %arg2 {
-      %min_cmp = cmpi "slt", %i0, %i1 : index
+      %min_cmp = cmpi slt, %i0, %i1 : index
       %min = select %min_cmp, %i0, %i1 : index
-      %max_cmp = cmpi "sge", %i0, %i1 : index
+      %max_cmp = cmpi sge, %i0, %i1 : index
       %max = select %max_cmp, %i0, %i1 : index
       scf.for %i2 = %min to %max step %i1 {
       }
@@ -67,9 +67,9 @@ func @std_for(%arg0 : index, %arg1 : index, %arg2 : index) {
 // CHECK-LABEL: func @std_for(
 //  CHECK-NEXT:   emitc.for %{{.*}} = %{{.*}} to %{{.*}} step %{{.*}} {
 //  CHECK-NEXT:     emitc.for %{{.*}} = %{{.*}} to %{{.*}} step %{{.*}} {
-//  CHECK-NEXT:       %{{.*}} = cmpi "slt", %{{.*}}, %{{.*}} : index
+//  CHECK-NEXT:       %{{.*}} = cmpi slt, %{{.*}}, %{{.*}} : index
 //  CHECK-NEXT:       %{{.*}} = select %{{.*}}, %{{.*}}, %{{.*}} : index
-//  CHECK-NEXT:       %{{.*}} = cmpi "sge", %{{.*}}, %{{.*}} : index
+//  CHECK-NEXT:       %{{.*}} = cmpi sge, %{{.*}}, %{{.*}} : index
 //  CHECK-NEXT:       %{{.*}} = select %{{.*}}, %{{.*}}, %{{.*}} : index
 //  CHECK-NEXT:       emitc.for %{{.*}} = %{{.*}} to %{{.*}} step %{{.*}} {
 

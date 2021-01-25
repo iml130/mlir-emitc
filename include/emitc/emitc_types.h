@@ -289,13 +289,13 @@ inline Dest unary(const Src &x, UnaryOp &&op) {
 
 template <typename Dest, typename SrcLeft, typename SrcRight, typename BinaryOp,
           IsScalar<SrcLeft> = true, IsScalar<SrcRight> = true>
-inline Dest binary(SrcLeft x, SrcRight y, BinaryOp &&op) {
+inline Dest binary(const SrcLeft &x, const SrcRight &y, BinaryOp &&op) {
   return op(x, y);
 }
 
 template <typename Dest, typename SrcLeft, typename SrcRight, typename BinaryOp,
           IsTensor<SrcLeft> = true, IsTensor<SrcRight> = true>
-inline Dest binary(SrcLeft x, SrcRight y, BinaryOp &&op) {
+inline Dest binary(const SrcLeft &x, const SrcRight &y, BinaryOp &&op) {
   Dest z;
   std::transform(x.begin(), x.end(), y.begin(), z.begin(), op);
   return z;

@@ -276,12 +276,12 @@ template <typename Dest, typename SrcLeft, typename SrcRight>
 using BinaryFuncType = Dest (*)(SrcLeft, SrcRight);
 
 template <typename Dest, typename Src, typename UnaryOp, IsScalar<Src> = true>
-inline Dest unary(Src x, UnaryOp &&op) {
+inline Dest unary(const Src &x, UnaryOp &&op) {
   return op(x);
 }
 
 template <typename Dest, typename Src, typename UnaryOp, IsTensor<Src> = true>
-inline Dest unary(Src x, UnaryOp &&op) {
+inline Dest unary(const Src &x, UnaryOp &&op) {
   Dest z;
   std::transform(x.begin(), x.end(), z.begin(), op);
   return z;
@@ -289,13 +289,13 @@ inline Dest unary(Src x, UnaryOp &&op) {
 
 template <typename Dest, typename SrcLeft, typename SrcRight, typename BinaryOp,
           IsScalar<SrcLeft> = true, IsScalar<SrcRight> = true>
-inline Dest binary(SrcLeft x, SrcRight y, BinaryOp &&op) {
+inline Dest binary(const SrcLeft &x, const SrcRight &y, BinaryOp &&op) {
   return op(x, y);
 }
 
 template <typename Dest, typename SrcLeft, typename SrcRight, typename BinaryOp,
           IsTensor<SrcLeft> = true, IsTensor<SrcRight> = true>
-inline Dest binary(SrcLeft x, SrcRight y, BinaryOp &&op) {
+inline Dest binary(const SrcLeft &x, const SrcRight &y, BinaryOp &&op) {
   Dest z;
   std::transform(x.begin(), x.end(), y.begin(), z.begin(), op);
   return z;

@@ -4,7 +4,6 @@ on:
   push:
     paths-ignore:
     - 'docs/**'
-    - 'scripts/**'
   pull_request:
     branches:
       - main
@@ -12,6 +11,7 @@ on:
 env:
   EMITC: emitc
   LLVM: llvm
+  E2E: emitc-e2e
 
 jobs:
   build-llvm:
@@ -65,9 +65,43 @@ jobs:
           -DCMAKE_CXX_COMPILER=clang++
         cmake --build . --target install -- -j$(nproc)
 
+  prepare-e2e-test:
+    name: Prepare e2e test
+    runs-on: ubuntu-20.04
+    steps:
+    - name: Checkout EmitC
+      uses: actions/checkout@v2
+      with:
+        path: ${{ env.EMITC }}
+        submodules: 'false'
+
+    - name: Cache e2e
+      id: cache-e2e
+      uses: actions/cache@v2
+      with:
+        path: ${{ env.E2E }}
+        key: ${{ runner.os }}-e2e-${{ hashFiles('emitc/scripts/*.py') }}
+
+    - name: Install TensorFlow
+      if: steps.cache-e2e.outputs.cache-hit != 'true'
+      run: python3 -m pip install tensorflow==2.4
+
+    - name: Prepare model
+      if: steps.cache-e2e.outputs.cache-hit != 'true'
+      run: |
+        mkdir -p ${E2E}
+        mkdir -p tmp
+        cd tmp
+        python3 ../${EMITC}/scripts/get_mobilenet_v2.py
+        python3 ../${EMITC}/scripts/keras_to_savedmodel.py --batch-size 2 mobilenet_v2.h5 model
+        python3 ../${EMITC}/scripts/savedmodel_to_tf_dialect.py --exported-names predict model model_tf.mlir
+        python3 ../${EMITC}/scripts/optimize_tf_dialect.py model_tf.mlir model_tf_opt.mlir
+        python3 ../${EMITC}/scripts/tf_to_mhlo_dialect.py model_tf_opt.mlir ../${E2E}/model_mhlo.mlir
+        python3 ../${EMITC}/scripts/generate_testscases.py --file-format cpp --count 1 --batch-size 2 --seed 1234 mobilenet_v2.h5 ../${E2E}/
+
   build:
     name: Build and test EmitC
-    needs: build-llvm
+    needs: [build-llvm, prepare-e2e-test]
     runs-on: ubuntu-20.04
     steps:
     - name: Configure Environment
@@ -92,6 +126,7 @@ jobs:
         key: ${{ runner.os }}-llvm-20.04-install-${{ env.llvm_hash }}
 
     - name: Build and test EmitC (Debug)
+      id: build-emitc-debug
       run: |
         mkdir -p ${EMITC}/build_debug
         cd ${EMITC}/build_debug
@@ -109,6 +144,7 @@ jobs:
         ./unittests/MLIREmitCAllTests
 
     - name: Build and test EmitC (Release)
+      id: build-emitc-release
       run: |
         mkdir -p ${EMITC}/build_release
         cd ${EMITC}/build_release
@@ -124,3 +160,21 @@ jobs:
         cmake --build . --target check-emitc -- -j$(nproc)
         cmake --build . --target MLIREmitCAllTests -- -j$(nproc)
         ./unittests/MLIREmitCAllTests
+
+    - name: Cache e2e
+      uses: actions/cache@v2
+      with:
+        path: ${{ env.E2E }}
+        key: ${{ runner.os }}-e2e-${{ hashFiles('emitc/scripts/*.py') }}
+
+    - name: Run e2e test
+      run: |
+        ./${EMITC}/build_release/bin/emitc-opt --canonicalize --inline --symbol-dce ${E2E}/model_mhlo.mlir > ${E2E}/model_canon.mlir
+        FUNCTION_NAME=$(grep -oe "@[^(]*" "${E2E}"/model_canon.mlir)
+        FUNCTION_NAME="${FUNCTION_NAME:1}"
+        sed "s/$FUNCTION_NAME/predict/g" "${E2E}"/model_canon.mlir > "${E2E}"/model_fix_name.mlir
+        ./${EMITC}/build_release/bin/emitc-opt --mhlo-control-flow-to-scf --convert-mhlo-region-ops-to-emitc --convert-mhlo-to-emitc --convert-scf-to-emitc --convert-std-to-emitc --convert-mhlo-const-to-std "${E2E}"/model_fix_name.mlir > "${E2E}"/model_emitc.mlir
+        ./${EMITC}/build_release/bin/emitc-translate --mlir-to-cpp "${E2E}"/model_emitc.mlir > "${E2E}"/model_generated.h
+        cd ${E2E}
+        clang++ test.cpp -O3 -I `pwd`/../emitc/include/emitc -I `pwd` -o test
+        ./test

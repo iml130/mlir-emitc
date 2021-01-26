@@ -44,7 +44,7 @@ jobs:
         path: ${{ env.LLVM }}
         ref: ${{ env.llvm_hash }}
 
-    - name: Rebuild and Install LLVM
+    - name: Rebuild and install LLVM
       if: steps.cache-llvm.outputs.cache-hit != 'true'
       run: |
         mkdir -p ${LLVM}/build
@@ -104,7 +104,7 @@ jobs:
     needs: [build-llvm, prepare-e2e-test]
     runs-on: ubuntu-20.04
     steps:
-    - name: Configure Environment
+    - name: Configure environment
       run: echo "$GITHUB_WORKSPACE/${LLVM}/install/bin" >> $GITHUB_PATH
 
     - name: Checkout EmitC

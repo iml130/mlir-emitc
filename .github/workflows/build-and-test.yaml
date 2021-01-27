@@ -80,11 +80,11 @@ jobs:
       uses: actions/cache@v2
       with:
         path: ${{ env.E2E }}
-        key: ${{ runner.os }}-e2e-${{ hashFiles('emitc/scripts/*.py') }}
+        key: ${{ runner.os }}-e2e-${{ hashFiles('emitc/scripts/*.py', 'emitc/scripts/requirements.txt') }}
 
     - name: Install TensorFlow
       if: steps.cache-e2e.outputs.cache-hit != 'true'
-      run: python3 -m pip install tensorflow==2.4
+      run: python3 -m pip install -r ${EMITC}/scripts/requirements.txt
 
     - name: Prepare model
       if: steps.cache-e2e.outputs.cache-hit != 'true'
@@ -165,7 +165,7 @@ jobs:
       uses: actions/cache@v2
       with:
         path: ${{ env.E2E }}
-        key: ${{ runner.os }}-e2e-${{ hashFiles('emitc/scripts/*.py') }}
+        key: ${{ runner.os }}-e2e-${{ hashFiles('emitc/scripts/*.py', 'emitc/scripts/requirements.txt') }}
 
     - name: Run e2e test
       run: |

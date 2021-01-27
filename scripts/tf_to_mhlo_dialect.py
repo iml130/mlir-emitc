@@ -19,7 +19,7 @@ from tensorflow.python import pywrap_mlir  # pylint: disable=no-name-in-module
 
 def translate(model_path: str, output_path: str):
     pass_pipeline = ",".join([
-        "xla-legalize-tf", "canonicalize",
+        "func(xla-legalize-tf)", "canonicalize",
         "tf-saved-model-optimize-global-tensors"
     ])
     with open(model_path) as file:

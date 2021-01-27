@@ -75,7 +75,7 @@ echo "Translating emitc dialect to cpp header"
 "$EMITC_TRANSLATE" --mlir-to-cpp "$OUTPUT_DIR"/model_emitc.mlir > "$OUTPUT_DIR"/model_generated.h
 
 echo "Generating test case"
-python generate_testscases.py --file-format cpp --count 1 --batch-size $BATCH_SIZE --seed $SEED "$OUTPUT_DIR"/model.h5 "$OUTPUT_DIR"
+python generate_testscases.py --file-format cpp --count 1 --batch-size $BATCH_SIZE --seed $SEED "$KERAS_MODEL" "$OUTPUT_DIR"
 
 echo "Compiling test case"
 "$CPP_COMPILER" "$OUTPUT_DIR"/test.cpp -O3 -I "$EMITC_INCLUDE_DIR" -I "$OUTPUT_DIR" -o "$OUTPUT_DIR"/test

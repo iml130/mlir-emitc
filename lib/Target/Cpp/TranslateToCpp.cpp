@@ -240,6 +240,7 @@ static LogicalResult printModule(CppEmitter &emitter, ModuleOp moduleOp) {
   os << "#include <cmath>\n\n";
   os << "#include \"emitc_mhlo.h\"\n";
   os << "#include \"emitc_std.h\"\n\n";
+  os << "#include \"emitc_tensor.h\"\n\n";
   os << "// Forward declare functions.\n";
   for (FuncOp funcOp : moduleOp.getOps<FuncOp>()) {
     if (failed(emitter.emitTypes(funcOp.getType().getResults())))

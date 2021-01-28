@@ -42,7 +42,7 @@ The table below shows the supported MHLO ops.
 | tuple                 | :heavy_check_mark: | |
 | compare               | :heavy_check_mark: | |
 | **Slice ops**
-| slice                 | :white_check_mark: | Only for 1D, 2D or 3D inputs |
+| slice                 | :white_check_mark: | Only for 1D to 4D inputs |
 | dynamic-slice         | :white_check_mark: | Only for 1D or 2D inputs |
 | dynamic-update-slice  | :white_check_mark: | Only for 1D or 2D inputs |
 | **Other ops**

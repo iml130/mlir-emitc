@@ -801,6 +801,7 @@ TEST(mhlo, compare) {
 // Slice ops
 
 TEST(mhlo, slice) {
+  // Slice Tensor1D
   Tensor1D<float, 5> s1{0.0f, 1.0f, 2.0f, 3.0f, 4.0f};
   auto t1 =
       mhlo::slice<Tensor1D<float, 2>, Tensor1D<float, 5>>(s1, {2}, {4}, {1});
@@ -810,6 +811,7 @@ TEST(mhlo, slice) {
       mhlo::slice<Tensor1D<float, 2>, Tensor1D<float, 5>>(s1, {1}, {4}, {2});
   EXPECT_THAT(t1_strided, Pointwise(FloatEq(), {1.0f, 3.0f}));
 
+  // Slice Tensor2D
   Tensor2D<float, 4, 3> s2{0.0f, 1.0f, 2.0f, 3.0f, 4.0f,  5.0f,
                            6.0f, 7.0f, 8.0f, 9.0f, 10.0f, 11.0f};
   auto t2 = mhlo::slice<Tensor2D<float, 2, 2>, Tensor2D<float, 4, 3>>(
@@ -822,6 +824,7 @@ TEST(mhlo, slice) {
 
   EXPECT_THAT(t2_strided, Pointwise(FloatEq(), {3.0f, 5.0f, 9.0f, 11.0f}));
 
+  // Slice Tensor3D
   Tensor3D<float, 4, 3, 2> s3{0.0f,  1.0f,  2.0f,  3.0f,  4.0f,  5.0f,
                               6.0f,  7.0f,  8.0f,  9.0f,  10.0f, 11.0f,
                               12.0f, 13.0f, 14.0f, 15.0f, 16.0f, 17.0f,
@@ -840,6 +843,33 @@ TEST(mhlo, slice) {
       mhlo::slice<Tensor3D<float, 1, 2, 1>, Tensor3D<float, 4, 3, 2>>(
           s3, {0, 1, 0}, {2, 3, 2}, {2, 1, 2});
   EXPECT_THAT(t3_strided2, Pointwise(FloatEq(), {2.0f, 4.0f}));
+
+  // Slice Tensor4D
+  Tensor4D<float, 4, 3, 1, 2> s4{0.0f,  1.0f,  2.0f,  3.0f,  4.0f,  5.0f,
+                                 6.0f,  7.0f,  8.0f,  9.0f,  10.0f, 11.0f,
+                                 12.0f, 13.0f, 14.0f, 15.0f, 16.0f, 17.0f,
+                                 18.0f, 19.0f, 20.0f, 21.0f, 22.0f, 23.0f};
+  auto t4 =
+      mhlo::slice<Tensor4D<float, 2, 2, 1, 2>, Tensor4D<float, 4, 3, 1, 2>>(
+          s4, {2, 1, 0, 0}, {4, 3, 1, 2}, {1, 1, 1, 1});
+  EXPECT_THAT(t4, Pointwise(FloatEq(), {14.0f, 15.0f, 16.0f, 17.0f, 20.0f,
+                                        21.0f, 22.0f, 23.0f}));
+
+  auto t4_2 =
+      mhlo::slice<Tensor4D<float, 4, 3, 1, 2>, Tensor4D<float, 4, 3, 1, 2>>(
+          s4, {0, 0, 0, 0}, {4, 3, 1, 2}, {1, 1, 1, 1});
+  EXPECT_THAT(t4_2, Pointwise(FloatEq(), s4));
+
+  auto t4_strided =
+      mhlo::slice<Tensor4D<float, 3, 2, 1, 1>, Tensor4D<float, 4, 3, 1, 2>>(
+          s4, {1, 0, 0, 0}, {4, 3, 1, 2}, {1, 2, 1, 2});
+  EXPECT_THAT(t4_strided,
+              Pointwise(FloatEq(), {6.0f, 10.0f, 12.0f, 16.0f, 18.0f, 22.0f}));
+
+  auto t4_strided_2 =
+      mhlo::slice<Tensor4D<float, 2, 1, 1, 1>, Tensor4D<float, 4, 3, 1, 2>>(
+          s4, {0, 2, 0, 0}, {4, 3, 1, 1}, {2, 1, 1, 1});
+  EXPECT_THAT(t4_strided_2, Pointwise(FloatEq(), {4.0f, 16.0f}));
 }
 
 TEST(mhlo, dynamic_slice) {

@@ -964,26 +964,79 @@ TEST(mhlo, broadcast_in_dim) {
   Tensor0D<int> t0{1};
   Tensor1D<int64_t, 0> b0;
 
-  Tensor1D<int, 4> expected_result1{1, 1, 1, 1};
-  Tensor1D<int, 4> result1 = mhlo::broadcast_in_dim<Tensor1D<int, 4>>(t0, b0);
-  EXPECT_THAT(result1, Pointwise(Eq(), expected_result1));
-
-  Tensor2D<int, 2, 3> expected_result2{1, 1, 1, 1, 1, 1};
-  Tensor2D<int, 2, 3> result2 =
-      mhlo::broadcast_in_dim<Tensor2D<int, 2, 3>>(t0, b0);
-  EXPECT_THAT(result2, Pointwise(Eq(), expected_result2));
+  { // 0D -> 1D
+    using Dest = Tensor1D<int, 4>;
+    Dest expected_result{1, 1, 1, 1};
+    Dest result = mhlo::broadcast_in_dim<Dest>(t0, b0);
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+  { // 0D -> 2D
+    using Dest = Tensor2D<int, 2, 3>;
+    Dest expected_result{1, 1, 1, 1, 1, 1};
+    Dest result = mhlo::broadcast_in_dim<Dest>(t0, b0);
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
 
   Tensor<int, 2> t1{1, 2};
+  { // 1D -> 2D
+    using Dest = Tensor<int, 3, 2>;
+    Dest expected_result{1, 2, 1, 2, 1, 2};
+    Dest result = mhlo::broadcast_in_dim<Dest>(t1, {1});
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+  { // 1D -> 2D
+    using Dest = Tensor<int, 2, 3>;
+    Dest expected_result{1, 1, 1, 2, 2, 2};
+    Dest result = mhlo::broadcast_in_dim<Dest>(t1, {0});
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
 
-  Tensor<int, 3, 2> expected_result3{1, 2, 1, 2, 1, 2};
-  Tensor2D<int, 3, 2> result3 =
-      mhlo::broadcast_in_dim<Tensor2D<int, 3, 2>>(t1, {1});
-  EXPECT_THAT(result3, Pointwise(Eq(), expected_result3));
+  Tensor<int, 2, 3> t2{1, 2, 3, 4, 5, 6};
+  { // 2D transpose
+    using Dest = Tensor<int, 3, 2>;
+    Dest expected_result{1, 4, 2, 5, 3, 6};
+    Dest result = mhlo::broadcast_in_dim<Dest>(t2, {1, 0});
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
 
-  Tensor<int, 2, 3> expected_result4{1, 1, 1, 2, 2, 2};
-  Tensor2D<int, 2, 3> result4 =
-      mhlo::broadcast_in_dim<Tensor2D<int, 2, 3>>(t1, {0});
-  EXPECT_THAT(result4, Pointwise(Eq(), expected_result4));
+  Tensor2D<float, 1, 3> t3{1.1, 1.2, 1.3};
+  { // 2D -> 3D
+    using Dest = Tensor3D<float, 1, 2, 3>;
+    Tensor1D<int64_t, 2> broadcast_dim{1, 2};
+    Dest result = mhlo::broadcast_in_dim<Dest>(t3, broadcast_dim);
+    Dest expected_result{1.1, 1.2, 1.3, 1.1, 1.2, 1.3};
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+  { // 2D -> 3D + transpose
+    using Dest = Tensor3D<float, 1, 3, 2>;
+    Tensor1D<int64_t, 2> broadcast_dim{2, 1};
+    Dest result = mhlo::broadcast_in_dim<Dest>(t3, broadcast_dim);
+    Dest expected_result{1.1, 1.1, 1.2, 1.2, 1.3, 1.3};
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+
+  { // 2D -> 4D
+    using Dest = Tensor4D<float, 1, 2, 2, 3>;
+    Tensor1D<int64_t, 2> broadcast_dim{2, 3};
+    Dest result = mhlo::broadcast_in_dim<Dest>(t3, broadcast_dim);
+    Dest expected_result{1.1, 1.2, 1.3, 1.1, 1.2, 1.3,
+                         1.1, 1.2, 1.3, 1.1, 1.2, 1.3};
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+
+  Tensor3D<float, 2, 2, 3> t4{1.1, 1.2, 1.3, 1.4, 1.5, 1.6,
+                              2.1, 2.2, 2.3, 2.4, 2.5, 2.6};
+  { // 3D -> 4D
+    using Dest = Tensor4D<float, 2, 2, 2, 3>;
+
+    Tensor1D<int64_t, 3> broadcast_dim{1, 2, 3};
+
+    Dest result = mhlo::broadcast_in_dim<Dest>(t4, broadcast_dim);
+    Dest expected_result{1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 2.1, 2.2,
+                         2.3, 2.4, 2.5, 2.6, 1.1, 1.2, 1.3, 1.4,
+                         1.5, 1.6, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6};
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
 }
 
 TEST(mhlo, clamp) {

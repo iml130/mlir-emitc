@@ -378,6 +378,7 @@ broadcast_in_dim(Src operand,
   std::vector<size_t> retainedDimensions(Dest::rank());
   std::iota(retainedDimensions.begin(), retainedDimensions.end(), 0);
 
+  // Checks if broadcast_dimensions is a subset of 0 .. Dest::rank()
   retainedDimensions.erase(
       std::remove_if(retainedDimensions.begin(), retainedDimensions.end(),
                      [&broadcast_dimensions](size_t i) {
@@ -386,20 +387,25 @@ broadcast_in_dim(Src operand,
                                         i) == broadcast_dimensions.end();
                      }),
       retainedDimensions.end());
-
   assert(retainedDimensions.size() == Src::rank());
 
   Dest result;
   for (size_t i = 0; i < result.size(); i++) {
-    auto index = result.unravel_index(i);
+    auto dest_index = result.unravel_index(i);
 
     // reverse mapping with broadcast_dimensions
-    std::array<size_t, Src::rank()> reversedIndex;
-    for (size_t j = 0; j < reversedIndex.size(); j++) {
-      reversedIndex[j] = index[broadcast_dimensions(j)];
+    std::array<size_t, Src::rank()> src_index;
+    for (size_t j = 0; j < src_index.size(); j++) {
+      src_index[j] = dest_index[broadcast_dimensions(j)];
+    }
+    // Handle case of broadcasting dimensions of size 1
+    for (size_t i = 0; i < src_index.size(); ++i) {
+      if (Src::shape()[i] == 1) {
+        src_index[i] = 0;
+      }
     }
 
-    result[i] = operand[operand.ravel_index(reversedIndex)];
+    result[i] = operand[operand.ravel_index(src_index)];
   }
 
   return result;

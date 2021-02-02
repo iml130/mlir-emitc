@@ -65,6 +65,30 @@ struct conjunction<B1, Bn...>
 
 template <class... B>
 constexpr bool conjunction_v = conjunction<B...>::value;
+
+// template switch case statement.
+// case_t => condition/case
+template <bool B, typename T>
+struct case_t {
+  static constexpr bool value = B;
+  using type = T;
+};
+
+// switch_t => template switch case
+template <typename First, typename... Rest>
+struct switch_t : std::conditional_t<First::value, First, switch_t<Rest...>> {};
+
+template <typename T>
+struct switch_t<T> {
+  using type = T;
+};
+
+template <bool B, typename T>
+struct switch_t<case_t<B, T>> {
+  // one statement needs to be true
+  static_assert(B, "None of the supplied conditions evaluate to true.");
+  using type = T;
+};
 } // namespace detail
 
 template <typename T, size_t... Shape>
@@ -324,4 +348,48 @@ struct concat<Dim, T, Tensor2D<T, Xs, Ys>...> {
                detail::sum<sizeof...(Ys)>({Ys...})>>;
 };
 
+template <typename T, size_t Dim, size_t... Xs, size_t... Ys, size_t... Zs>
+struct concat<Dim, T, Tensor3D<T, Xs, Ys, Zs>...> {
+  static_assert(0 <= Dim && Dim < 3, "Dimension index out of bounds");
+
+  using type = typename detail::switch_t<
+      detail::case_t<Dim == 0, Tensor3D<T, detail::sum<sizeof...(Xs)>({Xs...}),
+                                        detail::first<sizeof...(Ys)>({Ys...}),
+                                        detail::first<sizeof...(Zs)>({Zs...})>>,
+      detail::case_t<Dim == 1,
+                     Tensor3D<T, detail::first<sizeof...(Xs)>({Xs...}),
+                              detail::sum<sizeof...(Ys)>({Ys...}),
+                              detail::first<sizeof...(Zs)>({Zs...})>>,
+      detail::case_t<Dim == 2,
+                     Tensor3D<T, detail::first<sizeof...(Xs)>({Xs...}),
+                              detail::first<sizeof...(Ys)>({Ys...}),
+                              detail::sum<sizeof...(Zs)>({Zs...})>>>::type;
+};
+
+template <typename T, size_t Dim, size_t... D0, size_t... D1, size_t... D2,
+          size_t... D3>
+struct concat<Dim, T, Tensor4D<T, D0, D1, D2, D3>...> {
+  static_assert(0 <= Dim && Dim < 4, "Dimension index out of bounds");
+
+  using type = typename detail::switch_t<
+      detail::case_t<Dim == 0, Tensor4D<T, detail::sum<sizeof...(D0)>({D0...}),
+                                        detail::first<sizeof...(D1)>({D1...}),
+                                        detail::first<sizeof...(D2)>({D2...}),
+                                        detail::first<sizeof...(D3)>({D3...})>>,
+      detail::case_t<Dim == 1,
+                     Tensor4D<T, detail::first<sizeof...(D0)>({D0...}),
+                              detail::sum<sizeof...(D1)>({D1...}),
+                              detail::first<sizeof...(D2)>({D2...}),
+                              detail::first<sizeof...(D3)>({D3...})>>,
+      detail::case_t<Dim == 2,
+                     Tensor4D<T, detail::first<sizeof...(D0)>({D0...}),
+                              detail::first<sizeof...(D1)>({D1...}),
+                              detail::sum<sizeof...(D2)>({D2...}),
+                              detail::first<sizeof...(D3)>({D3...})>>,
+      detail::case_t<Dim == 3,
+                     Tensor4D<T, detail::first<sizeof...(D0)>({D0...}),
+                              detail::first<sizeof...(D1)>({D1...}),
+                              detail::first<sizeof...(D2)>({D2...}),
+                              detail::sum<sizeof...(D3)>({D3...})>>>::type;
+};
 #endif // EMITC_EMITC_TYPES_H

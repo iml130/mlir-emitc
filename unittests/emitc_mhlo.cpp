@@ -1072,6 +1072,120 @@ TEST(mhlo, concatenate) {
   EXPECT_THAT(lambda_2d_3_col(),
               Pointwise(FloatEq(), {1.0f, 3.0f, 4.0f, 7.0f, 8.0f, 9.0f, 2.0f,
                                     5.0f, 6.0f, 10.0f, 11.0f, 12.0f}));
+
+  Tensor3D<float, 2, 2, 2> t7{1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f};
+  Tensor3D<float, 2, 2, 2> t8{9.0f,  10.0f, 11.0f, 12.0f,
+                              13.0f, 14.0f, 15.0f, 16.0f};
+  Tensor3D<float, 2, 2, 1> t9{9.0f, 10.0f, 11.0f, 12.0f};
+
+  auto lambda_3d_422 = [&t7, &t8]() -> Tensor3D<float, 4, 2, 2> {
+    return mhlo::concatenate<0, Tensor3D<float, 4, 2, 2>,
+                             Tensor3D<float, 2, 2, 2>,
+                             Tensor3D<float, 2, 2, 2>>(t7, t8);
+  };
+
+  EXPECT_THAT(lambda_3d_422(),
+              Pointwise(FloatEq(),
+                        {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f, 9.0f,
+                         10.0f, 11.0f, 12.0f, 13.0f, 14.0f, 15.0f, 16.0f}));
+
+  auto lambda_3d_242 = [&t7, &t8]() -> Tensor3D<float, 2, 4, 2> {
+    return mhlo::concatenate<1, Tensor3D<float, 2, 4, 2>,
+                             Tensor3D<float, 2, 2, 2>,
+                             Tensor3D<float, 2, 2, 2>>(t7, t8);
+  };
+
+  EXPECT_THAT(lambda_3d_242(),
+              Pointwise(FloatEq(),
+                        {1.0f, 2.0f, 3.0f, 4.0f, 9.0f, 10.0f, 11.0f, 12.0f,
+                         5.0f, 6.0f, 7.0f, 8.0f, 13.0f, 14.0f, 15.0f, 16.0f}));
+
+  auto lambda_3d_223 = [&t7, &t9]() -> Tensor3D<float, 2, 2, 3> {
+    return mhlo::concatenate<2, Tensor3D<float, 2, 2, 3>,
+                             Tensor3D<float, 2, 2, 2>,
+                             Tensor3D<float, 2, 2, 1>>(t7, t9);
+  };
+
+  EXPECT_THAT(lambda_3d_223(),
+              Pointwise(FloatEq(), {1.0f, 2.0f, 9.0f, 3.0f, 4.0f, 10.0f, 5.0f,
+                                    6.0f, 11.0f, 7.0f, 8.0f, 12.0f}));
+
+  Tensor4D<float, 2, 2, 2, 2> t10{1.0f,  2.0f,  3.0f,  4.0f,  5.0f,  6.0f,
+                                  7.0f,  8.0f,  9.0f,  10.0f, 11.0f, 12.0f,
+                                  13.0f, 14.0f, 15.0f, 16.0f};
+  Tensor4D<float, 2, 2, 2, 2> t11{17.0f, 18.0f, 19.0f, 20.0f, 21.0f, 22.0f,
+                                  23.0f, 24.0f, 25.0f, 26.0f, 27.0f, 28.0f,
+                                  29.0f, 30.0f, 31.0f, 32.0f};
+  Tensor4D<float, 2, 2, 1, 2> t12{33.0f, 34.0f, 35.0f, 36.0f,
+                                  37.0f, 38.0f, 39.0f, 40.0f};
+
+  auto lambda_4d_4222 = [&t10, &t11]() -> Tensor4D<float, 4, 2, 2, 2> {
+    return mhlo::concatenate<0, Tensor4D<float, 4, 2, 2, 2>,
+                             Tensor4D<float, 2, 2, 2, 2>,
+                             Tensor4D<float, 2, 2, 2, 2>>(t10, t11);
+  };
+
+  EXPECT_THAT(
+      lambda_4d_4222(),
+      Pointwise(FloatEq(),
+                {1.0f,  2.0f,  3.0f,  4.0f,  5.0f,  6.0f,  7.0f,  8.0f,
+                 9.0f,  10.0f, 11.0f, 12.0f, 13.0f, 14.0f, 15.0f, 16.0f,
+                 17.0f, 18.0f, 19.0f, 20.0f, 21.0f, 22.0f, 23.0f, 24.0f,
+                 25.0f, 26.0f, 27.0f, 28.0f, 29.0f, 30.0f, 31.0f, 32.0f}));
+
+  auto lambda_4d_2422 = [&t10, &t11]() -> Tensor4D<float, 2, 4, 2, 2> {
+    return mhlo::concatenate<1, Tensor4D<float, 2, 4, 2, 2>,
+                             Tensor4D<float, 2, 2, 2, 2>,
+                             Tensor4D<float, 2, 2, 2, 2>>(t10, t11);
+  };
+
+  EXPECT_THAT(
+      lambda_4d_2422(),
+      Pointwise(FloatEq(),
+                {1.0f,  2.0f,  3.0f,  4.0f,  5.0f,  6.0f,  7.0f,  8.0f,
+                 17.0f, 18.0f, 19.0f, 20.0f, 21.0f, 22.0f, 23.0f, 24.0f,
+                 9.0f,  10.0f, 11.0f, 12.0f, 13.0f, 14.0f, 15.0f, 16.0f,
+                 25.0f, 26.0f, 27.0f, 28.0f, 29.0f, 30.0f, 31.0f, 32.0f}));
+
+  auto lambda_4d_2242 = [&t10, &t11]() -> Tensor4D<float, 2, 2, 4, 2> {
+    return mhlo::concatenate<2, Tensor4D<float, 2, 2, 4, 2>,
+                             Tensor4D<float, 2, 2, 2, 2>,
+                             Tensor4D<float, 2, 2, 2, 2>>(t10, t11);
+  };
+
+  EXPECT_THAT(
+      lambda_4d_2242(),
+      Pointwise(FloatEq(),
+                {1.0f,  2.0f,  3.0f,  4.0f,  17.0f, 18.0f, 19.0f, 20.0f,
+                 5.0f,  6.0f,  7.0f,  8.0f,  21.0f, 22.0f, 23.0f, 24.0f,
+                 9.0f,  10.0f, 11.0f, 12.0f, 25.0f, 26.0f, 27.0f, 28.0f,
+                 13.0f, 14.0f, 15.0f, 16.0f, 29.0f, 30.0f, 31.0f, 32.0f}));
+
+  auto lambda_4d_2224 = [&t10, &t11]() -> Tensor4D<float, 2, 2, 2, 4> {
+    return mhlo::concatenate<3, Tensor4D<float, 2, 2, 2, 4>,
+                             Tensor4D<float, 2, 2, 2, 2>,
+                             Tensor4D<float, 2, 2, 2, 2>>(t10, t11);
+  };
+
+  EXPECT_THAT(
+      lambda_4d_2224(),
+      Pointwise(FloatEq(),
+                {1.0f,  2.0f,  17.0f, 18.0f, 3.0f,  4.0f,  19.0f, 20.0f,
+                 5.0f,  6.0f,  21.0f, 22.0f, 7.0f,  8.0f,  23.0f, 24.0f,
+                 9.0f,  10.0f, 25.0f, 26.0f, 11.0f, 12.0f, 27.0f, 28.0f,
+                 13.0f, 14.0f, 29.0f, 30.0f, 15.0f, 16.0f, 31.0f, 32.0f}));
+
+  auto lambda_4d_2232 = [&t10, &t12]() -> Tensor4D<float, 2, 2, 3, 2> {
+    return mhlo::concatenate<2, Tensor4D<float, 2, 2, 3, 2>,
+                             Tensor4D<float, 2, 2, 2, 2>,
+                             Tensor4D<float, 2, 2, 1, 2>>(t10, t12);
+  };
+
+  EXPECT_THAT(lambda_4d_2232(),
+              Pointwise(FloatEq(), {1.0f,  2.0f,  3.0f,  4.0f,  33.0f, 34.0f,
+                                    5.0f,  6.0f,  7.0f,  8.0f,  35.0f, 36.0f,
+                                    9.0f,  10.0f, 11.0f, 12.0f, 37.0f, 38.0f,
+                                    13.0f, 14.0f, 15.0f, 16.0f, 39.0f, 40.0f}));
 }
 
 /// Adapted from

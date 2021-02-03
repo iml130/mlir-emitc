@@ -53,7 +53,7 @@ def main():
     parser = argparse.ArgumentParser(
         description=
         "Translates a model to saved model format with a predict function for further compiling." \
-        "Both keras and saved model format as input is supported."
+        "Keras and saved model format are supported as input formats."
     )
     parser.add_argument(
         "--batch-size",

@@ -371,7 +371,7 @@ inline Src logical_xor(Src x, Src y) {
 template <typename Dest, typename Src>
 inline Dest
 broadcast_in_dim(Src operand,
-                 Tensor1D<int64_t, Src::rank()> broadcast_dimensions) {
+                 Tensor<int64_t, Src::rank()> broadcast_dimensions) {
   static_assert(is_tensor<Src>::value, "Expected tensor argument");
   static_assert(is_tensor<Dest>::value, "Expected tensor result");
 
@@ -501,8 +501,8 @@ inline Dest concatenate(Src1 input1, Src... inputs) {
 // SliceOp
 // Overload for 1d case
 template <typename Dest, typename Src, IsTensorOfDim<1, Src> = true>
-Dest slice(Src x, Tensor1D<int64_t, 1> start_indices,
-           Tensor1D<int64_t, 1> limit_indices, Tensor1D<int64_t, 1> strides) {
+Dest slice(Src x, Tensor<int64_t, 1> start_indices,
+           Tensor<int64_t, 1> limit_indices, Tensor<int64_t, 1> strides) {
   Dest z;
 
   size_t index = 0;
@@ -515,8 +515,8 @@ Dest slice(Src x, Tensor1D<int64_t, 1> start_indices,
 
 // Overload for 2d case
 template <typename Dest, typename Src, IsTensorOfDim<2, Src> = true>
-Dest slice(Src x, Tensor1D<int64_t, 2> start_indices,
-           Tensor1D<int64_t, 2> limit_indices, Tensor1D<int64_t, 2> strides) {
+Dest slice(Src x, Tensor<int64_t, 2> start_indices,
+           Tensor<int64_t, 2> limit_indices, Tensor<int64_t, 2> strides) {
   Dest z;
 
   size_t index = 0;
@@ -531,8 +531,8 @@ Dest slice(Src x, Tensor1D<int64_t, 2> start_indices,
 
 // Overload for 3d case
 template <typename Dest, typename Src, IsTensorOfDim<3, Src> = true>
-Dest slice(Src x, Tensor1D<int64_t, 3> start_indices,
-           Tensor1D<int64_t, 3> limit_indices, Tensor1D<int64_t, 3> strides) {
+Dest slice(Src x, Tensor<int64_t, 3> start_indices,
+           Tensor<int64_t, 3> limit_indices, Tensor<int64_t, 3> strides) {
   Dest z;
 
   size_t index = 0;
@@ -550,8 +550,8 @@ Dest slice(Src x, Tensor1D<int64_t, 3> start_indices,
 
 // Overload for 4d case
 template <typename Dest, typename Src, IsTensorOfDim<4, Src> = true>
-Dest slice(Src x, Tensor1D<int64_t, 4> start_indices,
-           Tensor1D<int64_t, 4> limit_indices, Tensor1D<int64_t, 4> strides) {
+Dest slice(Src x, Tensor<int64_t, 4> start_indices,
+           Tensor<int64_t, 4> limit_indices, Tensor<int64_t, 4> strides) {
   Dest z;
 
   size_t index = 0;
@@ -574,16 +574,16 @@ Dest slice(Src x, Tensor1D<int64_t, 4> start_indices,
 // Overload for 1d case
 template <typename Dest, typename Src, IsTensorOfDim<1, Src> = true>
 Dest dynamic_slice(Src x, Tensor<int32_t> start_index,
-                   Tensor1D<int64_t, 1> slice_sizes) {
+                   Tensor<int64_t, 1> slice_sizes) {
   auto clamp = [](int64_t value, int64_t minValue, int64_t maxValue) {
     return std::max(minValue, std::min(maxValue, value));
   };
 
   int64_t dim_x = static_cast<int64_t>(Src::dim(0));
   int64_t start_index_eff = clamp(start_index[0], 0, dim_x - slice_sizes[0]);
-  Tensor1D<int64_t, 1> start_indices{start_index_eff};
-  Tensor1D<int64_t, 1> limit_indices{start_index_eff + slice_sizes[0]};
-  Tensor1D<int64_t, 1> strides{1};
+  Tensor<int64_t, 1> start_indices{start_index_eff};
+  Tensor<int64_t, 1> limit_indices{start_index_eff + slice_sizes[0]};
+  Tensor<int64_t, 1> strides{1};
 
   return slice<Dest, Src>(x, start_indices, limit_indices, strides);
 }
@@ -592,7 +592,7 @@ Dest dynamic_slice(Src x, Tensor<int32_t> start_index,
 template <typename Dest, typename Src, IsTensorOfDim<2, Src> = true>
 Dest dynamic_slice(Src x, Tensor<int32_t> start_index_x,
                    Tensor<int32_t> start_index_y,
-                   Tensor1D<int64_t, 2> slice_sizes) {
+                   Tensor<int64_t, 2> slice_sizes) {
   auto clamp = [](int64_t value, int64_t minValue, int64_t maxValue) {
     return std::max(minValue, std::min(maxValue, value));
   };
@@ -603,10 +603,10 @@ Dest dynamic_slice(Src x, Tensor<int32_t> start_index_x,
       clamp(start_index_x[0], 0, dim_x - slice_sizes[0]);
   int64_t start_index_y_eff =
       clamp(start_index_y[0], 0, dim_y - slice_sizes[1]);
-  Tensor1D<int64_t, 2> start_indices{start_index_x_eff, start_index_y_eff};
-  Tensor1D<int64_t, 2> limit_indices{start_index_x_eff + slice_sizes[0],
-                                     start_index_y_eff + slice_sizes[1]};
-  Tensor1D<int64_t, 2> strides{1, 1};
+  Tensor<int64_t, 2> start_indices{start_index_x_eff, start_index_y_eff};
+  Tensor<int64_t, 2> limit_indices{start_index_x_eff + slice_sizes[0],
+                                   start_index_y_eff + slice_sizes[1]};
+  Tensor<int64_t, 2> strides{1, 1};
 
   return slice<Dest, Src>(x, start_indices, limit_indices, strides);
 }
@@ -891,7 +891,7 @@ inline Src select(typename replace_element_type<bool, Src>::type pred,
 // RngUniformOp
 template <typename Dest, typename T, size_t N>
 inline Dest rng_uniform(Tensor<T> low, Tensor<T> high,
-                        Tensor1D<int64_t, N> shape) {
+                        Tensor<int64_t, N> shape) {
   static_assert(std::is_integral<T>::value || std::is_floating_point<T>::value,
                 "Expected integer or floating point type");
   using uniform_distribution =
@@ -983,17 +983,17 @@ Src batch_norm_inference(Src input, Feature scale, Feature offset, Feature mean,
 template <typename Dest, typename Src, typename Weights>
 Dest convolution(Src input, Weights weights, int64_t batch_group_count,
                  int64_t input_batch_dimension, int64_t input_feature_dimension,
-                 Tensor1D<int64_t, 2> input_spatial_dimensions,
+                 Tensor<int64_t, 2> input_spatial_dimensions,
                  int64_t kernel_input_feature_dimension,
                  int64_t kernel_output_feature_dimension,
-                 Tensor1D<int64_t, 2> kernel_spatial_dimensions,
+                 Tensor<int64_t, 2> kernel_spatial_dimensions,
                  int64_t output_batch_dimension,
                  int64_t output_feature_dimension,
-                 Tensor1D<int64_t, 2> output_spatial_dimensions,
-                 int64_t feature_group_count, Tensor2D<int64_t, 2, 2> padding,
-                 Tensor1D<int64_t, 2> lhs_dilation,
-                 Tensor1D<int64_t, 2> rhs_dilation,
-                 Tensor1D<int64_t, 2> window_strides) {
+                 Tensor<int64_t, 2> output_spatial_dimensions,
+                 int64_t feature_group_count, Tensor<int64_t, 2, 2> padding,
+                 Tensor<int64_t, 2> lhs_dilation,
+                 Tensor<int64_t, 2> rhs_dilation,
+                 Tensor<int64_t, 2> window_strides) {
   static_assert(is_tensor_of_dim<4, Src>::value,
                 "Expected 4 dimensional input");
   static_assert(is_tensor_of_dim<4, Dest>::value,

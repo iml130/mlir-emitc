@@ -93,7 +93,7 @@ jobs:
         mkdir -p tmp
         cd tmp
         python3 ../${EMITC}/scripts/get_mobilenet_v2.py
-        python3 ../${EMITC}/scripts/keras_to_savedmodel.py --batch-size 2 mobilenet_v2.h5 model
+        python3 ../${EMITC}/scripts/model_to_savedmodel_with_predict_function.py --batch-size 2 mobilenet_v2.h5 model
         python3 ../${EMITC}/scripts/savedmodel_to_tf_dialect.py --exported-names predict model model_tf.mlir
         python3 ../${EMITC}/scripts/optimize_tf_dialect.py model_tf.mlir model_tf_opt.mlir
         python3 ../${EMITC}/scripts/tf_to_mhlo_dialect.py model_tf_opt.mlir ../${E2E}/model_mhlo.mlir

@@ -41,24 +41,32 @@ def translate(model_path: str, output_path: str, batch_size: int):
 
     # Produce a concrete function to compile.
     module = Module(model)
-    module.predict = tf.function(func=module.predict,
-                                 input_signature=extract_tensor_specs(
-                                     model, batch_size=batch_size))
+    module.predict = tf.function(
+        func=module.predict,
+        input_signature=extract_tensor_specs(model, batch_size=batch_size),
+    )
 
     tf.saved_model.save(module, output_path)
 
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Translate keras model to saved model format")
+        description=
+        "Translates a model to saved model format with a predict function for further compiling." \
+        "Both keras and saved model format as input is supported."
+    )
     parser.add_argument(
         "--batch-size",
         type=int,
         default=1,
         help="Set the batch size for inference",
     )
-    parser.add_argument("model_path", metavar="model-path", help="Path to keras model")
-    parser.add_argument("output_path", metavar="output-path", help="Output directory")
+    parser.add_argument("model_path",
+                        metavar="model-path",
+                        help="Path to model")
+    parser.add_argument("output_path",
+                        metavar="output-path",
+                        help="Output directory")
     args = parser.parse_args()
 
     translate(args.model_path, args.output_path, args.batch_size)

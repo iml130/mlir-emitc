@@ -14,15 +14,17 @@
 set -e
 
 if [[ $# -ne 7 ]] ; then
-  echo "Usage: $0 <path/to/keras/model> <path/to/emitc/include/files> <path/to/emitc-opt> <compiler> <batch-size> <seed> <output_dir>"
+  echo "Usage: $0 <path/to/model> <path/to/emitc/include/files> <path/to/emitc-opt> <compiler> <batch-size> <seed> <output_dir>"
   echo
+  echo "Both a keras and a tensorflow saved model is supported."
+  echo 
   echo "This script expects a python version in the PATH with a recent version of tensorflow installed."
   echo "Tested with python 3.6.9 and tensorflow 2.4.0" 
 
   exit 1
 fi
 
-KERAS_MODEL=$1
+MODEL=$1
 EMITC_INCLUDE_DIR=$2
 EMITC_OPT=$3
 EMITC_TRANSLATE=$(dirname $EMITC_OPT)/emitc-translate
@@ -31,7 +33,7 @@ BATCH_SIZE=$5
 SEED=$6
 OUTPUT_DIR=$7
 
-echo "KERAS_MODEL=$KERAS_MODEL"
+echo "MODEL=$MODEL"
 echo "EMITC_INCLUDE_DIR=$EMITC_INCLUDE_DIR"
 echo "EMITC_OPT=$EMITC_OPT"
 echo "EMITC_TRANSLATE=$EMITC_TRANSLATE"
@@ -43,8 +45,8 @@ echo "OUTPUT_DIR=$OUTPUT_DIR"
 echo "Setting up output directory"
 mkdir -p "$OUTPUT_DIR"
 
-echo "Converting keras model to saved model format"
-python keras_to_savedmodel.py --batch-size "$BATCH_SIZE" "$KERAS_MODEL" "$OUTPUT_DIR"/model
+echo "Converting model to saved model format"
+python model_to_savedmodel_with_predict_function.py --batch-size "$BATCH_SIZE" "$MODEL" "$OUTPUT_DIR"/model
 
 echo "Translating saved model to tf dialect"
 EXPORTED_NAME=predict
@@ -70,7 +72,7 @@ echo "Translating emitc dialect to cpp header"
 "$EMITC_TRANSLATE" --mlir-to-cpp "$OUTPUT_DIR"/model_emitc.mlir > "$OUTPUT_DIR"/model_generated.h
 
 echo "Generating test case"
-python generate_testscases.py --file-format cpp --count 1 --batch-size "$BATCH_SIZE" --seed "$SEED" "$KERAS_MODEL" "$OUTPUT_DIR"
+python generate_testscases.py --file-format cpp --count 1 --batch-size "$BATCH_SIZE" --seed "$SEED" "$MODEL" "$OUTPUT_DIR"
 
 echo "Compiling test case"
 "$CPP_COMPILER" "$OUTPUT_DIR"/test.cpp -O3 -I "$EMITC_INCLUDE_DIR" -I "$OUTPUT_DIR" -o "$OUTPUT_DIR"/test

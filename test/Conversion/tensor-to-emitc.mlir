@@ -1,6 +1,6 @@
 // RUN: emitc-opt -convert-tensor-to-emitc %s | emitc-translate --mlir-to-cpp | FileCheck %s
 
-// CHECK: void std_extract_element(Tensor0D<int32_t> v1, Tensor1D<int32_t, 2> v2)
+// CHECK: void std_extract_element(Tensor<int32_t> v1, Tensor<int32_t, 2> v2)
 func @std_extract_element(%arg0: tensor<i32>, %arg1: tensor<2xi32>) -> () {
   %0 = constant 0 : index
   %1 = constant 1 : index

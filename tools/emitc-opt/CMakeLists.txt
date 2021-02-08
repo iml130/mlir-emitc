@@ -14,8 +14,10 @@ if(${IREE_ENABLE_EMITC})
     MLIRSDBM
     MLIRSPIRV
     MLIRSPIRVTransforms
-    MLIRStandard
     MLIRShape
+    MLIRStandard
+    MLIRTosa
+    MLIRTosaTransforms
     MLIRTransforms
     MLIRVector
     )

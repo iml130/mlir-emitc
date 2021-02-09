@@ -43,6 +43,7 @@ cmake --build . --target MLIREmitCAllTests
 ## Supported Conversions and Translations
 
 Conversions are supported for [MLIR-HLO](https://github.com/tensorflow/mlir-hlo) ops and some ops of the standard and SCF dialect.
+In addition, support for converting Tensor Operator Set Architecture [(TOSA)](https://mlir.llvm.org/docs/Dialects/TOSA/) dialect to EmitC is emerging.
 The `emitc-opt` tool enables conversions via the following options:
 
 | option                                   |                                                                          |
@@ -52,6 +53,7 @@ The `emitc-opt` tool enables conversions via the following options:
 | `--convert-scf-to-emitc`                 | Convert SCF dialect to EmitC dialect, replacing IfOp and ForOp.          |
 | `--convert-std-to-emitc `                | Convert std dialect to EmitC dialect, replacing IndexCastOp and SplatOp. |
 | `--convert-tensor-to-emitc `             | Convert tensor dialect to EmitC dialect, replacing ExtractOp.            |
+| `--convert-tosa-to-emitc `               | Convert TOSA dialect to EmitC dialect.                                   |
 
 The currently supported MHLO ops are listed in the [docs/mhlo-op-coverage.md](docs/mhlo-op-coverage.md) document.
 

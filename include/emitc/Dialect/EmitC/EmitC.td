@@ -17,10 +17,51 @@ include "mlir/Interfaces/ControlFlowInterfaces.td"
 include "mlir/Interfaces/LoopLikeInterface.td"
 include "mlir/Interfaces/SideEffectInterfaces.td"
 
+//===----------------------------------------------------------------------===//
+// EmitC dialect definition
+//===----------------------------------------------------------------------===//
+
 def EmitC_Dialect : Dialect {
   let name = "emitc";
   let cppNamespace = "::mlir::emitc";
 }
+
+//===----------------------------------------------------------------------===//
+// EmitC type definitions
+//===----------------------------------------------------------------------===//
+
+class EmitC_Type<string name> : TypeDef<EmitC_Dialect, name> { }
+
+def OpaqueType : EmitC_Type<"Opaque"> {
+  let mnemonic = "opaque";
+
+  let summary = "An opaque type";
+
+  let description = [{
+    An opaque data type of which the value gets emitted as is.
+  }];
+
+  let parameters = (ins StringRefParameter<"the opaque value">:$value);
+
+  let printer = [{
+    $_printer << "opaque<" << getValue() << ">";
+  }];
+
+  let parser = [{
+    if (parser.parseLess())
+      return Type();
+    StringRef value;
+    if ($_parser.parseKeyword(&value))
+      return Type();
+    if ($_parser.parseGreater())
+      return Type();
+    return get($_ctxt, value);
+  }];
+}
+
+//===----------------------------------------------------------------------===//
+// EmitC op definitions
+//===----------------------------------------------------------------------===//
 
 // Base class for EmitC dialect ops.
 class EmitC_Op<string mnemonic, list<OpTrait> traits = []> :

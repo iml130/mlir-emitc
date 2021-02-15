@@ -13,8 +13,11 @@
 #include "emitc/Dialect/EmitC/EmitCDialect.h"
 #include "mlir/Dialect/StandardOps/IR/Ops.h"
 #include "mlir/IR/Builders.h"
+#include "mlir/IR/DialectImplementation.h"
 #include "mlir/IR/OpImplementation.h"
 #include "mlir/IR/TypeUtilities.h"
+#include "mlir/IR/Types.h"
+#include "llvm/ADT/TypeSwitch.h"
 
 using namespace mlir;
 using namespace emitc;
@@ -28,8 +31,10 @@ void emitc::EmitCDialect::initialize() {
 #define GET_OP_LIST
 #include "emitc/Dialect/EmitC/EmitC.cpp.inc"
       >();
-  allowUnknownTypes();
-  allowUnknownOperations();
+  addTypes<
+#define GET_TYPEDEF_LIST
+#include "emitc/Dialect/EmitC/EmitCTypes.cpp.inc"
+      >();
 }
 
 /// Default callback for IfOp builders. Inserts a yield without arguments.
@@ -511,3 +516,25 @@ static void print(OpAsmPrinter &p, emitc::YieldOp op) {
 
 #define GET_OP_CLASSES
 #include "emitc/Dialect/EmitC/EmitC.cpp.inc"
+
+#define GET_TYPEDEF_CLASSES
+#include "emitc/Dialect/EmitC/EmitCTypes.cpp.inc"
+
+Type emitc::EmitCDialect::parseType(DialectAsmParser &parser) const {
+  llvm::SMLoc typeLoc = parser.getCurrentLocation();
+  StringRef mnemonic;
+  if (parser.parseKeyword(&mnemonic)) {
+    return Type();
+  }
+  auto genType = generatedTypeParser(getContext(), parser, mnemonic);
+  if (genType != Type()) {
+    return genType;
+  }
+  parser.emitError(typeLoc, "unknown type in EmitC dialect");
+  return Type();
+}
+
+void emitc::EmitCDialect::printType(Type type, DialectAsmPrinter &os) const {
+  if (failed(generatedTypePrinter(type, os)))
+    llvm_unreachable("unexpected 'EmitC' type kind");
+}

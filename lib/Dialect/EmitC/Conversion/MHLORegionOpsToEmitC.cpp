@@ -156,15 +156,15 @@ private:
     auto operands = op.getOperands();
 
     StringRef funcName = "mhlo::reduce";
-    StringAttr callee = StringAttr::get(funcName, ctx);
+    StringAttr callee = StringAttr::get(ctx, funcName);
 
     SmallVector<Attribute, 2> args_ =
         indexSequence(operands.size(), op.getContext());
 
     args_.push_back(op.dimensions());
-    args_.push_back(SymbolRefAttr::get(funcOp.getName(), ctx));
+    args_.push_back(SymbolRefAttr::get(ctx, funcOp.getName()));
 
-    ArrayAttr args = ArrayAttr::get(args_, ctx);
+    ArrayAttr args = ArrayAttr::get(ctx, args_);
 
     SmallVector<Attribute, 2> templateArgs_ = llvm::to_vector<2>(
         llvm::map_range(llvm::seq<size_t>(0, op.getNumResults()),
@@ -175,7 +175,7 @@ private:
     templateArgs_.push_back(
         IntegerAttr::get(IntegerType::get(ctx, 64), op.dimensions().size()));
 
-    ArrayAttr templateArgs = ArrayAttr::get(templateArgs_, ctx);
+    ArrayAttr templateArgs = ArrayAttr::get(ctx, templateArgs_);
 
     emitc::CallOp callOp = builder.create<emitc::CallOp>(
         op.getLoc(), op.getResultTypes(), callee, args, templateArgs, operands);
@@ -191,7 +191,7 @@ private:
     auto operands = op.getOperands();
 
     StringRef funcName = "mhlo::reduce_window";
-    StringAttr callee = StringAttr::get(funcName, ctx);
+    StringAttr callee = StringAttr::get(ctx, funcName);
 
     SmallVector<Attribute, 2> args_ = indexSequence(operands.size(), ctx);
 
@@ -204,12 +204,12 @@ private:
     args_.push_back(
         op.window_dilations().getValueOr(i64ElementsAttr(1, dim, ctx)));
     args_.push_back(op.padding().getValueOr(i64ElementsAttr(0, 2 * dim, ctx)));
-    args_.push_back(SymbolRefAttr::get(funcOp.getName(), ctx));
+    args_.push_back(SymbolRefAttr::get(ctx, funcOp.getName()));
 
-    ArrayAttr args = ArrayAttr::get(args_, ctx);
+    ArrayAttr args = ArrayAttr::get(ctx, args_);
 
     ArrayAttr templateArgs =
-        ArrayAttr::get({TypeAttr::get(op.getResult().getType())}, ctx);
+        ArrayAttr::get(ctx, {TypeAttr::get(op.getResult().getType())});
 
     emitc::CallOp callOp = builder.create<emitc::CallOp>(
         op.getLoc(), op.getType(), callee, args, templateArgs, operands);

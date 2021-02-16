@@ -221,7 +221,7 @@ private:
       }
     }
 
-    ArrayAttr templateArgs = ArrayAttr::get(templateArgs_, srcOp.getContext());
+    ArrayAttr templateArgs = ArrayAttr::get(srcOp.getContext(), templateArgs_);
 
     rewriter.replaceOpWithNewOp<emitc::CallOp>(srcOp, srcOp.getType(), callee,
                                                args, templateArgs, operands);

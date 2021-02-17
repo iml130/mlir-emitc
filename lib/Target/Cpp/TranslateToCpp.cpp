@@ -556,9 +556,8 @@ LogicalResult CppEmitter::emitType(Type type) {
   if (auto ttype = type.dyn_cast<TupleType>()) {
     return emitTupleType(ttype.getTypes());
   }
-  // TODO: Change to be EmitC specific.
-  if (auto ot = type.dyn_cast<OpaqueType>()) {
-    os << ot.getTypeData();
+  if (auto ot = type.dyn_cast<emitc::OpaqueType>()) {
+    os << ot.getValue();
     return success();
   }
   return failure();

@@ -29,10 +29,13 @@ void buildTerminatedBody(OpBuilder &builder, Location loc);
 } // namespace emitc
 } // namespace mlir
 
+#include "emitc/Dialect/EmitC/EmitCDialect.h.inc"
+
+#define GET_TYPEDEF_CLASSES
+#include "emitc/Dialect/EmitC/EmitCTypes.h.inc"
+
 #define GET_OP_CLASSES
 #include "emitc/Dialect/EmitC/EmitC.h.inc"
-
-#include "emitc/Dialect/EmitC/EmitCDialect.h.inc"
 
 namespace mlir {
 namespace emitc {

@@ -218,11 +218,7 @@ inline Src tanh(Src x) {
 // AddOp
 template <typename Src>
 inline Src add(Src x, Src y) {
-  using ET_Src = typename get_element_type<Src>::type;
-
-  auto f = std::plus<ET_Src>{};
-
-  return binary<Src>(x, y, f);
+  return emitc::add<Src>(x, y);
 }
 
 // Atan2Op

@@ -25,6 +25,13 @@ inline Src abs(Src x) {
   return emitc::abs<Src>(x);
 }
 
+/// Binary elementwise ops	
+// AddOp
+template <typename Src>
+inline Src add(Src x, Src y) {
+  return emitc::add<Src>(x, y);
+}
+
 } // namespace tosa
 
 #endif // EMITC_EMITC_TOSA_H

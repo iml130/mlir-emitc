@@ -39,6 +39,17 @@ inline Src abs(Src x) {
   return unary<Src>(x, f);
 }
 
+/// Functions for binary elementwise ops.
+// AddOp
+template <typename Src>
+inline Src add(Src x, Src y) {
+  using ET_Src = typename get_element_type<Src>::type;
+
+  auto f = std::plus<ET_Src>{};
+
+  return binary<Src>(x, y, f);
+}
+
 } // namespace emitc
 
 #endif // EMITC_EMITC_CORE_OPS_H

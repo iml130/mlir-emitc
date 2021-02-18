@@ -103,11 +103,7 @@ inline Src cos(Src x) {
 // ExpOp
 template <typename Src>
 inline Src exponential(Src x) {
-  using ET_Src = typename get_element_type<Src>::type;
-
-  auto f = static_cast<ET_Src (*)(ET_Src)>(std::exp);
-
-  return unary<Src>(x, f);
+  return emitc::exp<Src>(x);
 }
 
 // Expm1Op

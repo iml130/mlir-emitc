@@ -41,4 +41,10 @@ def ConvertTensorToEmitC : FunctionPass<"convert-tensor-to-emitc"> {
   let dependentDialects = ["EmitCDialect"];
 }
 
+def ConvertTosaToEmitC : FunctionPass<"convert-tosa-to-emitc"> {
+  let summary = "Convert TOSA dialect to EmitC dialect.";
+  let constructor = "createConvertTosaToEmitCPass()";
+  let dependentDialects = ["EmitCDialect"];
+}
+
 #endif // EMITC_DIALECT_EMITC_PASSES

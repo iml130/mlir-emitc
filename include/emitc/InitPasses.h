@@ -41,6 +41,7 @@ inline void registerAllEmitCPasses() {
   registerConvertSCFToEmitCPass();
   registerConvertStdToEmitCPass();
   registerConvertTensorToEmitCPass();
+  registerConvertTosaToEmitCPass();
 }
 
 } // namespace emitc

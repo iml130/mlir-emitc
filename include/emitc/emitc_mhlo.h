@@ -10,7 +10,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// This file defines functions used by EmitC
+// This file defines functions emitted by MHLOToEmitC
 
 #ifndef EMITC_EMITC_MHLO_H
 #define EMITC_EMITC_MHLO_H
@@ -25,7 +25,7 @@
 #include <type_traits>
 #include <vector>
 
-#include "emitc_types.h"
+#include "emitc_core_ops.h"
 
 namespace mhlo {
 /// See
@@ -37,11 +37,7 @@ namespace mhlo {
 // TODO support complex numbers
 template <typename Src>
 inline Src abs(Src x) {
-  using ET_Src = typename get_element_type<Src>::type;
-
-  auto f = static_cast<ET_Src (*)(ET_Src)>(std::abs);
-
-  return unary<Src>(x, f);
+  return emitc::abs<Src>(x);
 }
 
 // CeilOp

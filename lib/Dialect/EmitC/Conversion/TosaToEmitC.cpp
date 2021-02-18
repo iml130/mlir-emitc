@@ -57,7 +57,8 @@ private:
       }
     }
 
-    ArrayAttr templateArgs = ArrayAttr::get(templateArgs_, srcOp.getContext());
+    ArrayAttr
+        templateArgs; // = ArrayAttr::get(templateArgs_, srcOp.getContext());
 
     rewriter.replaceOpWithNewOp<emitc::CallOp>(srcOp, srcOp.getType(), callee,
                                                args, templateArgs, operands);
@@ -76,7 +77,7 @@ private:
 
 void populateTosaToEmitcPatterns(MLIRContext *ctx,
                                  OwningRewritePatternList &patterns) {
-  // TODO: Insert patterns
+  patterns.insert<CallOpConversion<tosa::AbsOp>>(ctx, "tosa::abs");
 }
 
 namespace {
@@ -96,7 +97,7 @@ struct ConvertTosaToEmitCPass
     // target.addLegalOp<ModuleOp>();
     // target.addLegalOp<ModuleTerminatorOp>();
 
-    // TODO: Add illegal ops
+    target.addIllegalOp<tosa::AbsOp>();
 
     OwningRewritePatternList patterns;
     populateTosaToEmitcPatterns(&getContext(), patterns);

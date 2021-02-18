@@ -81,7 +81,7 @@ void populateTosaToEmitcPatterns(MLIRContext *ctx,
   patterns.insert<CallOpConversion<tosa::AbsOp>>(ctx, "tosa::abs");
   patterns.insert<CallOpConversion<tosa::ExpOp>>(ctx, "tosa::exp");
 
-  // Binary elementwise ops	
+  // Binary elementwise ops
   patterns.insert<CallOpConversion<tosa::AddOp>>(ctx, "tosa::add");
 }
 
@@ -106,7 +106,7 @@ struct ConvertTosaToEmitCPass
     target.addIllegalOp<tosa::AbsOp>();
     target.addIllegalOp<tosa::ExpOp>();
 
-    // Binary elementwise ops	
+    // Binary elementwise ops
     target.addIllegalOp<tosa::AddOp>();
 
     OwningRewritePatternList patterns;

@@ -32,7 +32,7 @@ inline Src exp(Src x) {
   return emitc::exp<Src>(x);
 }
 
-/// Binary elementwise ops	
+/// Binary elementwise ops
 // AddOp
 template <typename Src>
 inline Src add(Src x, Src y) {

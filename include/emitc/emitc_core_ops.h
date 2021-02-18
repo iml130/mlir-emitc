@@ -60,6 +60,16 @@ inline Src sqrt(Src x) {
   return unary<Src>(x, f);
 }
 
+// ReciprocalOp
+template <typename Src>
+inline Src reciprocal(Src x) {
+  using ET_Src = typename get_element_type<Src>::type;
+  auto f = [](ET_Src a) -> ET_Src {
+        return 1 / a;
+  };
+  return unary(x, f);
+}
+
 /// Functions for binary elementwise ops.
 // AddOp
 template <typename Src>
@@ -67,6 +77,16 @@ inline Src add(Src x, Src y) {
   using ET_Src = typename get_element_type<Src>::type;
 
   auto f = std::plus<ET_Src>{};
+
+  return binary<Src>(x, y, f);
+}
+
+// MulOp
+template <typename Src>
+inline Src mul(Src x, Src y) {
+  using ET_Src = typename get_element_type<Src>::type;
+
+  auto f = std::multiplies<ET_Src>{};
 
   return binary<Src>(x, y, f);
 }

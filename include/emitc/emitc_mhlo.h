@@ -258,11 +258,7 @@ inline Src min(Src x, Src y) {
 // MulOp
 template <typename Src>
 inline Src mul(Src x, Src y) {
-  using ET_Src = typename get_element_type<Src>::type;
-
-  auto f = std::multiplies<ET_Src>{};
-
-  return binary<Src>(x, y, f);
+  return emitc::mul(x, y);
 }
 
 // PowOp

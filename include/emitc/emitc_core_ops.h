@@ -28,6 +28,7 @@
 
 namespace emitc {
 
+/// Functions for unary elementwise ops
 // AbsOp
 // TODO support complex numbers
 template <typename Src>
@@ -37,6 +38,27 @@ inline Src abs(Src x) {
   auto f = static_cast<ET_Src (*)(ET_Src)>(std::abs);
 
   return unary<Src>(x, f);
+}
+
+// ExpOp
+template <typename Src>
+inline Src exp(Src x) {
+  using ET_Src = typename get_element_type<Src>::type;
+
+  auto f = static_cast<ET_Src (*)(ET_Src)>(std::exp);
+
+  return unary<Src>(x, f);
+}
+
+/// Functions for binary elementwise ops.
+// AddOp
+template <typename Src>
+inline Src add(Src x, Src y) {
+  using ET_Src = typename get_element_type<Src>::type;
+
+  auto f = std::plus<ET_Src>{};
+
+  return binary<Src>(x, y, f);
 }
 
 } // namespace emitc

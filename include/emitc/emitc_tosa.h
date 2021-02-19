@@ -19,10 +19,24 @@
 
 namespace tosa {
 
+/// Unary elementwise ops
 // AbsOp
 template <typename Src>
 inline Src abs(Src x) {
   return emitc::abs<Src>(x);
+}
+
+// ExpOp
+template <typename Src>
+inline Src exp(Src x) {
+  return emitc::exp<Src>(x);
+}
+
+/// Binary elementwise ops
+// AddOp
+template <typename Src>
+inline Src add(Src x, Src y) {
+  return emitc::add<Src>(x, y);
 }
 
 } // namespace tosa

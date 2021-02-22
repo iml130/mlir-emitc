@@ -28,7 +28,8 @@ using llvm::formatv;
 static LogicalResult printConstantOp(CppEmitter &emitter,
                                      ConstantOp constantOp) {
   auto &os = emitter.ostream();
-  emitter.emitType(constantOp.getType());
+  if (failed(emitter.emitType(constantOp.getType())))
+    return failure();
   os << " " << emitter.getOrCreateName(constantOp.getResult());
 
   // Add braces for number literals only to avoid double brace intialization for
@@ -116,7 +117,8 @@ static LogicalResult printForOp(CppEmitter &emitter, emitc::ForOp forOp) {
     auto operands = forOp.getIterOperands();
 
     for (auto i : llvm::zip(regionArgs, operands)) {
-      emitter.emitType(std::get<0>(i).getType());
+      if (failed(emitter.emitType(std::get<0>(i).getType())))
+        return failure();
       os << " " << emitter.getOrCreateName(std::get<0>(i)) << " = ";
       os << emitter.getOrCreateName(std::get<1>(i)) << ";";
       os << "\n";
@@ -125,7 +127,8 @@ static LogicalResult printForOp(CppEmitter &emitter, emitc::ForOp forOp) {
 
   if (forOp.getNumResults() != 0) {
     for (auto op : forOp.getResults()) {
-      emitter.emitType(op.getType());
+      if (failed(emitter.emitType(op.getType())))
+        return failure();
       os << " " << emitter.getOrCreateName(op) << ";";
       os << "\n";
     }
@@ -152,7 +155,8 @@ static LogicalResult printForOp(CppEmitter &emitter, emitc::ForOp forOp) {
 
   auto &forRegion = forOp.region();
   for (auto &op : forRegion.getOps()) {
-    emitter.emitOperation(op);
+    if (failed(emitter.emitOperation(op)))
+      return failure();
   }
 
   os << "}\n";
@@ -164,7 +168,8 @@ static LogicalResult printIfOp(CppEmitter &emitter, emitc::IfOp ifOp) {
 
   if (ifOp.getNumResults() != 0) {
     for (auto op : ifOp.getResults()) {
-      emitter.emitType(op.getType());
+      if (failed(emitter.emitType(op.getType())))
+        return failure();
       os << " " << emitter.getOrCreateName(op) << ";";
       os << "\n";
     }
@@ -177,7 +182,8 @@ static LogicalResult printIfOp(CppEmitter &emitter, emitc::IfOp ifOp) {
 
   auto &thenRegion = ifOp.thenRegion();
   for (auto &op : thenRegion.getOps()) {
-    emitter.emitOperation(op);
+    if (failed(emitter.emitOperation(op)))
+      return failure();
   }
 
   os << "}\n";
@@ -187,7 +193,8 @@ static LogicalResult printIfOp(CppEmitter &emitter, emitc::IfOp ifOp) {
     os << "else {\n";
 
     for (auto &op : elseRegion.getOps()) {
-      emitter.emitOperation(op);
+      if (failed(emitter.emitOperation(op)))
+        return failure();
     }
 
     os << "}\n";
@@ -545,7 +552,8 @@ LogicalResult CppEmitter::emitType(Type type) {
     if (!itype.hasRank())
       return failure();
     os << "Tensor<";
-    emitType(itype.getElementType());
+    if (failed(emitType(itype.getElementType())))
+      return failure();
     auto shape = itype.getShape();
     for (auto dimSize : shape) {
       os << ", ";

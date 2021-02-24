@@ -39,20 +39,31 @@ def OpaqueType : EmitC_Type<"Opaque"> {
 
   let description = [{
     An opaque data type of which the value gets emitted as is.
+
+    Examples:
+
+    ```mlir
+    !emitc.opaque<"int">
+    !emitc.opaque<"*float">
+    !emitc.opaque<"std::vector<std::string>">
+    ```
   }];
 
   let parameters = (ins StringRefParameter<"the opaque value">:$value);
 
   let printer = [{
-    $_printer << "opaque<" << getValue() << ">";
+    $_printer << "opaque<\"" << getValue() << "\">";
   }];
 
   let parser = [{
-    if (parser.parseLess())
+    if ($_parser.parseLess())
       return Type();
     StringRef value;
-    if ($_parser.parseKeyword(&value))
+    auto loc = $_parser.getCurrentLocation();
+    if ($_parser.parseOptionalString(&value) || value.empty()) {
+      $_parser.emitError(loc) << "expected non empty string";
       return Type();
+    }
     if ($_parser.parseGreater())
       return Type();
     return get($_ctxt, value);

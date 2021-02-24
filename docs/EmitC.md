@@ -8,6 +8,14 @@
 ### An opaque type
 An opaque data type of which the value gets emitted as is.
 
+Examples:
+
+```mlir
+!emitc.opaque<"int">
+!emitc.opaque<"*float">
+!emitc.opaque<"std::vector<std::string>">
+```
+
 ## Operation definition
 
 ### `emitc.call` (::mlir::emitc::CallOp)
@@ -234,6 +242,14 @@ yielded.
 
 An opaque type
 An opaque data type of which the value gets emitted as is.
+
+Examples:
+
+```mlir
+!emitc.opaque<"int">
+!emitc.opaque<"*float">
+!emitc.opaque<"std::vector<std::string>">
+```
 
 #### Type parameters:
 

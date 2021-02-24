@@ -108,6 +108,64 @@ private:
   }
 };
 
+template <typename SrcOp>
+// class CallOpBroadcastableConversion : public OpConversionPattern<tosa::MulOp> {
+class CallOpBroadcastableConversion : public OpConversionPattern<SrcOp> {
+  // using OpConversionPattern<tosa::MulOp>::OpConversionPattern;
+  using OpConversionPattern<SrcOp>::OpConversionPattern;
+
+public:
+  CallOpBroadcastableConversion(MLIRContext *ctx, StringRef funcName,
+                   bool explicitResultType = false,
+                   bool explicitOperandTypes = false)
+      : OpConversionPattern<SrcOp>(ctx), funcName(funcName),
+        explicitResultType(explicitResultType),
+        explicitOperandTypes(explicitOperandTypes) {}
+
+private:
+  LogicalResult
+  matchAndRewrite(SrcOp srcOp, ArrayRef<Value> operands,
+                  ConversionPatternRewriter &rewriter) const override {
+    StringAttr callee = rewriter.getStringAttr(funcName);
+    ArrayAttr args;
+
+    SmallVector<Attribute, 4> templateArgs_;
+
+    if (explicitResultType) {
+      Type type = srcOp.getType();
+      templateArgs_.push_back(TypeAttr::get(type));
+    }
+
+    if (explicitOperandTypes) {
+      for (auto &operand : operands) {
+        Type type = operand.getType();
+        templateArgs_.push_back(TypeAttr::get(type));
+      }
+    }
+
+    ArrayAttr templateArgs = ArrayAttr::get(srcOp.getContext(), templateArgs_);
+
+    StringRef broadcastFunc = "tosa::broadcast";
+    StringAttr broadcastFuncCallee = rewriter.getStringAttr(broadcastFunc);
+
+    auto broadcastArg1 = rewriter.create<emitc::CallOp>(srcOp->getLoc(), srcOp.getType(), broadcastFuncCallee, args, templateArgs, operands[0] );
+    auto broadcastArg2 = rewriter.create<emitc::CallOp>(srcOp->getLoc(), srcOp.getType(), broadcastFuncCallee, args, templateArgs, operands[1] );
+
+    auto broadcastedOperands =
+        mlir::ValueRange({broadcastArg1.getResult(0), broadcastArg2.getResult(0)});
+    rewriter.replaceOpWithNewOp<emitc::CallOp>(srcOp, srcOp.getType(), callee,
+                                               args, templateArgs, broadcastedOperands);
+
+    return success();
+  }
+
+  StringRef funcName;
+  // If set, use the result type of the operation as template parameter
+  bool explicitResultType;
+  // If set, use the operand types as (additional) template parameters
+  bool explicitOperandTypes;
+};
+
 } // namespace
 
 void populateTosaToEmitcPatterns(MLIRContext *ctx,
@@ -123,6 +181,10 @@ void populateTosaToEmitcPatterns(MLIRContext *ctx,
   patterns.insert<CallOpConversion<tosa::AddOp>>(ctx, "tosa::add");
   patterns.insert<CallOpConversion<tosa::MulOp>>(ctx, "tosa::mul");
 
+  patterns.insert<CallOpBroadcastableConversion<tosa::AddOp>>(ctx, "tosa::add");
+  // patterns.insert<CallOpBroadcastableConversion>(ctx, "tosa::mul");
+  patterns.insert<CallOpBroadcastableConversion<tosa::MulOp>>(ctx, "tosa::mul");
+  
   // Other ops
   patterns.insert<CallOpConversion<tosa::FullyConnectedOp>>(
       ctx, "tosa::fully_connected");

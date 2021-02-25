@@ -109,15 +109,13 @@ private:
 };
 
 template <typename SrcOp>
-// class CallOpBroadcastableConversion : public OpConversionPattern<tosa::MulOp> {
 class CallOpBroadcastableConversion : public OpConversionPattern<SrcOp> {
-  // using OpConversionPattern<tosa::MulOp>::OpConversionPattern;
   using OpConversionPattern<SrcOp>::OpConversionPattern;
 
 public:
   CallOpBroadcastableConversion(MLIRContext *ctx, StringRef funcName,
-                   bool explicitResultType = false,
-                   bool explicitOperandTypes = false)
+                                bool explicitResultType = false,
+                                bool explicitOperandTypes = false)
       : OpConversionPattern<SrcOp>(ctx), funcName(funcName),
         explicitResultType(explicitResultType),
         explicitOperandTypes(explicitOperandTypes) {}
@@ -145,16 +143,29 @@ private:
 
     ArrayAttr templateArgs = ArrayAttr::get(srcOp.getContext(), templateArgs_);
 
-    StringRef broadcastFunc = "tosa::broadcast";
-    StringAttr broadcastFuncCallee = rewriter.getStringAttr(broadcastFunc);
+    StringRef broadcastFuncName = "emitc::broadcast_in_dim";
+    StringAttr broadcastCallee = rewriter.getStringAttr(broadcastFuncName);
 
-    auto broadcastArg1 = rewriter.create<emitc::CallOp>(srcOp->getLoc(), srcOp.getType(), broadcastFuncCallee, args, templateArgs, operands[0] );
-    auto broadcastArg2 = rewriter.create<emitc::CallOp>(srcOp->getLoc(), srcOp.getType(), broadcastFuncCallee, args, templateArgs, operands[1] );
+    Value output = srcOp.getResult();
+    auto opOutputShape = output.getType().cast<RankedTensorType>().getShape();
 
-    auto broadcastedOperands =
-        mlir::ValueRange({broadcastArg1.getResult(0), broadcastArg2.getResult(0)});
-    rewriter.replaceOpWithNewOp<emitc::CallOp>(srcOp, srcOp.getType(), callee,
-                                               args, templateArgs, broadcastedOperands);
+    // Insert a broadcast_in_dim Operation if shape of operands don't match
+    auto broadcastedOperands = std::vector<Value>({operands[0], operands[1]});
+    for (size_t i = 0; i < operands.size(); i++) {
+      auto &operand = operands[i];
+      auto operandShape = operand.getType().cast<RankedTensorType>().getShape();
+
+      if (!operandShape.equals(opOutputShape)) {
+        auto broadcastArg = rewriter.create<emitc::CallOp>(
+            srcOp->getLoc(), srcOp.getType(), broadcastCallee, args,
+            templateArgs, operand);
+        broadcastedOperands[i] = broadcastArg.getResult(0);
+      }
+    }
+
+    rewriter.replaceOpWithNewOp<emitc::CallOp>(
+        srcOp, srcOp.getType(), callee, args, templateArgs,
+        mlir::ValueRange({broadcastedOperands[0], broadcastedOperands[1]}));
 
     return success();
   }
@@ -182,9 +193,8 @@ void populateTosaToEmitcPatterns(MLIRContext *ctx,
   patterns.insert<CallOpConversion<tosa::MulOp>>(ctx, "tosa::mul");
 
   patterns.insert<CallOpBroadcastableConversion<tosa::AddOp>>(ctx, "tosa::add");
-  // patterns.insert<CallOpBroadcastableConversion>(ctx, "tosa::mul");
   patterns.insert<CallOpBroadcastableConversion<tosa::MulOp>>(ctx, "tosa::mul");
-  
+
   // Other ops
   patterns.insert<CallOpConversion<tosa::FullyConnectedOp>>(
       ctx, "tosa::fully_connected");

@@ -60,16 +60,6 @@ inline Src sqrt(Src x) {
   return unary<Src>(x, f);
 }
 
-// ReciprocalOp
-template <typename Src>
-inline Src reciprocal(Src x) {
-  using ET_Src = typename get_element_type<Src>::type;
-  auto f = [](ET_Src a) -> ET_Src {
-        return 1 / a;
-  };
-  return unary(x, f);
-}
-
 /// Functions for binary elementwise ops.
 // AddOp
 template <typename Src>

@@ -24,8 +24,6 @@ namespace emitc {
 
 namespace {
 
-/// Common functions
-/// Adopted from mlir-hlo
 template <typename SrcOp>
 class CallOpConversion : public OpConversionPattern<SrcOp> {
   using OpConversionPattern<SrcOp>::OpConversionPattern;
@@ -85,11 +83,8 @@ private:
   LogicalResult
   matchAndRewrite(tosa::RsqrtOp rsqrtOp, ArrayRef<Value> operands,
                   ConversionPatternRewriter &rewriter) const override {
-    // no args or template args - shared between ops
     ArrayAttr args;
-    SmallVector<Attribute, 0> templateArgs_;
-    ArrayAttr templateArgs =
-        ArrayAttr::get(rsqrtOp.getContext(), templateArgs_);
+    ArrayAttr templateArgs;
 
     // create sqrt op
     StringRef sqrtFuncName = "emitc::sqrt";

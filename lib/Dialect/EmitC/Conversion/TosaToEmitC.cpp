@@ -121,6 +121,8 @@ void populateTosaToEmitcPatterns(MLIRContext *ctx,
   // Unary elementwise ops
   patterns.insert<CallOpConversion<tosa::AbsOp>>(ctx, "tosa::abs");
   patterns.insert<CallOpConversion<tosa::ExpOp>>(ctx, "tosa::exp");
+  patterns.insert<CallOpConversion<tosa::ReciprocalOp>>(ctx,
+                                                        "tosa::reciprocal");
   patterns.insert<RsqrtOpConversion>(ctx);
 
   // Binary elementwise ops
@@ -147,6 +149,7 @@ struct ConvertTosaToEmitCPass
     // Unary elementwise ops
     target.addIllegalOp<tosa::AbsOp>();
     target.addIllegalOp<tosa::ExpOp>();
+    target.addIllegalOp<tosa::ReciprocalOp>();
     target.addIllegalOp<tosa::RsqrtOp>();
 
     // Binary elementwise ops

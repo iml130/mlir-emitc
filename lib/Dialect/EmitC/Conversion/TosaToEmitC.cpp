@@ -24,6 +24,71 @@ namespace emitc {
 
 namespace {
 
+/// Common functions
+/// Adopted from mlir-hlo
+SmallVector<Attribute, 2> indexSequence(int64_t n, MLIRContext *ctx) {
+  return llvm::to_vector<2>(
+      llvm::map_range(llvm::seq<int64_t>(0, n), [&ctx](int64_t i) -> Attribute {
+        return IntegerAttr::get(IndexType::get(ctx), i);
+      }));
+}
+
+class Conv2DOpConversion : public OpConversionPattern<tosa::Conv2DOp> {
+
+public:
+  Conv2DOpConversion(MLIRContext *ctx) : OpConversionPattern(ctx) {}
+
+private:
+  LogicalResult
+  matchAndRewrite(tosa::Conv2DOp convOp, ArrayRef<Value> operands,
+                  ConversionPatternRewriter &rewriter) const override {
+    // tosa conv2D supports adding a bias after the actual convolution. We will
+    // split the convolution with bias into two operations: the convolution (as
+    // an emitc call op) and the addition of the bias (as an tosa.add op).
+    // Therefore we remove bias from the operands of the convolution.
+    operands = operands.drop_back();
+
+    typename tosa::Conv2DOp::Adaptor adaptor(operands);
+    auto ctx = convOp.getContext();
+
+    StringRef funcName = "tosa::conv2D";
+    StringAttr callee = rewriter.getStringAttr(funcName);
+
+    // todo: quantization_info, mlir::tosa::ConvOpQuantizationAttr
+    convOp.removeQuantization_infoAttr();
+
+    SmallVector<Attribute, 2> args_ = indexSequence(operands.size(), ctx);
+
+    args_.push_back(convOp.pad());
+    args_.push_back(convOp.stride());
+    args_.push_back(convOp.dilation());
+
+    ArrayAttr args = rewriter.getArrayAttr(args_);
+    ArrayAttr templateArgs =
+        rewriter.getArrayAttr({TypeAttr::get(convOp.getResult().getType()),
+                               TypeAttr::get(convOp.input().getType()),
+                               TypeAttr::get(convOp.weight().getType())});
+
+    // create convOp
+    auto conv_op =
+        rewriter.create<emitc::CallOp>(convOp->getLoc(), convOp.getType(),
+                                       callee, args, templateArgs, operands);
+
+    // prepare addOp
+    auto addOpOperands =
+        mlir::ValueRange({conv_op.getResult(0), convOp.bias()});
+
+    // create addOp
+    auto add_op = rewriter.create<tosa::AddOp>(convOp->getLoc(),
+                                               convOp.getType(), addOpOperands);
+
+    // rewrite convOp with two emitc CallOp
+    rewriter.replaceOp(convOp, {add_op.output()});
+
+    return success();
+  }
+};
+
 template <typename SrcOp>
 class CallOpConversion : public OpConversionPattern<SrcOp> {
   using OpConversionPattern<SrcOp>::OpConversionPattern;
@@ -305,6 +370,7 @@ void populateTosaToEmitcPatterns(MLIRContext *ctx,
   patterns.insert<MulOpConversion>(ctx, "tosa::mul");
 
   // Other ops
+  patterns.insert<Conv2DOpConversion>(ctx);
   patterns.insert<FullyConnectedOpConversion>(ctx, "tosa::fully_connected");
 }
 
@@ -341,6 +407,8 @@ struct ConvertTosaToEmitCPass
 
     // Other ops
     target.addIllegalOp<tosa::FullyConnectedOp>();
+
+    target.addIllegalOp<tosa::Conv2DOp>();
 
     OwningRewritePatternList patterns;
     populateTosaToEmitcPatterns(&getContext(), patterns);

@@ -108,6 +108,14 @@ func @test_mul5(%arg0: tensor<2x13x21x3xi32>, %arg1: tensor<21x3xi32>) -> tensor
 }
 
 /// Other ops
+// Conv2DOp
+func @test_conv2d(%arg0: tensor<1x4x4x4xf32>, %arg1: tensor<8x1x1x4xf32>, %arg2: tensor<8xf32>) -> tensor<1x4x4x8xf32> {
+    // CHECK-NEXT: %0 = emitc.call "tosa::conv2D"(%arg0, %arg1) {args = [0 : index, 1 : index, [0, 0, 0, 0], [1, 1], [1, 1]], template_args = [tensor<1x4x4x8xf32>, tensor<1x4x4x4xf32>, tensor<8x1x1x4xf32>]} : (tensor<1x4x4x4xf32>, tensor<8x1x1x4xf32>) -> tensor<1x4x4x8xf32>
+    // CHECK-NEXT: %1 = emitc.call "tosa::add"(%0, %arg2) {args = [], template_args = [tensor<1x4x4x8xf32>, tensor<8xf32>]} : (tensor<1x4x4x8xf32>, tensor<8xf32>) -> tensor<1x4x4x8xf32>
+    %0 = "tosa.conv2d"(%arg0, %arg1, %arg2) {dilation = [1, 1], pad = [0, 0, 0, 0], stride = [1, 1]} : (tensor<1x4x4x4xf32>, tensor<8x1x1x4xf32>, tensor<8xf32>) -> tensor<1x4x4x8xf32>
+    return %0 : tensor<1x4x4x8xf32>
+}
+
 // FullyConnectedOp
 func @test_fully_connected(%arg0: tensor<14x19xf32>, %arg1: tensor<19x28xf32>, %arg2: tensor<28xf32>) -> tensor<14x28xf32> {
   // CHECK: emitc.call "tosa::fully_connected"(%arg0, %arg1, %arg2) {template_args = [tensor<14x28xf32>]} : (tensor<14x19xf32>, tensor<19x28xf32>, tensor<28xf32>) -> tensor<14x28xf32>

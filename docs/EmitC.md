@@ -233,11 +233,12 @@ yielded.
 ### `OpaqueType` (OpaqueType)
 
 An opaque type
+
 An opaque data type of which the value gets emitted as is.
 
 #### Type parameters:
 
 | Parameter | C++ type | Description |
 | :-------: | :-------: | ----------- |
-| value | `OpaqueType` | the opaque value |
+| value | `::llvm::StringRef` | the opaque value |
 

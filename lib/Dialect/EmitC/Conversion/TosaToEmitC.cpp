@@ -24,6 +24,8 @@ namespace emitc {
 
 namespace {
 
+/// Common functions
+/// Adopted from mlir-hlo
 template <typename SrcOp>
 class CallOpConversion : public OpConversionPattern<SrcOp> {
   using OpConversionPattern<SrcOp>::OpConversionPattern;
@@ -72,6 +74,45 @@ private:
   bool explicitOperandTypes;
 };
 
+class RsqrtOpConversion : public OpConversionPattern<tosa::RsqrtOp> {
+  using OpConversionPattern<tosa::RsqrtOp>::OpConversionPattern;
+
+public:
+  RsqrtOpConversion(MLIRContext *ctx)
+      : OpConversionPattern<tosa::RsqrtOp>(ctx) {}
+
+private:
+  LogicalResult
+  matchAndRewrite(tosa::RsqrtOp rsqrtOp, ArrayRef<Value> operands,
+                  ConversionPatternRewriter &rewriter) const override {
+    // no args or template args - shared between ops
+    ArrayAttr args;
+    SmallVector<Attribute, 0> templateArgs_;
+    ArrayAttr templateArgs =
+        ArrayAttr::get(rsqrtOp.getContext(), templateArgs_);
+
+    // create sqrt op
+    StringRef sqrtFuncName = "emitc::sqrt";
+    StringAttr sqrtCallee = rewriter.getStringAttr(sqrtFuncName);
+
+    auto sqrtEmitCOp = rewriter.create<emitc::CallOp>(
+        rsqrtOp.getLoc(), rsqrtOp.getType(), sqrtCallee, args, templateArgs,
+        operands);
+
+    // create reciprocal op
+    StringRef reciprocalFuncName = "tosa::reciprocal";
+    StringAttr reciprocalCallee = rewriter.getStringAttr(reciprocalFuncName);
+
+    auto reciprocalOp = rewriter.create<emitc::CallOp>(
+        sqrtEmitCOp.getLoc(), rsqrtOp.getType(), reciprocalCallee, args,
+        templateArgs, sqrtEmitCOp.getResults());
+
+    rewriter.replaceOp(rsqrtOp, reciprocalOp.getResults());
+
+    return success();
+  }
+};
+
 } // namespace
 
 void populateTosaToEmitcPatterns(MLIRContext *ctx,
@@ -80,6 +121,7 @@ void populateTosaToEmitcPatterns(MLIRContext *ctx,
   // Unary elementwise ops
   patterns.insert<CallOpConversion<tosa::AbsOp>>(ctx, "tosa::abs");
   patterns.insert<CallOpConversion<tosa::ExpOp>>(ctx, "tosa::exp");
+  patterns.insert<RsqrtOpConversion>(ctx);
 
   // Binary elementwise ops
   patterns.insert<CallOpConversion<tosa::AddOp>>(ctx, "tosa::add");
@@ -105,6 +147,7 @@ struct ConvertTosaToEmitCPass
     // Unary elementwise ops
     target.addIllegalOp<tosa::AbsOp>();
     target.addIllegalOp<tosa::ExpOp>();
+    target.addIllegalOp<tosa::RsqrtOp>();
 
     // Binary elementwise ops
     target.addIllegalOp<tosa::AddOp>();

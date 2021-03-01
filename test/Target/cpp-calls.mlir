@@ -72,12 +72,12 @@ func @mhlo_convert(%arg0: tensor<ui32>) -> tensor<ui64> {
 }
 
 // CHECK: status_t opaque_types(bool [[V1:[^ ]*]], char [[V2:[^ ]*]]) {
-func @opaque_types(%arg0: !emitc<"opaque<bool>">, %arg1: !emitc<"opaque<char>">) -> !emitc<"opaque<status_t>"> {
+func @opaque_types(%arg0: !emitc.opaque<"bool">, %arg1: !emitc.opaque<"char">) -> !emitc.opaque<"status_t"> {
   // CHECK: int [[V3:[^ ]*]] = a([[V1]], [[V2]]);
-  %0 = emitc.call "a"(%arg0, %arg1) : (!emitc<"opaque<bool>">, !emitc<"opaque<char>">) -> (!emitc<"opaque<int>">)
+  %0 = emitc.call "a"(%arg0, %arg1) : (!emitc.opaque<"bool">, !emitc.opaque<"char">) -> (!emitc.opaque<"int">)
   // CHECK: char [[V4:[^ ]*]] = b([[V3]]);
-  %1 = emitc.call "b"(%0): (!emitc<"opaque<int>">) -> (!emitc<"opaque<char>">)
+  %1 = emitc.call "b"(%0): (!emitc.opaque<"int">) -> (!emitc.opaque<"char">)
   // CHECK: status_t [[V5:[^ ]*]] = c([[V3]], [[V4]]);
-  %2 = emitc.call "c"(%0, %1): (!emitc<"opaque<int>">, !emitc<"opaque<char>">) -> (!emitc<"opaque<status_t>">)
-  return %2 : !emitc<"opaque<status_t>">
+  %2 = emitc.call "c"(%0, %1): (!emitc.opaque<"int">, !emitc.opaque<"char">) -> (!emitc.opaque<"status_t">)
+  return %2 : !emitc.opaque<"status_t">
 }

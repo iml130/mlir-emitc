@@ -47,6 +47,16 @@ inline Src mul(Src x, Src y) {
 }
 
 /// Functions for other TOSA ops.
+// BroadcastInDimOp
+template <typename Dest, typename Src>
+inline Dest
+broadcast_in_dim(Src operand,
+                 Tensor<int64_t, Src::rank()> broadcast_dimensions) {
+  return emitc::broadcast_in_dim<Dest>(operand, broadcast_dimensions);
+}
+
+
+
 // FullyConnectedOp
 template <typename Dest, typename Src, typename Weights, typename Bias>
 Dest fully_connected(Src input, Weights weights, Dest bias) {

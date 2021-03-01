@@ -143,22 +143,52 @@ private:
 
     ArrayAttr templateArgs = ArrayAttr::get(srcOp.getContext(), templateArgs_);
 
+    // TOSA allows implicit broadcasting, so we need to insert broadcast_in_dim
+    // Ops if necessary
+    // clang-format off
+    // tosa.add tensor<8xf32>)     -> tensor<1x4x4x8xf32>     Broadcast dims = (3)
+    // tosa.add tensor<4x8xf32>)   -> tensor<1x4x4x8xf32>     Broadcast dims = (2, 3) 
+    // tosa.add tensor<4x4x8xf32>) -> tensor<1x4x4x8xf32>     Broadcast dims = (1, 2, 3)
+    // clang-format on
+
     StringRef broadcastFuncName = "emitc::broadcast_in_dim";
     StringAttr broadcastCallee = rewriter.getStringAttr(broadcastFuncName);
 
     Value output = srcOp.getResult();
     auto opOutputShape = output.getType().cast<RankedTensorType>().getShape();
+    auto opOutputRank = output.getType().cast<RankedTensorType>().getRank();
 
-    // Insert a broadcast_in_dim Operation if shape of operands don't match
-    auto broadcastedOperands = std::vector<Value>({operands[0], operands[1]});
+    SmallVector<Value, 2> broadcastedOperands;
+    broadcastedOperands.push_back(operands[0]);
+    broadcastedOperands.push_back(operands[1]);
     for (size_t i = 0; i < operands.size(); i++) {
       auto &operand = operands[i];
       auto operandShape = operand.getType().cast<RankedTensorType>().getShape();
+      auto operandRank = operand.getType().cast<RankedTensorType>().getRank();
 
+      // Insert a broadcast_in_dim Operation if shape of operands don't match
       if (!operandShape.equals(opOutputShape)) {
+        SmallVector<Attribute, 1> broadcastIndices;
+        auto numBroadcastDims = opOutputRank - operandRank;
+        for (int64_t i = numBroadcastDims; i < opOutputRank; i++) {
+          broadcastIndices.push_back(
+              mlir::IntegerAttr::get(rewriter.getIntegerType(64), i));
+        }
+
+        RankedTensorType ty =
+            RankedTensorType::get({static_cast<int64_t>(operandRank)},
+                                  IntegerType::get(srcOp.getContext(), 64));
+        ArrayAttr broadcastArgs = rewriter.getArrayAttr(
+            DenseIntElementsAttr::get(ty, broadcastIndices));
+
+        ArrayAttr templateBroadcastArgs =
+            rewriter.getArrayAttr({TypeAttr::get(srcOp.getType())});
+
         auto broadcastArg = rewriter.create<emitc::CallOp>(
-            srcOp->getLoc(), srcOp.getType(), broadcastCallee, args,
-            templateArgs, operand);
+            srcOp->getLoc(), srcOp.getType(), broadcastCallee, broadcastArgs,
+            templateBroadcastArgs, operand);
+        // Replace the original operand with the result of the broadcast_in_dim
+        // operation
         broadcastedOperands[i] = broadcastArg.getResult(0);
       }
     }

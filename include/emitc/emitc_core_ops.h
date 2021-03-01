@@ -50,6 +50,16 @@ inline Src exp(Src x) {
   return unary<Src>(x, f);
 }
 
+// SqrtOp
+template <typename Src>
+inline Src sqrt(Src x) {
+  using ET_Src = typename get_element_type<Src>::type;
+
+  auto f = static_cast<ET_Src (*)(ET_Src)>(std::sqrt);
+
+  return unary<Src>(x, f);
+}
+
 /// Functions for binary elementwise ops.
 // AddOp
 template <typename Src>

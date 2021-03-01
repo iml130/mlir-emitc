@@ -44,7 +44,7 @@ def OpaqueType : EmitC_Type<"Opaque"> {
 
     ```mlir
     !emitc.opaque<"int">
-    !emitc.opaque<"*float">
+    !emitc.opaque<"float *">
     !emitc.opaque<"std::vector<std::string>">
     ```
   }];

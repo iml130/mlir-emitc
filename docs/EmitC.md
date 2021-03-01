@@ -12,7 +12,7 @@ Examples:
 
 ```mlir
 !emitc.opaque<"int">
-!emitc.opaque<"*float">
+!emitc.opaque<"float *">
 !emitc.opaque<"std::vector<std::string>">
 ```
 
@@ -247,7 +247,7 @@ Examples:
 
 ```mlir
 !emitc.opaque<"int">
-!emitc.opaque<"*float">
+!emitc.opaque<"float *">
 !emitc.opaque<"std::vector<std::string>">
 ```
 
@@ -256,4 +256,3 @@ Examples:
 | Parameter | C++ type | Description |
 | :-------: | :-------: | ----------- |
 | value | `OpaqueType` | the opaque value |
-

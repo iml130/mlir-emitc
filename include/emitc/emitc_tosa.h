@@ -51,25 +51,24 @@ inline Src add(Src x, Src y) {
 
 // MulOp
 template <typename Src>
-inline Src mul(Src x, Src y, Tensor0D<int32_t> shift) {
-  assert(shift[0] == 0); // shift has to be 0 if datatype is not int32_t
+inline Src mul(Src x, Src y, int32_t shift) {
+  assert(shift == 0); // shift has to be 0 if datatype is not int32_t
   return emitc::mul(x, y);
 }
 
 template <>
 inline Tensor0D<int32_t> mul(Tensor0D<int32_t> x, Tensor0D<int32_t> y,
-                             Tensor0D<int32_t> shift) {
+                             int32_t shift) {
   // Taken from
   // https://git.mlplatform.org/tosa/reference_model.git/tree/reference_model/src/ops/ewise_binary.cc?id=df8626976df6c779bb30df9c5ceef689462109c0#n436
   int32_t a = x[0];
   int32_t b = y[0];
-  int32_t shift_ = shift[0];
 
   int64_t result;
-  if (shift_ > 0) {
-    int64_t round = 1L << (shift_ - 1);
+  if (shift > 0) {
+    int64_t round = 1L << (shift - 1);
     result = a * b + round;
-    result = result >> shift_;
+    result = result >> shift;
     return {static_cast<int32_t>(result)};
   } else {
     return emitc::mul(x, y);
@@ -103,9 +102,9 @@ Dest fully_connected(Src input, Weights weights, Bias bias) {
   const size_t C_IN = input.dim(1);
   const size_t C_OUT = weights.dim(0);
 
-  for (size_t n = 0; n < N; ++n) {
-    for (size_t c_out = 0; c_out < C_OUT; ++c_out) {
-      for (size_t c_in = 0; c_in < C_IN; ++c_in) {
+  for (size_t n = 0; n < N; n++) {
+    for (size_t c_out = 0; c_out < C_OUT; c_out++) {
+      for (size_t c_in = 0; c_in < C_IN; c_in++) {
         auto in = input(n, c_in);
         auto weight = weights(c_out, c_in);
         output(n, c_out) += in * weight;

@@ -220,35 +220,21 @@ public:
   MulOpConversion(MLIRContext *ctx, StringRef funcName,
                   bool explicitResultType = false,
                   bool explicitOperandTypes = false)
-      : OpConversionPattern<tosa::MulOp>(ctx), funcName(funcName),
-        explicitResultType(explicitResultType),
-        explicitOperandTypes(explicitOperandTypes) {}
+      : OpConversionPattern<tosa::MulOp>(ctx) {}
 
 private:
   LogicalResult
   matchAndRewrite(tosa::MulOp mulOp, ArrayRef<Value> operands,
                   ConversionPatternRewriter &rewriter) const override {
+    StringRef funcName = "tosa::mul";
     StringAttr callee = rewriter.getStringAttr(funcName);
 
-    SmallVector<Attribute, 4> templateArgs_;
-
-    if (explicitResultType) {
-      Type type = mulOp.getType();
-      templateArgs_.push_back(TypeAttr::get(type));
-    }
-
-    if (explicitOperandTypes) {
-      for (auto &operand : operands) {
-        Type type = operand.getType();
-        templateArgs_.push_back(TypeAttr::get(type));
-      }
-    }
-
     SmallVector<Attribute, 1> args_;
+    args_.push_back(rewriter.getIndexAttr(0));
+    args_.push_back(rewriter.getIndexAttr(1));
     args_.push_back(mulOp.shiftAttr());
     ArrayAttr args = rewriter.getArrayAttr(args_);
-
-    ArrayAttr templateArgs = ArrayAttr::get(mulOp.getContext(), templateArgs_);
+    ArrayAttr templateArgs;
 
     SmallVector<Value, 2> broadcastedOperands =
         create_broadcast_op_if_needed(mulOp, operands, rewriter);
@@ -259,12 +245,6 @@ private:
 
     return success();
   }
-
-  StringRef funcName;
-  // If set, use the result type of the operation as template parameter
-  bool explicitResultType;
-  // If set, use the operand types as (additional) template parameters
-  bool explicitOperandTypes;
 };
 
 } // namespace

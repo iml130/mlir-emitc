@@ -19,7 +19,7 @@
 
 namespace tosa {
 
-/// Functions for TOSA unary elementwise ops.
+/// Unary elementwise ops
 // AbsOp
 template <typename Src>
 inline Src abs(Src x) {
@@ -49,24 +49,13 @@ inline Src add(Src x, Src y) {
   return emitc::add<Src>(x, y);
 }
 
-/// Functions for TOSA binary elementwise elementwise ops.
 // MulOp
 template <typename Src>
 inline Src mul(Src x, Src y, int32_t shift) {
   return emitc::mul(x, y);
 }
 
-/// Functions for other TOSA ops.
-// BroadcastInDimOp
-template <typename Dest, typename Src>
-inline Dest
-broadcast_in_dim(Src operand,
-                 Tensor<int64_t, Src::rank()> broadcast_dimensions) {
-  return emitc::broadcast_in_dim<Dest>(operand, broadcast_dimensions);
-}
-
-
-
+/// Other ops
 // FullyConnectedOp
 template <typename Dest, typename Src, typename Weights, typename Bias>
 Dest fully_connected(Src input, Weights weights, Dest bias) {

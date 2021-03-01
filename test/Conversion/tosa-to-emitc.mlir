@@ -59,7 +59,7 @@ func @test_mul2(%arg0: tensor<13x21x3xf32>, %arg1: tensor<13x1x3xf32>) -> tensor
   return %0 : tensor<13x21x3xf32>
 }
 
-// MulOp: Second operand needs to be broadcasted + expanded
+// MulOp: Second operand needs to be broadcasted + expanded to two dimensions
 func @test_mul3(%arg0: tensor<21x3xf32>, %arg1: tensor<3xf32>) -> tensor<21x3xf32> {
   // CHECK: emitc.call "emitc::broadcast_in_dim"(%arg1) {args = [dense<1> : tensor<1xi64>], template_args = [tensor<21x3xf32>]} : (tensor<3xf32>) -> tensor<21x3xf32>
   // CHECK: emitc.call "tosa::mul"(%arg0, %0) {args = [3 : i32], template_args = []} : (tensor<21x3xf32>, tensor<21x3xf32>) -> tensor<21x3xf32>
@@ -67,7 +67,7 @@ func @test_mul3(%arg0: tensor<21x3xf32>, %arg1: tensor<3xf32>) -> tensor<21x3xf3
   return %0 : tensor<21x3xf32>
 }
 
-// MulOp: Second operand needs to be broadcasted + expanded
+// MulOp: Second operand needs to be broadcasted + expanded to three dimensions
 func @test_mul4(%arg0: tensor<13x21x3xf32>, %arg1: tensor<3xf32>) -> tensor<13x21x3xf32> {
   // CHECK: emitc.call "emitc::broadcast_in_dim"(%arg1) {args = [dense<2> : tensor<1xi64>], template_args = [tensor<13x21x3xf32>]} : (tensor<3xf32>) -> tensor<13x21x3xf32>
   // CHECK: emitc.call "tosa::mul"(%arg0, %0) {args = [1 : i32], template_args = []} : (tensor<13x21x3xf32>, tensor<13x21x3xf32>) -> tensor<13x21x3xf32>
@@ -75,7 +75,7 @@ func @test_mul4(%arg0: tensor<13x21x3xf32>, %arg1: tensor<3xf32>) -> tensor<13x2
   return %0 : tensor<13x21x3xf32>
 }
 
-// MulOp: Second operand needs to be broadcasted + expanded with two dimension
+// MulOp: Second two dimensional operand needs to be broadcasted + expanded to four dimensions
 func @test_mul5(%arg0: tensor<2x13x21x3xf32>, %arg1: tensor<21x3xf32>) -> tensor<2x13x21x3xf32> {
   // CHECK: emitc.call "emitc::broadcast_in_dim"(%arg1) {args = [dense<[2, 3]> : tensor<2xi64>], template_args = [tensor<2x13x21x3xf32>]} : (tensor<21x3xf32>) -> tensor<2x13x21x3xf32>
   // CHECK: emitc.call "tosa::mul"(%arg0, %0) {args = [5 : i32], template_args = []} : (tensor<2x13x21x3xf32>, tensor<2x13x21x3xf32>) -> tensor<2x13x21x3xf32>

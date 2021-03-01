@@ -113,12 +113,10 @@ SmallVector<Value, 2>
 create_broadcast_op_if_needed(SrcOp &srcOp, ArrayRef<Value> operands,
                               ConversionPatternRewriter &rewriter) {
   // TOSA allows implicit broadcasting, so we need to insert broadcast_in_dim
-  // Ops if necessary
-  // clang-format off
-  // tosa.add tensor<8xf32>)     -> tensor<1x4x4x8xf32>     Broadcast dims = (3)
-  // tosa.add tensor<4x8xf32>)   -> tensor<1x4x4x8xf32>     Broadcast dims = (2, 3) 
-  // tosa.add tensor<4x4x8xf32>) -> tensor<1x4x4x8xf32>     Broadcast dims = (1, 2, 3)
-  // clang-format on
+  // ops if necessary, e.g.:
+  // tensor<8xf32>     -> tensor<1x4x4x8xf32> Broadcast dims = (3)
+  // tensor<4x8xf32>   -> tensor<1x4x4x8xf32> Broadcast dims = (2, 3)
+  // tensor<4x4x8xf32> -> tensor<1x4x4x8xf32> Broadcast dims = (1, 2, 3)
 
   StringRef broadcastFuncName = "emitc::broadcast_in_dim";
   StringAttr broadcastCallee = rewriter.getStringAttr(broadcastFuncName);
@@ -138,9 +136,9 @@ create_broadcast_op_if_needed(SrcOp &srcOp, ArrayRef<Value> operands,
     if (!operandShape.equals(opOutputShape)) {
       SmallVector<Attribute, 1> broadcastIndices;
       auto numBroadcastDims = opOutputRank - operandRank;
-      for (int64_t i = numBroadcastDims; i < opOutputRank; i++) {
+      for (int64_t d = numBroadcastDims; d < opOutputRank; d++) {
         broadcastIndices.push_back(
-            mlir::IntegerAttr::get(rewriter.getIntegerType(64), i));
+            mlir::IntegerAttr::get(rewriter.getIntegerType(64), d));
       }
 
       RankedTensorType ty =
@@ -258,7 +256,7 @@ private:
     rewriter.replaceOpWithNewOp<emitc::CallOp>(
         mulOp, mulOp.getType(), callee, args, templateArgs,
         mlir::ValueRange({broadcastedOperands[0], broadcastedOperands[1]}));
-    
+
     return success();
   }
 
@@ -281,9 +279,6 @@ void populateTosaToEmitcPatterns(MLIRContext *ctx,
   patterns.insert<RsqrtOpConversion>(ctx);
 
   // Binary elementwise ops
-  patterns.insert<CallOpConversion<tosa::AddOp>>(ctx, "tosa::add");
-  patterns.insert<CallOpConversion<tosa::MulOp>>(ctx, "tosa::mul");
-
   patterns.insert<CallOpBroadcastableConversion<tosa::AddOp>>(ctx, "tosa::add");
   patterns.insert<MulOpConversion>(ctx, "tosa::mul");
 

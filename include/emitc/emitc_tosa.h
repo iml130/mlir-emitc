@@ -42,7 +42,7 @@ inline Src add(Src x, Src y) {
 /// Functions for TOSA binary elementwise elementwise ops.
 // MulOp
 template <typename Src>
-inline Src mul(Src x, Src y) {
+inline Src mul(Src x, Src y, int32_t shift) {
   return emitc::mul(x, y);
 }
 

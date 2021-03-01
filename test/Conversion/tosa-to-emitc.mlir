@@ -39,7 +39,7 @@ func @test_add(%arg0: tensor<13x21x1xf32>, %arg1: tensor<13x21x3xf32>) -> tensor
 
 // MulOp: no broadcast
 func @test_mul10(%arg0: tensor<13x21x3xf32>, %arg1: tensor<13x21x3xf32>) -> tensor<13x21x3xf32> {
-  // CHECK: emitc.call "tosa::mul"(%arg0, %arg1) {template_args = []} : (tensor<13x21x3xf32>, tensor<13x21x3xf32>) -> tensor<13x21x3xf32>
+  // CHECK: emitc.call "tosa::mul"(%arg0, %arg1) {args = [1 : i32], template_args = []} : (tensor<13x21x3xf32>, tensor<13x21x3xf32>) -> tensor<13x21x3xf32>
   %0 = "tosa.mul"(%arg0, %arg1)  { shift = 1 : i32 } : (tensor<13x21x3xf32>, tensor<13x21x3xf32>) -> tensor<13x21x3xf32>
   return %0 : tensor<13x21x3xf32>
 }
@@ -47,7 +47,7 @@ func @test_mul10(%arg0: tensor<13x21x3xf32>, %arg1: tensor<13x21x3xf32>) -> tens
 // MulOp: First operand needs to be broadcasted
 func @test_mul1(%arg0: tensor<13x1x3xf32>, %arg1: tensor<13x21x3xf32>) -> tensor<13x21x3xf32> {
   // emitc.call "emitc::broadcast_in_dim"(%arg0) {args = [dense<[0, 1, 2]> : tensor<3xi64>], template_args = [tensor<13x21x3xf32>]} : (tensor<13x1x3xf32>) -> tensor<13x21x3xf32>
-  // CHECK: emitc.call "tosa::mul"(%0, %arg1) {template_args = []} : (tensor<13x21x3xf32>, tensor<13x21x3xf32>) -> tensor<13x21x3xf32>
+  // CHECK: emitc.call "tosa::mul"(%0, %arg1) {args = [1 : i32], template_args = []} : (tensor<13x21x3xf32>, tensor<13x21x3xf32>) -> tensor<13x21x3xf32>
   %0 = "tosa.mul"(%arg0, %arg1)  { shift = 1 : i32 } : (tensor<13x1x3xf32>, tensor<13x21x3xf32>) -> tensor<13x21x3xf32>
   return %0 : tensor<13x21x3xf32>
 }
@@ -55,7 +55,7 @@ func @test_mul1(%arg0: tensor<13x1x3xf32>, %arg1: tensor<13x21x3xf32>) -> tensor
 // MulOp: Second operand needs to be broadcasted
 func @test_mul2(%arg0: tensor<13x21x3xf32>, %arg1: tensor<13x1x3xf32>) -> tensor<13x21x3xf32> {
   // CHECK: emitc.call "emitc::broadcast_in_dim"(%arg1) {args = [dense<[0, 1, 2]> : tensor<3xi64>], template_args = [tensor<13x21x3xf32>]} : (tensor<13x1x3xf32>) -> tensor<13x21x3xf32>
-  // CHECK: emitc.call "tosa::mul"(%arg0, %0) {template_args = []} : (tensor<13x21x3xf32>, tensor<13x21x3xf32>) -> tensor<13x21x3xf32>
+  // CHECK: emitc.call "tosa::mul"(%arg0, %0) {args = [1 : i32], template_args = []} : (tensor<13x21x3xf32>, tensor<13x21x3xf32>) -> tensor<13x21x3xf32>
   %0 = "tosa.mul"(%arg0, %arg1)  { shift = 1 : i32 } : (tensor<13x21x3xf32>, tensor<13x1x3xf32>) -> tensor<13x21x3xf32>
   return %0 : tensor<13x21x3xf32>
 }
@@ -63,15 +63,15 @@ func @test_mul2(%arg0: tensor<13x21x3xf32>, %arg1: tensor<13x1x3xf32>) -> tensor
 // MulOp: Second operand needs to be broadcasted + expanded
 func @test_mul3(%arg0: tensor<21x3xf32>, %arg1: tensor<3xf32>) -> tensor<21x3xf32> {
   // CHECK: emitc.call "emitc::broadcast_in_dim"(%arg1) {args = [dense<1> : tensor<1xi64>], template_args = [tensor<21x3xf32>]} : (tensor<3xf32>) -> tensor<21x3xf32>
-  // CHECK: emitc.call "tosa::mul"(%arg0, %0) {template_args = []} : (tensor<21x3xf32>, tensor<21x3xf32>) -> tensor<21x3xf32>
-  %0 = "tosa.mul"(%arg0, %arg1)  { shift = 1 : i32 } : (tensor<21x3xf32>, tensor<3xf32>) -> tensor<21x3xf32>
+  // CHECK: emitc.call "tosa::mul"(%arg0, %0) {args = [3 : i32], template_args = []} : (tensor<21x3xf32>, tensor<21x3xf32>) -> tensor<21x3xf32>
+  %0 = "tosa.mul"(%arg0, %arg1)  { shift = 3 : i32 } : (tensor<21x3xf32>, tensor<3xf32>) -> tensor<21x3xf32>
   return %0 : tensor<21x3xf32>
 }
 
 // MulOp: Second operand needs to be broadcasted + expanded
 func @test_mul4(%arg0: tensor<13x21x3xf32>, %arg1: tensor<3xf32>) -> tensor<13x21x3xf32> {
   // CHECK: emitc.call "emitc::broadcast_in_dim"(%arg1) {args = [dense<2> : tensor<1xi64>], template_args = [tensor<13x21x3xf32>]} : (tensor<3xf32>) -> tensor<13x21x3xf32>
-  // CHECK: emitc.call "tosa::mul"(%arg0, %0) {template_args = []} : (tensor<13x21x3xf32>, tensor<13x21x3xf32>) -> tensor<13x21x3xf32>
+  // CHECK: emitc.call "tosa::mul"(%arg0, %0) {args = [1 : i32], template_args = []} : (tensor<13x21x3xf32>, tensor<13x21x3xf32>) -> tensor<13x21x3xf32>
   %0 = "tosa.mul"(%arg0, %arg1)  { shift = 1 : i32 } : (tensor<13x21x3xf32>, tensor<3xf32>) -> tensor<13x21x3xf32>
   return %0 : tensor<13x21x3xf32>
 }
@@ -79,8 +79,8 @@ func @test_mul4(%arg0: tensor<13x21x3xf32>, %arg1: tensor<3xf32>) -> tensor<13x2
 // MulOp: Second operand needs to be broadcasted + expanded with two dimension
 func @test_mul5(%arg0: tensor<2x13x21x3xf32>, %arg1: tensor<21x3xf32>) -> tensor<2x13x21x3xf32> {
   // CHECK: emitc.call "emitc::broadcast_in_dim"(%arg1) {args = [dense<[2, 3]> : tensor<2xi64>], template_args = [tensor<2x13x21x3xf32>]} : (tensor<21x3xf32>) -> tensor<2x13x21x3xf32>
-  // CHECK: emitc.call "tosa::mul"(%arg0, %0) {template_args = []} : (tensor<2x13x21x3xf32>, tensor<2x13x21x3xf32>) -> tensor<2x13x21x3xf32>
-  %0 = "tosa.mul"(%arg0, %arg1)  { shift = 1 : i32 } : (tensor<2x13x21x3xf32>, tensor<21x3xf32>) -> tensor<2x13x21x3xf32>
+  // CHECK: emitc.call "tosa::mul"(%arg0, %0) {args = [5 : i32], template_args = []} : (tensor<2x13x21x3xf32>, tensor<2x13x21x3xf32>) -> tensor<2x13x21x3xf32>
+  %0 = "tosa.mul"(%arg0, %arg1)  { shift = 5 : i32 } : (tensor<2x13x21x3xf32>, tensor<21x3xf32>) -> tensor<2x13x21x3xf32>
   return %0 : tensor<2x13x21x3xf32>
 }
 

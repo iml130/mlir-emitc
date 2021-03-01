@@ -51,14 +51,35 @@ inline Src add(Src x, Src y) {
 
 // MulOp
 template <typename Src>
-inline Src mul(Src x, Src y, int32_t shift) {
+inline Src mul(Src x, Src y, Tensor0D<int32_t> shift) {
+  assert(shift[0] == 0); // shift has to be 0 if datatype is not int32_t
   return emitc::mul(x, y);
+}
+
+template <>
+inline Tensor0D<int32_t> mul(Tensor0D<int32_t> x, Tensor0D<int32_t> y,
+                             Tensor0D<int32_t> shift) {
+  // Taken from
+  // https://git.mlplatform.org/tosa/reference_model.git/tree/reference_model/src/ops/ewise_binary.cc?id=df8626976df6c779bb30df9c5ceef689462109c0#n436
+  int32_t a = x[0];
+  int32_t b = y[0];
+  int32_t shift_ = shift[0];
+
+  int64_t result;
+  if (shift_ > 0) {
+    int64_t round = 1L << (shift_ - 1);
+    result = a * b + round;
+    result = result >> shift_;
+    return {static_cast<int32_t>(result)};
+  } else {
+    return emitc::mul(x, y);
+  }
 }
 
 /// Other ops
 // FullyConnectedOp
 template <typename Dest, typename Src, typename Weights, typename Bias>
-Dest fully_connected(Src input, Weights weights, Dest bias) {
+Dest fully_connected(Src input, Weights weights, Bias bias) {
   static_assert(is_tensor_of_dim<2, Src>::value,
                 "Expected 2 dimensional input");
   static_assert(is_tensor_of_dim<2, Dest>::value,

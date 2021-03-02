@@ -27,7 +27,7 @@ template <size_t N>
 constexpr size_t sum(const std::array<size_t, N> arr) {
   size_t result = 0;
 
-  for (size_t i = 0; i < arr.size(); i++) {
+  for (size_t i = 0; i < arr.size(); ++i) {
     result += arr[i];
   }
   return result;
@@ -47,7 +47,7 @@ constexpr bool all_same(const std::array<size_t, N> arr) {
 
   size_t first = arr[0];
 
-  for (size_t i = 1; i < arr.size(); i++) {
+  for (size_t i = 1; i < arr.size(); ++i) {
     if (arr[i] != first) {
       return false;
     }
@@ -119,7 +119,7 @@ public:
     constexpr std::array<size_t, rank()> s = {Shape...};
 
     size_t result = 1;
-    for (size_t i = 0; i < rank(); i++) {
+    for (size_t i = 0; i < rank(); ++i) {
       result *= s[i];
     }
     return result;
@@ -163,7 +163,7 @@ public:
         u[i] = iotas[i][q.rem];
       }
 
-      for (size_t i = 0; i < index.size(); i++) {
+      for (size_t i = 0; i < index.size(); ++i) {
         u[i] += index[i];
       }
       result.push_back(u);
@@ -199,14 +199,14 @@ public:
   }
 
   constexpr size_t ravel_index(std::array<size_t, rank()> indices) {
-    for (size_t i = 0; i < rank(); i++) {
+    for (size_t i = 0; i < rank(); ++i) {
       assert(indices[i] < dim(i));
     }
 
     std::array<size_t, rank()> s = strides();
 
     size_t result = 0;
-    for (size_t i = 0; i < indices.size(); i++) {
+    for (size_t i = 0; i < indices.size(); ++i) {
       result += indices[i] * s[i];
     }
 
@@ -219,7 +219,7 @@ public:
     std::array<size_t, rank()> s = strides();
 
     std::array<size_t, rank()> result = {};
-    for (size_t i = 0; i < rank(); i++) {
+    for (size_t i = 0; i < rank(); ++i) {
       result[i] = index / s[i];
       index = index % s[i];
     }

@@ -283,6 +283,10 @@ struct get_element_type<Tensor<T, Shape...>> {
   using type = T;
 };
 
+template <typename T, typename ET>
+using IsTensorOfType = std::enable_if_t<
+    std::is_same<typename get_element_type<T>::type, ET>::value, bool>;
+
 template <typename Dest, typename Src>
 struct replace_element_type {
   using type = Dest;

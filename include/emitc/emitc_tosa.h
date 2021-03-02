@@ -49,6 +49,70 @@ inline Src add(Src x, Src y) {
   return emitc::add<Src>(x, y);
 }
 
+// MulOp
+template <typename Src>
+inline Src mul(Src x, Src y) {
+  return emitc::mul(x, y);
+}
+
+template <typename Src, IsTensorOfType<Src, int32_t> = true>
+inline Src mul(Src x, Src y, const int32_t shift) {
+  // Adopted from
+  // https://git.mlplatform.org/tosa/reference_model.git/tree/reference_model/src/ops/ewise_binary.cc?id=df8626976df6c779bb30df9c5ceef689462109c0#n436
+  if (shift > 0) {
+    auto f = [&shift](int32_t x, int32_t y) -> int32_t {
+      int64_t result;
+      int64_t round = 1L << (shift - 1);
+      result = x * y + round;
+      result = result >> shift;
+      return static_cast<int32_t>(result);
+    };
+    return binary<Src>(x, y, f);
+  } else {
+    return emitc::mul(x, y);
+  }
+}
+
+/// Other ops
+// FullyConnectedOp
+template <typename Dest, typename Src, typename Weights, typename Bias>
+Dest fully_connected(Src input, Weights weights, Bias bias) {
+  static_assert(is_tensor_of_dim<2, Src>::value,
+                "Expected 2 dimensional input");
+  static_assert(is_tensor_of_dim<2, Dest>::value,
+                "Expected 2 dimensional output");
+  static_assert(is_tensor_of_dim<2, Weights>::value,
+                "Expected 2 dimensional weights");
+  static_assert(is_tensor_of_dim<1, Bias>::value,
+                "Expected 1 dimensional bias");
+
+  Dest output;
+  static_assert(input.dim(0) == output.dim(0),
+                "Output and input batch dimension do not match.");
+  static_assert(input.dim(1) == weights.dim(1),
+                "Input and weights dimensions do not match.");
+  static_assert(output.dim(1) == weights.dim(0),
+                "Output and weights dimensions do not match.");
+  static_assert(weights.dim(0) == bias.dim(0),
+                "Bias and weights dimensions do not match.");
+
+  const size_t N = input.dim(0);
+  const size_t C_IN = input.dim(1);
+  const size_t C_OUT = weights.dim(0);
+
+  for (size_t n = 0; n < N; ++n) {
+    for (size_t c_out = 0; c_out < C_OUT; ++c_out) {
+      for (size_t c_in = 0; c_in < C_IN; ++c_in) {
+        auto in = input(n, c_in);
+        auto weight = weights(c_out, c_in);
+        output(n, c_out) += in * weight;
+      }
+      output(n, c_out) += bias(c_out);
+    }
+  }
+  return output;
+}
+
 } // namespace tosa
 
 #endif // EMITC_EMITC_TOSA_H

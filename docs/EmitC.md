@@ -157,6 +157,24 @@ func @conditional_reduce(%buffer: memref<1024xf32>, %lb: index,
 | :----: | ----------- |
 `results` | any type
 
+### `emitc.getaddressof` (::mlir::emitc::GetAddressOfOp)
+
+get address of operation
+
+The "getaddressof" operation gets the address via the & operator in C++.
+
+#### Operands:
+
+| Operand | Description |
+| :-----: | ----------- |
+`operand` | any type
+
+#### Results:
+
+| Result | Description |
+| :----: | ----------- |
+`result` | An opaque type
+
 ### `emitc.if` (::mlir::emitc::IfOp)
 
 if-then-else operation

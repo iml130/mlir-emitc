@@ -81,3 +81,9 @@ func @opaque_types(%arg0: !emitc.opaque<"bool">, %arg1: !emitc.opaque<"char">) -
   %2 = emitc.call "c"(%0, %1): (!emitc.opaque<"int">, !emitc.opaque<"char">) -> (!emitc.opaque<"status_t">)
   return %2 : !emitc.opaque<"status_t">
 }
+
+func @get_address_of(%arg0: i32) -> !emitc.opaque<"int32_t*"> {
+  // CHECK: int32_t* [[V2]] = &[[V1]];
+  %0 = "emitc.getaddressof" (%arg0) : (i32) -> !emitc.opaque<"int32_t*">
+  return %0 : !emitc.opaque<"int32_t*">
+}

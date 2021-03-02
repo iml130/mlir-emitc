@@ -86,7 +86,7 @@ func @test_mul5(%arg0: tensor<2x13x21x3xf32>, %arg1: tensor<21x3xf32>) -> tensor
 /// Other ops
 // FullyConnectedOp
 func @test_fully_connected(%arg0: tensor<14x19xf32>, %arg1: tensor<19x28xf32>, %arg2: tensor<28xf32>) -> tensor<14x28xf32> {
-  // CHECK: emitc.call "tosa::fully_connected"(%arg0, %arg1, %arg2) {template_args = []} : (tensor<14x19xf32>, tensor<19x28xf32>, tensor<28xf32>) -> tensor<14x28xf32>
+  // CHECK: emitc.call "tosa::fully_connected"(%arg0, %arg1, %arg2) {template_args = [tensor<14x28xf32>]} : (tensor<14x19xf32>, tensor<19x28xf32>, tensor<28xf32>) -> tensor<14x28xf32>
   %0 = "tosa.fully_connected"(%arg0, %arg1, %arg2) : (tensor<14x19xf32>, tensor<19x28xf32>, tensor<28xf32>) -> tensor<14x28xf32>
   return %0 : tensor<14x28xf32>
 }

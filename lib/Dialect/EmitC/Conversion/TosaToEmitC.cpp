@@ -77,9 +77,7 @@ class FullyConnectedOpConversion
   using OpConversionPattern<tosa::FullyConnectedOp>::OpConversionPattern;
 
 public:
-  FullyConnectedOpConversion(MLIRContext *ctx, StringRef funcName,
-                             bool explicitResultType = false,
-                             bool explicitOperandTypes = false)
+  FullyConnectedOpConversion(MLIRContext *ctx, StringRef funcName)
       : OpConversionPattern<tosa::FullyConnectedOp>(ctx) {}
 
 private:
@@ -87,20 +85,22 @@ private:
   matchAndRewrite(tosa::FullyConnectedOp fullyConnectedOp,
                   ArrayRef<Value> operands,
                   ConversionPatternRewriter &rewriter) const override {
-    StringRef funcName = "tosa::fully_connected";
-    StringAttr callee = rewriter.getStringAttr(funcName);
-
-    ArrayAttr args;
-    ArrayAttr templateArgs;
-
     if (fullyConnectedOp.quantization_info().hasValue()) {
       return fullyConnectedOp.emitError(
           "Quantization of tosa.fully_connected is currently not supported.");
     }
 
-    rewriter.replaceOpWithNewOp<emitc::CallOp>(
-        fullyConnectedOp, fullyConnectedOp.getType(), callee, args,
-        templateArgs, operands);
+    StringRef funcName = "tosa::fully_connected";
+    StringAttr callee = rewriter.getStringAttr(funcName);
+
+    Type type = fullyConnectedOp.getType();
+
+    ArrayAttr args;
+    ArrayAttr templateArgs =
+        ArrayAttr::get(fullyConnectedOp.getContext(), {TypeAttr::get(type)});
+
+    rewriter.replaceOpWithNewOp<emitc::CallOp>(fullyConnectedOp, type, callee,
+                                               args, templateArgs, operands);
     return success();
   }
 };
@@ -144,7 +144,7 @@ private:
 template <typename SrcOp>
 SmallVector<Value, 2>
 createBroadcastOpIfNeeded(SrcOp &srcOp, ArrayRef<Value> operands,
-                              ConversionPatternRewriter &rewriter) {
+                          ConversionPatternRewriter &rewriter) {
   // TOSA allows implicit broadcasting, so we need to insert broadcast_in_dim
   // ops if necessary, e.g.:
   // tensor<8xf32>     -> tensor<1x4x4x8xf32> Broadcast dims = (3)
@@ -301,8 +301,7 @@ void populateTosaToEmitcPatterns(MLIRContext *ctx,
   patterns.insert<MulOpConversion>(ctx, "tosa::mul");
 
   // Other ops
-  patterns.insert<CallOpConversion<tosa::FullyConnectedOp>>(
-      ctx, "tosa::fully_connected");
+  patterns.insert<FullyConnectedOpConversion>(ctx, "tosa::fully_connected");
 }
 
 namespace {

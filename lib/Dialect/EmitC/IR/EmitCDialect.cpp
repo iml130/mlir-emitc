@@ -137,7 +137,7 @@ static void print(OpAsmPrinter &p, ForOp op) {
   p.printRegion(op.region(),
                 /*printEntryBlockArgs=*/false,
                 /*printBlockTerminators=*/printBlockTerminators);
-  p.printOptionalAttrDict(op.getAttrs());
+  p.printOptionalAttrDict(op->getAttrs());
 }
 
 static ParseResult parseForOp(OpAsmParser &parser, OperationState &result) {
@@ -449,7 +449,7 @@ static void print(OpAsmPrinter &p, IfOp op) {
                   /*printBlockTerminators=*/printBlockTerminators);
   }
 
-  p.printOptionalAttrDict(op.getAttrs());
+  p.printOptionalAttrDict(op->getAttrs());
 }
 
 /// Given the region at `index`, or the parent operation if `index` is None,

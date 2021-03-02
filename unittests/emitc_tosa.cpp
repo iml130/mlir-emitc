@@ -34,7 +34,7 @@ TEST(tosa, reciprocal) {
   EXPECT_THAT(result, Pointwise(FloatNear(EPSILON), excpected));
 }
 
-// Binary ops
+// Binary elementwise ops
 TEST(tosa, mul) {
   // no shift
   Tensor2D<long, 2, 2> s2{3, 1, 4, 9};

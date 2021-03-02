@@ -141,11 +141,11 @@ create_broadcast_op_if_needed(SrcOp &srcOp, ArrayRef<Value> operands,
             mlir::IntegerAttr::get(rewriter.getIntegerType(64), d));
       }
 
-      RankedTensorType ty =
+      RankedTensorType tensorType =
           RankedTensorType::get({static_cast<int64_t>(operandRank)},
                                 IntegerType::get(srcOp.getContext(), 64));
       ArrayAttr broadcastArgs = rewriter.getArrayAttr(
-          DenseIntElementsAttr::get(ty, broadcastIndices));
+          DenseIntElementsAttr::get(tensorType, broadcastIndices));
 
       ArrayAttr templateBroadcastArgs =
           rewriter.getArrayAttr({TypeAttr::get(srcOp.getType())});

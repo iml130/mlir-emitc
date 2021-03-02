@@ -81,7 +81,7 @@ inline Src mul(Src x, Src y) {
   return binary<Src>(x, y, f);
 }
 
-/// Functions for other ops.
+/// Other ops
 // BroadcastInDimOp
 template <typename Dest, typename Src>
 inline Dest

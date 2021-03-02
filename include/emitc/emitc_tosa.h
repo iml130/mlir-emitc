@@ -68,7 +68,7 @@ inline Src mul(Src x, Src y, const int32_t shift) {
       return static_cast<int32_t>(result);
     };
     return binary<Src>(x, y, f);
-  } else { 
+  } else {
     return emitc::mul(x, y);
   }
 }

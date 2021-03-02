@@ -229,11 +229,16 @@ private:
     StringRef funcName = "tosa::mul";
     StringAttr callee = rewriter.getStringAttr(funcName);
 
+    auto shiftAttr = mulOp.shiftAttr();
+    ArrayAttr args;
     SmallVector<Attribute, 1> args_;
-    args_.push_back(rewriter.getIndexAttr(0));
-    args_.push_back(rewriter.getIndexAttr(1));
-    args_.push_back(mulOp.shiftAttr());
-    ArrayAttr args = rewriter.getArrayAttr(args_);
+    if (shiftAttr.getInt() > 0) {
+      args_.push_back(rewriter.getIndexAttr(0));
+      args_.push_back(rewriter.getIndexAttr(1));
+      args_.push_back(shiftAttr);
+      args = rewriter.getArrayAttr(args_);
+    }
+
     ArrayAttr templateArgs;
 
     SmallVector<Value, 2> broadcastedOperands =

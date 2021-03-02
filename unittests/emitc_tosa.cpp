@@ -41,8 +41,7 @@ TEST(tosa, mul) {
   Tensor2D<long, 2, 2> t2{-2, 8, 6, -10};
 
   auto lambda_2d = [&s2, &t2]() -> Tensor2D<long, 2, 2> {
-    int32_t shift{0};
-    return tosa::mul<Tensor2D<long, 2, 2>>(s2, t2, shift);
+    return tosa::mul(s2, t2);
   };
   EXPECT_THAT(lambda_2d(), Pointwise(Eq(), {-6, 8, 24, -90}));
 
@@ -52,7 +51,7 @@ TEST(tosa, mul) {
 
   auto lambda_2d_int = [&s3, &t3]() -> Tensor0D<int32_t> {
     int32_t shift{2};
-    return tosa::mul<Tensor0D<int32_t>>(s3, t3, shift);
+    return tosa::mul(s3, t3, shift);
   };
 
   EXPECT_THAT(lambda_2d_int(), Pointwise(Eq(), {2}));

@@ -51,12 +51,10 @@ inline Src add(Src x, Src y) {
 
 // MulOp
 template <typename Src>
-inline Src mul(Src x, Src y, int32_t shift) {
-  assert(shift == 0); // shift has to be 0 if datatype is not int32_t
+inline Src mul(Src x, Src y) {
   return emitc::mul(x, y);
 }
 
-template <>
 inline Tensor0D<int32_t> mul(Tensor0D<int32_t> x, Tensor0D<int32_t> y,
                              int32_t shift) {
   // Taken from

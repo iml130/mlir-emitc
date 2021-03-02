@@ -72,6 +72,39 @@ private:
   bool explicitOperandTypes;
 };
 
+class FullyConnectedOpConversion
+    : public OpConversionPattern<tosa::FullyConnectedOp> {
+  using OpConversionPattern<tosa::FullyConnectedOp>::OpConversionPattern;
+
+public:
+  FullyConnectedOpConversion(MLIRContext *ctx, StringRef funcName,
+                             bool explicitResultType = false,
+                             bool explicitOperandTypes = false)
+      : OpConversionPattern<tosa::FullyConnectedOp>(ctx) {}
+
+private:
+  LogicalResult
+  matchAndRewrite(tosa::FullyConnectedOp fullyConnectedOp,
+                  ArrayRef<Value> operands,
+                  ConversionPatternRewriter &rewriter) const override {
+    StringRef funcName = "tosa::fully_connected";
+    StringAttr callee = rewriter.getStringAttr(funcName);
+
+    ArrayAttr args;
+    ArrayAttr templateArgs;
+
+    if (fullyConnectedOp.quantization_info().hasValue()) {
+      return fullyConnectedOp.emitError(
+          "Quantization of tosa.fully_connected is currently not supported.");
+    }
+
+    rewriter.replaceOpWithNewOp<emitc::CallOp>(
+        fullyConnectedOp, fullyConnectedOp.getType(), callee, args,
+        templateArgs, operands);
+    return success();
+  }
+};
+
 class RsqrtOpConversion : public OpConversionPattern<tosa::RsqrtOp> {
   using OpConversionPattern<tosa::RsqrtOp>::OpConversionPattern;
 

@@ -37,24 +37,33 @@ TEST(tosa, reciprocal) {
 // Binary elementwise ops
 TEST(tosa, mul) {
   // no shift
-  Tensor2D<long, 2, 2> s2{3, 1, 4, 9};
-  Tensor2D<long, 2, 2> t2{-2, 8, 6, -10};
+  Tensor2D<long, 2, 2> s0{3, 1, 4, 9};
+  Tensor2D<long, 2, 2> t0{-2, 8, 6, -10};
 
-  auto lambda_2d = [&s2, &t2]() -> Tensor2D<long, 2, 2> {
-    return tosa::mul(s2, t2);
+  auto lambda_2d = [&s0, &t0]() -> Tensor2D<long, 2, 2> {
+    return tosa::mul(s0, t0);
   };
   EXPECT_THAT(lambda_2d(), Pointwise(Eq(), {-6, 8, 24, -90}));
 
-  // shift
-  Tensor0D<int32_t> s3{3};
-  Tensor0D<int32_t> t3{2};
+  Tensor1D<int32_t, 1> s1{3};
+  Tensor1D<int32_t, 1> t1{2};
 
-  auto lambda_2d_int = [&s3, &t3]() -> Tensor0D<int32_t> {
-    int32_t shift{2};
-    return tosa::mul(s3, t3, shift);
+  auto lambda_1d_int = [&s1, &t1]() -> Tensor1D<int32_t, 1> {
+    return tosa::mul(s1, t1);
   };
 
-  EXPECT_THAT(lambda_2d_int(), Pointwise(Eq(), {2}));
+  EXPECT_THAT(lambda_1d_int(), Pointwise(Eq(), {6}));
+
+  // shift
+  Tensor2D<int32_t, 2, 2> s2{1, 2, 3, 4};
+  Tensor2D<int32_t, 2, 2> t2{1, 2, 3, 4};
+
+  auto lambda_1d_int_shift = [&s2, &t2]() -> Tensor2D<int32_t, 2, 2> {
+    int32_t shift{2};
+    return tosa::mul(s2, t2, shift);
+  };
+
+  EXPECT_THAT(lambda_1d_int_shift(), Pointwise(Eq(), {0, 1, 2, 4}));
 }
 
 // Other ops

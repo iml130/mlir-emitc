@@ -143,7 +143,7 @@ private:
 
 template <typename SrcOp>
 SmallVector<Value, 2>
-create_broadcast_op_if_needed(SrcOp &srcOp, ArrayRef<Value> operands,
+createBroadcastOpIfNeeded(SrcOp &srcOp, ArrayRef<Value> operands,
                               ConversionPatternRewriter &rewriter) {
   // TOSA allows implicit broadcasting, so we need to insert broadcast_in_dim
   // ops if necessary, e.g.:
@@ -160,7 +160,7 @@ create_broadcast_op_if_needed(SrcOp &srcOp, ArrayRef<Value> operands,
   SmallVector<Value, 2> broadcastedOperands;
   broadcastedOperands.push_back(operands[0]);
   broadcastedOperands.push_back(operands[1]);
-  for (size_t i = 0; i < operands.size(); i++) {
+  for (size_t i = 0; i < operands.size(); ++i) {
     auto &operand = operands[i];
     auto operandShape = operand.getType().cast<RankedTensorType>().getShape();
     auto operandRank = operand.getType().cast<RankedTensorType>().getRank();
@@ -169,7 +169,7 @@ create_broadcast_op_if_needed(SrcOp &srcOp, ArrayRef<Value> operands,
     if (!operandShape.equals(opOutputShape)) {
       SmallVector<Attribute, 1> broadcastIndices;
       auto numBroadcastDims = opOutputRank - operandRank;
-      for (int64_t d = numBroadcastDims; d < opOutputRank; d++) {
+      for (int64_t d = numBroadcastDims; d < opOutputRank; ++d) {
         broadcastIndices.push_back(
             mlir::IntegerAttr::get(rewriter.getIntegerType(64), d));
       }
@@ -230,7 +230,7 @@ private:
     ArrayAttr templateArgs = ArrayAttr::get(srcOp.getContext(), templateArgs_);
 
     SmallVector<Value, 2> broadcastedOperands =
-        create_broadcast_op_if_needed(srcOp, operands, rewriter);
+        createBroadcastOpIfNeeded(srcOp, operands, rewriter);
 
     rewriter.replaceOpWithNewOp<emitc::CallOp>(
         srcOp, srcOp.getType(), callee, args, templateArgs,
@@ -275,7 +275,7 @@ private:
     ArrayAttr templateArgs;
 
     SmallVector<Value, 2> broadcastedOperands =
-        create_broadcast_op_if_needed(mulOp, operands, rewriter);
+        createBroadcastOpIfNeeded(mulOp, operands, rewriter);
 
     rewriter.replaceOpWithNewOp<emitc::CallOp>(
         mulOp, mulOp.getType(), callee, args, templateArgs,

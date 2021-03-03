@@ -55,6 +55,31 @@ specifying order of operands and attributes in the call as follows:
 | :----: | ----------- |
 &laquo;unnamed&raquo; | any type
 
+### `emitc.const` (::mlir::emitc::ConstOp)
+
+Constant op
+
+Syntax:
+
+```
+operation ::= ssa-id `=` `emitc.const` attribute-value `:` type
+```
+
+In addition to the `std.constant` operation, the `emitc.const` operation
+is intended to support opaque attributes and the EmitC's opaque type.
+
+#### Attributes:
+
+| Attribute | MLIR Type | Description |
+| :-------: | :-------: | ----------- |
+`value` | ::mlir::Attribute | any attribute
+
+#### Results:
+
+| Result | Description |
+| :----: | ----------- |
+&laquo;unnamed&raquo; | any type
+
 ### `emitc.for` (::mlir::emitc::ForOp)
 
 for operation

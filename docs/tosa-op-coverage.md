@@ -6,6 +6,7 @@ The table below shows the supported TOSA ops.
 | :-------------------- |:------------------:| :------ |
 | **Unary elementwise ops**
 | abs                   | :heavy_check_mark: | |
+| ceil                  | :heavy_check_mark: | |
 | exp                   | :heavy_check_mark: | |
 | reciprocal            | :heavy_check_mark: | |
 | rsqrt                 | :heavy_check_mark: | |

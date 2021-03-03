@@ -26,6 +26,12 @@ inline Src abs(Src x) {
   return emitc::abs<Src>(x);
 }
 
+// CeilOp
+template <typename Src>
+inline Src ceil(Src x) {
+  return emitc::ceil<Src>(x);
+}
+
 // ExpOp
 template <typename Src>
 inline Src exp(Src x) {

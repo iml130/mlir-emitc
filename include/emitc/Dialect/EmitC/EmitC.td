@@ -24,6 +24,7 @@ include "mlir/Interfaces/SideEffectInterfaces.td"
 def EmitC_Dialect : Dialect {
   let name = "emitc";
   let cppNamespace = "::mlir::emitc";
+  let hasConstantMaterializer = 1;
 }
 
 //===----------------------------------------------------------------------===//
@@ -96,6 +97,21 @@ def EmitC_CallOp : EmitC_Op<"call", []> {
   let assemblyFormat = [{
     $callee `(` $operands `)` attr-dict `:` functional-type($operands, results)
   }];
+}
+
+def EmitC_ConstOp : EmitC_Op<"const", [ConstantLike, NoSideEffect]> {
+  let summary = "Constant op";
+  let description = [{
+    The `const` operation produces an SSA value equal to some constant
+    specified by an attribute, similar to `std.constant`.
+    In addition to the `std.constant` operation, the `emitc.const` operation
+    is intended to support opaque attributes and EmitC's opaque type.
+  }];
+
+  let arguments = (ins AnyAttr:$value);
+  let results = (outs AnyType);
+
+  let hasFolder = 1;
 }
 
 def EmitC_GetAddressOfOp : EmitC_Op<"getaddressof", []> {

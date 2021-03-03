@@ -9,3 +9,8 @@ func @f(%arg0: i32, %f: !custom<"int32_t">) -> i1 {
   %2:3 = "bar"(%1) : (i64) -> (i1,i1,i1)
   return %2#1 : i1
 }
+
+func @c(%arg0: i32) {
+  %1 = "emitc.const"(){value = 42 : i32} : () -> i32
+  return
+}

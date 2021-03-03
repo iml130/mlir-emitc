@@ -37,9 +37,27 @@ void emitc::EmitCDialect::initialize() {
       >();
 }
 
+/// Materialize a single constant operation from a given attribute value with
+/// the desired resultant type.
+Operation *emitc::EmitCDialect::materializeConstant(OpBuilder &builder,
+                                                    Attribute value, Type type,
+                                                    Location loc) {
+  return builder.create<ConstantOp>(loc, type, value);
+}
+
 /// Default callback for IfOp builders. Inserts a yield without arguments.
 void emitc::buildTerminatedBody(OpBuilder &builder, Location loc) {
   builder.create<emitc::YieldOp>(loc);
+}
+
+//===----------------------------------------------------------------------===//
+// ConstOp
+//===----------------------------------------------------------------------===//
+// Folder
+
+OpFoldResult ConstOp::fold(ArrayRef<Attribute> operands) {
+  assert(operands.empty() && "constant has no operands");
+  return value();
 }
 
 //===----------------------------------------------------------------------===//

@@ -49,6 +49,35 @@ static LogicalResult printConstantOp(CppEmitter &emitter,
   return success();
 }
 
+static LogicalResult printConstOp(CppEmitter &emitter, ConstOp constOp) {
+  auto &os = emitter.ostream();
+  if (failed(emitter.emitType(constOp.getType())))
+    return failure();
+  os << " " << emitter.getOrCreateName(constOp.getResult());
+
+  // Add braces for number literals only to avoid double brace intialization for
+  // tensors.
+  auto value = constOp.value();
+  bool emitBraces = value.isa<FloatAttr>() || value.isa<IntegerAttr>();
+
+  if (constOp.getType().dyn_cast<emitc::OpaqueType>()) {
+    // TODO: Refactor me! We have to improve the checks in the dialect.
+    emitBraces = false;
+    os << " = ";
+  }
+
+  if (emitBraces)
+    os << "{";
+
+  if (failed(emitter.emitAttribute(constOp.value())))
+    return constOp.emitError("unable to emit constant value");
+
+  if (emitBraces)
+    os << "}";
+
+  return success();
+}
+
 static LogicalResult printCallOp(CppEmitter &emitter, mlir::CallOp callOp) {
   if (failed(emitter.emitAssignPrefix(*callOp.getOperation())))
     return failure();
@@ -513,6 +542,8 @@ static LogicalResult printOperation(CppEmitter &emitter, Operation &op) {
     return printForOp(emitter, forOp);
   if (auto constantOp = dyn_cast<ConstantOp>(op))
     return printConstantOp(emitter, constantOp);
+  if (auto constOp = dyn_cast<emitc::ConstOp>(op))
+    return printConstOp(emitter, constOp);
   if (auto returnOp = dyn_cast<ReturnOp>(op))
     return printReturnOp(emitter, returnOp);
   if (auto moduleOp = dyn_cast<ModuleOp>(op))

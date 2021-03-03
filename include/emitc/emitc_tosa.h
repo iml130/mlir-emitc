@@ -44,6 +44,12 @@ inline Src floor(Src x) {
   return emitc::floor<Src>(x);
 }
 
+// LogOp
+template <typename Src>
+inline Src log(Src x) {
+  return emitc::log<Src>(x);
+}
+
 // ReciprocalOp
 template <typename Src>
 inline Src reciprocal(Src x) {

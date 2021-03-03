@@ -70,6 +70,16 @@ inline Src floor(Src x) {
   return unary<Src>(x, f);
 }
 
+// LogOp
+template <typename Src>
+inline Src log(Src x) {
+  using ET_Src = typename get_element_type<Src>::type;
+
+  auto f = static_cast<ET_Src (*)(ET_Src)>(std::log);
+
+  return unary<Src>(x, f);
+}
+
 // SqrtOp
 template <typename Src>
 inline Src sqrt(Src x) {

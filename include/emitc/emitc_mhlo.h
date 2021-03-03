@@ -43,11 +43,7 @@ inline Src abs(Src x) {
 // CeilOp
 template <typename Src>
 inline Src ceil(Src x) {
-  using ET_Src = typename get_element_type<Src>::type;
-
-  auto f = static_cast<ET_Src (*)(ET_Src)>(std::ceil);
-
-  return unary<Src>(x, f);
+  return emitc::ceil<Src>(x);
 }
 
 // BitcastConvertOp

@@ -98,6 +98,15 @@ def EmitC_CallOp : EmitC_Op<"call", []> {
   }];
 }
 
+def EmitC_GetAddressOfOp : EmitC_Op<"getaddressof", []> {
+  let summary = "get address of operation";
+  let description = [{
+    The "getaddressof" operation gets the address via the & operator in C++.
+  }];
+  let arguments = (ins AnyType:$operand);
+  let results = (outs OpaqueType:$result);
+}
+
 def EmitC_ForOp : EmitC_Op<"for",
       [DeclareOpInterfaceMethods<LoopLikeOpInterface>,
        DeclareOpInterfaceMethods<RegionBranchOpInterface>,

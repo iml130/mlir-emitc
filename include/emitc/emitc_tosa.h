@@ -38,6 +38,12 @@ inline Src exp(Src x) {
   return emitc::exp<Src>(x);
 }
 
+// FloorOp
+template <typename Src>
+inline Src floor(Src x) {
+  return emitc::floor<Src>(x);
+}
+
 // ReciprocalOp
 template <typename Src>
 inline Src reciprocal(Src x) {

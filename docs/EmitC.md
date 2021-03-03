@@ -59,14 +59,10 @@ specifying order of operands and attributes in the call as follows:
 
 Constant op
 
-Syntax:
-
-```
-operation ::= ssa-id `=` `emitc.const` attribute-value `:` type
-```
-
+The `const` operation produces an SSA value equal to some constant
+specified by an attribute, similar to `std.constant`.
 In addition to the `std.constant` operation, the `emitc.const` operation
-is intended to support opaque attributes and the EmitC's opaque type.
+is intended to support opaque attributes and EmitC's opaque type.
 
 #### Attributes:
 

@@ -102,14 +102,10 @@ def EmitC_CallOp : EmitC_Op<"call", []> {
 def EmitC_ConstOp : EmitC_Op<"const", [ConstantLike, NoSideEffect]> {
   let summary = "Constant op";
   let description = [{
-    Syntax:
-
-    ```
-    operation ::= ssa-id `=` `emitc.const` attribute-value `:` type
-    ```
-
+    The `const` operation produces an SSA value equal to some constant
+    specified by an attribute, similar to `std.constant`.
     In addition to the `std.constant` operation, the `emitc.const` operation
-    is intended to support opaque attributes and the EmitC's opaque type.
+    is intended to support opaque attributes and EmitC's opaque type.
   }];
 
   let arguments = (ins AnyAttr:$value);

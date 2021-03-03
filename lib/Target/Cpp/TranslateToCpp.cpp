@@ -60,11 +60,14 @@ static LogicalResult printConstOp(CppEmitter &emitter, ConstOp constOp) {
   auto value = constOp.value();
   bool emitBraces = value.isa<FloatAttr>() || value.isa<IntegerAttr>();
 
+  if (constOp.getType().dyn_cast<emitc::OpaqueType>()) {
+    // TODO: Refactor me! We have to improve the checks in the dialect.
+    emitBraces = false;
+    os << " = ";
+  }
+
   if (emitBraces)
     os << "{";
-
-  if (constOp.getType().dyn_cast<emitc::OpaqueType>())
-    os << " = ";
 
   if (failed(emitter.emitAttribute(constOp.value())))
     return constOp.emitError("unable to emit constant value");

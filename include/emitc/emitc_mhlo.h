@@ -135,11 +135,7 @@ inline typename replace_element_type<bool, Src>::type is_finite(Src x) {
 // LogOp
 template <typename Src>
 inline Src log(Src x) {
-  using ET_Src = typename get_element_type<Src>::type;
-
-  auto f = static_cast<ET_Src (*)(ET_Src)>(std::log);
-
-  return unary<Src>(x, f);
+  return emitc::log<Src>(x);
 }
 
 // Log1pOp

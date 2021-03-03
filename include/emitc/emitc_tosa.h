@@ -60,6 +60,12 @@ inline Src reciprocal(Src x) {
   return unary<Src>(x, f);
 }
 
+// TanhOp
+template <typename Src>
+inline Src tanh(Src x) {
+  return emitc::tanh<Src>(x);
+}
+
 /// Binary elementwise ops
 // AddOp
 template <typename Src>

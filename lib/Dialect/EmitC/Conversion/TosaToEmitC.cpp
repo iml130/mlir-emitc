@@ -364,12 +364,6 @@ private:
     rewriter.replaceOpWithNewOp<tosa::ReshapeOp>(
         reduceOp, output.getType(), emitcReduceOp.getResult(0), newShapeAttr);
 
-    // auto tosaReshape = rewriter.create<tosa::ReshapeOp>(
-    //     emitcReduceOp.getLoc(), output.getType(), emitcReduceOp.getResult(0),
-    //     newShapeAttr);
-
-    // rewriter.replaceOp(reduceOp, {tosaReshape.output()});
-
     return success();
   }
 

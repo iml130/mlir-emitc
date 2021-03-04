@@ -303,6 +303,7 @@ void populateTosaToEmitcPatterns(MLIRContext *ctx,
   // Binary elementwise ops
   patterns.insert<CallOpBroadcastableConversion<tosa::AddOp>>(ctx, "tosa::add");
   patterns.insert<MulOpConversion>(ctx, "tosa::mul");
+  patterns.insert<CallOpBroadcastableConversion<tosa::SubOp>>(ctx, "tosa::sub");
 
   // Other ops
   patterns.insert<FullyConnectedOpConversion>(ctx, "tosa::fully_connected");
@@ -338,6 +339,7 @@ struct ConvertTosaToEmitCPass
     // Binary elementwise ops
     target.addIllegalOp<tosa::AddOp>();
     target.addIllegalOp<tosa::MulOp>();
+    target.addIllegalOp<tosa::SubOp>();
 
     // Other ops
     target.addIllegalOp<tosa::FullyConnectedOp>();

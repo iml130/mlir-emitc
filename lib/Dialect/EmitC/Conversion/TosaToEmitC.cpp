@@ -141,8 +141,8 @@ private:
     ArrayAttr args;
     ArrayAttr templateArgs;
 
-    rewriter.replaceOpWithNewOp<emitc::CallOp>(matMulOp, matMulOp.getType(), callee, args,
-                                               templateArgs, operands);
+    rewriter.replaceOpWithNewOp<emitc::CallOp>(
+        matMulOp, matMulOp.getType(), callee, args, templateArgs, operands);
     return success();
   }
 };

@@ -24,15 +24,6 @@ namespace emitc {
 
 namespace {
 
-/// Common functions
-/// Adopted from mlir-hlo
-SmallVector<Attribute, 2> indexSequence(int64_t n, MLIRContext *ctx) {
-  return llvm::to_vector<2>(
-      llvm::map_range(llvm::seq<int64_t>(0, n), [&ctx](int64_t i) -> Attribute {
-        return IntegerAttr::get(IndexType::get(ctx), i);
-      }));
-}
-
 template <typename SrcOp>
 class CallOpConversion : public OpConversionPattern<SrcOp> {
   using OpConversionPattern<SrcOp>::OpConversionPattern;
@@ -90,6 +81,12 @@ private:
   LogicalResult
   matchAndRewrite(tosa::Conv2DOp convOp, ArrayRef<Value> operands,
                   ConversionPatternRewriter &rewriter) const override {
+    // fail if quantization is requested
+    if (convOp.quantization_info().hasValue()) {
+      return convOp.emitError(
+          "Quantization of tosa.conv2d is currently not supported.");
+    }
+
     // tosa conv2D supports adding a bias after the actual convolution. We will
     // split the convolution with bias into two operations: the convolution (as
     // an emitc call op) and the addition of the bias (as an tosa.add op).
@@ -97,28 +94,16 @@ private:
     operands = operands.drop_back();
 
     typename tosa::Conv2DOp::Adaptor adaptor(operands);
-    auto ctx = convOp.getContext();
 
     StringRef funcName = "tosa::conv2d";
     StringAttr callee = rewriter.getStringAttr(funcName);
 
-    // fail if quantization is requested
-    if (convOp.quantization_info().hasValue()) {
-      return convOp.emitError(
-          "Quantization of tosa.conv2d is currently not supported.");
-    }
+    ArrayAttr args = rewriter.getArrayAttr(
+        {rewriter.getIndexAttr(0), rewriter.getIndexAttr(1), convOp.pad(),
+         convOp.stride(), convOp.dilation()});
 
-    SmallVector<Attribute, 2> args_ = indexSequence(operands.size(), ctx);
-
-    args_.push_back(convOp.pad());
-    args_.push_back(convOp.stride());
-    args_.push_back(convOp.dilation());
-
-    ArrayAttr args = rewriter.getArrayAttr(args_);
     ArrayAttr templateArgs =
-        rewriter.getArrayAttr({TypeAttr::get(convOp.getResult().getType()),
-                               TypeAttr::get(convOp.input().getType()),
-                               TypeAttr::get(convOp.weight().getType())});
+        rewriter.getArrayAttr({TypeAttr::get(convOp.getResult().getType())});
 
     // create convOp
     auto conv_op =
@@ -129,12 +114,9 @@ private:
     auto addOpOperands =
         mlir::ValueRange({conv_op.getResult(0), convOp.bias()});
 
-    // create addOp
-    auto add_op = rewriter.create<tosa::AddOp>(convOp->getLoc(),
-                                               convOp.getType(), addOpOperands);
-
-    // rewrite convOp with two emitc CallOp
-    rewriter.replaceOp(convOp, {add_op.output()});
+    // rewrite convOp with two emitc CallOps
+    rewriter.replaceOpWithNewOp<tosa::AddOp>(convOp, convOp.getType(),
+                                             addOpOperands);
 
     return success();
   }

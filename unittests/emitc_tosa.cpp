@@ -83,8 +83,8 @@ TEST(tosa, conv2d) {
   Tensor1D<int64_t, 2> dilation{1, 1};
   Tensor1D<int64_t, 2> stride{1, 1};
 
-  ResultType result = tosa::conv2d<ResultType, InputType, WeightType>(
-      input, weights, padding, stride, dilation);
+  ResultType result =
+      tosa::conv2d<ResultType>(input, weights, padding, stride, dilation);
   EXPECT_THAT(result, Pointwise(FloatNear(EPSILON), expected_result));
 }
 

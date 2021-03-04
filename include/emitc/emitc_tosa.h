@@ -98,10 +98,13 @@ inline Src mul(Src x, Src y, const int32_t shift) {
 }
 
 /// Other ops
-// Conv2dOp
+// Conv2DOp
 template <typename Dest, typename Src, typename Weights>
 Dest conv2d(Src input, Weights weights, Tensor1D<int64_t, 4> padding,
             Tensor1D<int64_t, 2> stride, Tensor1D<int64_t, 2> dilation) {
+  // This implementation is taken from emitc_mhlo.c (convolution) and slightly
+  // adapted to fit the memory layout of tosa. Input is [N,IH,IW,IC], weights
+  // are [OC,KH,KW,IC] and output is [N,H,W,OC].
   static_assert(is_tensor_of_dim<4, Src>::value,
                 "Expected 4 dimensional input");
   static_assert(is_tensor_of_dim<4, Dest>::value,
@@ -122,11 +125,10 @@ Dest conv2d(Src input, Weights weights, Tensor1D<int64_t, 4> padding,
 
   Dest output;
 
-  const int C_OUT = output.dim(0);
+  const int C_OUT = output.dim(3);
+
   const int K_H = weights.dim(1);
   const int K_W = weights.dim(2);
-
-  const int G_OUT = C_OUT;
 
   const int S_H = stride[0];
   const int S_W = stride[1];
@@ -139,31 +141,24 @@ Dest conv2d(Src input, Weights weights, Tensor1D<int64_t, 4> padding,
   const int H_PAD = pt + H_IN + pb;
   const int W_PAD = pl + W_IN + pr;
 
-  const int feature_group_count = 1;
-  const int G_IN = C_IN / feature_group_count;
-
   // Convolution
   for (int n = 0; n < N; n++) {
     for (int h_pad = 0; h_pad < H_PAD - K_H + 1; h_pad += S_H) {
       for (int w_pad = 0; w_pad < W_PAD - K_W + 1; w_pad += S_W) {
         for (int kh = 0; kh < K_H; kh++) {
           for (int kw = 0; kw < K_W; kw++) {
-            for (int g = 0; g < feature_group_count; g++) {
-              for (int g_in = 0; g_in < G_IN; g_in++) {
-                for (int g_out = 0; g_out < G_OUT; g_out++) {
-                  const int h_out = h_pad / S_H;
-                  const int w_out = w_pad / S_W;
-                  const int c_out = g * G_OUT + g_out;
-                  const int h_in = h_pad - pt + kh;
-                  const int w_in = w_pad - pl + kw;
-                  const int c_in = g * G_IN + g_in;
+            for (int c_in = 0; c_in < C_IN; c_in++) {
+              for (int c_out = 0; c_out < C_OUT; c_out++) {
+                const int h_out = h_pad / S_H;
+                const int w_out = w_pad / S_W;
+                const int h_in = h_pad - pt + kh;
+                const int w_in = w_pad - pl + kw;
 
-                  if (h_in < 0 || h_in >= H_IN || w_in < 0 || w_in >= W_IN)
-                    continue;
+                if (h_in < 0 || h_in >= H_IN || w_in < 0 || w_in >= W_IN)
+                  continue;
 
-                  output(n, h_out, w_out, c_out) +=
-                      input(n, h_in, w_in, c_in) * weights(c_out, kh, kw, c_in);
-                }
+                output(n, h_out, w_out, c_out) +=
+                    input(n, h_in, w_in, c_in) * weights(c_out, kh, kw, c_in);
               }
             }
           }

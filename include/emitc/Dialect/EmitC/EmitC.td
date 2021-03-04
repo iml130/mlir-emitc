@@ -97,6 +97,28 @@ def EmitC_CallOp : EmitC_Op<"call", []> {
   let assemblyFormat = [{
     $callee `(` $operands `)` attr-dict `:` functional-type($operands, results)
   }];
+  let verifier = [{
+    // callee must not be empty
+    if (callee().empty()) {
+      return emitOpError("callee must not be empty");
+    }
+    // args elements of type index must be in range [0..operands.size)
+    auto argsAttr = args();
+    if (argsAttr.hasValue()) {
+      for (auto &arg : argsAttr.getValue()) {
+        if (auto iArg = arg.dyn_cast<IntegerAttr>()) {
+          if (iArg.getType().isIndex()) {
+            int64_t index = iArg.getInt();
+            if ((index < 0) || (index >= static_cast<int64_t>(getNumOperands()))) {
+              return emitOpError("index argument is out of range");
+            }
+          }
+        }
+      }
+    }
+    return success();
+  }];
+
 }
 
 def EmitC_ConstOp : EmitC_Op<"const", [ConstantLike, NoSideEffect]> {

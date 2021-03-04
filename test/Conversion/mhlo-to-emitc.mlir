@@ -1,5 +1,13 @@
 // RUN: emitc-opt -convert-mhlo-region-ops-to-emitc -convert-mhlo-to-emitc %s | FileCheck %s
 
+// Nullary ops
+
+func @mhlo_constant(%arg0: tensor<2xi32>) -> tensor<2xi32> {
+  // CHECK: "emitc.const"() {value = dense<1> : tensor<2xi32>} : () -> tensor<2xi32>
+  %0 = "mhlo.constant"() {value = dense<1> : tensor<2xi32>} : () -> tensor<2xi32>
+  return %0 : tensor<2xi32>
+}
+
 // Unary elementwise ops
 
 func @float_abs(%arg0: tensor<2xf32>) -> tensor<2xf32> {

@@ -198,7 +198,7 @@ inline Dest reduce_all(Src input, int64_t dimension) {
   return tosa::reduce<Dest, Src>(input, true, dimension, and_);
 }
 
-// reduce_any
+// ReduceAnyOp
 template <typename Dest, typename Src>
 inline Dest reduce_any(Src input, int64_t dimension) {
   using ET_Src = typename get_element_type<Src>::type;

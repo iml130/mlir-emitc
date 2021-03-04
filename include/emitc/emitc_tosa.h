@@ -245,7 +245,7 @@ inline Dest reduce_prod(Src input, int64_t dimension) {
                                  std::multiplies<ET_Src>{});
 }
 
-// reduce_sum
+// ReduceSumOp
 template <typename Dest, typename Src>
 inline Dest reduce_sum(Src input, int64_t dimension) {
   using ET_Src = typename get_element_type<Src>::type;

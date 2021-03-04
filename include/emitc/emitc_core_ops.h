@@ -121,6 +121,16 @@ inline Src mul(Src x, Src y) {
   return binary<Src>(x, y, f);
 }
 
+// SubOp
+template <typename Src>
+inline Src sub(Src x, Src y) {
+  using ET_Src = typename get_element_type<Src>::type;
+
+  auto f = std::minus<ET_Src>{};
+
+  return binary<Src>(x, y, f);
+}
+
 /// Other ops
 // BroadcastInDimOp
 template <typename Dest, typename Src>

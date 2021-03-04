@@ -171,7 +171,7 @@ inline Dest reduce(Src operand, typename get_element_type<Src>::type initValue,
   Dest result;
   std::fill(result.begin(), result.end(), initValue);
 
-  for (size_t i = 0; i < operand.size(); i++) {
+  for (size_t i = 0; i < operand.size(); ++i) {
     auto value = operand[i];
     auto index = operand.unravel_index(i);
 

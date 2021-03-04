@@ -97,6 +97,12 @@ inline Src mul(Src x, Src y, const int32_t shift) {
   }
 }
 
+// SubOp
+template <typename Src>
+inline Src sub(Src x, Src y) {
+  return emitc::sub<Src>(x, y);
+}
+
 /// Other ops
 // Conv2DOp
 template <typename Dest, typename Src, typename Weights>

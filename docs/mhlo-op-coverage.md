@@ -4,6 +4,8 @@ The table below shows the supported MHLO ops.
 
 | op                    | supported          | comment |
 | :-------------------- |:------------------:| :------ |
+| **Nullary ops**
+| const                 | :heavy_check_mark: | |
 | **Unary elementwise ops**
 | abs                   | :heavy_check_mark: | |
 | ceil                  | :heavy_check_mark: | |

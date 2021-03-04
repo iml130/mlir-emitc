@@ -182,7 +182,7 @@ inline Dest reduce(Src operand, typename get_element_type<Src>::type initValue,
   return result;
 }
 
-// reduce_all
+// ReduceAllOp
 template <typename Dest, typename Src>
 inline Dest reduce_all(Src input, int64_t dimension) {
   using ET_Src = typename get_element_type<Src>::type;

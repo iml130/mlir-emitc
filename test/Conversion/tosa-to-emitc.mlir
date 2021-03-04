@@ -115,7 +115,7 @@ func @test_fully_connected(%arg0: tensor<14x19xf32>, %arg1: tensor<19x28xf32>, %
   return %0 : tensor<14x28xf32>
 }
 
-/// Reduce ops
+// Reduce ops
 func @test_reduce_all(%arg0: tensor<13x21x3xi1>) -> tensor<1x21x3xi1> {
   // CHECK: %0 = emitc.call "tosa::reduce_all"(%arg0) {args = [0 : index, 0], template_args = [tensor<21x3xi1>, tensor<13x21x3xi1>]} : (tensor<13x21x3xi1>) -> tensor<21x3xi1>
   // CHECK: %1 = "tosa.reshape"(%0) {new_shape = [1, 21, 3]} : (tensor<21x3xi1>) -> tensor<1x21x3xi1>

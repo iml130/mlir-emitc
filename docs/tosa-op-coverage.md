@@ -16,5 +16,6 @@ The table below shows the supported TOSA ops.
 | **Binary elementwise ops**
 | add                   | :heavy_check_mark: | |
 | mul                   | :heavy_check_mark: | |
+| sub                   | :heavy_check_mark: | |
 | **Other ops**
 | fully_connected       | :white_check_mark: | Quantization not supported |

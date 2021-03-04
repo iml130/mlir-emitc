@@ -105,7 +105,7 @@ private:
     // fail if quantization is requested
     if (convOp.quantization_info().hasValue()) {
       return convOp.emitError(
-          "Quantization of tosa.fully_connected is currently not supported.");
+          "Quantization of tosa.conv2d is currently not supported.");
     }
 
     SmallVector<Attribute, 2> args_ = indexSequence(operands.size(), ctx);

@@ -214,7 +214,7 @@ inline Dest reduce_any(Src input, int64_t dimension) {
   return tosa::reduce<Dest, Src>(input, false, dimension, or_);
 }
 
-// reduce_max
+// ReduceMaxOp
 template <typename Dest, typename Src>
 inline Dest reduce_max(Src input, int64_t dimension) {
   using ET_Src = typename get_element_type<Src>::type;

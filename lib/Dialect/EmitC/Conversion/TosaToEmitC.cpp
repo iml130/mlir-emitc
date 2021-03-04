@@ -409,9 +409,8 @@ struct ConvertTosaToEmitCPass
     target.addIllegalOp<tosa::MulOp>();
 
     // Other ops
-    target.addIllegalOp<tosa::FullyConnectedOp>();
-
     target.addIllegalOp<tosa::Conv2DOp>();
+    target.addIllegalOp<tosa::FullyConnectedOp>();
 
     OwningRewritePatternList patterns;
     populateTosaToEmitcPatterns(&getContext(), patterns);

@@ -108,10 +108,11 @@ func @test_mul5(%arg0: tensor<2x13x21x3xi32>, %arg1: tensor<21x3xi32>) -> tensor
 }
 
 /// Other ops
-// Conv2DOp
+// Conv2dOp
 func @test_conv2d(%arg0: tensor<1x4x4x4xf32>, %arg1: tensor<8x1x1x4xf32>, %arg2: tensor<8xf32>) -> tensor<1x4x4x8xf32> {
-    // CHECK-NEXT: %0 = emitc.call "tosa::conv2D"(%arg0, %arg1) {args = [0 : index, 1 : index, [0, 0, 0, 0], [1, 1], [1, 1]], template_args = [tensor<1x4x4x8xf32>, tensor<1x4x4x4xf32>, tensor<8x1x1x4xf32>]} : (tensor<1x4x4x4xf32>, tensor<8x1x1x4xf32>) -> tensor<1x4x4x8xf32>
-    // CHECK-NEXT: %1 = emitc.call "tosa::add"(%0, %arg2) {args = [], template_args = [tensor<1x4x4x8xf32>, tensor<8xf32>]} : (tensor<1x4x4x8xf32>, tensor<8xf32>) -> tensor<1x4x4x8xf32>
+    // CHECK: %0 = emitc.call "tosa::conv2d"(%arg0, %arg1) {args = [0 : index, 1 : index, [0, 0, 0, 0], [1, 1], [1, 1]], template_args = [tensor<1x4x4x8xf32>, tensor<1x4x4x4xf32>, tensor<8x1x1x4xf32>]} : (tensor<1x4x4x4xf32>, tensor<8x1x1x4xf32>) -> tensor<1x4x4x8xf32>
+    // CHECK: %1 = emitc.call "emitc::broadcast_in_dim"(%arg2) {args = [dense<3> : tensor<1xi64>], template_args = [tensor<1x4x4x8xf32>]} : (tensor<8xf32>) -> tensor<1x4x4x8xf32>
+    // CHECK: %2 = emitc.call "tosa::add"(%0, %1) {template_args = []} : (tensor<1x4x4x8xf32>, tensor<1x4x4x8xf32>) -> tensor<1x4x4x8xf32>
     %0 = "tosa.conv2d"(%arg0, %arg1, %arg2) {dilation = [1, 1], pad = [0, 0, 0, 0], stride = [1, 1]} : (tensor<1x4x4x4xf32>, tensor<8x1x1x4xf32>, tensor<8xf32>) -> tensor<1x4x4x8xf32>
     return %0 : tensor<1x4x4x8xf32>
 }

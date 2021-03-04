@@ -18,3 +18,4 @@ The table below shows the supported TOSA ops.
 | mul                   | :heavy_check_mark: | |
 | **Other ops**
 | fully_connected       | :white_check_mark: | Quantization not supported |
+| matmul                | :white_check_mark: | Quantization not supported |

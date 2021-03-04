@@ -318,17 +318,18 @@ private:
     RankedTensorType reducedOutputType =
         output.getType().cast<RankedTensorType>();
 
-    SmallVector<int64_t> newReduceOutputShape;
+    SmallVector<int64_t> newReducedOutputShape;
 
     for (auto dim : reducedOutputType.getShape()) {
-      newReduceOutputShape.push_back(dim);
+      newReducedOutputShape.push_back(dim);
     };
 
     // remove reduced axis from shape
-    newReduceOutputShape.erase(newReduceOutputShape.begin() + reduceOp.axis());
+    newReducedOutputShape.erase(newReducedOutputShape.begin() +
+                                reduceOp.axis());
 
     auto newOutputType =
-        RankedTensorType::get(llvm::makeArrayRef(newReduceOutputShape),
+        RankedTensorType::get(llvm::makeArrayRef(newReducedOutputShape),
                               reducedOutputType.getElementType());
 
     ArrayAttr templateArgs =
@@ -348,11 +349,14 @@ private:
     ArrayAttr newShapeAttr =
         ArrayAttr::get(reduceOp.getContext(), newShapeAttr_);
 
-    auto tosaReshape = rewriter.create<tosa::ReshapeOp>(
-        emitcReduceOp.getLoc(), output.getType(), emitcReduceOp.getResult(0),
-        newShapeAttr);
+    rewriter.replaceOpWithNewOp<tosa::ReshapeOp>(
+        reduceOp, output.getType(), emitcReduceOp.getResult(0), newShapeAttr);
 
-    rewriter.replaceOp(reduceOp, {tosaReshape.output()});
+    // auto tosaReshape = rewriter.create<tosa::ReshapeOp>(
+    //     emitcReduceOp.getLoc(), output.getType(), emitcReduceOp.getResult(0),
+    //     newShapeAttr);
+
+    // rewriter.replaceOp(reduceOp, {tosaReshape.output()});
 
     return success();
   }

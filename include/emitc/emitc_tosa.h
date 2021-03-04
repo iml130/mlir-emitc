@@ -140,6 +140,7 @@ Dest fully_connected(Src input, Weights weights, Bias bias) {
 }
 
 /// Reduce ops
+namespace {
 // ReduceOp
 template <typename Dest, typename Src, typename Computation>
 inline Dest reduce(Src operand, typename get_element_type<Src>::type initValue,
@@ -148,7 +149,7 @@ inline Dest reduce(Src operand, typename get_element_type<Src>::type initValue,
   static_assert(is_tensor<Dest>::value, "Expected tensor result");
 
   using ET_Src = typename get_element_type<Src>::type;
-  using ET_Dest = typename get_element_type<Src>::type;
+  using ET_Dest = typename get_element_type<Dest>::type;
 
   static_assert(std::is_same<ET_Src, ET_Dest>::value, "Element type mismatch");
 
@@ -181,12 +182,13 @@ inline Dest reduce(Src operand, typename get_element_type<Src>::type initValue,
 
   return result;
 }
+} // namespace
 
 // ReduceAllOp
 template <typename Dest, typename Src>
 inline Dest reduce_all(Src input, int64_t dimension) {
   using ET_Src = typename get_element_type<Src>::type;
-  using ET_Dest = typename get_element_type<Src>::type;
+  using ET_Dest = typename get_element_type<Dest>::type;
 
   static_assert(std::is_same<ET_Src, bool>::value,
                 "Src tensor type must be bool");
@@ -202,7 +204,7 @@ inline Dest reduce_all(Src input, int64_t dimension) {
 template <typename Dest, typename Src>
 inline Dest reduce_any(Src input, int64_t dimension) {
   using ET_Src = typename get_element_type<Src>::type;
-  using ET_Dest = typename get_element_type<Src>::type;
+  using ET_Dest = typename get_element_type<Dest>::type;
 
   static_assert(std::is_same<ET_Src, bool>::value,
                 "Src tensor type must be bool");
@@ -219,7 +221,8 @@ template <typename Dest, typename Src>
 inline Dest reduce_max(Src input, int64_t dimension) {
   using ET_Src = typename get_element_type<Src>::type;
 
-  auto f = [](ET_Src a, ET_Src b) { return std::max(a, b); };
+  auto f =
+      static_cast<const ET_Src &(*)(const ET_Src &, const ET_Src &)>(std::max);
 
   return tosa::reduce<Dest, Src>(input, std::numeric_limits<ET_Src>::min(),
                                  dimension, f);
@@ -230,7 +233,8 @@ template <typename Dest, typename Src>
 inline Dest reduce_min(Src input, int64_t dimension) {
   using ET_Src = typename get_element_type<Src>::type;
 
-  auto f = [](ET_Src a, ET_Src b) { return std::min(a, b); };
+  auto f =
+      static_cast<const ET_Src &(*)(const ET_Src &, const ET_Src &)>(std::min);
 
   return tosa::reduce<Dest, Src>(input, std::numeric_limits<ET_Src>::max(),
                                  dimension, f);

@@ -27,11 +27,11 @@ const float EPSILON = 5e-4;
 // Unary elementwise ops
 TEST(tosa, reciprocal) {
   Tensor<float, 4> t0{1.0f, 2.0f, 3.0f, 4.0f};
-  Tensor<float, 4> excpected{1.0f, 0.5f, 0.3333f, 0.25f};
+  Tensor<float, 4> expected{1.0f, 0.5f, 0.3333f, 0.25f};
 
   Tensor<float, 4> result = tosa::reciprocal(t0);
 
-  EXPECT_THAT(result, Pointwise(FloatNear(EPSILON), excpected));
+  EXPECT_THAT(result, Pointwise(FloatNear(EPSILON), expected));
 }
 
 // Binary elementwise ops
@@ -79,6 +79,102 @@ TEST(tosa, fully_connected) {
   ResultType result = tosa::fully_connected<ResultType>(input, weights, bias);
 
   EXPECT_THAT(result, Pointwise(FloatNear(EPSILON), expected_result));
+}
+
+TEST(tosa, reduce_all) {
+  Tensor<bool, 2, 3> t0{true, true, true, false, true, false};
+
+  Tensor<bool, 3> expected_result0_0{false, true, false};
+  Tensor<bool, 2> expected_result0_1{true, false};
+  Tensor<bool> expected_result0_01{false};
+
+  Tensor<bool, 3> result0_0 = tosa::reduce_all<Tensor<bool, 3>>(t0, 0);
+  Tensor<bool, 2> result0_1 = tosa::reduce_all<Tensor<bool, 2>>(t0, 1);
+
+  EXPECT_THAT(result0_0, Pointwise(Eq(), expected_result0_0));
+  EXPECT_THAT(result0_1, Pointwise(Eq(), expected_result0_1));
+}
+
+TEST(tosa, reduce_any) {
+  Tensor<bool, 2, 3> t0{true, true, false, true, false, false};
+  Tensor<bool, 3> t1{false, false, false};
+
+  Tensor<bool, 3> expected_result0_0{true, true, false};
+  Tensor<bool, 2> expected_result0_1{true, true};
+  Tensor<bool> expected_result1{false};
+
+  Tensor<bool, 3> result0_0 = tosa::reduce_any<Tensor<bool, 3>>(t0, 0);
+  Tensor<bool, 2> result0_1 = tosa::reduce_any<Tensor<bool, 2>>(t0, 1);
+  Tensor<bool> result1 = tosa::reduce_any<Tensor<bool>>(t1, 0);
+
+  EXPECT_THAT(result0_0, Pointwise(Eq(), expected_result0_0));
+  EXPECT_THAT(result0_1, Pointwise(Eq(), expected_result0_1));
+  EXPECT_THAT(result1, Pointwise(Eq(), expected_result1));
+}
+
+TEST(tosa, reduce_max) {
+  Tensor<int32_t, 2, 3> t0{1, 2, 3, 4, 5, 6};
+
+  Tensor<int32_t, 3> expected_result0_0{4, 5, 6};
+  Tensor<int32_t, 2> expected_result0_1{3, 6};
+
+  Tensor<int32_t, 3> result0_0 = tosa::reduce_max<Tensor<int32_t, 3>>(t0, 0);
+  Tensor<int32_t, 2> result0_1 = tosa::reduce_max<Tensor<int32_t, 2>>(t0, 1);
+
+  EXPECT_THAT(result0_0, Pointwise(Eq(), expected_result0_0));
+  EXPECT_THAT(result0_1, Pointwise(Eq(), expected_result0_1));
+}
+
+TEST(tosa, reduce_min) {
+  Tensor<int32_t, 2, 3> t0{1, 2, 3, 4, 5, 6};
+
+  Tensor<int32_t, 3> expected_result0_0{1, 2, 3};
+  Tensor<int32_t, 2> expected_result0_1{1, 4};
+
+  Tensor<int32_t, 3> result0_0 = tosa::reduce_min<Tensor<int32_t, 3>>(t0, 0);
+  Tensor<int32_t, 2> result0_1 = tosa::reduce_min<Tensor<int32_t, 2>>(t0, 1);
+
+  EXPECT_THAT(result0_0, Pointwise(Eq(), expected_result0_0));
+  EXPECT_THAT(result0_1, Pointwise(Eq(), expected_result0_1));
+}
+
+TEST(tosa, reduce_prod) {
+  Tensor<int32_t, 2, 3> t0{1, 2, 3, 4, 5, 6};
+
+  Tensor<int32_t, 3> expected_result0_0{4, 10, 18};
+  Tensor<int32_t, 2> expected_result0_1{6, 120};
+
+  Tensor<int32_t, 3> result0_0 = tosa::reduce_prod<Tensor<int32_t, 3>>(t0, 0);
+  Tensor<int32_t, 2> result0_1 = tosa::reduce_prod<Tensor<int32_t, 2>>(t0, 1);
+
+  EXPECT_THAT(result0_0, Pointwise(Eq(), expected_result0_0));
+  EXPECT_THAT(result0_1, Pointwise(Eq(), expected_result0_1));
+}
+
+TEST(tosa, reduce_sum) {
+  Tensor<int32_t, 2, 3> t0{1, 2, 3, 4, 5, 6};
+  Tensor<int32_t, 4, 2, 3> t1{1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6,
+                              1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6};
+  Tensor<int32_t, 3> expected_result0_0{5, 7, 9};
+  Tensor<int32_t, 2> expected_result0_1{6, 15};
+  Tensor<int32_t, 2, 3> expected_result1_0{4, 8, 12, 16, 20, 24};
+  Tensor<int32_t, 4, 3> expected_result1_1{5, 7, 9, 5, 7, 9, 5, 7, 9, 5, 7, 9};
+  Tensor<int32_t, 4, 2> expected_result1_2{6, 15, 6, 15, 6, 15, 6, 15};
+
+  Tensor<int32_t, 3> result0_0 = tosa::reduce_sum<Tensor<int32_t, 3>>(t0, 0);
+  Tensor<int32_t, 2> result0_1 = tosa::reduce_sum<Tensor<int32_t, 2>>(t0, 1);
+  Tensor<int32_t, 2, 3> result1_0 =
+      tosa::reduce_sum<Tensor<int32_t, 2, 3>>(t1, 0);
+  Tensor<int32_t, 4, 3> result1_1 =
+      tosa::reduce_sum<Tensor<int32_t, 4, 3>>(t1, 1);
+  Tensor<int32_t, 4, 2> result1_2 =
+      tosa::reduce_sum<Tensor<int32_t, 4, 2>>(t1, 2);
+
+  EXPECT_THAT(result0_0, Pointwise(Eq(), expected_result0_0));
+  EXPECT_THAT(result0_1, Pointwise(Eq(), expected_result0_1));
+  EXPECT_THAT(result1_0, Pointwise(Eq(), expected_result1_0));
+  EXPECT_THAT(result1_1, Pointwise(Eq(), expected_result1_1));
+  EXPECT_THAT(result1_2, Pointwise(Eq(), expected_result1_2));
 }
 
 } // namespace

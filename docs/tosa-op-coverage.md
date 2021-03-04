@@ -18,3 +18,9 @@ The table below shows the supported TOSA ops.
 | mul                   | :heavy_check_mark: | |
 | **Other ops**
 | fully_connected       | :white_check_mark: | Quantization not supported |
+| reduce_all            | :white_check_mark: | |
+| reduce_any            | :white_check_mark: | |
+| reduce_max            | :white_check_mark: | |
+| reduce_min            | :white_check_mark: | |
+| reduce_prod           | :white_check_mark: | |
+| reduce_sum            | :white_check_mark: | |

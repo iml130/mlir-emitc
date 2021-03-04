@@ -225,7 +225,7 @@ inline Dest reduce_max(Src input, int64_t dimension) {
                                  dimension, f);
 }
 
-// reduce_min
+// ReduceMinOp
 template <typename Dest, typename Src>
 inline Dest reduce_min(Src input, int64_t dimension) {
   using ET_Src = typename get_element_type<Src>::type;

@@ -89,7 +89,7 @@ TEST(tosa, matmul) {
     AType a{1, 2, 3};
     BType b{1, 2};
     CType c = tosa::matmul(a, b);
-    
+
     CType expected_result{1, 2, 2, 4, 3, 6};
     EXPECT_THAT(c, Pointwise(FloatNear(EPSILON), expected_result));
   }
@@ -100,7 +100,7 @@ TEST(tosa, matmul) {
     AType a{1, 2, 3, 4, 5, 6};
     BType b{7, 8, 9, 10};
     CType c = tosa::matmul(a, b);
-    
+
     CType expected_result{25, 28, 57, 64, 89, 100};
     EXPECT_THAT(c, Pointwise(FloatNear(EPSILON), expected_result));
   }

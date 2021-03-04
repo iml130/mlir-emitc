@@ -302,11 +302,7 @@ inline Src shift_right_logical(Src x, Src y) {
 // SubOp
 template <typename Src>
 inline Src sub(Src x, Src y) {
-  using ET_Src = typename get_element_type<Src>::type;
-
-  auto f = std::minus<ET_Src>{};
-
-  return binary<Src>(x, y, f);
+  return emitc::sub<Src>(x, y);
 }
 
 /// Functions for MHLO binary logical elementwise ops.

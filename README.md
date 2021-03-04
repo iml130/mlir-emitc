@@ -58,6 +58,4 @@ The `emitc-opt` tool enables conversions via the following options:
 The currently supported MHLO ops are listed in the [docs/mhlo-op-coverage.md](docs/mhlo-op-coverage.md) document.
 Supported TOSA ops are listed in the [docs/tosa-op-coverage.md](docs/tosa-op-coverage.md) document.
 
-Furthermore, the `emitc-opt` tools supports the conversion from `mhlo.constant` to `constant` via `--convert-mhlo-const-to-std `. This conversion is necessary because EmitC does not implement a conversion from `mhlo.constant`, but does support `constant` in the translation to C++.
-
 After converting to EmitC, C++ code can be emited using `emitc-translate --mlir-to-cpp`.

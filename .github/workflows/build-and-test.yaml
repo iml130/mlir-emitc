@@ -173,7 +173,7 @@ jobs:
         FUNCTION_NAME=$(grep -oe "@[^(]*" "${E2E}"/model_canon.mlir)
         FUNCTION_NAME="${FUNCTION_NAME:1}"
         sed "s/$FUNCTION_NAME/predict/g" "${E2E}"/model_canon.mlir > "${E2E}"/model_fix_name.mlir
-        ./${EMITC}/build_release/bin/emitc-opt --mhlo-control-flow-to-scf --convert-mhlo-region-ops-to-emitc --convert-mhlo-to-emitc --convert-scf-to-emitc --convert-std-to-emitc --convert-mhlo-const-to-std "${E2E}"/model_fix_name.mlir > "${E2E}"/model_emitc.mlir
+        ./${EMITC}/build_release/bin/emitc-opt --mhlo-control-flow-to-scf --convert-mhlo-region-ops-to-emitc --convert-mhlo-to-emitc --convert-scf-to-emitc --convert-std-to-emitc "${E2E}"/model_fix_name.mlir > "${E2E}"/model_emitc.mlir
         ./${EMITC}/build_release/bin/emitc-translate --mlir-to-cpp "${E2E}"/model_emitc.mlir > "${E2E}"/model_generated.h
         cd ${E2E}
         clang++ test.cpp -O3 -I `pwd`/../emitc/include/emitc -I `pwd` -o test

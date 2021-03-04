@@ -79,6 +79,18 @@ private:
   bool explicitOperandTypes;
 };
 
+class ConstOpConversion : public OpRewritePattern<tosa::ConstOp> {
+public:
+  using OpRewritePattern<tosa::ConstOp>::OpRewritePattern;
+
+  LogicalResult matchAndRewrite(tosa::ConstOp constOp,
+                                PatternRewriter &rewriter) const final {
+    rewriter.replaceOpWithNewOp<emitc::ConstOp>(constOp, constOp.getType(),
+                                                constOp.value());
+    return success();
+  }
+};
+
 class FullyConnectedOpConversion
     : public OpConversionPattern<tosa::FullyConnectedOp> {
   using OpConversionPattern<tosa::FullyConnectedOp>::OpConversionPattern;
@@ -368,6 +380,9 @@ private:
 
 void populateTosaToEmitcPatterns(MLIRContext *ctx,
                                  OwningRewritePatternList &patterns) {
+  // Data node ops
+  patterns.insert<ConstOpConversion>(ctx);
+
   // Unary elementwise ops
   patterns.insert<CallOpConversion<tosa::AbsOp>>(ctx, "tosa::abs");
   patterns.insert<CallOpConversion<tosa::CeilOp>>(ctx, "tosa::ceil");
@@ -382,6 +397,7 @@ void populateTosaToEmitcPatterns(MLIRContext *ctx,
   // Binary elementwise ops
   patterns.insert<CallOpBroadcastableConversion<tosa::AddOp>>(ctx, "tosa::add");
   patterns.insert<MulOpConversion>(ctx, "tosa::mul");
+  patterns.insert<CallOpBroadcastableConversion<tosa::SubOp>>(ctx, "tosa::sub");
 
   // Other ops
   patterns.insert<FullyConnectedOpConversion>(ctx, "tosa::fully_connected");
@@ -416,6 +432,9 @@ struct ConvertTosaToEmitCPass
     // target.addLegalOp<ModuleOp>();
     // target.addLegalOp<ModuleTerminatorOp>();
 
+    // Data node ops
+    target.addIllegalOp<tosa::ConstOp>();
+
     // Unary elementwise ops
     target.addIllegalOp<tosa::AbsOp>();
     target.addIllegalOp<tosa::CeilOp>();
@@ -429,6 +448,7 @@ struct ConvertTosaToEmitCPass
     // Binary elementwise ops
     target.addIllegalOp<tosa::AddOp>();
     target.addIllegalOp<tosa::MulOp>();
+    target.addIllegalOp<tosa::SubOp>();
 
     // Other ops
     target.addIllegalOp<tosa::FullyConnectedOp>();

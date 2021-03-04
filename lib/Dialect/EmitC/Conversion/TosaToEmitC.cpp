@@ -105,6 +105,36 @@ private:
   }
 };
 
+class MatMulOpConversion : public OpConversionPattern<tosa::MatMulOp> {
+  using OpConversionPattern<tosa::MatMulOp>::OpConversionPattern;
+
+public:
+  MatMulOpConversion(MLIRContext *ctx, StringRef funcName)
+      : OpConversionPattern<tosa::MatMulOp>(ctx) {}
+
+private:
+  LogicalResult
+  matchAndRewrite(tosa::MatMulOp matMulOp, ArrayRef<Value> operands,
+                  ConversionPatternRewriter &rewriter) const override {
+    if (matMulOp.quantization_info().hasValue()) {
+      return matMulOp.emitError(
+          "Quantization of tosa.matmul is currently not supported.");
+    }
+
+    StringRef funcName = "tosa::matmul";
+    StringAttr callee = rewriter.getStringAttr(funcName);
+
+    Type type = matMulOp.getType();
+
+    ArrayAttr args;
+    ArrayAttr templateArgs;
+
+    rewriter.replaceOpWithNewOp<emitc::CallOp>(matMulOp, type, callee, args,
+                                               templateArgs, operands);
+    return success();
+  }
+};
+
 class RsqrtOpConversion : public OpConversionPattern<tosa::RsqrtOp> {
   using OpConversionPattern<tosa::RsqrtOp>::OpConversionPattern;
 
@@ -306,6 +336,7 @@ void populateTosaToEmitcPatterns(MLIRContext *ctx,
 
   // Other ops
   patterns.insert<FullyConnectedOpConversion>(ctx, "tosa::fully_connected");
+  patterns.insert<MatMulOpConversion>(ctx, "tosa::matmul");
 }
 
 namespace {
@@ -341,6 +372,7 @@ struct ConvertTosaToEmitCPass
 
     // Other ops
     target.addIllegalOp<tosa::FullyConnectedOp>();
+    target.addIllegalOp<tosa::MatMulOp>();
 
     OwningRewritePatternList patterns;
     populateTosaToEmitcPatterns(&getContext(), patterns);

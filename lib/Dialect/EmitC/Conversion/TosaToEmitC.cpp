@@ -72,6 +72,18 @@ private:
   bool explicitOperandTypes;
 };
 
+class ConstOpConversion : public OpRewritePattern<tosa::ConstOp> {
+public:
+  using OpRewritePattern<tosa::ConstOp>::OpRewritePattern;
+
+  LogicalResult matchAndRewrite(tosa::ConstOp constOp,
+                                PatternRewriter &rewriter) const final {
+    rewriter.replaceOpWithNewOp<emitc::ConstOp>(constOp, constOp.getType(),
+                                                constOp.value());
+    return success();
+  }
+};
+
 class FullyConnectedOpConversion
     : public OpConversionPattern<tosa::FullyConnectedOp> {
   using OpConversionPattern<tosa::FullyConnectedOp>::OpConversionPattern;
@@ -289,6 +301,9 @@ private:
 
 void populateTosaToEmitcPatterns(MLIRContext *ctx,
                                  OwningRewritePatternList &patterns) {
+  // Data node ops
+  patterns.insert<ConstOpConversion>(ctx);
+
   // Unary elementwise ops
   patterns.insert<CallOpConversion<tosa::AbsOp>>(ctx, "tosa::abs");
   patterns.insert<CallOpConversion<tosa::CeilOp>>(ctx, "tosa::ceil");
@@ -325,6 +340,9 @@ struct ConvertTosaToEmitCPass
     // target.addLegalOp<FuncOp>();
     // target.addLegalOp<ModuleOp>();
     // target.addLegalOp<ModuleTerminatorOp>();
+
+    // Data node ops
+    target.addIllegalOp<tosa::ConstOp>();
 
     // Unary elementwise ops
     target.addIllegalOp<tosa::AbsOp>();

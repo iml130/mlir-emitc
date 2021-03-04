@@ -1,6 +1,14 @@
 // RUN: emitc-opt -convert-tosa-to-emitc %s | FileCheck %s
 
-/// Unary elementwise ops
+// Data node ops
+
+func @test_const(%arg0 : index) -> tensor<4xi32> {
+    // CHECK: "emitc.const"() {value = dense<[3, 0, 1, 2]> : tensor<4xi32>} : () -> tensor<4xi32>
+    %0 = "tosa.const"() {value = dense<[3, 0, 1, 2]> : tensor<4xi32>} : () -> tensor<4xi32>
+    return %0 : tensor<4xi32>
+}
+
+// Unary elementwise ops
 
 func @test_abs(%arg0: tensor<13x21x3xf32>) -> tensor<13x21x3xf32> {
   // CHECK: emitc.call "tosa::abs"(%arg0) {template_args = []} : (tensor<13x21x3xf32>) -> tensor<13x21x3xf32>

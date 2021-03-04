@@ -236,7 +236,7 @@ inline Dest reduce_min(Src input, int64_t dimension) {
                                  dimension, f);
 }
 
-// reduce_prod
+// ReduceProdOp
 template <typename Dest, typename Src>
 inline Dest reduce_prod(Src input, int64_t dimension) {
   using ET_Src = typename get_element_type<Src>::type;

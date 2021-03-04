@@ -41,6 +41,18 @@ SmallVector<Attribute, 2> indexSequence(int64_t n, MLIRContext *ctx) {
       }));
 }
 
+class ConstOpConversion : public OpRewritePattern<mhlo::ConstOp> {
+public:
+  using OpRewritePattern<mhlo::ConstOp>::OpRewritePattern;
+
+  LogicalResult matchAndRewrite(mhlo::ConstOp constOp,
+                                PatternRewriter &rewriter) const final {
+    rewriter.replaceOpWithNewOp<emitc::ConstOp>(constOp, constOp.getType(),
+                                                constOp.value());
+    return success();
+  }
+};
+
 class BatchNormInferenceOpConversion
     : public OpConversionPattern<mhlo::BatchNormInferenceOp> {
 
@@ -464,6 +476,9 @@ private:
 
 void populateMhloToEmitcPatterns(MLIRContext *ctx,
                                  OwningRewritePatternList &patterns) {
+  /// Insert patterns for MHLO nullary ops.
+  patterns.insert<ConstOpConversion>(ctx);
+
   /// Insert patterns for MHLO unary elementwise ops.
   patterns.insert<CallOpConversion<mhlo::AbsOp>>(ctx, "mhlo::abs");
   patterns.insert<CallOpConversion<mhlo::CeilOp>>(ctx, "mhlo::ceil");
@@ -550,6 +565,8 @@ struct ConvertMhloToEmitCPass
     target.addLegalOp<ModuleTerminatorOp>();
 
     // clang-format off
+    // MHLO nullary ops
+    target.addIllegalOp<mhlo::ConstOp>();
     // MHLO unary elementwise ops
     target.addIllegalOp<mhlo::AbsOp,
                         mhlo::CeilOp,

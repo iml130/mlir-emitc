@@ -121,7 +121,7 @@ class MatMulOpConversion : public OpConversionPattern<tosa::MatMulOp> {
   using OpConversionPattern<tosa::MatMulOp>::OpConversionPattern;
 
 public:
-  MatMulOpConversion(MLIRContext *ctx, StringRef funcName)
+  MatMulOpConversion(MLIRContext *ctx)
       : OpConversionPattern<tosa::MatMulOp>(ctx) {}
 
 private:
@@ -141,7 +141,7 @@ private:
     ArrayAttr args;
     ArrayAttr templateArgs;
 
-    rewriter.replaceOpWithNewOp<emitc::CallOp>(matMulOp, type, callee, args,
+    rewriter.replaceOpWithNewOp<emitc::CallOp>(matMulOp, matMulOp.getType(), callee, args,
                                                templateArgs, operands);
     return success();
   }
@@ -352,7 +352,7 @@ void populateTosaToEmitcPatterns(MLIRContext *ctx,
 
   // Other ops
   patterns.insert<FullyConnectedOpConversion>(ctx, "tosa::fully_connected");
-  patterns.insert<MatMulOpConversion>(ctx, "tosa::matmul");
+  patterns.insert<MatMulOpConversion>(ctx);
 }
 
 namespace {

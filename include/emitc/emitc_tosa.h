@@ -187,6 +187,8 @@ inline Dest reduce(Src operand, typename get_element_type<Src>::type initValue,
 // ReduceAllOp
 template <typename Dest, typename Src>
 inline Dest reduce_all(Src input, int64_t dimension) {
+  // ReduceAllOp takes only tensors with datatype bool according to the
+  // TOSA specifications.
   using ET_Src = typename get_element_type<Src>::type;
   using ET_Dest = typename get_element_type<Dest>::type;
 
@@ -203,6 +205,8 @@ inline Dest reduce_all(Src input, int64_t dimension) {
 // ReduceAnyOp
 template <typename Dest, typename Src>
 inline Dest reduce_any(Src input, int64_t dimension) {
+  // ReduceAnyOp takes only tensors with datatype bool according to the
+  // TOSA specifications.
   using ET_Src = typename get_element_type<Src>::type;
   using ET_Dest = typename get_element_type<Dest>::type;
 

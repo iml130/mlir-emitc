@@ -17,4 +17,5 @@ The table below shows the supported TOSA ops.
 | add                   | :heavy_check_mark: | |
 | mul                   | :heavy_check_mark: | |
 | **Other ops**
+| conv2d                | :white_check_mark: | Quantization not supported |
 | fully_connected       | :white_check_mark: | Quantization not supported |

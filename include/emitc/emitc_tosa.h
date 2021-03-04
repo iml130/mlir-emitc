@@ -98,9 +98,9 @@ inline Src mul(Src x, Src y, const int32_t shift) {
 }
 
 /// Other ops
-// Conv2DOp
+// Conv2dOp
 template <typename Dest, typename Src, typename Weights>
-Dest conv2D(Src input, Weights weights, Tensor1D<int64_t, 4> padding,
+Dest conv2d(Src input, Weights weights, Tensor1D<int64_t, 4> padding,
             Tensor1D<int64_t, 2> stride, Tensor1D<int64_t, 2> dilation) {
   static_assert(is_tensor_of_dim<4, Src>::value,
                 "Expected 4 dimensional input");

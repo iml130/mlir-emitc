@@ -67,7 +67,7 @@ TEST(tosa, mul) {
 }
 
 // Other ops
-TEST(tosa, conv2D) {
+TEST(tosa, conv2d) {
   using InputType = Tensor4D<float, 1, 4, 5, 2>;  // N H W C
   using WeightType = Tensor4D<float, 1, 3, 2, 2>; // COUT KH KW CIN
   using ResultType = Tensor4D<float, 1, 4, 5, 1>; // N H W C
@@ -83,7 +83,7 @@ TEST(tosa, conv2D) {
   Tensor1D<int64_t, 2> dilation{1, 1};
   Tensor1D<int64_t, 2> stride{1, 1};
 
-  ResultType result = tosa::conv2D<ResultType, InputType, WeightType>(
+  ResultType result = tosa::conv2d<ResultType, InputType, WeightType>(
       input, weights, padding, stride, dilation);
   EXPECT_THAT(result, Pointwise(FloatNear(EPSILON), expected_result));
 }

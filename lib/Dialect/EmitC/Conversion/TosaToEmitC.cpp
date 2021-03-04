@@ -33,62 +33,6 @@ SmallVector<Attribute, 2> indexSequence(int64_t n, MLIRContext *ctx) {
       }));
 }
 
-class Conv2DOpConversion : public OpConversionPattern<tosa::Conv2DOp> {
-
-public:
-  Conv2DOpConversion(MLIRContext *ctx) : OpConversionPattern(ctx) {}
-
-private:
-  LogicalResult
-  matchAndRewrite(tosa::Conv2DOp convOp, ArrayRef<Value> operands,
-                  ConversionPatternRewriter &rewriter) const override {
-    // tosa conv2D supports adding a bias after the actual convolution. We will
-    // split the convolution with bias into two operations: the convolution (as
-    // an emitc call op) and the addition of the bias (as an tosa.add op).
-    // Therefore we remove bias from the operands of the convolution.
-    operands = operands.drop_back();
-
-    typename tosa::Conv2DOp::Adaptor adaptor(operands);
-    auto ctx = convOp.getContext();
-
-    StringRef funcName = "tosa::conv2D";
-    StringAttr callee = rewriter.getStringAttr(funcName);
-
-    // todo: quantization_info, mlir::tosa::ConvOpQuantizationAttr
-    convOp.removeQuantization_infoAttr();
-
-    SmallVector<Attribute, 2> args_ = indexSequence(operands.size(), ctx);
-
-    args_.push_back(convOp.pad());
-    args_.push_back(convOp.stride());
-    args_.push_back(convOp.dilation());
-
-    ArrayAttr args = rewriter.getArrayAttr(args_);
-    ArrayAttr templateArgs =
-        rewriter.getArrayAttr({TypeAttr::get(convOp.getResult().getType()),
-                               TypeAttr::get(convOp.input().getType()),
-                               TypeAttr::get(convOp.weight().getType())});
-
-    // create convOp
-    auto conv_op =
-        rewriter.create<emitc::CallOp>(convOp->getLoc(), convOp.getType(),
-                                       callee, args, templateArgs, operands);
-
-    // prepare addOp
-    auto addOpOperands =
-        mlir::ValueRange({conv_op.getResult(0), convOp.bias()});
-
-    // create addOp
-    auto add_op = rewriter.create<tosa::AddOp>(convOp->getLoc(),
-                                               convOp.getType(), addOpOperands);
-
-    // rewrite convOp with two emitc CallOp
-    rewriter.replaceOp(convOp, {add_op.output()});
-
-    return success();
-  }
-};
-
 template <typename SrcOp>
 class CallOpConversion : public OpConversionPattern<SrcOp> {
   using OpConversionPattern<SrcOp>::OpConversionPattern;
@@ -135,6 +79,65 @@ private:
   bool explicitResultType;
   // If set, use the operand types as (additional) template parameters
   bool explicitOperandTypes;
+};
+
+class Conv2DOpConversion : public OpConversionPattern<tosa::Conv2DOp> {
+
+public:
+  Conv2DOpConversion(MLIRContext *ctx) : OpConversionPattern(ctx) {}
+
+private:
+  LogicalResult
+  matchAndRewrite(tosa::Conv2DOp convOp, ArrayRef<Value> operands,
+                  ConversionPatternRewriter &rewriter) const override {
+    // tosa conv2D supports adding a bias after the actual convolution. We will
+    // split the convolution with bias into two operations: the convolution (as
+    // an emitc call op) and the addition of the bias (as an tosa.add op).
+    // Therefore we remove bias from the operands of the convolution.
+    operands = operands.drop_back();
+
+    typename tosa::Conv2DOp::Adaptor adaptor(operands);
+    auto ctx = convOp.getContext();
+
+    StringRef funcName = "tosa::conv2d";
+    StringAttr callee = rewriter.getStringAttr(funcName);
+
+    // fail if quantization is requested
+    if (convOp.quantization_info().hasValue()) {
+      return convOp.emitError(
+          "Quantization of tosa.fully_connected is currently not supported.");
+    }
+
+    SmallVector<Attribute, 2> args_ = indexSequence(operands.size(), ctx);
+
+    args_.push_back(convOp.pad());
+    args_.push_back(convOp.stride());
+    args_.push_back(convOp.dilation());
+
+    ArrayAttr args = rewriter.getArrayAttr(args_);
+    ArrayAttr templateArgs =
+        rewriter.getArrayAttr({TypeAttr::get(convOp.getResult().getType()),
+                               TypeAttr::get(convOp.input().getType()),
+                               TypeAttr::get(convOp.weight().getType())});
+
+    // create convOp
+    auto conv_op =
+        rewriter.create<emitc::CallOp>(convOp->getLoc(), convOp.getType(),
+                                       callee, args, templateArgs, operands);
+
+    // prepare addOp
+    auto addOpOperands =
+        mlir::ValueRange({conv_op.getResult(0), convOp.bias()});
+
+    // create addOp
+    auto add_op = rewriter.create<tosa::AddOp>(convOp->getLoc(),
+                                               convOp.getType(), addOpOperands);
+
+    // rewrite convOp with two emitc CallOp
+    rewriter.replaceOp(convOp, {add_op.output()});
+
+    return success();
+  }
 };
 
 class FullyConnectedOpConversion

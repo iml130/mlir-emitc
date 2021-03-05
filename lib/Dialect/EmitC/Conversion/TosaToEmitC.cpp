@@ -91,6 +91,60 @@ public:
   }
 };
 
+class Conv2DOpConversion : public OpConversionPattern<tosa::Conv2DOp> {
+  using OpConversionPattern<tosa::Conv2DOp>::OpConversionPattern;
+
+public:
+  Conv2DOpConversion(MLIRContext *ctx)
+      : OpConversionPattern<tosa::Conv2DOp>(ctx) {}
+
+private:
+  LogicalResult
+  matchAndRewrite(tosa::Conv2DOp conv2dOp, ArrayRef<Value> operands,
+                  ConversionPatternRewriter &rewriter) const override {
+    // fail if quantization is requested
+    if (conv2dOp.quantization_info().hasValue()) {
+      return conv2dOp.emitError(
+          "Quantization of tosa.conv2d is currently not supported.");
+    }
+
+    // tosa conv2D supports adding a bias after the actual convolution. We will
+    // split the convolution with bias into two operations: the convolution (as
+    // an emitc call op) and the addition of the bias (as an tosa.add op).
+    // Therefore we remove bias from the operands of the convolution.
+    operands = operands.drop_back();
+
+    StringRef funcName = "tosa::conv2d";
+    StringAttr callee = rewriter.getStringAttr(funcName);
+
+    // clang-format off
+    ArrayAttr args = rewriter.getArrayAttr({
+      rewriter.getIndexAttr(0),
+      rewriter.getIndexAttr(1),
+      conv2dOp.pad(),
+      conv2dOp.stride(),
+      conv2dOp.dilation()
+    });
+    // clang-format on
+
+    ArrayAttr templateArgs =
+        rewriter.getArrayAttr({TypeAttr::get(conv2dOp.getResult().getType())});
+
+    // create conv2dOp
+    auto emitcConvOp =
+        rewriter.create<emitc::CallOp>(conv2dOp->getLoc(), conv2dOp.getType(),
+                                       callee, args, templateArgs, operands);
+
+    auto output = emitcConvOp.getResult(0);
+    auto tosaAddOp = rewriter.create<tosa::AddOp>(
+        conv2dOp.getLoc(), output.getType(), output, conv2dOp.bias());
+
+    rewriter.replaceOp(conv2dOp, {tosaAddOp.getResult()});
+
+    return success();
+  }
+};
+
 class FullyConnectedOpConversion
     : public OpConversionPattern<tosa::FullyConnectedOp> {
   using OpConversionPattern<tosa::FullyConnectedOp>::OpConversionPattern;
@@ -422,6 +476,7 @@ void populateTosaToEmitcPatterns(MLIRContext *ctx,
   patterns.insert<CallOpBroadcastableConversion<tosa::SubOp>>(ctx, "tosa::sub");
 
   // Other ops
+  patterns.insert<Conv2DOpConversion>(ctx);
   patterns.insert<FullyConnectedOpConversion>(ctx, "tosa::fully_connected");
   patterns.insert<MatMulOpConversion>(ctx);
   patterns.insert<ReduceOpConversion<tosa::ReduceAllOp>>(ctx,
@@ -474,6 +529,7 @@ struct ConvertTosaToEmitCPass
     target.addIllegalOp<tosa::SubOp>();
 
     // Other ops
+    target.addIllegalOp<tosa::Conv2DOp>();
     target.addIllegalOp<tosa::FullyConnectedOp>();
     target.addIllegalOp<tosa::MatMulOp>();
     target.addIllegalOp<tosa::ReduceAllOp>();

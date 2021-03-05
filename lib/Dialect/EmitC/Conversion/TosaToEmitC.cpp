@@ -72,18 +72,32 @@ private:
   bool explicitOperandTypes;
 };
 
+class ConstOpConversion : public OpRewritePattern<tosa::ConstOp> {
+public:
+  using OpRewritePattern<tosa::ConstOp>::OpRewritePattern;
+
+  LogicalResult matchAndRewrite(tosa::ConstOp constOp,
+                                PatternRewriter &rewriter) const final {
+    rewriter.replaceOpWithNewOp<emitc::ConstOp>(constOp, constOp.getType(),
+                                                constOp.value());
+    return success();
+  }
+};
+
 class Conv2DOpConversion : public OpConversionPattern<tosa::Conv2DOp> {
+  using OpConversionPattern<tosa::Conv2DOp>::OpConversionPattern;
 
 public:
-  Conv2DOpConversion(MLIRContext *ctx) : OpConversionPattern(ctx) {}
+  Conv2DOpConversion(MLIRContext *ctx)
+      : OpConversionPattern<tosa::Conv2DOp>(ctx) {}
 
 private:
   LogicalResult
-  matchAndRewrite(tosa::Conv2DOp convOp, ArrayRef<Value> operands,
+  matchAndRewrite(tosa::Conv2DOp conv2dOp, ArrayRef<Value> operands,
                   ConversionPatternRewriter &rewriter) const override {
     // fail if quantization is requested
-    if (convOp.quantization_info().hasValue()) {
-      return convOp.emitError(
+    if (conv2dOp.quantization_info().hasValue()) {
+      return conv2dOp.emitError(
           "Quantization of tosa.conv2d is currently not supported.");
     }
 
@@ -93,42 +107,34 @@ private:
     // Therefore we remove bias from the operands of the convolution.
     operands = operands.drop_back();
 
-    typename tosa::Conv2DOp::Adaptor adaptor(operands);
-
     StringRef funcName = "tosa::conv2d";
     StringAttr callee = rewriter.getStringAttr(funcName);
 
-    ArrayAttr args = rewriter.getArrayAttr(
-        {rewriter.getIndexAttr(0), rewriter.getIndexAttr(1), convOp.pad(),
-         convOp.stride(), convOp.dilation()});
+    // clang-format off
+    ArrayAttr args = rewriter.getArrayAttr({
+      rewriter.getIndexAttr(0),
+      rewriter.getIndexAttr(1),
+      conv2dOp.pad(),
+      conv2dOp.stride(),
+      conv2dOp.dilation()
+    });
+    // clang-format on
 
     ArrayAttr templateArgs =
-        rewriter.getArrayAttr({TypeAttr::get(convOp.getResult().getType())});
+        rewriter.getArrayAttr({TypeAttr::get(conv2dOp.getResult().getType())});
 
-    // create convOp
-    auto conv_op =
-        rewriter.create<emitc::CallOp>(convOp->getLoc(), convOp.getType(),
+    // create conv2dOp
+    auto emitcConvOp =
+        rewriter.create<emitc::CallOp>(conv2dOp->getLoc(), conv2dOp.getType(),
                                        callee, args, templateArgs, operands);
 
-    // prepare addOp
-    auto addOpOperands =
-        mlir::ValueRange({conv_op.getResult(0), convOp.bias()});
+    // clang-format on
+    auto output = emitcConvOp.getResult(0);
+    auto tosaAddOp = rewriter.create<tosa::AddOp>(
+        conv2dOp.getLoc(), output.getType(), output, conv2dOp.bias());
 
-    // rewrite convOp with two emitc CallOps
-    rewriter.replaceOpWithNewOp<tosa::AddOp>(convOp, convOp.getType(),
-                                             addOpOperands);
-    return success();
-  }
-};
+    rewriter.replaceOp(conv2dOp, {tosaAddOp.getResult()});
 
-class ConstOpConversion : public OpRewritePattern<tosa::ConstOp> {
-public:
-  using OpRewritePattern<tosa::ConstOp>::OpRewritePattern;
-
-  LogicalResult matchAndRewrite(tosa::ConstOp constOp,
-                                PatternRewriter &rewriter) const final {
-    rewriter.replaceOpWithNewOp<emitc::ConstOp>(constOp, constOp.getType(),
-                                                constOp.value());
     return success();
   }
 };

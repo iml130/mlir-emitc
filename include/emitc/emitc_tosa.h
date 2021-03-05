@@ -119,10 +119,10 @@ Dest conv2d(Src input, Weights weights, Tensor1D<int64_t, 4> padding,
                 "Expected 4 dimensional weights");
 
   assert(stride[0] == 1);
-  assert(stride[0] == 1);
+  assert(stride[1] == 1);
 
   assert(dilation[0] == 1);
-  assert(dilation[0] == 1);
+  assert(dilation[1] == 1);
 
   const int N = input.dim(0);
   const int H_IN = input.dim(1);

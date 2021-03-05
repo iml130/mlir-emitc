@@ -23,3 +23,9 @@ The table below shows the supported TOSA ops.
 | conv2d                | :white_check_mark: | Quantization, dilation and strides not supported |
 | fully_connected       | :white_check_mark: | Quantization not supported |
 | matmul                | :white_check_mark: | Quantization not supported |
+| reduce_all            | :heavy_check_mark: | |
+| reduce_any            | :heavy_check_mark: | |
+| reduce_max            | :heavy_check_mark: | |
+| reduce_min            | :heavy_check_mark: | |
+| reduce_prod           | :heavy_check_mark: | |
+| reduce_sum            | :heavy_check_mark: | |

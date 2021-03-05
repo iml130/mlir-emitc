@@ -15,6 +15,8 @@
 #ifndef EMITC_EMITC_TOSA_H
 #define EMITC_EMITC_TOSA_H
 
+#include <limits>
+
 #include "emitc_core_ops.h"
 
 namespace tosa {
@@ -219,6 +221,128 @@ Dest fully_connected(Src input, Weights weights, Bias bias) {
 template <typename T, size_t M, size_t K, size_t N>
 Tensor2D<T, M, N> matmul(Tensor2D<T, M, K> a, Tensor2D<T, K, N> b) {
   return emitc::dot<Tensor2D<T, M, N>>(a, b);
+}
+
+/// Reduce ops
+namespace {
+// ReduceOp
+template <typename Dest, typename Src, typename Computation>
+inline Dest reduce(Src operand, typename get_element_type<Src>::type initValue,
+                   int64_t dimension, Computation computation) {
+  static_assert(is_tensor<Src>::value, "Expected tensor argument");
+  static_assert(is_tensor<Dest>::value, "Expected tensor result");
+
+  using ET_Src = typename get_element_type<Src>::type;
+  using ET_Dest = typename get_element_type<Dest>::type;
+
+  static_assert(std::is_same<ET_Src, ET_Dest>::value, "Element type mismatch");
+
+  static_assert(Src::rank() == Dest::rank() + 1,
+                "source rank must equal dest rank + 1");
+
+  std::vector<size_t> retainedDimensions(Src::rank());
+  std::iota(retainedDimensions.begin(), retainedDimensions.end(), 0);
+  retainedDimensions.erase(retainedDimensions.begin() + dimension);
+
+  assert(retainedDimensions.size() == Dest::rank());
+
+  Dest result;
+  std::fill(result.begin(), result.end(), initValue);
+
+  for (size_t i = 0; i < operand.size(); ++i) {
+    auto value = operand[i];
+    auto index = operand.unravel_index(i);
+
+    std::array<size_t, Dest::rank()> reducedIndex;
+    size_t j = 0;
+    for (size_t dim : retainedDimensions) {
+      reducedIndex[j++] = index[dim];
+    }
+
+    auto reductionValue = result[result.ravel_index(reducedIndex)];
+    result[result.ravel_index(reducedIndex)] =
+        computation(reductionValue, value);
+  }
+
+  return result;
+}
+} // namespace
+
+// ReduceAllOp
+template <typename Dest, typename Src>
+inline Dest reduce_all(Src input, int64_t dimension) {
+  // ReduceAllOp takes only tensors with datatype bool according to the
+  // TOSA specifications.
+  using ET_Src = typename get_element_type<Src>::type;
+  using ET_Dest = typename get_element_type<Dest>::type;
+
+  static_assert(std::is_same<ET_Src, bool>::value,
+                "Src tensor type must be bool");
+  static_assert(std::is_same<ET_Dest, bool>::value,
+                "Dest tensor type must be bool");
+
+  auto and_ = [](ET_Src a, ET_Src b) { return (a && b); };
+
+  return tosa::reduce<Dest, Src>(input, true, dimension, and_);
+}
+
+// ReduceAnyOp
+template <typename Dest, typename Src>
+inline Dest reduce_any(Src input, int64_t dimension) {
+  // ReduceAnyOp takes only tensors with datatype bool according to the
+  // TOSA specifications.
+  using ET_Src = typename get_element_type<Src>::type;
+  using ET_Dest = typename get_element_type<Dest>::type;
+
+  static_assert(std::is_same<ET_Src, bool>::value,
+                "Src tensor type must be bool");
+  static_assert(std::is_same<ET_Dest, bool>::value,
+                "Dest tensor type must be bool");
+
+  auto or_ = [](ET_Src a, ET_Src b) { return a || b; };
+
+  return tosa::reduce<Dest, Src>(input, false, dimension, or_);
+}
+
+// ReduceMaxOp
+template <typename Dest, typename Src>
+inline Dest reduce_max(Src input, int64_t dimension) {
+  using ET_Src = typename get_element_type<Src>::type;
+
+  auto f =
+      static_cast<const ET_Src &(*)(const ET_Src &, const ET_Src &)>(std::max);
+
+  return tosa::reduce<Dest, Src>(input, std::numeric_limits<ET_Src>::min(),
+                                 dimension, f);
+}
+
+// ReduceMinOp
+template <typename Dest, typename Src>
+inline Dest reduce_min(Src input, int64_t dimension) {
+  using ET_Src = typename get_element_type<Src>::type;
+
+  auto f =
+      static_cast<const ET_Src &(*)(const ET_Src &, const ET_Src &)>(std::min);
+
+  return tosa::reduce<Dest, Src>(input, std::numeric_limits<ET_Src>::max(),
+                                 dimension, f);
+}
+
+// ReduceProdOp
+template <typename Dest, typename Src>
+inline Dest reduce_prod(Src input, int64_t dimension) {
+  using ET_Src = typename get_element_type<Src>::type;
+
+  return tosa::reduce<Dest, Src>(input, 1, dimension,
+                                 std::multiplies<ET_Src>{});
+}
+
+// ReduceSumOp
+template <typename Dest, typename Src>
+inline Dest reduce_sum(Src input, int64_t dimension) {
+  using ET_Src = typename get_element_type<Src>::type;
+
+  return tosa::reduce<Dest, Src>(input, 0, dimension, std::plus<ET_Src>{});
 }
 
 } // namespace tosa

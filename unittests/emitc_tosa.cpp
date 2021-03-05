@@ -111,7 +111,6 @@ TEST(tosa, reduce_all) {
 
   Tensor<bool, 3> expected_result0_0{false, true, false};
   Tensor<bool, 2> expected_result0_1{true, false};
-  Tensor<bool> expected_result0_01{false};
 
   Tensor<bool, 3> result0_0 = tosa::reduce_all<Tensor<bool, 3>>(t0, 0);
   Tensor<bool, 2> result0_1 = tosa::reduce_all<Tensor<bool, 2>>(t0, 1);

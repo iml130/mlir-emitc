@@ -128,7 +128,6 @@ private:
         rewriter.create<emitc::CallOp>(conv2dOp->getLoc(), conv2dOp.getType(),
                                        callee, args, templateArgs, operands);
 
-    // clang-format on
     auto output = emitcConvOp.getResult(0);
     auto tosaAddOp = rewriter.create<tosa::AddOp>(
         conv2dOp.getLoc(), output.getType(), output, conv2dOp.bias());

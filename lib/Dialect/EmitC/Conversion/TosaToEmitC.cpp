@@ -136,8 +136,6 @@ private:
     StringRef funcName = "tosa::matmul";
     StringAttr callee = rewriter.getStringAttr(funcName);
 
-    Type type = matMulOp.getType();
-
     ArrayAttr args;
     ArrayAttr templateArgs;
 

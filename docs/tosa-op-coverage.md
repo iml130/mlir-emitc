@@ -22,3 +22,4 @@ The table below shows the supported TOSA ops.
 | **Other ops**
 | conv2d                | :white_check_mark: | Quantization not supported |
 | fully_connected       | :white_check_mark: | Quantization not supported |
+| matmul                | :white_check_mark: | Quantization not supported |

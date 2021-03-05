@@ -176,6 +176,26 @@ broadcast_in_dim(Src operand,
   return result;
 }
 
+// DotOp
+template <typename Dest, typename Lhs, typename Rhs>
+Dest dot(Lhs lhs, Rhs rhs) {
+  static_assert(is_tensor_of_dim<2, Lhs>::value, "Expected 2 dimensional lhs");
+  static_assert(is_tensor_of_dim<2, Rhs>::value, "Expected 2 dimensional rhs");
+  static_assert(Lhs::dim(1) == Rhs::dim(0),
+                "Expected contracting dimension to match");
+  Dest output;
+
+  for (size_t m = 0; m < lhs.dim(0); m++) {
+    for (size_t n = 0; n < lhs.dim(1); n++) {
+      for (size_t k = 0; k < rhs.dim(1); k++) {
+        output(m, k) += lhs(m, n) * rhs(n, k);
+      }
+    }
+  }
+
+  return output;
+}
+
 } // namespace emitc
 
 #endif // EMITC_EMITC_CORE_OPS_H

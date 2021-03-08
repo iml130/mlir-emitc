@@ -37,8 +37,8 @@ static LogicalResult printConstantOp(CppEmitter &emitter,
   auto value = constantOp.getValue();
   bool emitBraces = value.isa<FloatAttr>() || value.isa<IntegerAttr>();
 
-  // Never emit curly braces if restricted to C
-  if (emitter.restrictedToC()) {
+  // Replace curly braces with `=` if restricted to C
+  if (emitter.restrictedToC() && emitBraces) {
     emitBraces = false;
     os << " = ";
   }
@@ -66,11 +66,17 @@ static LogicalResult printConstOp(CppEmitter &emitter, ConstOp constOp) {
   auto value = constOp.value();
   bool emitBraces = value.isa<FloatAttr>() || value.isa<IntegerAttr>();
 
-  // Never emit curly braces if
-  // - restricted to C or
-  // - assigning to an EmitC opaque type
-  if (emitter.restrictedToC() ||
-      constOp.getType().dyn_cast<emitc::OpaqueType>()) {
+  // Add braces for non empty StringAttr
+  if (auto sAttr = value.dyn_cast<StringAttr>()) {
+    if (sAttr.getValue().empty()) {
+      emitBraces = false;
+    } else {
+      emitBraces = true;
+    }
+  }
+
+  // Replace curly braces with `=` if restricted to C
+  if (emitter.restrictedToC() && emitBraces) {
     emitBraces = false;
     os << " = ";
   }
@@ -78,7 +84,7 @@ static LogicalResult printConstOp(CppEmitter &emitter, ConstOp constOp) {
   if (emitBraces)
     os << "{";
 
-  if (failed(emitter.emitAttribute(constOp.value())))
+  if (failed(emitter.emitAttribute(value)))
     return constOp.emitError("unable to emit constant value");
 
   if (emitBraces)

@@ -120,8 +120,8 @@ Dest conv2d(Src input, Weights weights, Tensor1D<int64_t, 4> padding,
   static_assert(is_tensor_of_dim<4, Weights>::value,
                 "Expected 4 dimensional weights");
 
-  assert(stride[0] == 1);
-  assert(stride[1] == 1);
+  assert(stride[0] > 0);
+  assert(stride[1] > 0);
 
   assert(dilation[0] == 1);
   assert(dilation[1] == 1);

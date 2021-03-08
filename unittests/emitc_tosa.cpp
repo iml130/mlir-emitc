@@ -248,4 +248,22 @@ TEST(tosa, reduce_sum) {
   EXPECT_THAT(result1_2, Pointwise(Eq(), expected_result1_2));
 }
 
+TEST(tosa, reshape) {
+  Tensor2D<int, 1, 2> t0 = {1, 2};
+  Tensor3D<int, 1, 1, 2> s0 = tosa::reshape<Tensor3D<int, 1, 1, 2>>(t0);
+  EXPECT_THAT(s0, Pointwise(Eq(), t0));
+
+  Tensor3D<int, 2, 1, 2> t1 = {1, 2, 3, 4};
+  Tensor3D<int, 1, 2, 2> s1 = tosa::reshape<Tensor3D<int, 1, 2, 2>>(t1);
+  EXPECT_THAT(s1, Pointwise(Eq(), t1));
+
+  Tensor1D<int, 10> t2 = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+  Tensor2D<int, 2, 5> s2 = tosa::reshape<Tensor2D<int, 2, 5>>(t2);
+  EXPECT_THAT(s2, Pointwise(Eq(), t2));
+
+  Tensor3D<int, 2, 2, 2> t3 = {1, 2, 3, 4, 5, 6, 7, 8};
+  Tensor1D<int, 8> s3 = tosa::reshape<Tensor1D<int, 8>>(t3);
+  EXPECT_THAT(s3, Pointwise(Eq(), t3));
+}
+
 } // namespace

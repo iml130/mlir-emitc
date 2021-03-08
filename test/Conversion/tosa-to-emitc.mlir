@@ -187,3 +187,9 @@ func @test_reduce_sum(%arg0: tensor<13x21x3xf32>) -> tensor<13x1x3xf32> {
   %0 = "tosa.reduce_sum"(%arg0) {axis = 1 : i64} : (tensor<13x21x3xf32>) -> tensor<13x1x3xf32>
   return %0 : tensor<13x1x3xf32>
 }
+
+func @test_reshape(%arg0: tensor<13x21x3xf32>) -> tensor<1x819xf32> {
+  // CHECK: %0 = emitc.call "tosa::reshape"(%arg0) {template_args = [tensor<1x819xf32>]} : (tensor<13x21x3xf32>) -> tensor<1x819xf32>
+  %0 = "tosa.reshape"(%arg0) {new_shape = [1, 819]} : (tensor<13x21x3xf32>) -> tensor<1x819xf32>
+  return %0 : tensor<1x819xf32>
+}

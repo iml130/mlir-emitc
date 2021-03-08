@@ -148,42 +148,42 @@ func @test_matmul(%arg0: tensor<14x19xf32>, %arg1: tensor<19x28xf32>) -> tensor<
 // Reduce ops
 func @test_reduce_all(%arg0: tensor<13x21x3xi1>) -> tensor<1x21x3xi1> {
   // CHECK: %0 = emitc.call "tosa::reduce_all"(%arg0) {args = [0 : index, 0], template_args = [tensor<21x3xi1>, tensor<13x21x3xi1>]} : (tensor<13x21x3xi1>) -> tensor<21x3xi1>
-  // CHECK: %1 = "tosa.reshape"(%0) {new_shape = [1, 21, 3]} : (tensor<21x3xi1>) -> tensor<1x21x3xi1>
+  // CHECK: %1 = emitc.call "tosa::reshape"(%0) {template_args = [tensor<1x21x3xi1>]} : (tensor<21x3xi1>) -> tensor<1x21x3xi1>
   %0 = "tosa.reduce_all"(%arg0) {axis = 0 : i64} : (tensor<13x21x3xi1>) -> tensor<1x21x3xi1>
   return %0 : tensor<1x21x3xi1>
 }
 
 func @test_reduce_any(%arg0: tensor<13x21x3xi1>) -> tensor<13x1x3xi1> {
   // CHECK: %0 = emitc.call "tosa::reduce_any"(%arg0) {args = [0 : index, 1], template_args = [tensor<13x3xi1>, tensor<13x21x3xi1>]} : (tensor<13x21x3xi1>) -> tensor<13x3xi1>
-  // CHECK: %1 = "tosa.reshape"(%0) {new_shape = [13, 1, 3]} : (tensor<13x3xi1>) -> tensor<13x1x3xi1>
+  // %1 = emitc.call "tosa::reshape"(%0) {template_args = [tensor<13x1x3xi1>]} : (tensor<13x3xi1>) -> tensor<13x1x3xi1>
   %0 = "tosa.reduce_any"(%arg0) {axis = 1 : i64} : (tensor<13x21x3xi1>) -> tensor<13x1x3xi1>
   return %0 : tensor<13x1x3xi1>
 }
 
 func @test_reduce_max(%arg0: tensor<13x21x3xf32>) -> tensor<1x21x3xf32> {
   // CHECK: %0 = emitc.call "tosa::reduce_max"(%arg0) {args = [0 : index, 0], template_args = [tensor<21x3xf32>, tensor<13x21x3xf32>]} : (tensor<13x21x3xf32>) -> tensor<21x3xf32>
-  // CHECK: %1 = "tosa.reshape"(%0) {new_shape = [1, 21, 3]} : (tensor<21x3xf32>) -> tensor<1x21x3xf32>
+  // CHECK: %1 = emitc.call "tosa::reshape"(%0) {template_args = [tensor<1x21x3xf32>]} : (tensor<21x3xf32>) -> tensor<1x21x3xf32>
   %0 = "tosa.reduce_max"(%arg0) {axis = 0 : i64} : (tensor<13x21x3xf32>) -> tensor<1x21x3xf32>
   return %0 : tensor<1x21x3xf32>
 }
 
 func @test_reduce_min(%arg0: tensor<13x21x3xf32>) -> tensor<13x1x3xf32> {
   // CHECK: %0 = emitc.call "tosa::reduce_min"(%arg0) {args = [0 : index, 1], template_args = [tensor<13x3xf32>, tensor<13x21x3xf32>]} : (tensor<13x21x3xf32>) -> tensor<13x3xf32>
-  // CHECK: %1 = "tosa.reshape"(%0) {new_shape = [13, 1, 3]} : (tensor<13x3xf32>) -> tensor<13x1x3xf32>
+  // CHECK: %1 = emitc.call "tosa::reshape"(%0) {template_args = [tensor<13x1x3xf32>]} : (tensor<13x3xf32>) -> tensor<13x1x3xf32>
   %0 = "tosa.reduce_min"(%arg0) {axis = 1 : i64} : (tensor<13x21x3xf32>) -> tensor<13x1x3xf32>
   return %0 : tensor<13x1x3xf32>
 }
 
 func @test_reduce_prod(%arg0: tensor<13x21x3xf32>) -> tensor<1x21x3xf32> {
   // CHECK: %0 = emitc.call "tosa::reduce_prod"(%arg0) {args = [0 : index, 0], template_args = [tensor<21x3xf32>, tensor<13x21x3xf32>]} : (tensor<13x21x3xf32>) -> tensor<21x3xf32>
-  // CHECK: %1 = "tosa.reshape"(%0) {new_shape = [1, 21, 3]} : (tensor<21x3xf32>) -> tensor<1x21x3xf32>
+  // CHECK: %1 = emitc.call "tosa::reshape"(%0) {template_args = [tensor<1x21x3xf32>]} : (tensor<21x3xf32>) -> tensor<1x21x3xf32>
   %0 = "tosa.reduce_prod"(%arg0) {axis = 0 : i64} : (tensor<13x21x3xf32>) -> tensor<1x21x3xf32>
   return %0 : tensor<1x21x3xf32>
 }
 
 func @test_reduce_sum(%arg0: tensor<13x21x3xf32>) -> tensor<13x1x3xf32> {
   // CHECK: %0 = emitc.call "tosa::reduce_sum"(%arg0) {args = [0 : index, 1], template_args = [tensor<13x3xf32>, tensor<13x21x3xf32>]} : (tensor<13x21x3xf32>) -> tensor<13x3xf32>
-  // CHECK: %1 = "tosa.reshape"(%0) {new_shape = [13, 1, 3]} : (tensor<13x3xf32>) -> tensor<13x1x3xf32>
+  // CHECK: %1 = emitc.call "tosa::reshape"(%0) {template_args = [tensor<13x1x3xf32>]} : (tensor<13x3xf32>) -> tensor<13x1x3xf32>
   %0 = "tosa.reduce_sum"(%arg0) {axis = 1 : i64} : (tensor<13x21x3xf32>) -> tensor<13x1x3xf32>
   return %0 : tensor<13x1x3xf32>
 }

@@ -1,4 +1,4 @@
-//===- TranslateToCppRegistration.cpp - Register translation ------ C++ -*-===//
+//===- TranslateToCRegistration.cpp - Register translation -------- C++ -*-===//
 //
 // Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
 // See https://llvm.org/LICENSE.txt for license information.
@@ -15,16 +15,16 @@
 
 using namespace mlir;
 
-static LogicalResult MlirToCppTranslateFunction(ModuleOp module,
-                                                llvm::raw_ostream &output) {
-  return emitc::TranslateToCpp(*module.getOperation(), output,
-                               /*trailingSemiColon=*/false);
+static LogicalResult MlirToCTranslateFunction(ModuleOp module,
+                                              llvm::raw_ostream &output) {
+  return emitc::TranslateToC(*module.getOperation(), output,
+                             /*trailingSemiColon=*/false);
 }
 
 namespace mlir {
-void registerMlirToCppTranslation() {
+void registerMlirToCTranslation() {
   TranslateFromMLIRRegistration reg(
-      "mlir-to-cpp", MlirToCppTranslateFunction, [](DialectRegistry &registry) {
+      "mlir-to-c", MlirToCTranslateFunction, [](DialectRegistry &registry) {
         registry.insert<emitc::EmitCDialect, StandardOpsDialect>();
       });
 }

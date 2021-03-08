@@ -59,7 +59,7 @@ inline LogicalResult interleaveCommaWithError(const Container &c,
 
 /// Emitter that uses dialect specific emitters to emit C++ code.
 struct CppEmitter {
-  explicit CppEmitter(raw_ostream &os);
+  explicit CppEmitter(raw_ostream &os, bool restrictToC);
 
   /// Emits attribute or returns failure.
   LogicalResult emitAttribute(Attribute attr);
@@ -99,7 +99,7 @@ struct CppEmitter {
   /// Return the existing or a new name for a Value.
   StringRef getOrCreateName(Value val);
 
-  /// Whether to map an mlir integer to a signed integer in C++
+  /// Whether to map an mlir integer to a signed integer in C++.
   bool mapToSigned(IntegerType::SignednessSemantics val);
 
   /// RAII helper function to manage entering/exiting C++ scopes.
@@ -120,11 +120,17 @@ struct CppEmitter {
   /// Returns the output stream.
   raw_ostream &ostream() { return os; };
 
+  /// Returns if to emitc C.
+  bool restrictedToC() { return restrictToC; };
+
 private:
   using ValMapper = llvm::ScopedHashTable<Value, std::string>;
 
   /// Output stream to emit to.
   raw_ostream &os;
+
+  /// Boolean that restricts the emitter to C.
+  bool restrictToC;
 
   /// Map from value to name of C++ variable that contain the name.
   ValMapper mapper;
@@ -139,6 +145,9 @@ private:
 LogicalResult TranslateToCpp(Operation &op, raw_ostream &os,
                              bool trailingSemicolon = false);
 
+/// Similar to `TranslateToCpp`, but translates the given operation to C code.
+LogicalResult TranslateToC(Operation &op, raw_ostream &os,
+                           bool trailingSemicolon = false);
 } // namespace emitc
 } // namespace mlir
 

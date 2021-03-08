@@ -17,6 +17,7 @@
 namespace mlir {
 
 void registerMlirToCppTranslation();
+void registerMlirToCTranslation();
 
 // This function should be called before creating any MLIRContext if one
 // expects all the possible translations to be made available to the context
@@ -24,6 +25,7 @@ void registerMlirToCppTranslation();
 inline void registerEmitCTranslation() {
   static bool init_once = []() {
     registerMlirToCppTranslation();
+    registerMlirToCTranslation();
     return true;
   }();
   (void)init_once;

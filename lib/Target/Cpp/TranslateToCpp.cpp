@@ -37,6 +37,12 @@ static LogicalResult printConstantOp(CppEmitter &emitter,
   auto value = constantOp.getValue();
   bool emitBraces = value.isa<FloatAttr>() || value.isa<IntegerAttr>();
 
+  // Never emit curly braces if restricted to C
+  if (emitter.restrictedToC()) {
+    emitBraces = false;
+    os << " = ";
+  }
+
   if (emitBraces)
     os << "{";
 
@@ -60,8 +66,11 @@ static LogicalResult printConstOp(CppEmitter &emitter, ConstOp constOp) {
   auto value = constOp.value();
   bool emitBraces = value.isa<FloatAttr>() || value.isa<IntegerAttr>();
 
-  if (constOp.getType().dyn_cast<emitc::OpaqueType>()) {
-    // TODO: Refactor me! We have to improve the checks in the dialect.
+  // Never emit curly braces if
+  // - restricted to C or
+  // - assigning to an EmitC opaque type
+  if (emitter.restrictedToC() ||
+      constOp.getType().dyn_cast<emitc::OpaqueType>()) {
     emitBraces = false;
     os << " = ";
   }
@@ -286,11 +295,18 @@ static LogicalResult printReturnOp(CppEmitter &emitter, ReturnOp returnOp) {
 static LogicalResult printModule(CppEmitter &emitter, ModuleOp moduleOp) {
   CppEmitter::Scope scope(emitter);
   auto &os = emitter.ostream();
-  os << "#include <cmath>\n\n";
-  os << "#include \"emitc_mhlo.h\"\n";
-  os << "#include \"emitc_std.h\"\n\n";
-  os << "#include \"emitc_tensor.h\"\n\n";
-  os << "#include \"emitc_tosa.h\"\n\n";
+
+  if (emitter.restrictedToC()) {
+    os << "#include <stdbool.h>\n";
+    os << "#include <stdint.h>\n\n";
+  } else {
+    os << "#include <cmath>\n\n";
+    os << "#include \"emitc_mhlo.h\"\n";
+    os << "#include \"emitc_std.h\"\n";
+    os << "#include \"emitc_tensor.h\"\n";
+    os << "#include \"emitc_tosa.h\"\n\n";
+  }
+
   os << "// Forward declare functions.\n";
   for (FuncOp funcOp : moduleOp.getOps<FuncOp>()) {
     if (failed(emitter.emitTypes(funcOp.getType().getResults())))
@@ -344,7 +360,10 @@ static LogicalResult printFunction(CppEmitter &emitter, FuncOp functionOp) {
   return success();
 }
 
-CppEmitter::CppEmitter(raw_ostream &os) : os(os) { valueInScopeCount.push(0); }
+CppEmitter::CppEmitter(raw_ostream &os, bool restrictToC)
+    : os(os), restrictToC(restrictToC) {
+  valueInScopeCount.push(0);
+}
 
 /// Return the existing or a new name for a Value*.
 StringRef CppEmitter::getOrCreateName(Value val) {
@@ -410,6 +429,9 @@ LogicalResult CppEmitter::emitAttribute(Attribute attr) {
     return success();
   }
   if (auto dense = attr.dyn_cast<mlir::DenseFPElementsAttr>()) {
+    // Dense attributes are not supported if emitting C
+    if (restrictedToC())
+      return failure();
     os << '{';
     interleaveComma(dense, os, [&](APFloat val) { printFloat(val); });
     os << '}';
@@ -428,6 +450,9 @@ LogicalResult CppEmitter::emitAttribute(Attribute attr) {
     }
   }
   if (auto dense = attr.dyn_cast<DenseIntElementsAttr>()) {
+    // Dense attributes are not supported if emitting C
+    if (restrictedToC())
+      return failure();
     if (auto iType = dense.getType()
                          .cast<TensorType>()
                          .getElementType()
@@ -595,6 +620,9 @@ LogicalResult CppEmitter::emitType(Type type) {
     return (os << "size_t"), success();
   }
   if (auto itype = type.dyn_cast<TensorType>()) {
+    // TensorType is not supported if emitting C
+    if (restrictedToC())
+      return failure();
     if (!itype.hasRank())
       return failure();
     os << "Tensor<";
@@ -631,6 +659,8 @@ LogicalResult CppEmitter::emitTypes(ArrayRef<Type> types) {
 }
 
 LogicalResult CppEmitter::emitTupleType(ArrayRef<Type> types) {
+  if (restrictedToC())
+    return failure();
   os << "std::tuple<";
   if (failed(interleaveCommaWithError(
           types, os, [&](Type type) { return emitType(type); })))
@@ -641,6 +671,12 @@ LogicalResult CppEmitter::emitTupleType(ArrayRef<Type> types) {
 
 LogicalResult emitc::TranslateToCpp(Operation &op, raw_ostream &os,
                                     bool trailingSemicolon) {
-  CppEmitter emitter(os);
+  CppEmitter emitter(os, false);
+  return emitter.emitOperation(op, trailingSemicolon);
+}
+
+LogicalResult emitc::TranslateToC(Operation &op, raw_ostream &os,
+                                  bool trailingSemicolon) {
+  CppEmitter emitter(os, true);
   return emitter.emitOperation(op, trailingSemicolon);
 }

@@ -946,6 +946,9 @@ Dest convolution(Src input, Weights weights, int64_t batch_group_count,
   assert(weights.dim(kernel_input_feature_dimension) ==
          input.dim(input_feature_dimension) / feature_group_count);
 
+  assert(window_strides[0] > 0);
+  assert(window_strides[1] > 0);
+
   assert(lhs_dilation[0] == 1);
   assert(lhs_dilation[0] == 1);
 

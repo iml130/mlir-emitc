@@ -58,4 +58,5 @@ The `emitc-opt` tool enables conversions via the following options:
 The currently supported MHLO ops are listed in the [docs/mhlo-op-coverage.md](docs/mhlo-op-coverage.md) document.
 Supported TOSA ops are listed in the [docs/tosa-op-coverage.md](docs/tosa-op-coverage.md) document.
 
-After converting to EmitC, C++ code can be emited using `emitc-translate --mlir-to-cpp`.
+After converting to EmitC dialect, C++ code can be emitted using `emitc-translate --mlir-to-cpp`.
+For a restricted set of operations C code can be emitted using `emitc-translate --mlir-to-c`.

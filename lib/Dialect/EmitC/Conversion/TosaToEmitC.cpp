@@ -24,6 +24,13 @@ namespace emitc {
 
 namespace {
 
+SmallVector<Attribute, 2> indexSequence(int64_t n, MLIRContext *ctx) {
+  return llvm::to_vector<2>(
+      llvm::map_range(llvm::seq<int64_t>(0, n), [&ctx](int64_t i) -> Attribute {
+        return IntegerAttr::get(IndexType::get(ctx), i);
+      }));
+}
+
 template <typename SrcOp>
 class CallOpConversion : public OpConversionPattern<SrcOp> {
   using OpConversionPattern<SrcOp>::OpConversionPattern;
@@ -84,6 +91,60 @@ public:
   }
 };
 
+class Conv2DOpConversion : public OpConversionPattern<tosa::Conv2DOp> {
+  using OpConversionPattern<tosa::Conv2DOp>::OpConversionPattern;
+
+public:
+  Conv2DOpConversion(MLIRContext *ctx)
+      : OpConversionPattern<tosa::Conv2DOp>(ctx) {}
+
+private:
+  LogicalResult
+  matchAndRewrite(tosa::Conv2DOp conv2dOp, ArrayRef<Value> operands,
+                  ConversionPatternRewriter &rewriter) const override {
+    // fail if quantization is requested
+    if (conv2dOp.quantization_info().hasValue()) {
+      return conv2dOp.emitError(
+          "Quantization of tosa.conv2d is currently not supported.");
+    }
+
+    // tosa conv2D supports adding a bias after the actual convolution. We will
+    // split the convolution with bias into two operations: the convolution (as
+    // an emitc call op) and the addition of the bias (as an tosa.add op).
+    // Therefore we remove bias from the operands of the convolution.
+    operands = operands.drop_back();
+
+    StringRef funcName = "tosa::conv2d";
+    StringAttr callee = rewriter.getStringAttr(funcName);
+
+    // clang-format off
+    ArrayAttr args = rewriter.getArrayAttr({
+      rewriter.getIndexAttr(0),
+      rewriter.getIndexAttr(1),
+      conv2dOp.pad(),
+      conv2dOp.stride(),
+      conv2dOp.dilation()
+    });
+    // clang-format on
+
+    ArrayAttr templateArgs =
+        rewriter.getArrayAttr({TypeAttr::get(conv2dOp.getResult().getType())});
+
+    // create conv2dOp
+    auto emitcConvOp =
+        rewriter.create<emitc::CallOp>(conv2dOp->getLoc(), conv2dOp.getType(),
+                                       callee, args, templateArgs, operands);
+
+    auto output = emitcConvOp.getResult(0);
+    auto tosaAddOp = rewriter.create<tosa::AddOp>(
+        conv2dOp.getLoc(), output.getType(), output, conv2dOp.bias());
+
+    rewriter.replaceOp(conv2dOp, {tosaAddOp.getResult()});
+
+    return success();
+  }
+};
+
 class FullyConnectedOpConversion
     : public OpConversionPattern<tosa::FullyConnectedOp> {
   using OpConversionPattern<tosa::FullyConnectedOp>::OpConversionPattern;
@@ -113,6 +174,34 @@ private:
 
     rewriter.replaceOpWithNewOp<emitc::CallOp>(fullyConnectedOp, type, callee,
                                                args, templateArgs, operands);
+    return success();
+  }
+};
+
+class MatMulOpConversion : public OpConversionPattern<tosa::MatMulOp> {
+  using OpConversionPattern<tosa::MatMulOp>::OpConversionPattern;
+
+public:
+  MatMulOpConversion(MLIRContext *ctx)
+      : OpConversionPattern<tosa::MatMulOp>(ctx) {}
+
+private:
+  LogicalResult
+  matchAndRewrite(tosa::MatMulOp matMulOp, ArrayRef<Value> operands,
+                  ConversionPatternRewriter &rewriter) const override {
+    if (matMulOp.quantization_info().hasValue()) {
+      return matMulOp.emitError(
+          "Quantization of tosa.matmul is currently not supported.");
+    }
+
+    StringRef funcName = "tosa::matmul";
+    StringAttr callee = rewriter.getStringAttr(funcName);
+
+    ArrayAttr args;
+    ArrayAttr templateArgs;
+
+    rewriter.replaceOpWithNewOp<emitc::CallOp>(
+        matMulOp, matMulOp.getType(), callee, args, templateArgs, operands);
     return success();
   }
 };
@@ -297,6 +386,72 @@ private:
   }
 };
 
+template <typename SrcOp>
+class ReduceOpConversion : public OpConversionPattern<SrcOp> {
+  using OpConversionPattern<SrcOp>::OpConversionPattern;
+
+public:
+  ReduceOpConversion(MLIRContext *ctx, StringRef funcName)
+      : OpConversionPattern<SrcOp>(ctx), funcName(funcName) {}
+
+private:
+  LogicalResult
+  matchAndRewrite(SrcOp reduceOp, ArrayRef<Value> operands,
+                  ConversionPatternRewriter &rewriter) const override {
+    StringAttr callee = rewriter.getStringAttr(funcName);
+
+    SmallVector<Attribute> args_ =
+        indexSequence(operands.size(), reduceOp.getContext());
+    args_.push_back(reduceOp.axisAttr());
+
+    ArrayAttr args = rewriter.getArrayAttr(args_);
+
+    // we need to adjust output shape of reduce since our implementation does
+    // not keep reduced dimensions
+    Value output = reduceOp.getResult();
+    RankedTensorType reducedOutputType =
+        output.getType().cast<RankedTensorType>();
+
+    SmallVector<int64_t> newReducedOutputShape;
+
+    for (auto dim : reducedOutputType.getShape()) {
+      newReducedOutputShape.push_back(dim);
+    };
+
+    // remove reduced axis from shape
+    newReducedOutputShape.erase(newReducedOutputShape.begin() +
+                                reduceOp.axis());
+
+    auto newOutputType =
+        RankedTensorType::get(llvm::makeArrayRef(newReducedOutputShape),
+                              reducedOutputType.getElementType());
+
+    ArrayAttr templateArgs =
+        rewriter.getArrayAttr({TypeAttr::get(newOutputType),
+                               TypeAttr::get(reduceOp.input().getType())});
+
+    auto emitcReduceOp = rewriter.create<emitc::CallOp>(
+        reduceOp.getLoc(), newOutputType, callee, args, templateArgs, operands);
+
+    // create tosa.reshape op
+    SmallVector<Attribute> newShapeAttr_;
+    for (auto dim : output.getType().cast<RankedTensorType>().getShape()) {
+      newShapeAttr_.push_back(
+          IntegerAttr::get(rewriter.getIntegerType(64), dim));
+    };
+
+    ArrayAttr newShapeAttr =
+        ArrayAttr::get(reduceOp.getContext(), newShapeAttr_);
+
+    rewriter.replaceOpWithNewOp<tosa::ReshapeOp>(
+        reduceOp, output.getType(), emitcReduceOp.getResult(0), newShapeAttr);
+
+    return success();
+  }
+
+  StringRef funcName;
+};
+
 } // namespace
 
 void populateTosaToEmitcPatterns(MLIRContext *ctx,
@@ -321,7 +476,21 @@ void populateTosaToEmitcPatterns(MLIRContext *ctx,
   patterns.insert<CallOpBroadcastableConversion<tosa::SubOp>>(ctx, "tosa::sub");
 
   // Other ops
+  patterns.insert<Conv2DOpConversion>(ctx);
   patterns.insert<FullyConnectedOpConversion>(ctx, "tosa::fully_connected");
+  patterns.insert<MatMulOpConversion>(ctx);
+  patterns.insert<ReduceOpConversion<tosa::ReduceAllOp>>(ctx,
+                                                         "tosa::reduce_all");
+  patterns.insert<ReduceOpConversion<tosa::ReduceAnyOp>>(ctx,
+                                                         "tosa::reduce_any");
+  patterns.insert<ReduceOpConversion<tosa::ReduceMaxOp>>(ctx,
+                                                         "tosa::reduce_max");
+  patterns.insert<ReduceOpConversion<tosa::ReduceMinOp>>(ctx,
+                                                         "tosa::reduce_min");
+  patterns.insert<ReduceOpConversion<tosa::ReduceProdOp>>(ctx,
+                                                          "tosa::reduce_prod");
+  patterns.insert<ReduceOpConversion<tosa::ReduceSumOp>>(ctx,
+                                                         "tosa::reduce_sum");
 }
 
 namespace {
@@ -360,7 +529,15 @@ struct ConvertTosaToEmitCPass
     target.addIllegalOp<tosa::SubOp>();
 
     // Other ops
+    target.addIllegalOp<tosa::Conv2DOp>();
     target.addIllegalOp<tosa::FullyConnectedOp>();
+    target.addIllegalOp<tosa::MatMulOp>();
+    target.addIllegalOp<tosa::ReduceAllOp>();
+    target.addIllegalOp<tosa::ReduceAnyOp>();
+    target.addIllegalOp<tosa::ReduceMaxOp>();
+    target.addIllegalOp<tosa::ReduceMinOp>();
+    target.addIllegalOp<tosa::ReduceProdOp>();
+    target.addIllegalOp<tosa::ReduceSumOp>();
 
     OwningRewritePatternList patterns;
     populateTosaToEmitcPatterns(&getContext(), patterns);

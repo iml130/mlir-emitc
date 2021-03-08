@@ -1282,7 +1282,7 @@ TEST(mhlo, convolution) {
 
     EXPECT_THAT(result, Pointwise(FloatNear(EPSILON), expected_result));
   }
-  { 
+  {
     // Strided convolution
     using InputType = Tensor4D<float, 1, 4, 4, 1>;  // N H W C
     using WeightType = Tensor4D<float, 2, 2, 1, 1>; // KH KW CIN COUT

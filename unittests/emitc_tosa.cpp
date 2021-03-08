@@ -68,7 +68,8 @@ TEST(tosa, mul) {
 
 // Other ops
 TEST(tosa, conv2d) {
-  { // strides = 1
+  {
+    // strides = 1
     using InputType = Tensor4D<float, 1, 4, 5, 2>;  // N H W C
     using WeightType = Tensor4D<float, 1, 3, 2, 2>; // COUT KH KW CIN
     using ResultType = Tensor4D<float, 1, 4, 5, 1>; // N H W C
@@ -88,7 +89,7 @@ TEST(tosa, conv2d) {
         tosa::conv2d<ResultType>(input, weights, padding, stride, dilation);
     EXPECT_THAT(result, Pointwise(FloatNear(EPSILON), expected_result));
   }
-  { 
+  {
     // Strided convolution
     using InputType = Tensor4D<float, 1, 4, 4, 1>;  // N H W C
     using WeightType = Tensor4D<float, 1, 2, 2, 1>; // COUT KH KW CIN

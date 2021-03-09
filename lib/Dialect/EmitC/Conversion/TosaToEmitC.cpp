@@ -24,6 +24,23 @@ namespace emitc {
 
 namespace {
 
+// Common functions
+DenseIntElementsAttr GetI64ElementsAttr(const ArrayAttr values,
+                                        MLIRContext *ctx) {
+  RankedTensorType ty = RankedTensorType::get(
+      {static_cast<int64_t>(values.size())}, IntegerType::get(ctx, 64));
+
+  SmallVector<int64_t> valuesAsI64;
+
+  // convert values to int64_t
+  for (auto &value : values) {
+    auto valueAsIntAttr = value.cast<IntegerAttr>();
+    valuesAsI64.push_back(valueAsIntAttr.getInt());
+  };
+
+  return DenseIntElementsAttr::get(ty, valuesAsI64);
+}
+
 SmallVector<Attribute, 2> indexSequence(int64_t n, MLIRContext *ctx) {
   return llvm::to_vector<2>(
       llvm::map_range(llvm::seq<int64_t>(0, n), [&ctx](int64_t i) -> Attribute {
@@ -121,9 +138,9 @@ private:
     ArrayAttr args = rewriter.getArrayAttr({
       rewriter.getIndexAttr(0),
       rewriter.getIndexAttr(1),
-      conv2dOp.pad(),
-      conv2dOp.stride(),
-      conv2dOp.dilation()
+      GetI64ElementsAttr(conv2dOp.pad(), conv2dOp.getContext()),
+      GetI64ElementsAttr(conv2dOp.stride(), conv2dOp.getContext()),
+      GetI64ElementsAttr(conv2dOp.dilation(), conv2dOp.getContext()),
     });
     // clang-format on
 

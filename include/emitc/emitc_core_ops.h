@@ -133,6 +133,7 @@ inline Src sub(Src x, Src y) {
 
 /// Other ops
 // BroadcastInDimOp
+// Maps the broadcast_dimensions from Src to Dest
 template <typename Dest, typename Src>
 inline Dest
 broadcast_in_dim(Src operand,

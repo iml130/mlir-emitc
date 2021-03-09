@@ -493,6 +493,8 @@ void populateTosaToEmitcPatterns(MLIRContext *ctx,
                                                          "tosa::reduce_sum");
   patterns.insert<CallOpConversion<tosa::ReshapeOp>>(
       ctx, "tosa::reshape", /*explicitResultType=*/true);
+  patterns.insert<CallOpConversion<tosa::TransposeOp>>(
+      ctx, "tosa::transpose", /*explicitResultType=*/true);
 }
 
 namespace {
@@ -541,6 +543,7 @@ struct ConvertTosaToEmitCPass
     target.addIllegalOp<tosa::ReduceProdOp>();
     target.addIllegalOp<tosa::ReduceSumOp>();
     target.addIllegalOp<tosa::ReshapeOp>();
+    target.addIllegalOp<tosa::TransposeOp>();
 
     OwningRewritePatternList patterns;
     populateTosaToEmitcPatterns(&getContext(), patterns);

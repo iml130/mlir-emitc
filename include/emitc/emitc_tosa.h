@@ -351,6 +351,46 @@ inline Dest reshape(Src x) {
   return emitc::reshape<Dest>(x);
 }
 
+// TransposeOp
+// Maps the perms dimension from Dest to Src
+template <typename Dest, typename Src>
+inline Dest transpose(Src operand, Tensor1D<int64_t, Src::rank()> perms) {
+  static_assert(is_tensor<Src>::value, "Expected tensor argument");
+  static_assert(is_tensor<Dest>::value, "Expected tensor result");
+
+  Dest result;
+  for (size_t i = 0; i < result.size(); i++) {
+    auto dest_index = result.unravel_index(i);
+
+    // forward mapping with perms
+    std::array<size_t, Src::rank()> src_index;
+    for (size_t j = 0; j < src_index.size(); j++) {
+      src_index[perms(j)] = dest_index[j];
+    }
+
+    // Handle case of tranposing dimensions of size 1
+    for (size_t i = 0; i < src_index.size(); ++i) {
+      if (Src::shape()[i] == 1) {
+        src_index[i] = 0;
+      }
+    }
+
+    result[i] = operand[operand.ravel_index(src_index)];
+  }
+
+  return result;
+}
+
+// TransposeOp allows perms to be of type int32_t or int64_t.
+template <typename Dest, typename Src>
+inline Dest transpose(Src input, Tensor1D<int32_t, Src::rank()> perms) {
+  Tensor1D<int64_t, Src::rank()> permsInt64;
+  for (size_t i = 0; i < perms.size(); ++i) {
+    permsInt64[i] = perms[i];
+  }
+  return tosa::transpose<Dest>(input, permsInt64);
+}
+
 } // namespace tosa
 
 #endif // EMITC_EMITC_TOSA_H

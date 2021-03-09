@@ -345,6 +345,12 @@ inline Dest reduce_sum(Src input, int64_t dimension) {
   return tosa::reduce<Dest, Src>(input, 0, dimension, std::plus<ET_Src>{});
 }
 
+// ReshapeOp
+template <typename Dest, typename Src>
+inline Dest reshape(Src x) {
+  return emitc::reshape<Dest>(x);
+}
+
 } // namespace tosa
 
 #endif // EMITC_EMITC_TOSA_H

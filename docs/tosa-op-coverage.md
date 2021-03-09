@@ -29,3 +29,4 @@ The table below shows the supported TOSA ops.
 | reduce_min            | :heavy_check_mark: | |
 | reduce_prod           | :heavy_check_mark: | |
 | reduce_sum            | :heavy_check_mark: | |
+| reshape               | :heavy_check_mark: | |

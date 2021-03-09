@@ -244,7 +244,7 @@ def EmitC_ForOp : EmitC_Op<"for",
 
   let skipDefaultBuilders = 1;
   let builders = [
-    OpBuilderDAG<(ins "Value":$lowerBound, "Value":$upperBound, "Value":$step,
+    OpBuilder<(ins "Value":$lowerBound, "Value":$upperBound, "Value":$step,
       CArg<"ValueRange", "llvm::None">:$iterArgs,
       CArg<"function_ref<void(OpBuilder &, Location, Value, ValueRange)>",
            "nullptr">)>
@@ -348,15 +348,15 @@ def EmitC_IfOp : EmitC_Op<"if",
 
   let skipDefaultBuilders = 1;
   let builders = [
-    OpBuilderDAG<(ins "Value":$cond, "bool":$withElseRegion)>,
-    OpBuilderDAG<(ins "TypeRange":$resultTypes, "Value":$cond,
+    OpBuilder<(ins "Value":$cond, "bool":$withElseRegion)>,
+    OpBuilder<(ins "TypeRange":$resultTypes, "Value":$cond,
       "bool":$withElseRegion)>,
-    OpBuilderDAG<(ins "TypeRange":$resultTypes, "Value":$cond,
+    OpBuilder<(ins "TypeRange":$resultTypes, "Value":$cond,
       CArg<"function_ref<void(OpBuilder &, Location)>",
            "buildTerminatedBody">:$thenBuilder,
       CArg<"function_ref<void(OpBuilder &, Location)>",
            "nullptr">:$elseBuilder)>,
-    OpBuilderDAG<(ins "Value":$cond,
+    OpBuilder<(ins "Value":$cond,
       CArg<"function_ref<void(OpBuilder &, Location)>",
            "buildTerminatedBody">:$thenBuilder,
       CArg<"function_ref<void(OpBuilder &, Location)>",
@@ -397,7 +397,7 @@ def EmitC_YieldOp : EmitC_Op<"yield", [NoSideEffect, ReturnLike, Terminator]> {
   }];
 
   let arguments = (ins Variadic<AnyType>:$results);
-  let builders = [OpBuilderDAG<(ins), [{ /* nothing to do */ }]>];
+  let builders = [OpBuilder<(ins), [{ /* nothing to do */ }]>];
   // Override default verifier (defined in SCF_Op), no custom verification
   // needed.
   //let verifier = ?;

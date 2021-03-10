@@ -275,7 +275,6 @@ TEST(tosa, transpose) {
   Tensor1D<int64_t, 2> perms_i64 = {1, 0};
   Tensor1D<int64_t, 2> no_perms =  {0, 1};
   Tensor2D<float, 2, 3> expected_result0 = {1, 3, 5,
-
                                             2, 4, 6};
   // clang-format on
   Tensor2D<float, 2, 3> s0 =

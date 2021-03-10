@@ -196,8 +196,8 @@ func @test_reshape(%arg0: tensor<13x21x3xf32>) -> tensor<1x819xf32> {
 
 func @test_transpose(%arg0: tensor<13x21x3xf32>) -> tensor<3x13x21xf32> {
   // CHECK: %0 = "emitc.const"() {value = dense<[2, 0, 1]> : tensor<3xi32>} : () -> tensor<3xi32>
-  // CHECK: %1 = emitc.call "tosa::transpose"(%arg0, %0) {template_args = [tensor<3x13x21xf32>]} : (tensor<13x21x3xf32>, tensor<3xi32>) -> tensor<3x13x21xf32>
   %0 = "tosa.const"() {value = dense<[2, 0, 1]> : tensor<3xi32>} : () -> tensor<3xi32>
+  // CHECK-NEXT: %1 = emitc.call "tosa::transpose"(%arg0, %0) {template_args = [tensor<3x13x21xf32>]} : (tensor<13x21x3xf32>, tensor<3xi32>) -> tensor<3x13x21xf32>
   %1 = "tosa.transpose"(%arg0, %0) : (tensor<13x21x3xf32>, tensor<3xi32>) -> tensor<3x13x21xf32>
   return %1 : tensor<3x13x21xf32>
 }

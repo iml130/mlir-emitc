@@ -597,25 +597,25 @@ LogicalResult CppEmitter::emitOperation(Operation &op, bool trailingSemicolon) {
 }
 
 LogicalResult CppEmitter::emitType(Type type) {
-  if (auto itype = type.dyn_cast<IntegerType>()) {
-    switch (itype.getWidth()) {
+  if (auto iType = type.dyn_cast<IntegerType>()) {
+    switch (iType.getWidth()) {
     case 1:
       return (os << "bool"), success();
     case 8:
     case 16:
     case 32:
     case 64:
-      if (mapToSigned(itype.getSignedness())) {
-        return (os << "int" << itype.getWidth() << "_t"), success();
+      if (mapToSigned(iType.getSignedness())) {
+        return (os << "int" << iType.getWidth() << "_t"), success();
       } else {
-        return (os << "uint" << itype.getWidth() << "_t"), success();
+        return (os << "uint" << iType.getWidth() << "_t"), success();
       }
     default:
       return failure();
     }
   }
-  if (auto itype = type.dyn_cast<FloatType>()) {
-    switch (itype.getWidth()) {
+  if (auto fType = type.dyn_cast<FloatType>()) {
+    switch (fType.getWidth()) {
     case 32:
       return (os << "float"), success();
     case 64:
@@ -624,19 +624,19 @@ LogicalResult CppEmitter::emitType(Type type) {
       return failure();
     }
   }
-  if (auto itype = type.dyn_cast<IndexType>()) {
+  if (auto iType = type.dyn_cast<IndexType>()) {
     return (os << "size_t"), success();
   }
-  if (auto itype = type.dyn_cast<TensorType>()) {
+  if (auto tType = type.dyn_cast<TensorType>()) {
     // TensorType is not supported if emitting C
     if (restrictedToC())
       return failure();
-    if (!itype.hasRank())
+    if (!tType.hasStaticShape())
       return failure();
     os << "Tensor<";
-    if (failed(emitType(itype.getElementType())))
+    if (failed(emitType(tType.getElementType())))
       return failure();
-    auto shape = itype.getShape();
+    auto shape = tType.getShape();
     for (auto dimSize : shape) {
       os << ", ";
       os << dimSize;
@@ -644,11 +644,11 @@ LogicalResult CppEmitter::emitType(Type type) {
     os << ">";
     return success();
   }
-  if (auto ttype = type.dyn_cast<TupleType>()) {
-    return emitTupleType(ttype.getTypes());
+  if (auto tType = type.dyn_cast<TupleType>()) {
+    return emitTupleType(tType.getTypes());
   }
-  if (auto ot = type.dyn_cast<emitc::OpaqueType>()) {
-    os << ot.getValue();
+  if (auto oType = type.dyn_cast<emitc::OpaqueType>()) {
+    os << oType.getValue();
     return success();
   }
   return failure();

@@ -59,7 +59,8 @@ inline LogicalResult interleaveCommaWithError(const Container &c,
 
 /// Emitter that uses dialect specific emitters to emit C++ code.
 struct CppEmitter {
-  explicit CppEmitter(raw_ostream &os, bool restrictToC);
+  explicit CppEmitter(raw_ostream &os, bool restrictToC,
+                      bool forwardDeclareVariables);
 
   /// Emits attribute or returns failure.
   LogicalResult emitAttribute(Attribute attr);
@@ -123,6 +124,9 @@ struct CppEmitter {
   /// Returns if to emitc C.
   bool restrictedToC() { return restrictToC; };
 
+  /// Returns if all variables need to be forward declared.
+  bool forwardDeclaredVariables() { return forwardDeclareVariables; };
+
 private:
   using ValMapper = llvm::ScopedHashTable<Value, std::string>;
 
@@ -131,6 +135,9 @@ private:
 
   /// Boolean that restricts the emitter to C.
   bool restrictToC;
+
+  /// Boolean to enforce a forward declaration of all variables.
+  bool forwardDeclareVariables;
 
   /// Map from value to name of C++ variable that contain the name.
   ValMapper mapper;

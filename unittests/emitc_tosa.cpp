@@ -34,6 +34,26 @@ TEST(tosa, reciprocal) {
   EXPECT_THAT(result, Pointwise(FloatNear(EPSILON), expected));
 }
 
+TEST(tosa, reluN) {
+  Tensor<float, 2, 1> t0{0.0f, 5.0f};
+  float max0 = 3.0f;
+  Tensor<float, 2, 1> expected_result0{0.0, 3.0f};
+  Tensor<float, 2, 1> s0 = tosa::reluN(t0, max0);
+
+  EXPECT_THAT(s0, Pointwise(FloatEq(), expected_result0));
+
+  Tensor<int64_t, 4, 2, 1> t1{-2, 2, -2, 3, 4, -5, 5, 5};
+  int64_t max1 = 3;
+  Tensor<int64_t, 4, 2, 1> expected_result1{0, 2, 0, 3, 3, 0, 3, 3};
+  Tensor<int64_t, 4, 2, 1> s1 = tosa::reluN(t1, max1);
+  EXPECT_THAT(s1, Pointwise(Eq(), expected_result1));
+
+  int64_t max2 = 100;
+  Tensor<int64_t, 4, 2, 1> expected_result2{0, 2, 0, 3, 4, 0, 5, 5};
+  Tensor<int64_t, 4, 2, 1> s2 = tosa::reluN(t1, max2);
+  EXPECT_THAT(s2, Pointwise(Eq(), expected_result2));
+}
+
 // Binary elementwise ops
 TEST(tosa, mul) {
   // no shift

@@ -62,6 +62,14 @@ inline Src reciprocal(Src x) {
   return unary<Src>(x, f);
 }
 
+// ReluNOp
+template <typename Src, typename Limit>
+inline Src reluN(Src operand, Limit max_value) {
+  Tensor0D<Limit> min{0};
+  Tensor0D<Limit> max{max_value};
+  return emitc::clamp(min, operand, max);
+}
+
 // TanhOp
 template <typename Src>
 inline Src tanh(Src x) {

@@ -25,7 +25,7 @@ namespace emitc {
 namespace {
 
 // Common functions
-DenseIntElementsAttr GetI64ElementsAttr(const ArrayAttr values,
+DenseIntElementsAttr getI64ElementsAttr(const ArrayAttr values,
                                         MLIRContext *ctx) {
   RankedTensorType ty = RankedTensorType::get(
       {static_cast<int64_t>(values.size())}, IntegerType::get(ctx, 64));
@@ -138,9 +138,9 @@ private:
     ArrayAttr args = rewriter.getArrayAttr({
       rewriter.getIndexAttr(0),
       rewriter.getIndexAttr(1),
-      GetI64ElementsAttr(conv2dOp.pad(), conv2dOp.getContext()),
-      GetI64ElementsAttr(conv2dOp.stride(), conv2dOp.getContext()),
-      GetI64ElementsAttr(conv2dOp.dilation(), conv2dOp.getContext()),
+      getI64ElementsAttr(conv2dOp.pad(), conv2dOp.getContext()),
+      getI64ElementsAttr(conv2dOp.stride(), conv2dOp.getContext()),
+      getI64ElementsAttr(conv2dOp.dilation(), conv2dOp.getContext()),
     });
     // clang-format on
 

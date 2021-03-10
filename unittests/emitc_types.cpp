@@ -614,6 +614,26 @@ TEST(types, ravel_index) {
   EXPECT_EQ(t4.ravel_index({1, 2, 3, 4}), 211);
 }
 
+TEST(types, ravel_index_utility_function) {
+  size_t test_1 = ravel_index<12>(0);
+  size_t test_2 = ravel_index<12>(7);
+  size_t test_3 = ravel_index<3, 7>(0, 2);
+  size_t test_4 = ravel_index<3, 7>(2, 3);
+  size_t test_5 = ravel_index<2, 4, 6>(0, 2, 0);
+  size_t test_6 = ravel_index<2, 4, 6>(1, 3, 4);
+  size_t test_7 = ravel_index<2, 3, 4, 9>(1, 0, 0, 3);
+  size_t test_8 = ravel_index<2, 3, 4, 9>(1, 2, 3, 4);
+
+  EXPECT_EQ(test_1, 0);
+  EXPECT_EQ(test_2, 7);
+  EXPECT_EQ(test_3, 2);
+  EXPECT_EQ(test_4, 17);
+  EXPECT_EQ(test_5, 12);
+  EXPECT_EQ(test_6, 46);
+  EXPECT_EQ(test_7, 111);
+  EXPECT_EQ(test_8, 211);
+}
+
 TEST(types, unravel_index) {
   Tensor0D<uint16_t> t0;
   Tensor1D<int8_t, 12> t1;

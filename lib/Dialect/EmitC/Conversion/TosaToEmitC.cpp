@@ -223,6 +223,46 @@ private:
   }
 };
 
+class ReluNOpConversion : public OpConversionPattern<tosa::ReluNOp> {
+  using OpConversionPattern<tosa::ReluNOp>::OpConversionPattern;
+
+public:
+  ReluNOpConversion(MLIRContext *ctx)
+      : OpConversionPattern<tosa::ReluNOp>(ctx) {}
+
+private:
+  LogicalResult
+  matchAndRewrite(tosa::ReluNOp reluNOp, ArrayRef<Value> operands,
+                  ConversionPatternRewriter &rewriter) const override {
+
+    StringRef funcName = "tosa::reluN";
+    StringAttr callee = rewriter.getStringAttr(funcName);
+
+    SmallVector<Attribute, 2> args_;
+    args_.push_back(rewriter.getIndexAttr(0));
+
+    // Since tosa.reluN has two max attribute types for float and integer
+    // values, we have to determine to which max attribute we have to clamp to
+    auto elementType =
+        operands[0].getType().cast<RankedTensorType>().getElementType();
+    if (elementType.isa<IntegerType>()) {
+      args_.push_back(reluNOp.max_intAttr());
+    } else if (elementType.isa<FloatType>()) {
+      args_.push_back(reluNOp.max_fpAttr());
+    } else {
+      return reluNOp.emitError(
+          "Operand of tosa.reluN has to be tensor of integer or float values.");
+    }
+    ArrayAttr args = rewriter.getArrayAttr(args_);
+    ArrayAttr templateArgs;
+
+    rewriter.replaceOpWithNewOp<emitc::CallOp>(
+        reluNOp, reluNOp.getType(), callee, args, templateArgs, operands);
+
+    return success();
+  }
+};
+
 class RsqrtOpConversion : public OpConversionPattern<tosa::RsqrtOp> {
   using OpConversionPattern<tosa::RsqrtOp>::OpConversionPattern;
 
@@ -484,6 +524,7 @@ void populateTosaToEmitcPatterns(MLIRContext *ctx,
   patterns.insert<CallOpConversion<tosa::LogOp>>(ctx, "tosa::log");
   patterns.insert<CallOpConversion<tosa::ReciprocalOp>>(ctx,
                                                         "tosa::reciprocal");
+  patterns.insert<ReluNOpConversion>(ctx);
   patterns.insert<RsqrtOpConversion>(ctx);
   patterns.insert<CallOpConversion<tosa::TanhOp>>(ctx, "tosa::tanh");
 
@@ -539,6 +580,7 @@ struct ConvertTosaToEmitCPass
     target.addIllegalOp<tosa::FloorOp>();
     target.addIllegalOp<tosa::LogOp>();
     target.addIllegalOp<tosa::ReciprocalOp>();
+    target.addIllegalOp<tosa::ReluNOp>();
     target.addIllegalOp<tosa::RsqrtOp>();
     target.addIllegalOp<tosa::TanhOp>();
 

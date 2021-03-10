@@ -241,7 +241,8 @@ private:
     SmallVector<Attribute, 2> args_;
     args_.push_back(rewriter.getIndexAttr(0));
 
-    // Determine to which max value we have to clamp to
+    // Since tosa.reluN has two max attribute types for float and integer
+    // values, we have to determine to which max attribute we have to clamp to
     auto operandType =
         operands[0].getType().cast<RankedTensorType>().getElementType();
     if (operandType.isSignedInteger() || operandType.isSignlessInteger() ||

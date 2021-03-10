@@ -243,14 +243,11 @@ private:
 
     // Since tosa.reluN has two max attribute types for float and integer
     // values, we have to determine to which max attribute we have to clamp to
-    auto operandType =
+    auto elementType =
         operands[0].getType().cast<RankedTensorType>().getElementType();
-    if (operandType.isSignedInteger() || operandType.isSignlessInteger() ||
-        operandType.isUnsignedInteger()) {
+    if (elementType.isa<IntegerType>()) {
       args_.push_back(reluNOp.max_intAttr());
-    } else if (operandType.isF16() || operandType.isF32() ||
-               operandType.isF64() || operandType.isF80() ||
-               operandType.isF128()) {
+    } else if (elementType.isa<FloatType>()) {
       args_.push_back(reluNOp.max_fpAttr());
     } else {
       return reluNOp.emitError(

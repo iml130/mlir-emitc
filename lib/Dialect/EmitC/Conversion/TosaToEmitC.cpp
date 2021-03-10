@@ -108,16 +108,17 @@ public:
   }
 };
 
-class Conv2DOpConversion : public OpConversionPattern<tosa::Conv2DOp> {
-  using OpConversionPattern<tosa::Conv2DOp>::OpConversionPattern;
+template <typename SrcOp>
+class Conv2DOpConversion : public OpConversionPattern<SrcOp> {
+  using OpConversionPattern<SrcOp>::OpConversionPattern;
 
 public:
-  Conv2DOpConversion(MLIRContext *ctx)
-      : OpConversionPattern<tosa::Conv2DOp>(ctx) {}
+  Conv2DOpConversion(MLIRContext *ctx, StringRef funcName)
+      : OpConversionPattern<SrcOp>(ctx), funcName(funcName) {}
 
 private:
   LogicalResult
-  matchAndRewrite(tosa::Conv2DOp conv2dOp, ArrayRef<Value> operands,
+  matchAndRewrite(SrcOp conv2dOp, ArrayRef<Value> operands,
                   ConversionPatternRewriter &rewriter) const override {
     // fail if quantization is requested
     if (conv2dOp.quantization_info().hasValue()) {
@@ -131,7 +132,6 @@ private:
     // Therefore we remove bias from the operands of the convolution.
     operands = operands.drop_back();
 
-    StringRef funcName = "tosa::conv2d";
     StringAttr callee = rewriter.getStringAttr(funcName);
 
     // clang-format off
@@ -160,6 +160,8 @@ private:
 
     return success();
   }
+
+  StringRef funcName;
 };
 
 class FullyConnectedOpConversion
@@ -493,7 +495,9 @@ void populateTosaToEmitcPatterns(MLIRContext *ctx,
   patterns.insert<CallOpBroadcastableConversion<tosa::SubOp>>(ctx, "tosa::sub");
 
   // Other ops
-  patterns.insert<Conv2DOpConversion>(ctx);
+  patterns.insert<Conv2DOpConversion<tosa::Conv2DOp>>(ctx, "tosa::conv2d");
+  patterns.insert<Conv2DOpConversion<tosa::DepthwiseConv2DOp>>(
+      ctx, "tosa::depthwise_conv2d");
   patterns.insert<FullyConnectedOpConversion>(ctx, "tosa::fully_connected");
   patterns.insert<MatMulOpConversion>(ctx);
   patterns.insert<ReduceOpConversion<tosa::ReduceAllOp>>(ctx,
@@ -549,6 +553,7 @@ struct ConvertTosaToEmitCPass
 
     // Other ops
     target.addIllegalOp<tosa::Conv2DOp>();
+    target.addIllegalOp<tosa::DepthwiseConv2DOp>();
     target.addIllegalOp<tosa::FullyConnectedOp>();
     target.addIllegalOp<tosa::MatMulOp>();
     target.addIllegalOp<tosa::ReduceAllOp>();

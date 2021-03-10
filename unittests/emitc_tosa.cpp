@@ -331,11 +331,6 @@ TEST(tosa, transpose) {
   Tensor3D<float, 4, 2, 3> s2 =
       tosa::transpose<Tensor3D<float, 4, 2, 3>>(t2, perms2);
   EXPECT_THAT(s2, Pointwise(Eq(), expected_result2));
-
-  Tensor<float, 13, 21, 3> v1;
-  Tensor<int32_t, 3> v2{2, 0, 1};
-  Tensor<float, 3, 13, 21> v3 =
-      tosa::transpose<Tensor<float, 3, 13, 21>>(v1, v2);
 }
 
 } // namespace

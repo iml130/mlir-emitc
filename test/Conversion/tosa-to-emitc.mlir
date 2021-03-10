@@ -193,3 +193,15 @@ func @test_reshape(%arg0: tensor<13x21x3xf32>) -> tensor<1x819xf32> {
   %0 = "tosa.reshape"(%arg0) {new_shape = [1, 819]} : (tensor<13x21x3xf32>) -> tensor<1x819xf32>
   return %0 : tensor<1x819xf32>
 }
+
+func @test_relu0(%arg0: tensor<13x21x3xf32>) -> tensor<13x21x3xf32> {
+  // CHECK: %0 = emitc.call "tosa::reluN"(%arg0) {args = [0 : index, 3.40282347E+38 : f32]} : (tensor<13x21x3xf32>) -> tensor<13x21x3xf32>
+  %0 = "tosa.reluN"(%arg0) {max_fp = 3.40282347E+38 : f32, max_int = 0 : i64} : (tensor<13x21x3xf32>) -> tensor<13x21x3xf32>
+  return %0 : tensor<13x21x3xf32>
+}
+
+func @test_relu1(%arg0: tensor<13x21x3xi64>) -> tensor<13x21x3xi64> {
+  // CHECK: %0 = emitc.call "tosa::reluN"(%arg0) {args = [0 : index, 255]} : (tensor<13x21x3xi64>) -> tensor<13x21x3xi64>
+  %0 = "tosa.reluN"(%arg0) {max_fp = 0.0 : f32, max_int = 255 : i64} : (tensor<13x21x3xi64>) -> tensor<13x21x3xi64>
+  return %0 : tensor<13x21x3xi64>
+}

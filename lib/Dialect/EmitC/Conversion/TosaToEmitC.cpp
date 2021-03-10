@@ -223,6 +223,48 @@ private:
   }
 };
 
+class ReluNOpConversion : public OpConversionPattern<tosa::ReluNOp> {
+  using OpConversionPattern<tosa::ReluNOp>::OpConversionPattern;
+
+public:
+  ReluNOpConversion(MLIRContext *ctx)
+      : OpConversionPattern<tosa::ReluNOp>(ctx) {}
+
+private:
+  LogicalResult
+  matchAndRewrite(tosa::ReluNOp reluNOp, ArrayRef<Value> operands,
+                  ConversionPatternRewriter &rewriter) const override {
+
+    StringRef funcName = "tosa::reluN";
+    StringAttr callee = rewriter.getStringAttr(funcName);
+
+    SmallVector<Attribute, 2> args_;
+    args_.push_back(rewriter.getIndexAttr(0));
+
+    // Determine to which max value we have to clamp to
+    auto operandType =
+        operands[0].getType().cast<RankedTensorType>().getElementType();
+    if (operandType.isSignedInteger() || operandType.isSignlessInteger() ||
+        operandType.isUnsignedInteger()) {
+      args_.push_back(reluNOp.max_intAttr());
+    } else if (operandType.isF16() || operandType.isF32() ||
+               operandType.isF64() || operandType.isF80() ||
+               operandType.isF128()) {
+      args_.push_back(reluNOp.max_fpAttr());
+    } else {
+      return reluNOp.emitError(
+          "Operand of tosa.reluN has to be tensor of integer or float values.");
+    }
+    ArrayAttr args = rewriter.getArrayAttr(args_);
+    ArrayAttr templateArgs;
+
+    rewriter.replaceOpWithNewOp<emitc::CallOp>(
+        reluNOp, reluNOp.getType(), callee, args, templateArgs, operands);
+
+    return success();
+  }
+};
+
 class RsqrtOpConversion : public OpConversionPattern<tosa::RsqrtOp> {
   using OpConversionPattern<tosa::RsqrtOp>::OpConversionPattern;
 
@@ -484,6 +526,7 @@ void populateTosaToEmitcPatterns(MLIRContext *ctx,
   patterns.insert<CallOpConversion<tosa::LogOp>>(ctx, "tosa::log");
   patterns.insert<CallOpConversion<tosa::ReciprocalOp>>(ctx,
                                                         "tosa::reciprocal");
+  patterns.insert<ReluNOpConversion>(ctx);
   patterns.insert<RsqrtOpConversion>(ctx);
   patterns.insert<CallOpConversion<tosa::TanhOp>>(ctx, "tosa::tanh");
 
@@ -539,6 +582,7 @@ struct ConvertTosaToEmitCPass
     target.addIllegalOp<tosa::FloorOp>();
     target.addIllegalOp<tosa::LogOp>();
     target.addIllegalOp<tosa::ReciprocalOp>();
+    target.addIllegalOp<tosa::ReluNOp>();
     target.addIllegalOp<tosa::RsqrtOp>();
     target.addIllegalOp<tosa::TanhOp>();
 

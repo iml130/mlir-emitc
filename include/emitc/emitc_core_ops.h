@@ -196,6 +196,25 @@ Dest dot(Lhs lhs, Rhs rhs) {
   return output;
 }
 
+// ReshapeOp
+template <typename Dest, typename Src>
+inline Dest reshape(Src x) {
+  static_assert(is_tensor<Src>::value, "Expected tensor argument");
+  static_assert(is_tensor<Dest>::value, "Expected tensor result");
+
+  using ET_Src = typename get_element_type<Src>::type;
+  using ET_Dest = typename get_element_type<Dest>::type;
+
+  static_assert(std::is_same<ET_Src, ET_Dest>::value, "Element type mismatch");
+  static_assert(Src::size() == Dest::size(), "Tensor size mismatch");
+
+  Dest z;
+
+  std::copy(x.begin(), x.end(), z.begin());
+
+  return z;
+}
+
 } // namespace emitc
 
 #endif // EMITC_EMITC_CORE_OPS_H

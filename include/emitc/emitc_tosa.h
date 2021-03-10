@@ -358,27 +358,16 @@ inline Dest transpose(Src operand, Tensor1D<int64_t, Src::rank()> perms) {
   static_assert(is_tensor<Src>::value, "Expected tensor argument");
   static_assert(is_tensor<Dest>::value, "Expected tensor result");
 
-  Dest result;
-  for (size_t i = 0; i < result.size(); i++) {
-    auto dest_index = result.unravel_index(i);
-
-    // forward mapping with perms
-    std::array<size_t, Src::rank()> src_index;
-    for (size_t j = 0; j < src_index.size(); j++) {
-      src_index[perms(j)] = dest_index[j];
-    }
-
-    // Handle case of tranposing dimensions of size 1
-    for (size_t i = 0; i < src_index.size(); ++i) {
-      if (Src::shape()[i] == 1) {
-        src_index[i] = 0;
-      }
-    }
-
-    result[i] = operand[operand.ravel_index(src_index)];
+  // Since broadcast_dimensions map the broadcast_dimensions from Src to Dest,
+  // we have to reverse the tosa.transpose perms mapping rom Dest to Src
+  Tensor1D<int64_t, Src::rank()> broadcast_dimensions;
+  for (size_t i = 0; i < perms.size(); ++i) {
+    auto pos = std::find(perms.begin(), perms.end(), i);
+    assert(pos != std::end(perms));
+    int64_t index = std::distance(perms.begin(), pos);
+    broadcast_dimensions[i] = index;
   }
-
-  return result;
+  return emitc::broadcast_in_dim<Dest>(operand, broadcast_dimensions);
 }
 
 // TransposeOp allows perms to be of type int32_t or int64_t.

@@ -22,7 +22,7 @@
 #include <numeric>
 #include <vector>
 
-#include "emitc/emitc_utility.h"
+#include "emitc_utility.h"
 
 namespace detail {
 template <size_t N>

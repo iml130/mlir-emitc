@@ -328,6 +328,7 @@ inline Src logical_xor(Src x, Src y) {
 
 /// Functions for other MHLO ops.
 // BroadcastInDimOp
+// The broadcast_dimensions argument maps from Src to Dest dimensions
 template <typename Dest, typename Src>
 inline Dest
 broadcast_in_dim(Src operand,

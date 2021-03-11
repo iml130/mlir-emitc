@@ -28,9 +28,10 @@ using llvm::formatv;
 static LogicalResult printConstantOp(CppEmitter &emitter,
                                      ConstantOp constantOp) {
   auto &os = emitter.ostream();
-  if (failed(emitter.emitType(constantOp.getType())))
+  if (failed(emitter.emitVariableDeclaration(
+          constantOp.getOperation()->getResult(0),
+          /*trailingSemicolon=*/false)))
     return failure();
-  os << " " << emitter.getOrCreateName(constantOp.getResult());
 
   // Add braces for number literals only to avoid double brace intialization for
   // tensors.
@@ -57,9 +58,10 @@ static LogicalResult printConstantOp(CppEmitter &emitter,
 
 static LogicalResult printConstOp(CppEmitter &emitter, ConstOp constOp) {
   auto &os = emitter.ostream();
-  if (failed(emitter.emitType(constOp.getType())))
+  if (failed(
+          emitter.emitVariableDeclaration(constOp.getOperation()->getResult(0),
+                                          /*trailingSemicolon=*/false)))
     return failure();
-  os << " " << emitter.getOrCreateName(constOp.getResult());
 
   // Add braces for number literals only to avoid double brace intialization for
   // tensors.
@@ -182,13 +184,10 @@ static LogicalResult printForOp(CppEmitter &emitter, emitc::ForOp forOp) {
     }
   }
 
-  if (forOp.getNumResults() != 0) {
-    for (auto op : forOp.getResults()) {
-      if (failed(emitter.emitType(op.getType())))
-        return failure();
-      os << " " << emitter.getOrCreateName(op) << ";";
-      os << "\n";
-    }
+  for (auto result : forOp.getResults()) {
+    if (failed(emitter.emitVariableDeclaration(result,
+                                               /*trailingSemicolon=*/true)))
+      return failure();
   }
 
   os << "for (";
@@ -223,13 +222,10 @@ static LogicalResult printForOp(CppEmitter &emitter, emitc::ForOp forOp) {
 static LogicalResult printIfOp(CppEmitter &emitter, emitc::IfOp ifOp) {
   auto &os = emitter.ostream();
 
-  if (ifOp.getNumResults() != 0) {
-    for (auto op : ifOp.getResults()) {
-      if (failed(emitter.emitType(op.getType())))
-        return failure();
-      os << " " << emitter.getOrCreateName(op) << ";";
-      os << "\n";
-    }
+  for (auto result : ifOp.getResults()) {
+    if (failed(emitter.emitVariableDeclaration(result,
+                                               /*trailingSemicolon=*/true)))
+      return failure();
   }
 
   os << "if (";
@@ -262,19 +258,20 @@ static LogicalResult printIfOp(CppEmitter &emitter, emitc::IfOp ifOp) {
 
 static LogicalResult printYieldOp(CppEmitter &emitter, emitc::YieldOp yieldOp) {
   auto &os = emitter.ostream();
+  auto &parentOp = *yieldOp->getParentOp();
 
-  if (yieldOp.getNumOperands() == 0) {
-    return success();
-  } else {
-    auto &parentOp = *yieldOp->getParentOp();
+  if (yieldOp.getNumOperands() != parentOp.getNumResults()) {
+    return failure();
+  }
 
-    for (uint result = 0; result < parentOp.getNumResults(); ++result) {
-      os << emitter.getOrCreateName(parentOp.getResult(result)) << " = ";
+  for (auto pair : llvm::zip(parentOp.getResults(), yieldOp.getOperands())) {
+    auto result = std::get<0>(pair);
+    auto operand = std::get<1>(pair);
+    os << emitter.getOrCreateName(result) << " = ";
 
-      if (!emitter.hasValueInScope(yieldOp.getOperand(result)))
-        return yieldOp.emitError() << "operand value not in scope";
-      os << emitter.getOrCreateName(yieldOp.getOperand(result)) << ";\n";
-    }
+    if (!emitter.hasValueInScope(operand))
+      return yieldOp.emitError() << "operand value not in scope";
+    os << emitter.getOrCreateName(operand) << ";\n";
   }
 
   return success();
@@ -328,7 +325,7 @@ static LogicalResult printModule(CppEmitter &emitter, ModuleOp moduleOp) {
   os << "\n";
 
   for (Operation &op : moduleOp) {
-    if (failed(emitter.emitOperation(op, /*trailingSemiColon=*/false)))
+    if (failed(emitter.emitOperation(op, /*trailingSemicolon=*/false)))
       return failure();
   }
   return success();
@@ -535,22 +532,37 @@ CppEmitter::emitOperandsAndAttributes(Operation &op,
   return interleaveCommaWithError(op.getAttrs(), os, emitNamedAttribute);
 }
 
+LogicalResult CppEmitter::emitVariableDeclaration(OpResult result,
+                                                  bool trailingSemicolon) {
+  if (hasValueInScope(result)) {
+    return result.getDefiningOp()->emitError(
+        "result variable for the operation already declared.");
+  }
+  if (failed(emitType(result.getType()))) {
+    return failure();
+  }
+  os << " " << getOrCreateName(result);
+  if (trailingSemicolon) {
+    os << ";\n";
+  }
+  return success();
+}
+
 LogicalResult CppEmitter::emitAssignPrefix(Operation &op) {
   switch (op.getNumResults()) {
   case 0:
     break;
   case 1: {
     auto result = op.getResult(0);
-    if (failed(emitType(result.getType())))
+    if (failed(emitVariableDeclaration(result, /*trailingSemicolon=*/false)))
       return op.emitError() << "unable to emit type " << result.getType();
-    os << " " << getOrCreateName(result) << " = ";
+    os << " = ";
     break;
   }
   default:
     for (auto result : op.getResults()) {
-      if (failed(emitType(result.getType())))
+      if (failed(emitVariableDeclaration(result, /*trailingSemicolon=*/true)))
         return failure();
-      os << " " << getOrCreateName(result) << ";\n";
     }
     os << "std::tie(";
     interleaveComma(op.getResults(), os,

@@ -191,9 +191,16 @@ Dest depthwise_conv2d(Src input, Weights weights, Tensor1D<int64_t, 4> padding,
                 "Expected 4 dimensional output");
   static_assert(is_tensor_of_dim<4, Weights>::value,
                 "Expected 4 dimensional weights");
+
+  // Check dimensions
+  static_assert(Src::dim(3) == Weights::dim(2),
+                "Input channels must equal weights channels");
   static_assert(Src::dim(0) == Dest::dim(0), "Batch sizes must be equal");
   static_assert(Dest::dim(3) % Src::dim(3) == 0,
                 "Output channels need to be a multiple of input channels");
+  static_assert(
+      Dest::dim(3) == Src::dim(3) * Weights::dim(3),
+      "Output channels size must be input channels times channel multiplier");
 
   assert(stride[0] > 0);
   assert(stride[1] > 0);
@@ -208,11 +215,9 @@ Dest depthwise_conv2d(Src input, Weights weights, Tensor1D<int64_t, 4> padding,
 
   Dest output;
 
-  const int CxM = output.dim(3);
-  const int M = CxM / C_IN;
-
   const int K_H = weights.dim(0);
   const int K_W = weights.dim(1);
+  const int M = weights.dim(3);
 
   const int S_H = stride[0];
   const int S_W = stride[1];

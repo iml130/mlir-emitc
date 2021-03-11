@@ -88,8 +88,8 @@ TEST(tosa, mul) {
 
 TEST(tosa, broadcastable_op) {
   // In the CallOpBroadcastableConversion ops where the tensor shape of the
-  // operands don't match, a broadcast_in_dim op is inserted. This unittest is
-  // to verify that procedure.
+  // operands don't match, a broadcast_in_dim op is inserted. This unittest
+  // verifies that procedure.
 
   // %0 = "tosa.add"(%arg0, %arg1) : (tensor<2x1x3xf32>, tensor<1x1x3xf32>) ->
   // tensor<2x1x3xf32>

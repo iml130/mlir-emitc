@@ -244,13 +244,21 @@ private:
     args_.push_back(rewriter.getIndexAttr(0));
 
     // Since tosa.reluN has two max attribute types for float and integer
-    // values, we have to determine to which max attribute we have to clamp to
+    // values, we have to determine to which max attribute we have to clamp to.
+    // We also need to adjust the max attribute type bit width, such that they
+    // match the operand's element type, because TOSA specifies the max
+    // attributes to be exact i64 or f32, regardless of the operand's element
+    // type bit width.
     auto elementType =
         operands[0].getType().cast<RankedTensorType>().getElementType();
     if (elementType.isa<IntegerType>()) {
-      args_.push_back(reluNOp.max_intAttr());
+      // Change the max_int type to the element type of the operand
+      auto maxInt = reluNOp.max_int();
+      args_.push_back(mlir::IntegerAttr::get(elementType, maxInt));
     } else if (elementType.isa<FloatType>()) {
-      args_.push_back(reluNOp.max_fpAttr());
+      // Change the max_fp type to the element type of the operand
+      auto maxFp = reluNOp.max_fpAttr().getValueAsDouble();
+      args_.push_back(mlir::FloatAttr::get(elementType, maxFp));
     } else {
       return reluNOp.emitError(
           "Operand of tosa.reluN has to be tensor of integer or float values.");

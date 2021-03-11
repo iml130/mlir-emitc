@@ -183,14 +183,17 @@ template <typename Dest, typename Src, typename Weights>
 Dest depthwise_conv2d(Src input, Weights weights, Tensor1D<int64_t, 4> padding,
                       Tensor1D<int64_t, 2> stride,
                       Tensor1D<int64_t, 2> dilation) {
-  // Input is [N,IH,IW,IC], weights
-  // are [KH,KW,CIN,M] and output is [N,H,W,C*M].
+  // Input is [N,H_IN,W_IN,C_IN], weights
+  // are [K_H,K_W,C_IN,M] and output is [N,H,W,C_IN*M].
   static_assert(is_tensor_of_dim<4, Src>::value,
                 "Expected 4 dimensional input");
   static_assert(is_tensor_of_dim<4, Dest>::value,
                 "Expected 4 dimensional output");
   static_assert(is_tensor_of_dim<4, Weights>::value,
                 "Expected 4 dimensional weights");
+  static_assert(Src::dim(0) == Dest::dim(0), "Batch sizes must be equal");
+  static_assert(Dest::dim(3) % Src::dim(3) == 0,
+                "Output channels need to be a multiple of input channels");
 
   assert(stride[0] > 0);
   assert(stride[1] > 0);
@@ -201,14 +204,12 @@ Dest depthwise_conv2d(Src input, Weights weights, Tensor1D<int64_t, 4> padding,
   const int N = input.dim(0);
   const int H_IN = input.dim(1);
   const int W_IN = input.dim(2);
-
-  const int feature_group_count = input.dim(3);
+  const int C_IN = input.dim(3);
 
   Dest output;
 
-  const int C_OUT = output.dim(3);
-  assert(C_OUT % feature_group_count == 0);
-  const int G_OUT = C_OUT / feature_group_count;
+  const int CxM = output.dim(3);
+  const int M = CxM / C_IN;
 
   const int K_H = weights.dim(0);
   const int K_W = weights.dim(1);
@@ -230,11 +231,11 @@ Dest depthwise_conv2d(Src input, Weights weights, Tensor1D<int64_t, 4> padding,
       for (int w_pad = 0; w_pad < W_PAD - K_W + 1; w_pad += S_W) {
         for (int kh = 0; kh < K_H; ++kh) {
           for (int kw = 0; kw < K_W; ++kw) {
-            for (int g = 0; g < feature_group_count; ++g) {
-              for (int g_out = 0; g_out < G_OUT; ++g_out) {
+            for (int c_in = 0; c_in < C_IN; ++c_in) {
+              for (int m = 0; m < M; ++m) {
                 const int h_out = h_pad / S_H;
                 const int w_out = w_pad / S_W;
-                const int c_out = g * G_OUT + g_out;
+                const int c_out = c_in * M + m;
                 const int h_in = h_pad - pt + kh;
                 const int w_in = w_pad - pl + kw;
 
@@ -250,7 +251,7 @@ Dest depthwise_conv2d(Src input, Weights weights, Tensor1D<int64_t, 4> padding,
                     Weights::dim(2) * Weights::dim(3)>(kh, kw, 0, c_out);
 
                 output(n, h_out, w_out, c_out) +=
-                    input(n, h_in, w_in, g) * weights[weights_index];
+                    input(n, h_in, w_in, c_in) * weights[weights_index];
               }
             }
           }

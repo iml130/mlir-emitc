@@ -86,6 +86,32 @@ TEST(tosa, mul) {
   EXPECT_THAT(lambda_1d_int_shift(), Pointwise(Eq(), {0, 1, 2, 4}));
 }
 
+TEST(tosa, broadcastable_op) {
+  // In the CallOpBroadcastableConversion ops where the tensor shape of the
+  // operands don't match, a broadcast_in_dim op is inserted. This unittest
+  // verifies that procedure.
+
+  // %0 = "tosa.add"(%arg0, %arg1) : (tensor<2x1x3xf32>, tensor<1x1x3xf32>) ->
+  // tensor<2x1x3xf32>
+  Tensor<float, 2, 1, 3> t0_arg0{3, 3, 3, 3, 3, 3};
+  Tensor<float, 1, 1, 3> t0_arg1{1, 2, 3};
+  Tensor<float, 2, 1, 3> t0_arg1_broadcasted =
+      emitc::broadcast_in_dim<Tensor<float, 2, 1, 3>>(t0_arg1, {0, 1, 2});
+  EXPECT_THAT(t0_arg1_broadcasted, Pointwise(Eq(), {1, 2, 3, 1, 2, 3}));
+  tosa::add(t0_arg0,
+            t0_arg1_broadcasted); // Just make sure it compiles in this test
+
+  // %0 = "tosa.add"(%arg0, %arg1) : (tensor<2x1x3xf32>, tensor<3xf32>) ->
+  // tensor<2x1x3xf32>
+  Tensor<float, 2, 1, 3> t1_arg0{4, 4, 4, 4, 4, 4};
+  Tensor<float, 3> t1_arg1{1, 2, 3};
+  Tensor<float, 2, 1, 3> t1_arg1_broadcasted =
+      emitc::broadcast_in_dim<Tensor<float, 2, 1, 3>>(t1_arg1, {2});
+  EXPECT_THAT(t1_arg1_broadcasted, Pointwise(Eq(), {1, 2, 3, 1, 2, 3}));
+  tosa::add(t1_arg0,
+            t1_arg1_broadcasted); // Just make sure it compiles in this test
+}
+
 // Other ops
 TEST(tosa, conv2d) {
   {

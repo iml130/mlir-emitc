@@ -63,7 +63,7 @@ func @test_tanh(%arg0: tensor<13x21x3xf32>) -> tensor<13x21x3xf32> {
 // Binary elementwise ops
 
 func @test_add(%arg0: tensor<13x21x1xf32>, %arg1: tensor<13x21x3xf32>) -> tensor<13x21x3xf32> {
-  // CHECK: emitc.call "emitc::broadcast_in_dim"(%arg0) {args = [dense<[0, 1, 2]> : tensor<3xi64>], template_args = [tensor<13x21x3xf32>]} : (tensor<13x21x1xf32>) -> tensor<13x21x3xf32>
+  // CHECK: emitc.call "emitc::broadcast_in_dim"(%arg0) {args = [0 : index, dense<[0, 1, 2]> : tensor<3xi64>], template_args = [tensor<13x21x3xf32>]} : (tensor<13x21x1xf32>) -> tensor<13x21x3xf32>
   // CHECK: emitc.call "tosa::add"(%0, %arg1) {template_args = []} : (tensor<13x21x3xf32>, tensor<13x21x3xf32>) -> tensor<13x21x3xf32>
   %0 = "tosa.add"(%arg0, %arg1) : (tensor<13x21x1xf32>, tensor<13x21x3xf32>) -> tensor<13x21x3xf32>
   return %0 : tensor<13x21x3xf32>
@@ -78,7 +78,7 @@ func @test_mul10(%arg0: tensor<13x21x3xf32>, %arg1: tensor<13x21x3xf32>) -> tens
 
 // MulOp: First operand needs to be broadcasted
 func @test_mul1(%arg0: tensor<13x1x3xi32>, %arg1: tensor<13x21x3xi32>) -> tensor<13x21x3xi32> {
-  // CHECK: emitc.call "emitc::broadcast_in_dim"(%arg0) {args = [dense<[0, 1, 2]> : tensor<3xi64>], template_args = [tensor<13x21x3xi32>]} : (tensor<13x1x3xi32>) -> tensor<13x21x3xi32>
+  // CHECK: emitc.call "emitc::broadcast_in_dim"(%arg0) {args = [0 : index, dense<[0, 1, 2]> : tensor<3xi64>], template_args = [tensor<13x21x3xi32>]} : (tensor<13x1x3xi32>) -> tensor<13x21x3xi32>
   // CHECK: emitc.call "tosa::mul"(%0, %arg1) {args = [0 : index, 1 : index, 1 : i32]} : (tensor<13x21x3xi32>, tensor<13x21x3xi32>) -> tensor<13x21x3xi32>
   %0 = "tosa.mul"(%arg0, %arg1)  { shift = 1 : i32 } : (tensor<13x1x3xi32>, tensor<13x21x3xi32>) -> tensor<13x21x3xi32>
   return %0 : tensor<13x21x3xi32>
@@ -86,7 +86,7 @@ func @test_mul1(%arg0: tensor<13x1x3xi32>, %arg1: tensor<13x21x3xi32>) -> tensor
 
 // MulOp: Second operand needs to be broadcasted
 func @test_mul2(%arg0: tensor<13x21x3xi32>, %arg1: tensor<13x1x3xi32>) -> tensor<13x21x3xi32> {
-  // CHECK: emitc.call "emitc::broadcast_in_dim"(%arg1) {args = [dense<[0, 1, 2]> : tensor<3xi64>], template_args = [tensor<13x21x3xi32>]} : (tensor<13x1x3xi32>) -> tensor<13x21x3xi32>
+  // CHECK: emitc.call "emitc::broadcast_in_dim"(%arg1) {args = [0 : index, dense<[0, 1, 2]> : tensor<3xi64>], template_args = [tensor<13x21x3xi32>]} : (tensor<13x1x3xi32>) -> tensor<13x21x3xi32>
   // CHECK: emitc.call "tosa::mul"(%arg0, %0) {args = [0 : index, 1 : index, 1 : i32]} : (tensor<13x21x3xi32>, tensor<13x21x3xi32>) -> tensor<13x21x3xi32>
   %0 = "tosa.mul"(%arg0, %arg1)  { shift = 1 : i32 } : (tensor<13x21x3xi32>, tensor<13x1x3xi32>) -> tensor<13x21x3xi32>
   return %0 : tensor<13x21x3xi32>
@@ -94,7 +94,7 @@ func @test_mul2(%arg0: tensor<13x21x3xi32>, %arg1: tensor<13x1x3xi32>) -> tensor
 
 // MulOp: Second operand needs to be broadcasted + expanded to two dimensions
 func @test_mul3(%arg0: tensor<21x3xi32>, %arg1: tensor<3xi32>) -> tensor<21x3xi32> {
-  // CHECK: emitc.call "emitc::broadcast_in_dim"(%arg1) {args = [dense<1> : tensor<1xi64>], template_args = [tensor<21x3xi32>]} : (tensor<3xi32>) -> tensor<21x3xi32>
+  // CHECK: emitc.call "emitc::broadcast_in_dim"(%arg1) {args = [0 : index, dense<1> : tensor<1xi64>], template_args = [tensor<21x3xi32>]} : (tensor<3xi32>) -> tensor<21x3xi32>
   // CHECK: emitc.call "tosa::mul"(%arg0, %0) {args = [0 : index, 1 : index, 3 : i32]} : (tensor<21x3xi32>, tensor<21x3xi32>) -> tensor<21x3xi32>
   %0 = "tosa.mul"(%arg0, %arg1)  { shift = 3 : i32 } : (tensor<21x3xi32>, tensor<3xi32>) -> tensor<21x3xi32>
   return %0 : tensor<21x3xi32>
@@ -102,7 +102,7 @@ func @test_mul3(%arg0: tensor<21x3xi32>, %arg1: tensor<3xi32>) -> tensor<21x3xi3
 
 // MulOp: Second operand needs to be broadcasted + expanded to three dimensions
 func @test_mul4(%arg0: tensor<13x21x3xi32>, %arg1: tensor<3xi32>) -> tensor<13x21x3xi32> {
-  // CHECK: emitc.call "emitc::broadcast_in_dim"(%arg1) {args = [dense<2> : tensor<1xi64>], template_args = [tensor<13x21x3xi32>]} : (tensor<3xi32>) -> tensor<13x21x3xi32>
+  // CHECK: emitc.call "emitc::broadcast_in_dim"(%arg1) {args = [0 : index, dense<2> : tensor<1xi64>], template_args = [tensor<13x21x3xi32>]} : (tensor<3xi32>) -> tensor<13x21x3xi32>
   // CHECK: emitc.call "tosa::mul"(%arg0, %0) {args = [0 : index, 1 : index, 1 : i32]} : (tensor<13x21x3xi32>, tensor<13x21x3xi32>) -> tensor<13x21x3xi32>
   %0 = "tosa.mul"(%arg0, %arg1)  { shift = 1 : i32 } : (tensor<13x21x3xi32>, tensor<3xi32>) -> tensor<13x21x3xi32>
   return %0 : tensor<13x21x3xi32>
@@ -110,14 +110,14 @@ func @test_mul4(%arg0: tensor<13x21x3xi32>, %arg1: tensor<3xi32>) -> tensor<13x2
 
 // MulOp: Second two dimensional operand needs to be broadcasted + expanded to four dimensions
 func @test_mul5(%arg0: tensor<2x13x21x3xi32>, %arg1: tensor<21x3xi32>) -> tensor<2x13x21x3xi32> {
-  // CHECK: emitc.call "emitc::broadcast_in_dim"(%arg1) {args = [dense<[2, 3]> : tensor<2xi64>], template_args = [tensor<2x13x21x3xi32>]} : (tensor<21x3xi32>) -> tensor<2x13x21x3xi32>
+  // CHECK: emitc.call "emitc::broadcast_in_dim"(%arg1) {args = [0 : index, dense<[2, 3]> : tensor<2xi64>], template_args = [tensor<2x13x21x3xi32>]} : (tensor<21x3xi32>) -> tensor<2x13x21x3xi32>
   // CHECK: emitc.call "tosa::mul"(%arg0, %0) {args = [0 : index, 1 : index, 5 : i32]} : (tensor<2x13x21x3xi32>, tensor<2x13x21x3xi32>) -> tensor<2x13x21x3xi32>
   %0 = "tosa.mul"(%arg0, %arg1)  { shift = 5 : i32 } : (tensor<2x13x21x3xi32>, tensor<21x3xi32>) -> tensor<2x13x21x3xi32>
   return %0 : tensor<2x13x21x3xi32>
 }
 
 func @test_sub(%arg0: tensor<13x21x1xf32>, %arg1: tensor<13x21x3xf32>) -> tensor<13x21x3xf32> {
-  // CHECK: emitc.call "emitc::broadcast_in_dim"(%arg0) {args = [dense<[0, 1, 2]> : tensor<3xi64>], template_args = [tensor<13x21x3xf32>]} : (tensor<13x21x1xf32>) -> tensor<13x21x3xf32>
+  // CHECK: emitc.call "emitc::broadcast_in_dim"(%arg0) {args = [0 : index, dense<[0, 1, 2]> : tensor<3xi64>], template_args = [tensor<13x21x3xf32>]} : (tensor<13x21x1xf32>) -> tensor<13x21x3xf32>
   // CHECK: emitc.call "tosa::sub"(%0, %arg1) {template_args = []} : (tensor<13x21x3xf32>, tensor<13x21x3xf32>) -> tensor<13x21x3xf32>
   %0 = "tosa.sub"(%arg0, %arg1) : (tensor<13x21x1xf32>, tensor<13x21x3xf32>) -> tensor<13x21x3xf32>
   return %0 : tensor<13x21x3xf32>
@@ -127,7 +127,7 @@ func @test_sub(%arg0: tensor<13x21x1xf32>, %arg1: tensor<13x21x3xf32>) -> tensor
 
 func @test_conv2d(%arg0: tensor<1x4x4x4xf32>, %arg1: tensor<8x1x1x4xf32>, %arg2: tensor<8xf32>) -> tensor<1x4x4x8xf32> {
     // CHECK: %0 = emitc.call "tosa::conv2d"(%arg0, %arg1) {args = [0 : index, 1 : index, dense<0> : tensor<4xi64>, dense<1> : tensor<2xi64>, dense<1> : tensor<2xi64>], template_args = [tensor<1x4x4x8xf32>]} : (tensor<1x4x4x4xf32>, tensor<8x1x1x4xf32>) -> tensor<1x4x4x8xf32>
-    // CHECK: %1 = emitc.call "emitc::broadcast_in_dim"(%arg2) {args = [dense<3> : tensor<1xi64>], template_args = [tensor<1x4x4x8xf32>]} : (tensor<8xf32>) -> tensor<1x4x4x8xf32>
+    // CHECK: %1 = emitc.call "emitc::broadcast_in_dim"(%arg2) {args = [0 : index, dense<3> : tensor<1xi64>], template_args = [tensor<1x4x4x8xf32>]} : (tensor<8xf32>) -> tensor<1x4x4x8xf32>
     // CHECK: %2 = emitc.call "tosa::add"(%0, %1) {template_args = []} : (tensor<1x4x4x8xf32>, tensor<1x4x4x8xf32>) -> tensor<1x4x4x8xf32>
     %0 = "tosa.conv2d"(%arg0, %arg1, %arg2) {dilation = [1, 1], pad = [0, 0, 0, 0], stride = [1, 1]} : (tensor<1x4x4x4xf32>, tensor<8x1x1x4xf32>, tensor<8xf32>) -> tensor<1x4x4x8xf32>
     return %0 : tensor<1x4x4x8xf32>

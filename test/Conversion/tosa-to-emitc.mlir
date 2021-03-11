@@ -194,6 +194,14 @@ func @test_reshape(%arg0: tensor<13x21x3xf32>) -> tensor<1x819xf32> {
   return %0 : tensor<1x819xf32>
 }
 
+func @test_transpose(%arg0: tensor<13x21x3xf32>) -> tensor<3x13x21xf32> {
+  // CHECK: %0 = "emitc.const"() {value = dense<[2, 0, 1]> : tensor<3xi32>} : () -> tensor<3xi32>
+  %0 = "tosa.const"() {value = dense<[2, 0, 1]> : tensor<3xi32>} : () -> tensor<3xi32>
+  // CHECK-NEXT: %1 = emitc.call "tosa::transpose"(%arg0, %0) {template_args = [tensor<3x13x21xf32>]} : (tensor<13x21x3xf32>, tensor<3xi32>) -> tensor<3x13x21xf32>
+  %1 = "tosa.transpose"(%arg0, %0) : (tensor<13x21x3xf32>, tensor<3xi32>) -> tensor<3x13x21xf32>
+  return %1 : tensor<3x13x21xf32>
+}
+
 func @test_relu0(%arg0: tensor<13x21x3xf32>) -> tensor<13x21x3xf32> {
   // CHECK: %0 = emitc.call "tosa::reluN"(%arg0) {args = [0 : index, 3.40282347E+38 : f32]} : (tensor<13x21x3xf32>) -> tensor<13x21x3xf32>
   %0 = "tosa.reluN"(%arg0) {max_fp = 3.40282347E+38 : f32, max_int = 0 : i64} : (tensor<13x21x3xf32>) -> tensor<13x21x3xf32>

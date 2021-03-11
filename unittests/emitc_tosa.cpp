@@ -286,4 +286,51 @@ TEST(tosa, reshape) {
   EXPECT_THAT(s3, Pointwise(Eq(), t3));
 }
 
+TEST(tosa, transpose) {
+  // clang-format off
+  Tensor2D<float, 3, 2> t0 = {1, 2,
+                              3, 4,
+                              5, 6};
+  Tensor1D<int32_t, 2> perms_i32 = {1, 0};
+  Tensor1D<int64_t, 2> perms_i64 = {1, 0};
+  Tensor1D<int64_t, 2> no_perms =  {0, 1};
+  Tensor2D<float, 2, 3> expected_result0 = {1, 3, 5,
+                                            2, 4, 6};
+  // clang-format on
+  Tensor2D<float, 2, 3> s0 =
+      tosa::transpose<Tensor2D<float, 2, 3>>(t0, perms_i32);
+  Tensor2D<float, 2, 3> s0_2 =
+      tosa::transpose<Tensor2D<float, 2, 3>>(t0, perms_i64);
+  Tensor2D<float, 3, 2> s0_3 =
+      tosa::transpose<Tensor2D<float, 3, 2>>(t0, no_perms);
+  EXPECT_THAT(s0, Pointwise(Eq(), expected_result0));
+  EXPECT_THAT(s0_2, Pointwise(Eq(), expected_result0));
+  EXPECT_THAT(s0_3, Pointwise(Eq(), t0));
+
+  // clang-format off
+  Tensor3D<float, 1, 3, 2> t1 = {1, 2,
+                                 3, 4,
+                                 5, 6};
+  Tensor1D<int32_t, 3> perms1 = {2, 0, 1};
+  Tensor3D<float, 2, 1, 3> expected_result1 = {1, 3, 5,
+                                               2, 4, 6};
+  // clang-format on
+  Tensor3D<float, 2, 1, 3> s1 =
+      tosa::transpose<Tensor3D<float, 2, 1, 3>>(t1, perms1);
+  EXPECT_THAT(s1, Pointwise(Eq(), expected_result1));
+
+  // clang-format off
+  Tensor3D<float, 2, 3, 4> t2 = {1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12,
+                                13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24};
+  Tensor1D<int32_t, 3> perms2 = {2, 0, 1};
+  Tensor3D<float, 4, 2, 3> expected_result2 = {1, 5,  9, 13, 17, 21,
+                                               2, 6, 10, 14, 18, 22,
+                                               3, 7, 11, 15, 19, 23,
+                                               4, 8, 12, 16, 20, 24};
+  // clang-format on
+  Tensor3D<float, 4, 2, 3> s2 =
+      tosa::transpose<Tensor3D<float, 4, 2, 3>>(t2, perms2);
+  EXPECT_THAT(s2, Pointwise(Eq(), expected_result2));
+}
+
 } // namespace

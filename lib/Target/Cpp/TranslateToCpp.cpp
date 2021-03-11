@@ -677,16 +677,18 @@ LogicalResult CppEmitter::emitTupleType(ArrayRef<Type> types) {
   return success();
 }
 
-LogicalResult emitc::TranslateToCpp(Operation &op, raw_ostream &os,
-                                    bool trailingSemicolon) {
-  CppEmitter emitter(os, /*restrictToC=*/false,
-                     /*forwardDeclareVariables=*/false);
+LogicalResult emitc::TranslateToCpp(Operation &op, TargetOptions targetOptions,
+                                    raw_ostream &os, bool trailingSemicolon) {
+  CppEmitter emitter(
+      os, /*restrictToC=*/false,
+      /*forwardDeclareVariables=*/targetOptions.forwardDeclareVariables);
   return emitter.emitOperation(op, trailingSemicolon);
 }
 
-LogicalResult emitc::TranslateToC(Operation &op, raw_ostream &os,
-                                  bool trailingSemicolon) {
-  CppEmitter emitter(os, /*restrictToC=*/true,
-                     /*forwardDeclareVariables=*/false);
+LogicalResult emitc::TranslateToC(Operation &op, TargetOptions targetOptions,
+                                  raw_ostream &os, bool trailingSemicolon) {
+  CppEmitter emitter(
+      os, /*restrictToC=*/true,
+      /*forwardDeclareVariables=*/targetOptions.forwardDeclareVariables);
   return emitter.emitOperation(op, trailingSemicolon);
 }

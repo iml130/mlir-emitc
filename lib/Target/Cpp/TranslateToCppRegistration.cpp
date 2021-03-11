@@ -8,6 +8,7 @@
 
 #include "emitc/Dialect/EmitC/EmitCDialect.h"
 #include "emitc/Target/Cpp.h"
+#include "emitc/Target/TranslationFlags.h"
 #include "mlir/Dialect/StandardOps/IR/Ops.h"
 #include "mlir/IR/BuiltinOps.h"
 #include "mlir/IR/Dialect.h"
@@ -17,7 +18,8 @@ using namespace mlir;
 
 static LogicalResult MlirToCppTranslateFunction(ModuleOp module,
                                                 llvm::raw_ostream &output) {
-  return emitc::TranslateToCpp(*module.getOperation(), output,
+  return emitc::TranslateToCpp(*module.getOperation(),
+                               emitc::getTargetOptionsFromFlags(), output,
                                /*trailingSemiColon=*/false);
 }
 

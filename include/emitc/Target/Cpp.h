@@ -13,6 +13,7 @@
 #ifndef EMITC_TARGET_CPP_H
 #define EMITC_TARGET_CPP_H
 
+#include "mlir/IR/BuiltinTypes.h"
 #include "mlir/IR/Value.h"
 #include "llvm/ADT/ScopedHashTable.h"
 #include "llvm/Support/raw_ostream.h"
@@ -20,6 +21,10 @@
 
 namespace mlir {
 namespace emitc {
+
+struct TargetOptions {
+  bool forwardDeclareVariables;
+};
 
 /// Convenience functions to produce interleaved output with functions returning
 /// a LogicalResult. This is different than those in STL as functions used on
@@ -149,12 +154,12 @@ private:
 
 /// Translates the given operation to C++ code. The operation or operations in
 /// the region of 'op' need almost all be in EmitC dialect.
-LogicalResult TranslateToCpp(Operation &op, raw_ostream &os,
-                             bool trailingSemicolon = false);
+LogicalResult TranslateToCpp(Operation &op, TargetOptions targetOptions,
+                             raw_ostream &os, bool trailingSemicolon = false);
 
 /// Similar to `TranslateToCpp`, but translates the given operation to C code.
-LogicalResult TranslateToC(Operation &op, raw_ostream &os,
-                           bool trailingSemicolon = false);
+LogicalResult TranslateToC(Operation &op, TargetOptions targetOptions,
+                           raw_ostream &os, bool trailingSemicolon = false);
 } // namespace emitc
 } // namespace mlir
 

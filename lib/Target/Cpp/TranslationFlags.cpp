@@ -16,8 +16,7 @@ namespace emitc {
 
 static llvm::cl::opt<bool> forwardDeclareFlag{
     "forward-declare-variables",
-    llvm::cl::desc(
-        "Forward declare all variables emitted from emitc"),
+    llvm::cl::desc("Forward declare all variables emitted from emitc"),
     llvm::cl::init(true),
 };
 

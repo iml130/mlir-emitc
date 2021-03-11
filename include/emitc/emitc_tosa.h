@@ -245,10 +245,9 @@ Dest depthwise_conv2d(Src input, Weights weights, Tensor1D<int64_t, 4> padding,
                 // with shape [filter_height, filter_width, 1, in_channels *
                 // channel_multiplier]. So we need to calculate the index
                 // using these dimensions.
-                const int weights_index =
-                    ravel_index<Weights::dim(0), Weights::dim(1), 1,
-                                Weights::dim(2) * Weights::dim(3)>(kh, kw, 0,
-                                                                   c_out);
+                const size_t weights_index = emitc::utility::ravel_index<
+                    Weights::dim(0), Weights::dim(1), 1,
+                    Weights::dim(2) * Weights::dim(3)>(kh, kw, 0, c_out);
 
                 output(n, h_out, w_out, c_out) +=
                     input(n, h_in, w_in, g) * weights[weights_index];

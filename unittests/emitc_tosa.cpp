@@ -34,6 +34,26 @@ TEST(tosa, reciprocal) {
   EXPECT_THAT(result, Pointwise(FloatNear(EPSILON), expected));
 }
 
+TEST(tosa, reluN) {
+  Tensor<float, 2, 1> t0{0.0f, 5.0f};
+  float max0 = 3.0f;
+  Tensor<float, 2, 1> expected_result0{0.0, 3.0f};
+  Tensor<float, 2, 1> s0 = tosa::reluN(t0, max0);
+
+  EXPECT_THAT(s0, Pointwise(FloatEq(), expected_result0));
+
+  Tensor<int64_t, 4, 2, 1> t1{-2, 2, -2, 3, 4, -5, 5, 5};
+  int64_t max1 = 3;
+  Tensor<int64_t, 4, 2, 1> expected_result1{0, 2, 0, 3, 3, 0, 3, 3};
+  Tensor<int64_t, 4, 2, 1> s1 = tosa::reluN(t1, max1);
+  EXPECT_THAT(s1, Pointwise(Eq(), expected_result1));
+
+  int64_t max2 = 100;
+  Tensor<int64_t, 4, 2, 1> expected_result2{0, 2, 0, 3, 4, 0, 5, 5};
+  Tensor<int64_t, 4, 2, 1> s2 = tosa::reluN(t1, max2);
+  EXPECT_THAT(s2, Pointwise(Eq(), expected_result2));
+}
+
 // Binary elementwise ops
 TEST(tosa, mul) {
   // no shift
@@ -64,6 +84,32 @@ TEST(tosa, mul) {
   };
 
   EXPECT_THAT(lambda_1d_int_shift(), Pointwise(Eq(), {0, 1, 2, 4}));
+}
+
+TEST(tosa, broadcastable_op) {
+  // In the CallOpBroadcastableConversion ops where the tensor shape of the
+  // operands don't match, a broadcast_in_dim op is inserted. This unittest
+  // verifies that procedure.
+
+  // %0 = "tosa.add"(%arg0, %arg1) : (tensor<2x1x3xf32>, tensor<1x1x3xf32>) ->
+  // tensor<2x1x3xf32>
+  Tensor<float, 2, 1, 3> t0_arg0{3, 3, 3, 3, 3, 3};
+  Tensor<float, 1, 1, 3> t0_arg1{1, 2, 3};
+  Tensor<float, 2, 1, 3> t0_arg1_broadcasted =
+      emitc::broadcast_in_dim<Tensor<float, 2, 1, 3>>(t0_arg1, {0, 1, 2});
+  EXPECT_THAT(t0_arg1_broadcasted, Pointwise(Eq(), {1, 2, 3, 1, 2, 3}));
+  tosa::add(t0_arg0,
+            t0_arg1_broadcasted); // Just make sure it compiles in this test
+
+  // %0 = "tosa.add"(%arg0, %arg1) : (tensor<2x1x3xf32>, tensor<3xf32>) ->
+  // tensor<2x1x3xf32>
+  Tensor<float, 2, 1, 3> t1_arg0{4, 4, 4, 4, 4, 4};
+  Tensor<float, 3> t1_arg1{1, 2, 3};
+  Tensor<float, 2, 1, 3> t1_arg1_broadcasted =
+      emitc::broadcast_in_dim<Tensor<float, 2, 1, 3>>(t1_arg1, {2});
+  EXPECT_THAT(t1_arg1_broadcasted, Pointwise(Eq(), {1, 2, 3, 1, 2, 3}));
+  tosa::add(t1_arg0,
+            t1_arg1_broadcasted); // Just make sure it compiles in this test
 }
 
 // Other ops
@@ -311,6 +357,53 @@ TEST(tosa, reshape) {
   Tensor3D<int, 2, 2, 2> t3 = {1, 2, 3, 4, 5, 6, 7, 8};
   Tensor1D<int, 8> s3 = tosa::reshape<Tensor1D<int, 8>>(t3);
   EXPECT_THAT(s3, Pointwise(Eq(), t3));
+}
+
+TEST(tosa, transpose) {
+  // clang-format off
+  Tensor2D<float, 3, 2> t0 = {1, 2,
+                              3, 4,
+                              5, 6};
+  Tensor1D<int32_t, 2> perms_i32 = {1, 0};
+  Tensor1D<int64_t, 2> perms_i64 = {1, 0};
+  Tensor1D<int64_t, 2> no_perms =  {0, 1};
+  Tensor2D<float, 2, 3> expected_result0 = {1, 3, 5,
+                                            2, 4, 6};
+  // clang-format on
+  Tensor2D<float, 2, 3> s0 =
+      tosa::transpose<Tensor2D<float, 2, 3>>(t0, perms_i32);
+  Tensor2D<float, 2, 3> s0_2 =
+      tosa::transpose<Tensor2D<float, 2, 3>>(t0, perms_i64);
+  Tensor2D<float, 3, 2> s0_3 =
+      tosa::transpose<Tensor2D<float, 3, 2>>(t0, no_perms);
+  EXPECT_THAT(s0, Pointwise(Eq(), expected_result0));
+  EXPECT_THAT(s0_2, Pointwise(Eq(), expected_result0));
+  EXPECT_THAT(s0_3, Pointwise(Eq(), t0));
+
+  // clang-format off
+  Tensor3D<float, 1, 3, 2> t1 = {1, 2,
+                                 3, 4,
+                                 5, 6};
+  Tensor1D<int32_t, 3> perms1 = {2, 0, 1};
+  Tensor3D<float, 2, 1, 3> expected_result1 = {1, 3, 5,
+                                               2, 4, 6};
+  // clang-format on
+  Tensor3D<float, 2, 1, 3> s1 =
+      tosa::transpose<Tensor3D<float, 2, 1, 3>>(t1, perms1);
+  EXPECT_THAT(s1, Pointwise(Eq(), expected_result1));
+
+  // clang-format off
+  Tensor3D<float, 2, 3, 4> t2 = {1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12,
+                                13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24};
+  Tensor1D<int32_t, 3> perms2 = {2, 0, 1};
+  Tensor3D<float, 4, 2, 3> expected_result2 = {1, 5,  9, 13, 17, 21,
+                                               2, 6, 10, 14, 18, 22,
+                                               3, 7, 11, 15, 19, 23,
+                                               4, 8, 12, 16, 20, 24};
+  // clang-format on
+  Tensor3D<float, 4, 2, 3> s2 =
+      tosa::transpose<Tensor3D<float, 4, 2, 3>>(t2, perms2);
+  EXPECT_THAT(s2, Pointwise(Eq(), expected_result2));
 }
 
 } // namespace

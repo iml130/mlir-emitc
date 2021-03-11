@@ -62,6 +62,14 @@ inline Src reciprocal(Src x) {
   return unary<Src>(x, f);
 }
 
+// ReluNOp
+template <typename Src, typename Limit>
+inline Src reluN(Src operand, Limit max_value) {
+  Tensor0D<Limit> min{0};
+  Tensor0D<Limit> max{max_value};
+  return emitc::clamp(min, operand, max);
+}
+
 // TanhOp
 template <typename Src>
 inline Src tanh(Src x) {
@@ -439,6 +447,37 @@ inline Dest reduce_sum(Src input, int64_t dimension) {
 template <typename Dest, typename Src>
 inline Dest reshape(Src x) {
   return emitc::reshape<Dest>(x);
+}
+
+// TransposeOp
+// Maps the perms dimension from Dest to Src
+template <typename Dest, typename Src>
+inline Dest transpose(Src operand, Tensor1D<int64_t, Src::rank()> perms) {
+  static_assert(is_tensor<Src>::value, "Expected tensor argument");
+  static_assert(is_tensor<Dest>::value, "Expected tensor result");
+
+  // Since emitc::broadcast_in_dim maps the dimensions (argument
+  // "broadcast_dimensions") from Src to Dest and tosa::transpose maps the
+  // dimensions (argument "perms") from Dest to Src, we have to invert the
+  // mapping.
+  Tensor1D<int64_t, Src::rank()> broadcast_dimensions;
+  for (size_t i = 0; i < perms.size(); ++i) {
+    auto pos = std::find(perms.begin(), perms.end(), i);
+    assert(pos != std::end(perms));
+    int64_t index = std::distance(perms.begin(), pos);
+    broadcast_dimensions[i] = index;
+  }
+  return emitc::broadcast_in_dim<Dest>(operand, broadcast_dimensions);
+}
+
+// TransposeOp allows perms to be of type int32_t or int64_t.
+template <typename Dest, typename Src>
+inline Dest transpose(Src input, Tensor1D<int32_t, Src::rank()> perms) {
+  Tensor1D<int64_t, Src::rank()> permsInt64;
+  for (size_t i = 0; i < perms.size(); ++i) {
+    permsInt64[i] = static_cast<int64_t>(perms[i]);
+  }
+  return tosa::transpose<Dest>(input, permsInt64);
 }
 
 } // namespace tosa

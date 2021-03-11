@@ -80,6 +80,42 @@ inline Src log(Src x) {
   return unary<Src>(x, f);
 }
 
+// ReluNOp
+template <typename Min, typename Src, typename Max>
+inline Src clamp(Min min, Src operand, Max max) {
+  static_assert(
+      std::is_same<Min, Src>::value ||
+          (is_tensor_of_dim<0, Min>::value &&
+           std::is_same<typename get_element_type<Src>::type,
+                        typename get_element_type<Min>::type>::value),
+      "Expected the same type for min and operand or a 0-dim tensor of the "
+      "same element type for min");
+  static_assert(
+      std::is_same<Max, Src>::value ||
+          (is_tensor_of_dim<0, Max>::value &&
+           std::is_same<typename get_element_type<Src>::type,
+                        typename get_element_type<Min>::type>::value),
+      "Expected the same type for min and operand or a 0-dim tensor of the "
+      "same element type for max");
+
+  const bool broadcast_min = !std::is_same<Min, Src>::value;
+  const bool broadcast_max = !std::is_same<Max, Src>::value;
+
+  Src result;
+  for (size_t index = 0; index < Src::size(); index++) {
+    const auto value_min = broadcast_min ? min[0] : min[index];
+    const auto value_max = broadcast_max ? max[0] : max[index];
+
+    auto value = operand[index];
+    value = value < value_min ? value_min : value;
+    value = value > value_max ? value_max : value;
+
+    result[index] = value;
+  }
+
+  return result;
+}
+
 // SqrtOp
 template <typename Src>
 inline Src sqrt(Src x) {
@@ -133,6 +169,7 @@ inline Src sub(Src x, Src y) {
 
 /// Other ops
 // BroadcastInDimOp
+// The broadcast_dimensions argument maps from Src to Dest dimensions
 template <typename Dest, typename Src>
 inline Dest
 broadcast_in_dim(Src operand,

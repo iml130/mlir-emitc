@@ -135,7 +135,7 @@ func @test_conv2d(%arg0: tensor<1x4x4x4xf32>, %arg1: tensor<8x1x1x4xf32>, %arg2:
 
 func @test_depthwise_conv2d(%arg0: tensor<1x4x5x2xf32>, %arg1: tensor<2x2x2x2xf32>, %arg2: tensor<4xf32>) -> tensor<1x3x4x4xf32> {
     // CHECK: %0 = emitc.call "tosa::depthwise_conv2d"(%arg0, %arg1) {args = [0 : index, 1 : index, dense<0> : tensor<4xi64>, dense<1> : tensor<2xi64>, dense<1> : tensor<2xi64>], template_args = [tensor<1x3x4x4xf32>]} : (tensor<1x4x5x2xf32>, tensor<2x2x2x2xf32>) -> tensor<1x3x4x4xf32>
-    // CHECK: %1 = emitc.call "emitc::broadcast_in_dim"(%arg2) {args = [dense<3> : tensor<1xi64>], template_args = [tensor<1x3x4x4xf32>]} : (tensor<4xf32>) -> tensor<1x3x4x4xf32>
+    // CHECK: %1 = emitc.call "emitc::broadcast_in_dim"(%arg2) {args = [0 : index, dense<3> : tensor<1xi64>], template_args = [tensor<1x3x4x4xf32>]} : (tensor<4xf32>) -> tensor<1x3x4x4xf32>
     // CHECK: %2 = emitc.call "tosa::add"(%0, %1) {template_args = []} : (tensor<1x3x4x4xf32>, tensor<1x3x4x4xf32>) -> tensor<1x3x4x4xf32>
     %0 = "tosa.depthwise_conv2d"(%arg0, %arg1, %arg2) {dilation = [1, 1], pad = [0, 0, 0, 0], stride = [1, 1]} : (tensor<1x4x5x2xf32>, tensor<2x2x2x2xf32>, tensor<4xf32>) -> tensor<1x3x4x4xf32>
     return %0 : tensor<1x3x4x4xf32>

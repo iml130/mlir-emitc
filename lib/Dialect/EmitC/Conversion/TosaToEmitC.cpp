@@ -336,7 +336,8 @@ createBroadcastOpIfNeeded(SrcOp &srcOp, ArrayRef<Value> operands,
           RankedTensorType::get({static_cast<int64_t>(operandRank)},
                                 IntegerType::get(srcOp.getContext(), 64));
       ArrayAttr broadcastArgs = rewriter.getArrayAttr(
-          DenseIntElementsAttr::get(tensorType, broadcastIndices));
+          {rewriter.getIndexAttr(0),
+           DenseIntElementsAttr::get(tensorType, broadcastIndices)});
 
       ArrayAttr templateBroadcastArgs =
           rewriter.getArrayAttr({TypeAttr::get(srcOp.getType())});

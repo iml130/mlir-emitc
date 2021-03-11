@@ -109,26 +109,26 @@ public:
 };
 
 template <typename SrcOp>
-class Conv2DOpConversion : public OpConversionPattern<SrcOp> {
+class GenericConvOpConversion : public OpConversionPattern<SrcOp> {
   using OpConversionPattern<SrcOp>::OpConversionPattern;
 
 public:
-  Conv2DOpConversion(MLIRContext *ctx, StringRef funcName)
+  GenericConvOpConversion(MLIRContext *ctx, StringRef funcName)
       : OpConversionPattern<SrcOp>(ctx), funcName(funcName) {}
 
 private:
   LogicalResult
-  matchAndRewrite(SrcOp conv2dOp, ArrayRef<Value> operands,
+  matchAndRewrite(SrcOp convOp, ArrayRef<Value> operands,
                   ConversionPatternRewriter &rewriter) const override {
     // fail if quantization is requested
-    if (conv2dOp.quantization_info().hasValue()) {
-      return conv2dOp.emitError(
-          "Quantization of tosa.conv2d is currently not supported.");
+    if (convOp.quantization_info().hasValue()) {
+      return convOp.emitError("Quantization for " + convOp.getOperationName() +
+                              " is currently not supported.");
     }
 
-    // tosa conv2D supports adding a bias after the actual convolution. We will
-    // split the convolution with bias into two operations: the convolution (as
-    // an emitc call op) and the addition of the bias (as an tosa.add op).
+    // All tosa conv* ops support adding a bias after the actual convolution. We
+    // will split the convolution with bias into two operations: the convolution
+    // (as an emitc call op) and the addition of the bias (as an tosa.add op).
     // Therefore we remove bias from the operands of the convolution.
     operands = operands.drop_back();
 
@@ -138,25 +138,25 @@ private:
     ArrayAttr args = rewriter.getArrayAttr({
       rewriter.getIndexAttr(0),
       rewriter.getIndexAttr(1),
-      getI64ElementsAttr(conv2dOp.pad(), conv2dOp.getContext()),
-      getI64ElementsAttr(conv2dOp.stride(), conv2dOp.getContext()),
-      getI64ElementsAttr(conv2dOp.dilation(), conv2dOp.getContext()),
+      getI64ElementsAttr(convOp.pad(), convOp.getContext()),
+      getI64ElementsAttr(convOp.stride(), convOp.getContext()),
+      getI64ElementsAttr(convOp.dilation(), convOp.getContext()),
     });
     // clang-format on
 
     ArrayAttr templateArgs =
-        rewriter.getArrayAttr({TypeAttr::get(conv2dOp.getResult().getType())});
+        rewriter.getArrayAttr({TypeAttr::get(convOp.getResult().getType())});
 
-    // create conv2dOp
+    // create convOp
     auto emitcConvOp =
-        rewriter.create<emitc::CallOp>(conv2dOp->getLoc(), conv2dOp.getType(),
+        rewriter.create<emitc::CallOp>(convOp->getLoc(), convOp.getType(),
                                        callee, args, templateArgs, operands);
 
     auto output = emitcConvOp.getResult(0);
     auto tosaAddOp = rewriter.create<tosa::AddOp>(
-        conv2dOp.getLoc(), output.getType(), output, conv2dOp.bias());
+        convOp.getLoc(), output.getType(), output, convOp.bias());
 
-    rewriter.replaceOp(conv2dOp, {tosaAddOp.getResult()});
+    rewriter.replaceOp(convOp, {tosaAddOp.getResult()});
 
     return success();
   }
@@ -495,8 +495,8 @@ void populateTosaToEmitcPatterns(MLIRContext *ctx,
   patterns.insert<CallOpBroadcastableConversion<tosa::SubOp>>(ctx, "tosa::sub");
 
   // Other ops
-  patterns.insert<Conv2DOpConversion<tosa::Conv2DOp>>(ctx, "tosa::conv2d");
-  patterns.insert<Conv2DOpConversion<tosa::DepthwiseConv2DOp>>(
+  patterns.insert<GenericConvOpConversion<tosa::Conv2DOp>>(ctx, "tosa::conv2d");
+  patterns.insert<GenericConvOpConversion<tosa::DepthwiseConv2DOp>>(
       ctx, "tosa::depthwise_conv2d");
   patterns.insert<FullyConnectedOpConversion>(ctx, "tosa::fully_connected");
   patterns.insert<MatMulOpConversion>(ctx);

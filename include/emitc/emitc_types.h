@@ -22,6 +22,8 @@
 #include <numeric>
 #include <vector>
 
+#include "emitc_utility.h"
+
 namespace detail {
 template <size_t N>
 constexpr size_t sum(const std::array<size_t, N> arr) {
@@ -115,31 +117,10 @@ public:
 
   static constexpr std::array<size_t, rank()> shape() { return {Shape...}; }
 
-  static constexpr size_t size() {
-    constexpr std::array<size_t, rank()> s = {Shape...};
-
-    size_t result = 1;
-    for (size_t i = 0; i < rank(); ++i) {
-      result *= s[i];
-    }
-    return result;
-  }
+  static constexpr size_t size() { return emitc::utility::size<Shape...>(); }
 
   static constexpr std::array<size_t, rank()> strides() {
-    std::array<size_t, rank()> result = {};
-    constexpr std::array<size_t, rank()> s = {Shape...};
-
-    if (rank() == 0) {
-      return result;
-    }
-
-    result[rank() - 1] = 1;
-
-    for (size_t i = rank() - 1; i > 0; i--) {
-      result[i - 1] = result[i] * s[i];
-    }
-
-    return result;
+    return emitc::utility::strides<Shape...>();
   }
 
   std::vector<std::array<size_t, rank()>>
@@ -199,32 +180,11 @@ public:
   }
 
   constexpr size_t ravel_index(std::array<size_t, rank()> indices) {
-    for (size_t i = 0; i < rank(); ++i) {
-      assert(indices[i] < dim(i));
-    }
-
-    std::array<size_t, rank()> s = strides();
-
-    size_t result = 0;
-    for (size_t i = 0; i < indices.size(); ++i) {
-      result += indices[i] * s[i];
-    }
-
-    return result;
+    return emitc::utility::ravel_index<Shape...>(indices);
   }
 
   constexpr std::array<size_t, rank()> unravel_index(size_t index) {
-    assert(index < size());
-
-    std::array<size_t, rank()> s = strides();
-
-    std::array<size_t, rank()> result = {};
-    for (size_t i = 0; i < rank(); ++i) {
-      result[i] = index / s[i];
-      index = index % s[i];
-    }
-
-    return result;
+    return emitc::utility::unravel_index<Shape...>(index);
   }
 
 private:

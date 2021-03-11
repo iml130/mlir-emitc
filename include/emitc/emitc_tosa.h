@@ -186,6 +186,96 @@ Dest conv2d(Src input, Weights weights, Tensor1D<int64_t, 4> padding,
   return output;
 }
 
+// DepthwiseConv2DOp
+template <typename Dest, typename Src, typename Weights>
+Dest depthwise_conv2d(Src input, Weights weights, Tensor1D<int64_t, 4> padding,
+                      Tensor1D<int64_t, 2> stride,
+                      Tensor1D<int64_t, 2> dilation) {
+  // Input is [N,H_IN,W_IN,C_IN], weights
+  // are [K_H,K_W,C_IN,M] and output is [N,H,W,C_IN*M].
+  static_assert(is_tensor_of_dim<4, Src>::value,
+                "Expected 4 dimensional input");
+  static_assert(is_tensor_of_dim<4, Dest>::value,
+                "Expected 4 dimensional output");
+  static_assert(is_tensor_of_dim<4, Weights>::value,
+                "Expected 4 dimensional weights");
+
+  // Check dimensions
+  static_assert(Src::dim(3) == Weights::dim(2),
+                "Input channels must equal weights channels");
+  static_assert(Src::dim(0) == Dest::dim(0), "Batch sizes must be equal");
+  static_assert(Dest::dim(3) % Src::dim(3) == 0,
+                "Output channels need to be a multiple of input channels");
+  static_assert(
+      Dest::dim(3) == Src::dim(3) * Weights::dim(3),
+      "Output channels size must be input channels times channel multiplier");
+
+  assert(stride[0] > 0);
+  assert(stride[1] > 0);
+
+  assert(dilation[0] == 1);
+  assert(dilation[1] == 1);
+
+  const int N = input.dim(0);
+  const int H_IN = input.dim(1);
+  const int W_IN = input.dim(2);
+  const int C_IN = input.dim(3);
+
+  Dest output;
+
+  const int K_H = weights.dim(0);
+  const int K_W = weights.dim(1);
+  const int M = weights.dim(3);
+
+  const int S_H = stride[0];
+  const int S_W = stride[1];
+
+  const int pt = padding[0];
+  const int pb = padding[1];
+  const int pl = padding[2];
+  const int pr = padding[3];
+
+  const int H_PAD = pt + H_IN + pb;
+  const int W_PAD = pl + W_IN + pr;
+
+  // Convolution
+  for (int n = 0; n < N; ++n) {
+    for (int h_pad = 0; h_pad < H_PAD - K_H + 1; h_pad += S_H) {
+      for (int w_pad = 0; w_pad < W_PAD - K_W + 1; w_pad += S_W) {
+        for (int kh = 0; kh < K_H; ++kh) {
+          for (int kw = 0; kw < K_W; ++kw) {
+            for (int c_in = 0; c_in < C_IN; ++c_in) {
+              for (int m = 0; m < M; ++m) {
+                const int h_out = h_pad / S_H;
+                const int w_out = w_pad / S_W;
+                const int c_out = c_in * M + m;
+                const int h_in = h_pad - pt + kh;
+                const int w_in = w_pad - pl + kw;
+
+                if (h_in < 0 || h_in >= H_IN || w_in < 0 || w_in >= W_IN)
+                  continue;
+
+                // for depthwise convolution we interpret weights as a tensor
+                // with shape [filter_height, filter_width, 1, in_channels *
+                // channel_multiplier]. So we need to calculate the index
+                // using these dimensions.
+                const size_t weights_index = emitc::utility::ravel_index<
+                    Weights::dim(0), Weights::dim(1), 1,
+                    Weights::dim(2) * Weights::dim(3)>(kh, kw, 0, c_out);
+
+                output(n, h_out, w_out, c_out) +=
+                    input(n, h_in, w_in, c_in) * weights[weights_index];
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  return output;
+}
+
 // FullyConnectedOp
 template <typename Dest, typename Src, typename Weights, typename Bias>
 Dest fully_connected(Src input, Weights weights, Bias bias) {

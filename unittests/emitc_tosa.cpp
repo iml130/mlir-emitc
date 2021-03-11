@@ -160,6 +160,53 @@ TEST(tosa, conv2d) {
   }
 }
 
+TEST(tosa, depthwise_conv2d) {
+  {
+    // test for channel_multiplier=1
+    using InputType = Tensor4D<float, 1, 4, 5, 2>;  // N H W C
+    using WeightType = Tensor4D<float, 2, 2, 2, 1>; // KH KW CIN M
+    using ResultType = Tensor4D<float, 1, 3, 4, 2>; // N H W CXM
+    InputType input{1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14,
+                    15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28,
+                    29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40};
+    WeightType weights{1, 2, 3, 4, 5, 6, 7, 8};
+    ResultType expected_result{156, 204, 188, 244, 220, 284, 252, 324,
+                               316, 404, 348, 444, 380, 484, 412, 524,
+                               476, 604, 508, 644, 540, 684, 572, 724};
+
+    Tensor1D<int64_t, 4> padding{0, 0, 0, 0}; // {pt, pb, pl, pr}
+    Tensor1D<int64_t, 2> dilation{1, 1};
+    Tensor1D<int64_t, 2> stride{1, 1};
+
+    ResultType result = tosa::depthwise_conv2d<ResultType>(
+        input, weights, padding, stride, dilation);
+    EXPECT_THAT(result, Pointwise(FloatNear(EPSILON), expected_result));
+  }
+  {
+    // test for channel_multiplier=2
+    using InputType = Tensor4D<float, 1, 4, 5, 2>;  // N H W C
+    using WeightType = Tensor4D<float, 2, 2, 2, 2>; // KH KW CIN M
+    using ResultType = Tensor4D<float, 1, 3, 4, 4>; // N H W CXM
+    InputType input{1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14,
+                    15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28,
+                    29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40};
+    WeightType weights{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
+    ResultType expected_result{
+        284, 312,  376,  408,  340, 376,  448,  488,  396,  440,  520,  568,
+        452, 504,  592,  648,  564, 632,  736,  808,  620,  696,  808,  888,
+        676, 760,  880,  968,  732, 824,  952,  1048, 844,  952,  1096, 1208,
+        900, 1016, 1168, 1288, 956, 1080, 1240, 1368, 1012, 1144, 1312, 1448};
+
+    Tensor1D<int64_t, 4> padding{0, 0, 0, 0}; // {pt, pb, pl, pr}
+    Tensor1D<int64_t, 2> dilation{1, 1};
+    Tensor1D<int64_t, 2> stride{1, 1};
+
+    ResultType result = tosa::depthwise_conv2d<ResultType>(
+        input, weights, padding, stride, dilation);
+    EXPECT_THAT(result, Pointwise(FloatNear(EPSILON), expected_result));
+  }
+}
+
 TEST(tosa, fully_connected) {
   using InputType = Tensor2D<float, 2, 5>;  // N CIN
   using WeightType = Tensor2D<float, 2, 5>; // COUT CIN

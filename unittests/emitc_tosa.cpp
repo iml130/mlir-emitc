@@ -118,7 +118,7 @@ TEST(tosa, depthwise_conv2d) {
   {
     // test for channel_multiplier=1
     using InputType = Tensor4D<float, 1, 4, 5, 2>;  // N H W C
-    using WeightType = Tensor4D<float, 2, 2, 1, 2>; // KH KW CIN M
+    using WeightType = Tensor4D<float, 2, 2, 2, 1>; // KH KW CIN M
     using ResultType = Tensor4D<float, 1, 3, 4, 2>; // N H W CXM
     InputType input{1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14,
                     15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28,

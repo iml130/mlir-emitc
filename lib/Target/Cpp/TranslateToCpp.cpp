@@ -28,29 +28,35 @@ using llvm::formatv;
 static LogicalResult printConstantOp(CppEmitter &emitter,
                                      ConstantOp constantOp) {
   auto &os = emitter.ostream();
-  if (failed(emitter.emitVariableDeclaration(
-          constantOp.getOperation()->getResult(0),
-          /*trailingSemicolon=*/false)))
-    return failure();
+  auto result = constantOp.getOperation()->getResult(0);
+  auto value = constantOp.value();
 
-  // Add braces for number literals only to avoid double brace intialization for
-  // tensors.
-  auto value = constantOp.getValue();
-  bool emitBraces = value.isa<FloatAttr>() || value.isa<IntegerAttr>();
+  // Add braces for non-tensor types only to avoid double brace intialization
+  // for tensors.
+  bool braceInitialization =
+      !emitter.restrictedToC() && !emitter.forwardDeclaredVariables() &&
+      !constantOp.getResult().getType().isa<TensorType>();
 
-  // Replace curly braces with `=` if restricted to C
-  if (emitter.restrictedToC() && emitBraces) {
-    emitBraces = false;
-    os << " = ";
+  // If variables are forward declared emit an assignment
+  if (emitter.forwardDeclaredVariables()) {
+    if (failed(emitter.emitVariableAssignment(result)))
+      return failure();
+  } else {
+    if (failed(emitter.emitVariableDeclaration(result,
+                                               /*trailingSemicolon=*/false)))
+      return failure();
+    if (!braceInitialization) {
+      os << " = ";
+    }
   }
 
-  if (emitBraces)
+  if (braceInitialization)
     os << "{";
 
-  if (failed(emitter.emitAttribute(constantOp.getValue())))
+  if (failed(emitter.emitAttribute(value)))
     return constantOp.emitError("unable to emit constant value");
 
-  if (emitBraces)
+  if (braceInitialization)
     os << "}";
 
   return success();
@@ -58,38 +64,45 @@ static LogicalResult printConstantOp(CppEmitter &emitter,
 
 static LogicalResult printConstOp(CppEmitter &emitter, ConstOp constOp) {
   auto &os = emitter.ostream();
-  if (failed(
-          emitter.emitVariableDeclaration(constOp.getOperation()->getResult(0),
-                                          /*trailingSemicolon=*/false)))
-    return failure();
-
-  // Add braces for number literals only to avoid double brace intialization for
-  // tensors.
+  auto result = constOp.getOperation()->getResult(0);
   auto value = constOp.value();
-  bool emitBraces = value.isa<FloatAttr>() || value.isa<IntegerAttr>();
 
-  // Add braces for non empty StringAttr
-  if (auto sAttr = value.dyn_cast<StringAttr>()) {
-    if (sAttr.getValue().empty()) {
-      emitBraces = false;
-    } else {
-      emitBraces = true;
+  // Add braces for non-tensor types only to avoid double brace intialization
+  // for tensors.
+  bool braceInitialization = !emitter.restrictedToC() &&
+                             !emitter.forwardDeclaredVariables() &&
+                             !constOp.getResult().getType().isa<TensorType>();
+
+  // If variables are forward declared emit an assignment
+  if (emitter.forwardDeclaredVariables()) {
+    if (auto sAttr = value.dyn_cast<StringAttr>()) {
+      if (sAttr.getValue().empty())
+        return success();
+    }
+    if (failed(emitter.emitVariableAssignment(result)))
+      return failure();
+  } else {
+    if (failed(emitter.emitVariableDeclaration(result,
+                                               /*trailingSemicolon=*/false)))
+      return failure();
+    if (auto sAttr = value.dyn_cast<StringAttr>()) {
+      if (sAttr.getValue().empty()) {
+        os << ";";
+        return success();
+      }
+    }
+    if (!braceInitialization) {
+      os << " = ";
     }
   }
 
-  // Replace curly braces with `=` if restricted to C
-  if (emitter.restrictedToC() && emitBraces) {
-    emitBraces = false;
-    os << " = ";
-  }
-
-  if (emitBraces)
+  if (braceInitialization)
     os << "{";
 
   if (failed(emitter.emitAttribute(value)))
     return constOp.emitError("unable to emit constant value");
 
-  if (emitBraces)
+  if (braceInitialization)
     os << "}";
 
   return success();
@@ -355,6 +368,17 @@ static LogicalResult printFunction(CppEmitter &emitter, FuncOp functionOp) {
     return failure();
   os << ") {\n";
 
+  if (emitter.forwardDeclaredVariables()) {
+    for (Operation &op : functionOp.front()) {
+      for (auto result : op.getResults()) {
+        if (failed(emitter.emitVariableDeclaration(
+                result, /*trailingSemicolon=*/true))) {
+          return op.emitError() << "Unable to declare result variable for op";
+        }
+      }
+    }
+  }
+
   for (Operation &op : functionOp.front()) {
     if (failed(emitter.emitOperation(op)))
       return failure();
@@ -530,6 +554,15 @@ CppEmitter::emitOperandsAndAttributes(Operation &op,
     return success();
   };
   return interleaveCommaWithError(op.getAttrs(), os, emitNamedAttribute);
+}
+
+LogicalResult CppEmitter::emitVariableAssignment(OpResult result) {
+  if (!hasValueInScope(result)) {
+    return result.getDefiningOp()->emitError(
+        "result variable for the operation has not been declared.");
+  }
+  os << getOrCreateName(result) << " = ";
+  return success();
 }
 
 LogicalResult CppEmitter::emitVariableDeclaration(OpResult result,

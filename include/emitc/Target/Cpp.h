@@ -86,6 +86,9 @@ struct CppEmitter {
   /// the array size.
   LogicalResult emitTupleType(ArrayRef<Type> types);
 
+  /// Emits an assignment for a variable which has been declared previously.
+  LogicalResult emitVariableAssignment(OpResult result);
+
   /// Emits a variable declaration for a result of an operation.
   LogicalResult emitVariableDeclaration(OpResult result,
                                         bool trailingSemicolon);

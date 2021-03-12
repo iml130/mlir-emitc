@@ -10,8 +10,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef EMITC_EMITC_UTILITIES_H
-#define EMITC_EMITC_UTILITIES_H
+#ifndef EMITC_EMITC_UTILITY_H
+#define EMITC_EMITC_UTILITY_H
 
 #include <array>
 #include <cassert>
@@ -90,4 +90,5 @@ constexpr std::array<size_t, sizeof...(Shape)> unravel_index(size_t index) {
 
 } // namespace utility
 } // namespace emitc
-#endif // EMITC_EMITC_UTILITIES_H
+
+#endif // EMITC_EMITC_UTILITY_H

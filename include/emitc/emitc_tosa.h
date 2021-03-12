@@ -463,13 +463,13 @@ inline Dest pad(Src operand, Padding padding) {
                 "Dimension 1 of padding must equal source rank");
   static_assert(Padding::dim(1) == 2, "Dimension 2 of padding is must be 2");
 
-  // this check is not needed in a conversion pipeline since this would be
-  // already illegal IR. Might be helpful for unittests, ect.
+  // This check is not needed in a conversion pipeline since this would be
+  // already illegal IR. Might be helpful for unittests, etc.
   static_assert(std::is_same<ET_Padding, int32_t>::value ||
                     std::is_same<ET_Padding, int64_t>::value,
                 "Padding element type must be i32 or i64");
 
-  // create arguments for emitc::pad
+  // Create arguments for emitc::pad
   Tensor<int64_t, Src::rank()> edge_padding_low;
   Tensor<int64_t, Src::rank()> edge_padding_high;
 
@@ -478,7 +478,7 @@ inline Dest pad(Src operand, Padding padding) {
     edge_padding_high(i) = padding(i, 1);
   }
 
-  // fill with zeros
+  // Fill with zeros
   Tensor<int64_t, Src::rank()> interior_padding;
   std::fill(interior_padding.begin(), interior_padding.end(), 0);
 

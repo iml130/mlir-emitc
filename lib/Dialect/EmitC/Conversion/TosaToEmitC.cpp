@@ -529,9 +529,9 @@ private:
 
     StringAttr callee = rewriter.getStringAttr("tosa::pad");
 
-    // No arguments! Since the pad itself is an operand we have to handle
+    // No arguments! Pad itself is an operand and not an argument. Therefore, we have to handle
     // any conversion in tosa::pad.
-    ArrayAttr args = rewriter.getArrayAttr({});
+    ArrayAttr args;
 
     Type resultType = padOp.output().getType();
     ArrayAttr templateArgs = rewriter.getArrayAttr({TypeAttr::get(resultType)});

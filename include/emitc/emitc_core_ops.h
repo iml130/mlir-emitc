@@ -253,7 +253,7 @@ inline Dest reshape(Src x) {
 }
 
 // PadOp
-// TODO support negative edge padding
+// TODO: Add support for negative edge padding
 template <typename Dest, typename Src>
 inline Dest pad(Src operand,
                 Tensor<typename get_element_type<Src>::type> padding_value,

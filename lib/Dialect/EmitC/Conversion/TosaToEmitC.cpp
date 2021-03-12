@@ -243,12 +243,10 @@ private:
     SmallVector<Attribute, 2> args_;
     args_.push_back(rewriter.getIndexAttr(0));
 
-    // Since tosa.reluN has two max attribute types for float and integer
-    // values, we have to determine to which max attribute we have to clamp to.
-    // We also need to adjust the max attribute type bit width, such that they
-    // match the operand's element type, because TOSA specifies the max
-    // attributes to be exact i64 or f32, regardless of the operand's element
-    // type bit width.
+    // TOSA specifies the max attributes to be either exact i64 or f32,
+    // regardless of the operand's element type. So we need to make sure that
+    // the max attribute type match the operand's element type and it's bit
+    // width.
     auto elementType =
         operands[0].getType().cast<RankedTensorType>().getElementType();
     if (elementType.isa<IntegerType>()) {

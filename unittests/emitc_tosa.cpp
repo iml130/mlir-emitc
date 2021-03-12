@@ -359,6 +359,53 @@ TEST(tosa, reshape) {
   EXPECT_THAT(s3, Pointwise(Eq(), t3));
 }
 
+TEST(tosa, pad) {
+  // clang-format off
+  Tensor<int32_t, 2, 3> operand0{1, 2, 3,
+                                 4, 5, 6};
+  Tensor<int32_t, 2, 2, 3> operand1{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+
+  Tensor<int32_t, 2, 2> padding0{0, 1,
+                                 1, 2};
+  Tensor<int32_t, 3, 2> padding1_0{0, 0,
+                                   0, 0,
+                                   0, 0};
+  Tensor<int32_t, 3, 2> padding1_1{1, 1,
+                                   1, 1,
+                                   1, 1};
+  Tensor<int32_t, 3, 2> padding1_2{1, 0,
+                                   0, 1,
+                                   1, 0};
+  // clang-format on
+
+  Tensor<int32_t, 3, 6> expected_result0{0, 1, 2, 3, 0, 0, 0, 4, 5,
+                                         6, 0, 0, 0, 0, 0, 0, 0, 0};
+  Tensor<int32_t, 2, 2, 3> expected_result1_0{1, 2, 3, 4,  5,  6,
+                                              7, 8, 9, 10, 11, 12};
+  Tensor<int32_t, 4, 4, 5> expected_result1_1{
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0,  0,  0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 1, 2, 3, 0, 0, 4,  5,  6,  0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 7, 8, 9, 0, 0, 10, 11, 12, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0,  0,  0, 0, 0, 0, 0, 0};
+  Tensor<int32_t, 3, 3, 4> expected_result1_2{
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0,  1,  2, 3, 0, 4,
+      5, 6, 0, 0, 0, 0, 0, 7, 8, 9, 0, 10, 11, 12, 0, 0, 0, 0};
+
+  Tensor<int32_t, 3, 6> result0 =
+      tosa::pad<Tensor<int32_t, 3, 6>>(operand0, padding0);
+  Tensor<int32_t, 2, 2, 3> result1_0 =
+      tosa::pad<Tensor<int32_t, 2, 2, 3>>(operand1, padding1_0);
+  Tensor<int32_t, 4, 4, 5> result1_1 =
+      tosa::pad<Tensor<int32_t, 4, 4, 5>>(operand1, padding1_1);
+  Tensor<int32_t, 3, 3, 4> result1_2 =
+      tosa::pad<Tensor<int32_t, 3, 3, 4>>(operand1, padding1_2);
+
+  EXPECT_THAT(result0, Pointwise(Eq(), expected_result0));
+  EXPECT_THAT(result1_0, Pointwise(Eq(), expected_result1_0));
+  EXPECT_THAT(result1_1, Pointwise(Eq(), expected_result1_1));
+  EXPECT_THAT(result1_2, Pointwise(Eq(), expected_result1_2));
+}
+
 TEST(tosa, transpose) {
   // clang-format off
   Tensor2D<float, 3, 2> t0 = {1, 2,

@@ -31,4 +31,5 @@ The table below shows the supported TOSA ops.
 | reduce_prod           | :heavy_check_mark: | |
 | reduce_sum            | :heavy_check_mark: | |
 | reshape               | :heavy_check_mark: | |
+| pad                   | :white_check_mark: | Quantization not supported |
 | transpose             | :heavy_check_mark: | |

@@ -449,6 +449,43 @@ inline Dest reshape(Src x) {
   return emitc::reshape<Dest>(x);
 }
 
+// PadOp
+template <typename Dest, typename Src, typename Padding>
+inline Dest pad(Src operand, Padding padding) {
+  using ET_Padding = typename get_element_type<Padding>::type;
+
+  static_assert(is_tensor<Dest>::value, "Expected tensor result");
+  static_assert(is_tensor<Src>::value, "Expected tensor argument");
+  static_assert(is_tensor<Padding>::value, "Expected tensor argument");
+
+  static_assert(Padding::rank() == 2, "Padding must have rank 2");
+  static_assert(Padding::dim(0) == Src::rank(),
+                "Dimension 1 of padding must equal source rank");
+  static_assert(Padding::dim(1) == 2, "Dimension 2 of padding is must be 2");
+
+  // this check is not needed in a conversion pipeline since this would be
+  // already illegal IR. Might be helpful for unittests, ect.
+  static_assert(std::is_same<ET_Padding, int32_t>::value ||
+                    std::is_same<ET_Padding, int64_t>::value,
+                "Padding element type must be i32 or i64");
+
+  // create arguments for emitc::pad
+  Tensor<int64_t, Src::rank()> edge_padding_low;
+  Tensor<int64_t, Src::rank()> edge_padding_high;
+
+  for (unsigned int i = 0; i < padding.dim(0); ++i) {
+    edge_padding_low(i) = padding(i, 0);
+    edge_padding_high(i) = padding(i, 1);
+  }
+
+  // fill with zeros
+  Tensor<int64_t, Src::rank()> interior_padding;
+  std::fill(interior_padding.begin(), interior_padding.end(), 0);
+
+  return emitc::pad<Dest>(operand, {0}, edge_padding_low, edge_padding_high,
+                          interior_padding);
+}
+
 // TransposeOp
 // Maps the perms dimension from Dest to Src
 template <typename Dest, typename Src>

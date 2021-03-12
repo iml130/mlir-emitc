@@ -94,7 +94,7 @@ inline Src clamp(Min min, Src operand, Max max) {
       std::is_same<Max, Src>::value ||
           (is_tensor_of_dim<0, Max>::value &&
            std::is_same<typename get_element_type<Src>::type,
-                        typename get_element_type<Min>::type>::value),
+                        typename get_element_type<Max>::type>::value),
       "Expected the same type for min and operand or a 0-dim tensor of the "
       "same element type for max");
 

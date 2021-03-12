@@ -377,12 +377,11 @@ TEST(tosa, pad) {
   Tensor<int32_t, 3, 2> padding1_2{1, 0,
                                    0, 1,
                                    1, 0};
-  // clang-format on
 
   Tensor<int32_t, 3, 6> expected_result0{0, 1, 2, 3, 0, 0,
                                          0, 4, 5, 6, 0, 0,
                                          0, 0, 0, 0, 0, 0};
-  Tensor<int32_t, 2, 2, 3> expected_result1_0{1, 2, 3, 4,   5,  6,
+  Tensor<int32_t, 2, 2, 3> expected_result1_0{1, 2, 3,  4,  5,  6,
                                               7, 8, 9, 10, 11, 12};
   Tensor<int32_t, 4, 4, 5> expected_result1_1{
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0,  0,  0,  0, 0, 0, 0, 0, 0,

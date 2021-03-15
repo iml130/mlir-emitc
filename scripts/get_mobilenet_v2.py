@@ -35,12 +35,10 @@ def main():
         default="mobilenet_v2.h5",
         help="Output file",
     )
-    parser.add_argument(
-        "--fake-weights",
-        action='store_true',
-        default=False,
-        help="Sets all weights to 0.5"
-    )
+    parser.add_argument("--fake-weights",
+                        action='store_true',
+                        default=False,
+                        help="Sets all weights to 0.5")
     args = parser.parse_args()
 
     model = MobileNetV2(weights='imagenet')

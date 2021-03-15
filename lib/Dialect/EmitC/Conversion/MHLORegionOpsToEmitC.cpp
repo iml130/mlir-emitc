@@ -15,8 +15,8 @@
 #include "emitc/Dialect/EmitC/EmitCDialect.h"
 #include "emitc/Dialect/EmitC/Passes.h"
 #include "mlir-hlo/Dialect/mhlo/IR/hlo_ops.h"
-#include "mlir/IR/BuiltinOps.h"
 #include "mlir/IR/BlockAndValueMapping.h"
+#include "mlir/IR/BuiltinOps.h"
 #include "mlir/Pass/Pass.h"
 
 namespace mlir {
@@ -24,8 +24,8 @@ namespace emitc {
 
 namespace {
 
-/// Common functions
-/// Adopted from mlir-hlo
+/// Common functions.
+/// Adopted from mlir-hlo.
 DenseIntElementsAttr i64ElementsAttr(int64_t value, size_t count,
                                      MLIRContext *ctx) {
   RankedTensorType ty = RankedTensorType::get({static_cast<int64_t>(count)},

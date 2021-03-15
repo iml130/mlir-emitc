@@ -24,8 +24,8 @@ namespace emitc {
 
 namespace {
 
-/// Common functions
-/// Adopted from mlir-hlo
+/// Common functions.
+/// Adopted from mlir-hlo.
 DenseIntElementsAttr i64ElementsAttr(int64_t value, size_t count,
                                      MLIRContext *ctx) {
   RankedTensorType ty = RankedTensorType::get({static_cast<int64_t>(count)},
@@ -41,6 +41,7 @@ SmallVector<Attribute, 2> indexSequence(int64_t n, MLIRContext *ctx) {
       }));
 }
 
+/// Convert `mhlo.constant` into an `emitc.const` operation.
 class ConstOpConversion : public OpRewritePattern<mhlo::ConstOp> {
 public:
   using OpRewritePattern<mhlo::ConstOp>::OpRewritePattern;
@@ -53,6 +54,7 @@ public:
   }
 };
 
+/// Convert `mhlo.batch_norm_inference` into an `emitc.const` operation.
 class BatchNormInferenceOpConversion
     : public OpConversionPattern<mhlo::BatchNormInferenceOp> {
 
@@ -88,6 +90,7 @@ private:
   }
 };
 
+/// Convert `mhlo.broadcast_in_dim` into an `emitc.call` operation.
 class BroadcastInDimOpConversion
     : public OpConversionPattern<mhlo::BroadcastInDimOp> {
 
@@ -120,6 +123,7 @@ private:
   }
 };
 
+/// Convert `mhlo.concatenate` into an `emitc.call` operation.
 class ConcatenateOpConversion
     : public OpConversionPattern<mhlo::ConcatenateOp> {
 
@@ -147,6 +151,7 @@ private:
   }
 };
 
+/// Convert `mhlo.convolution` into an `emitc.call` operation.
 class ConvOpConversion : public OpConversionPattern<mhlo::ConvOp> {
 
 public:
@@ -200,6 +205,7 @@ private:
   }
 };
 
+/// Convert a common `mhlo` operation into an `emitc.call` operation.
 template <typename SrcOp>
 class CallOpConversion : public OpConversionPattern<SrcOp> {
   using OpConversionPattern<SrcOp>::OpConversionPattern;
@@ -242,12 +248,13 @@ private:
   }
 
   StringRef funcName;
-  // If set, use the result type of the operation as template parameter
+  // If set, use the result type of the operation as template parameter.
   bool explicitResultType;
-  // If set, use the operand types as (additional) template parameters
+  // If set, use the operand types as (additional) template parameters.
   bool explicitOperandTypes;
 };
 
+/// Convert `mhlo.compare` into an `emitc.call` operation.
 class CompareOpConversion : public OpConversionPattern<mhlo::CompareOp> {
   using OpConversionPattern<mhlo::CompareOp>::OpConversionPattern;
 
@@ -288,6 +295,7 @@ private:
   }
 };
 
+/// Convert `mhlo.get_tuple_element` into an `emitc.call` operation.
 class GetTupleElementOpConversion
     : public OpConversionPattern<mhlo::GetTupleElementOp> {
   using OpConversionPattern<mhlo::GetTupleElementOp>::OpConversionPattern;
@@ -317,6 +325,7 @@ private:
   }
 };
 
+/// Convert `mhlo.slice` into an `emitc.call` operation.
 class SliceOpConversion : public OpConversionPattern<mhlo::SliceOp> {
   using OpConversionPattern<mhlo::SliceOp>::OpConversionPattern;
 
@@ -349,6 +358,7 @@ private:
   }
 };
 
+/// Convert `mhlo.dynamic-slice` into an `emitc.call` operation.
 class DynamicSliceOpConversion
     : public OpConversionPattern<mhlo::DynamicSliceOp> {
   using OpConversionPattern<mhlo::DynamicSliceOp>::OpConversionPattern;
@@ -382,6 +392,7 @@ private:
   }
 };
 
+/// Convert `mhlo.dynamic-update-slice` into an `emitc.call` operation.
 class DynamicUpdateSliceOpConversion
     : public OpConversionPattern<mhlo::DynamicUpdateSliceOp> {
   using OpConversionPattern<mhlo::DynamicUpdateSliceOp>::OpConversionPattern;
@@ -412,6 +423,7 @@ private:
   }
 };
 
+/// Convert `mhlo.pad` into an `emitc.call` operation.
 class PadOpConversion : public OpConversionPattern<mhlo::PadOp> {
   using OpConversionPattern<mhlo::PadOp>::OpConversionPattern;
 
@@ -443,6 +455,7 @@ private:
   }
 };
 
+/// Convert `mhlo.rng_bit_generator` into an `emitc.call` operation.
 class RngBitGeneratorOpConversion
     : public OpConversionPattern<mhlo::RngBitGeneratorOp> {
   using OpConversionPattern<mhlo::RngBitGeneratorOp>::OpConversionPattern;
@@ -476,10 +489,10 @@ private:
 
 void populateMhloToEmitcPatterns(MLIRContext *ctx,
                                  OwningRewritePatternList &patterns) {
-  /// Insert patterns for MHLO nullary ops.
+  // Insert patterns for MHLO nullary ops.
   patterns.insert<ConstOpConversion>(ctx);
 
-  /// Insert patterns for MHLO unary elementwise ops.
+  // Insert patterns for MHLO unary elementwise ops.
   patterns.insert<CallOpConversion<mhlo::AbsOp>>(ctx, "mhlo::abs");
   patterns.insert<CallOpConversion<mhlo::CeilOp>>(ctx, "mhlo::ceil");
   patterns.insert<CallOpConversion<mhlo::ConvertOp>>(
@@ -498,7 +511,7 @@ void populateMhloToEmitcPatterns(MLIRContext *ctx,
   patterns.insert<CallOpConversion<mhlo::SqrtOp>>(ctx, "mhlo::sqrt");
   patterns.insert<CallOpConversion<mhlo::TanhOp>>(ctx, "mhlo::tanh");
 
-  /// Insert patterns for MHLO binary elementwise ops.
+  // Insert patterns for MHLO binary elementwise ops.
   patterns.insert<CallOpConversion<mhlo::AddOp>>(ctx, "mhlo::add");
   patterns.insert<CallOpConversion<mhlo::Atan2Op>>(ctx, "mhlo::atan2");
   patterns.insert<CallOpConversion<mhlo::DivOp>>(ctx, "mhlo::div");
@@ -511,7 +524,7 @@ void populateMhloToEmitcPatterns(MLIRContext *ctx,
       ctx, "mhlo::shift_right_logical");
   patterns.insert<CallOpConversion<mhlo::SubOp>>(ctx, "mhlo::sub");
 
-  // Insert patterns for MHLO MHLO binary logical elementwise ops.
+  // Insert patterns for MHLO binary logical elementwise ops.
   patterns.insert<CallOpConversion<mhlo::OrOp>>(ctx, "mhlo::logical_or");
   patterns.insert<CallOpConversion<mhlo::XorOp>>(ctx, "mhlo::logical_xor");
 
@@ -554,7 +567,7 @@ struct ConvertMhloToEmitCPass
     : public ConvertMHLOToEmitCBase<ConvertMhloToEmitCPass> {
   /// Perform the lowering to EmitC dialect.
   void runOnFunction() override {
-    // Convert other ops
+
     ConversionTarget target(getContext());
 
     target.addLegalDialect<emitc::EmitCDialect>();
@@ -608,7 +621,7 @@ struct ConvertMhloToEmitCPass
     // MHLO region ops
     target.addIllegalOp<mhlo::ReduceOp,
                         mhlo::ReturnOp>();
-    // other MHLO ops
+    // Other MHLO ops
     target.addIllegalOp<mhlo::BatchNormInferenceOp,
                         mhlo::BitcastConvertOp,
                         mhlo::BroadcastInDimOp,

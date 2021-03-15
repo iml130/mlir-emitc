@@ -10,7 +10,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// This file defines functions emitted by MHLOToEmitC
+// This file defines functions emitted by MHLOToEmitC.
 
 #ifndef EMITC_EMITC_MHLO_H
 #define EMITC_EMITC_MHLO_H
@@ -32,9 +32,9 @@ namespace mhlo {
 /// https://github.com/tensorflow/tensorflow/blob/6f59650012f8904745dffaba540afc794c6613be/tensorflow/compiler/xla/service/hlo_evaluator.cc
 /// for the XLA implementation
 
-/// Functions for MHLO unary elementwise ops
+/// Functions for MHLO unary elementwise ops.
 // AbsOp
-// TODO support complex numbers
+// TODO: Add support for complex numbers.
 template <typename Src>
 inline Src abs(Src x) {
   return emitc::abs<Src>(x);
@@ -328,7 +328,7 @@ inline Src logical_xor(Src x, Src y) {
 
 /// Functions for other MHLO ops.
 // BroadcastInDimOp
-// The broadcast_dimensions argument maps from Src to Dest dimensions
+// The broadcast_dimensions argument maps from Src to Dest dimensions.
 template <typename Dest, typename Src>
 inline Dest
 broadcast_in_dim(Src operand,
@@ -353,8 +353,8 @@ template <int64_t Dimension, typename Dest, typename Src1, typename... Src>
 inline Dest concatenate(Src1 input1, Src... inputs) {
   static_assert(sizeof...(inputs) > 0, "Wrong template specialization chosen");
 
-  // concatenate all but the first input
-  // We need to build the correct return type for the rest of the inputs
+  // Concatenate all but the first input.
+  // We need to build the correct return type for the rest of the inputs.
   using ET_Src = typename get_element_type<Src1>::type;
   using Rest = typename concat<Dimension, ET_Src, Src...>::type;
   Rest rest = concatenate<Dimension, Rest, Src...>(inputs...);
@@ -371,7 +371,7 @@ inline Dest concatenate(Src1 input1, Src... inputs) {
   //    copy JxD elements from b_ptr to c_ptr
   //    move b_ptr, c_ptr by JxD elements
 
-  // take the product of all dimensions, starting at `Dimension`
+  // Take the product of all dimensions, starting at `Dimension`.
   auto calculate_shift = [](const auto &shape) {
     size_t shift = 1;
     for (size_t i = Dimension; i < shape.size(); i++) {
@@ -557,7 +557,7 @@ inline Dest reshape(Src x) {
 }
 
 // PadOp
-// TODO support negative edge padding
+// TODO: Support negative edge padding
 template <typename Dest, typename Src>
 inline Dest pad(Src operand,
                 Tensor<typename get_element_type<Src>::type> padding_value,
@@ -671,9 +671,9 @@ inline Dest reduce_window(
       baseIndex[j] = index[j] * window_strides(j);
     }
 
-    // iterate over input window
+    // Iterate over input window
     for (auto &inputIndex : operand.window(baseIndex, windowDimensionsArr)) {
-      // get input value (check out of bounds access)
+      // Get input value (check out of bounds access)
       Tensor<ET_Src> value;
       if (out_of_bounds(inputIndex)) {
         value[0] = initValue[0];
@@ -686,12 +686,12 @@ inline Dest reduce_window(
         value[0] = operand[operand.ravel_index(_index)];
       }
 
-      // get reduction value
+      // Get reduction value
       auto reductionValue = Tensor<ET_Src>{result[result.ravel_index(index)]};
-      // run computation
+      // Run computation
       Tensor<ET_Dest> resultValue = computation(reductionValue, value);
 
-      // update result value
+      // Update result value
       result[result.ravel_index(index)] = resultValue();
     }
   }
@@ -731,7 +731,7 @@ inline Dest rng_uniform(Tensor<T> low, Tensor<T> high,
   T lowValue = low[0];
   T highValue = high[0];
 
-  // high value is exclusive in xla but inclusive in cpp
+  // High value is exclusive in XLA but inclusive in cpp
   // see https://www.tensorflow.org/xla/operation_semantics?hl=en#rnguniform
   // and
   // https://en.cppreference.com/w/cpp/numeric/random/uniform_int_distribution
@@ -755,7 +755,7 @@ inline Dest rng_uniform(Tensor<T> low, Tensor<T> high,
 // RngBitGeneratorOp
 template <typename Dest, int32_t RngAlgorithm>
 Dest rng_bit_generator(typename std::tuple_element<0, Dest>::type state) {
-  // TODO implement correct algorithm; starting point would be
+  // TODO: Implement correct algorithm; starting point would be
   // https://github.com/tensorflow/tensorflow/blob/6f59650012f8904745dffaba540afc794c6613be/tensorflow/compiler/xla/service/rng_bit_generator_expander.cc#L56
 
   using StateType = typename std::tuple_element<0, Dest>::type;
@@ -805,11 +805,11 @@ Src batch_norm_inference(Src input, Feature scale, Feature offset, Feature mean,
 }
 
 // ConvolutionOp
-// TODO replicate ConvDimensionNumbers struct
-// TODO implement general dimension numbers
-// TODO implement lhs_dilation
-// TODO implement rhs_dilation
-// TODO implement batch_group_count
+// TODO: Replicate ConvDimensionNumbers struct.
+// TODO: Implement general dimension numbers.
+// TODO: Implement lhs_dilation.
+// TODO: Implement rhs_dilation.
+// TODO: Implement batch_group_count.
 template <typename Dest, typename Src, typename Weights>
 Dest convolution(Src input, Weights weights, int64_t batch_group_count,
                  int64_t input_batch_dimension, int64_t input_feature_dimension,
@@ -888,7 +888,7 @@ Dest convolution(Src input, Weights weights, int64_t batch_group_count,
   const int H_PAD = pt + H_IN + pb;
   const int W_PAD = pl + W_IN + pr;
 
-  // TODO test grouped convolutions
+  // TODO: Test grouped convolutions.
   assert(feature_group_count == 1 || feature_group_count == C_OUT);
 
   // Convolution

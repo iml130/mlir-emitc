@@ -23,6 +23,8 @@ namespace mlir {
 namespace emitc {
 
 namespace {
+
+/// Convert `tensor.extract` into an `emitc.call` operation.
 class ExtractOpConversion
     : public OpConversionPattern<mlir::tensor::ExtractOp> {
   using OpConversionPattern<mlir::tensor::ExtractOp>::OpConversionPattern;

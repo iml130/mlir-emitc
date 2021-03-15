@@ -23,6 +23,8 @@ namespace mlir {
 namespace emitc {
 
 namespace {
+
+/// Convert `std.index_cast` into an `emitc.call` operation.
 class IndexCastOpConversion : public OpConversionPattern<IndexCastOp> {
   using OpConversionPattern<IndexCastOp>::OpConversionPattern;
 
@@ -48,6 +50,7 @@ private:
   }
 };
 
+/// Convert `std.splat` into an `emitc.call` operation.
 class SplatOpConversion : public OpConversionPattern<SplatOp> {
   using OpConversionPattern<SplatOp>::OpConversionPattern;
 

@@ -10,6 +10,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// This file defines the utility functions used in EmitC.
+
 #ifndef EMITC_EMITC_UTILITY_H
 #define EMITC_EMITC_UTILITY_H
 

@@ -24,6 +24,7 @@ namespace emitc {
 
 namespace {
 
+/// Convert `scf.for` into an `emitc.for` operation.
 class ForOpConversion : public OpRewritePattern<scf::ForOp> {
 public:
   using OpRewritePattern<scf::ForOp>::OpRewritePattern;
@@ -41,6 +42,7 @@ public:
   }
 };
 
+/// Convert `scf.if` into an `emitc.if` operation.
 class IfOpConversion : public OpRewritePattern<scf::IfOp> {
 public:
   using OpRewritePattern<scf::IfOp>::OpRewritePattern;
@@ -62,6 +64,7 @@ public:
   }
 };
 
+/// Convert `scf.yield` into an `emitc.yield` operation.
 class YieldOpConversion : public OpRewritePattern<scf::YieldOp> {
 public:
   using OpRewritePattern<scf::YieldOp>::OpRewritePattern;

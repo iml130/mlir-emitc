@@ -10,7 +10,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// This file defines functions emitted by TosaToEmitC
+// This file defines functions emitted by TosaToEmitC.
 
 #ifndef EMITC_EMITC_TOSA_H
 #define EMITC_EMITC_TOSA_H
@@ -255,7 +255,7 @@ Dest depthwise_conv2d(Src input, Weights weights, Tensor1D<int64_t, 4> padding,
                 if (h_in < 0 || h_in >= H_IN || w_in < 0 || w_in >= W_IN)
                   continue;
 
-                // for depthwise convolution we interpret weights as a tensor
+                // For depthwise convolution we interpret weights as a tensor
                 // with shape [filter_height, filter_width, 1, in_channels *
                 // channel_multiplier]. So we need to calculate the index
                 // using these dimensions.
@@ -487,7 +487,7 @@ inline Dest pad(Src operand, Padding padding) {
 }
 
 // TransposeOp
-// Maps the perms dimension from Dest to Src
+// Maps the perms dimension from Dest to Src.
 template <typename Dest, typename Src>
 inline Dest transpose(Src operand, Tensor1D<int64_t, Src::rank()> perms) {
   static_assert(is_tensor<Src>::value, "Expected tensor argument");

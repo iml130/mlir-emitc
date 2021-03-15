@@ -196,6 +196,12 @@ func @test_reduce_sum(%arg0: tensor<13x21x3xf32>) -> tensor<13x1x3xf32> {
   return %0 : tensor<13x1x3xf32>
 }
 
+func @test_pad(%arg0: tensor<2x3xf32>, %arg1: tensor<2x2xi32>) -> tensor<3x6xf32> {
+  // CHECK: %0 = emitc.call "tosa::pad"(%arg0, %arg1) {template_args = [tensor<3x6xf32>]} : (tensor<2x3xf32>, tensor<2x2xi32>) -> tensor<3x6xf32>
+  %0 = "tosa.pad"(%arg0, %arg1) : (tensor<2x3xf32>, tensor<2x2xi32>) -> tensor<3x6xf32>
+  return %0 : tensor<3x6xf32>
+}
+
 func @test_reshape(%arg0: tensor<13x21x3xf32>) -> tensor<1x819xf32> {
   // CHECK: %0 = emitc.call "tosa::reshape"(%arg0) {template_args = [tensor<1x819xf32>]} : (tensor<13x21x3xf32>) -> tensor<1x819xf32>
   %0 = "tosa.reshape"(%arg0) {new_shape = [1, 819]} : (tensor<13x21x3xf32>) -> tensor<1x819xf32>

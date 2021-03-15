@@ -518,6 +518,37 @@ private:
   StringRef funcName;
 };
 
+class PadOpConversion : public OpConversionPattern<tosa::PadOp> {
+  using OpConversionPattern<tosa::PadOp>::OpConversionPattern;
+
+public:
+  PadOpConversion(MLIRContext *ctx) : OpConversionPattern<tosa::PadOp>(ctx) {}
+
+private:
+  LogicalResult
+  matchAndRewrite(tosa::PadOp padOp, ArrayRef<Value> operands,
+                  ConversionPatternRewriter &rewriter) const override {
+    if (padOp.quantization_info().hasValue()) {
+      return padOp.emitError(
+          "Quantization of tosa.pad is currently not supported.");
+    }
+
+    StringAttr callee = rewriter.getStringAttr("tosa::pad");
+
+    // No arguments! Pad itself is an operand and not an argument. Therefore, we
+    // have to handle any conversion in tosa::pad.
+    ArrayAttr args;
+
+    Type resultType = padOp.output().getType();
+    ArrayAttr templateArgs = rewriter.getArrayAttr({TypeAttr::get(resultType)});
+
+    rewriter.replaceOpWithNewOp<emitc::CallOp>(padOp, padOp.getType(), callee,
+                                               args, templateArgs, operands);
+
+    return success();
+  }
+};
+
 } // namespace
 
 void populateTosaToEmitcPatterns(MLIRContext *ctx,
@@ -562,6 +593,7 @@ void populateTosaToEmitcPatterns(MLIRContext *ctx,
                                                          "tosa::reduce_sum");
   patterns.insert<CallOpConversion<tosa::ReshapeOp>>(
       ctx, "tosa::reshape", /*explicitResultType=*/true);
+  patterns.insert<PadOpConversion>(ctx);
   patterns.insert<CallOpConversion<tosa::TransposeOp>>(
       ctx, "tosa::transpose", /*explicitResultType=*/true);
 }
@@ -614,6 +646,7 @@ struct ConvertTosaToEmitCPass
     target.addIllegalOp<tosa::ReduceProdOp>();
     target.addIllegalOp<tosa::ReduceSumOp>();
     target.addIllegalOp<tosa::ReshapeOp>();
+    target.addIllegalOp<tosa::PadOp>();
     target.addIllegalOp<tosa::TransposeOp>();
 
     OwningRewritePatternList patterns;

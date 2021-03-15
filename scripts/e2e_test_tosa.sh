@@ -19,6 +19,7 @@ if [[ $# -ne 8 ]] ; then
   echo "Both a keras and a tensorflow saved model is supported."
   echo
   echo "This script expects a python version in the PATH with a recent version of tensorflow installed."
+  echo "You need to compile tensorflow from source to build the tf-opt program."
   echo "Tested with python 3.6.9 and tensorflow 2.4.0"
 
   exit 1

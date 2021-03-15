@@ -21,7 +21,7 @@ def set_fake_weights(model):
         if layer.get_weights():
             new_weights = []
             for weight in layer.get_weights():
-                const_weight = np.full(weight.shape, random.uniform(0.0, 1.0))
+                const_weight = np.full(weight.shape, 0.5)
                 new_weights.append(const_weight)
             layer.set_weights(new_weights)
     return model
@@ -31,15 +31,15 @@ def main():
     parser = argparse.ArgumentParser(
         description="Downloads MobileNetV2 keras model")
     parser.add_argument(
-        "--output-path",
+        "--output-file",
         default="mobilenet_v2.h5",
-        help="Output path",
+        help="Output file",
     )
     parser.add_argument(
         "--fake-weights",
         action='store_true',
         default=False,
-        help="Sets all weights within a layer to a randomly generated constant"
+        help="Sets all weights to 0.5"
     )
     args = parser.parse_args()
 

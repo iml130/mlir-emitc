@@ -71,7 +71,7 @@ struct CppEmitter {
   LogicalResult emitAttribute(Attribute attr);
 
   /// Emits operation 'op' with/without training semicolon or returns failure.
-  LogicalResult emitOperation(Operation &op, bool trailingSemicolon = true);
+  LogicalResult emitOperation(Operation &op, bool trailingSemicolon);
 
   /// Emits type 'type' or returns failure.
   LogicalResult emitType(Type type);

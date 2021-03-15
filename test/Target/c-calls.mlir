@@ -1,15 +1,7 @@
 // RUN: emitc-translate -mlir-to-c %s | FileCheck %s
 
 // CHECK: // Forward declare functions.
-// CHECK: void std_constant();
 // CHECK: void emitc_constant();
-
-// CHECK: void std_constant()
-func @std_constant() {
-  // CHECK: int32_t [[V0:[^ ]*]] = 0;
-  %c0 = constant 0 : i32
-  return
-}
 
 // CHECK: void emitc_constant()
 func @emitc_constant() {

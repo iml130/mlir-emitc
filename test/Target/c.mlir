@@ -1,28 +1,39 @@
-// RUN: emitc-translate -mlir-to-c %s | FileCheck %s
+// RUN: emitc-translate -mlir-to-c %s | FileCheck %s -check-prefix=DEFAULT
+// RUN: emitc-translate -mlir-to-c -forward-declare-variables %s | FileCheck %s -check-prefix=FWDDECL
 
-// CHECK: // Forward declare functions.
-// CHECK: void std_constant();
-// CHECK: void std_call();
-// CHECK: void emitc_constant();
-// CHECK: void emitc_call();
-// CHECK: void emitc_if();
-// CHECK: void emitc_for();
-
-// CHECK: void std_constant()
 func @std_constant() {
-  // CHECK-NEXT: [[V0:[^ ]*]] = 0;
   %c0 = constant 0 : i32
-  // CHECK-NEXT: [[V1:[^ ]*]] = 2;
   %c1 = constant 2 : index
-  // CHECK-NEXT: [[V2:[^ ]*]] = (float)2.000000000e+00;
   %c2 = constant 2.0 : f32
   return
 }
+// DEFAULT: void std_constant() {
+// DEFAULT-NEXT: [[V0:[^ ]*]] = 0;
+// DEFAULT-NEXT: [[V1:[^ ]*]] = 2;
+// DEFAULT-NEXT: [[V2:[^ ]*]] = (float)2.000000000e+00;
+
+// FWDDECL: void std_constant() {
+// FWDDECL-NEXT: int32_t [[V0:[^ ]*]];
+// FWDDECL-NEXT: size_t [[V1:[^ ]*]];
+// FWDDECL-NEXT: float [[V2:[^ ]*]];
+// FWDDECL-NEXT: [[V0]] = 0;
+// FWDDECL-NEXT: [[V1]] = 2;
+// FWDDECL-NEXT: [[V2]] = (float)2.000000000e+00;
 
 func @std_call() {
-  // TODO(simon-camp): add test
+  %0 = call @one_result () : () -> i32
+  %1 = call @one_result () : () -> i32
   return
 }
+// DEFAULT: void std_call() {
+// DEFAULT-NEXT: int32_t [[V0:[^ ]*]] = one_result();
+// DEFAULT-NEXT: int32_t [[V1:[^ ]*]] = one_result();
+
+// FWDDECL: void std_call() {
+// FWDDECL-NEXT: int32_t [[V0:[^ ]*]];
+// FWDDECL-NEXT: int32_t [[V1:[^ ]*]];
+// FWDDECL-NEXT: [[V0:]] = one_result();
+// FWDDECL-NEXT: [[V1:]] = one_result();
 
 func @emitc_constant() {
   // TODO(simon-camp): add test
@@ -30,16 +41,21 @@ func @emitc_constant() {
 }
 
 func @emitc_call() {
-  // TODO(simon-camp): add test
+  %0 = emitc.call "func_a" () : () -> i32
+  %1 = emitc.call "func_b" () : () -> i32
   return
 }
+// DEFAULT: void emitc_call() {
+// DEFAULT-NEXT: int32_t [[V0:[^ ]*]] = func_a();
+// DEFAULT-NEXT: int32_t [[V1:[^ ]*]] = func_b();
 
-func @emitc_if() {
-  // TODO(simon-camp): add test
-  return
-}
+// FWDDECL: void emitc_call() {
+// FWDDECL-NEXT: int32_t [[V0:[^ ]*]];
+// FWDDECL-NEXT: int32_t [[V1:[^ ]*]];
+// FWDDECL-NEXT: [[V0:]] = func_a();
+// FWDDECL-NEXT: [[V1:]] = func_b();
 
-func @emitc_for() {
-  // TODO(simon-camp): add test
-  return
+func @one_result() -> i32 {
+  %0 = constant 0 : i32
+  return %0 : i32
 }

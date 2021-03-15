@@ -31,13 +31,16 @@ static LogicalResult printConstantOp(CppEmitter &emitter,
   auto result = constantOp.getOperation()->getResult(0);
   auto value = constantOp.value();
 
-  // Add braces for non-tensor types only to avoid double brace intialization
-  // for tensors.
-  bool braceInitialization =
-      !emitter.restrictedToC() && !emitter.forwardDeclaredVariables() &&
-      !constantOp.getResult().getType().isa<TensorType>();
+  bool isScalar = !result.getType().isa<TensorType>();
 
-  // If variables are forward declared emit an assignment
+  // Add braces only if
+  //  - cpp code is emitted,
+  //  - variables are not forward declared
+  //  - and the emitted type is a scalar.
+  bool emitBraces = !emitter.restrictedToC() &&
+                    !emitter.forwardDeclaredVariables() && isScalar;
+
+  // Emit an assignment if variables are forward declared.
   if (emitter.forwardDeclaredVariables()) {
     if (failed(emitter.emitVariableAssignment(result)))
       return failure();
@@ -45,18 +48,17 @@ static LogicalResult printConstantOp(CppEmitter &emitter,
     if (failed(emitter.emitVariableDeclaration(result,
                                                /*trailingSemicolon=*/false)))
       return failure();
-    if (!braceInitialization) {
+    if (emitter.restrictedToC())
       os << " = ";
-    }
   }
 
-  if (braceInitialization)
+  if (emitBraces)
     os << "{";
 
   if (failed(emitter.emitAttribute(value)))
     return constantOp.emitError("unable to emit constant value");
 
-  if (braceInitialization)
+  if (emitBraces)
     os << "}";
 
   return success();
@@ -67,13 +69,16 @@ static LogicalResult printConstOp(CppEmitter &emitter, ConstOp constOp) {
   auto result = constOp.getOperation()->getResult(0);
   auto value = constOp.value();
 
-  // Add braces for non-tensor types only to avoid double brace intialization
-  // for tensors.
-  bool braceInitialization = !emitter.restrictedToC() &&
-                             !emitter.forwardDeclaredVariables() &&
-                             !constOp.getResult().getType().isa<TensorType>();
+  bool isScalar = !result.getType().isa<TensorType>();
 
-  // If variables are forward declared emit an assignment
+  // Add braces only if
+  //  - cpp code is emitted,
+  //  - variables are not forward declared
+  //  - and the emitted type is a scalar.
+  bool braceInitialization = !emitter.restrictedToC() &&
+                             !emitter.forwardDeclaredVariables() && isScalar;
+
+  // Emit an assignment if variables are forward declared.
   if (emitter.forwardDeclaredVariables()) {
     if (auto sAttr = value.dyn_cast<StringAttr>()) {
       if (sAttr.getValue().empty())
@@ -182,25 +187,27 @@ static LogicalResult printGetAddressOfOp(CppEmitter &emitter,
 }
 
 static LogicalResult printForOp(CppEmitter &emitter, emitc::ForOp forOp) {
+
   auto &os = emitter.ostream();
 
-  if (forOp.getNumRegionIterArgs() != 0) {
-    auto regionArgs = forOp.getRegionIterArgs();
-    auto operands = forOp.getIterOperands();
+  auto operands = forOp.getIterOperands();
+  auto iterArgs = forOp.getRegionIterArgs();
+  auto results = forOp.getResults();
 
-    for (auto i : llvm::zip(regionArgs, operands)) {
-      if (failed(emitter.emitType(std::get<0>(i).getType())))
+  if (!emitter.forwardDeclaredVariables()) {
+    for (auto result : forOp.getResults()) {
+      if (failed(emitter.emitVariableDeclaration(result,
+                                                 /*trailingSemicolon=*/true)))
         return failure();
-      os << " " << emitter.getOrCreateName(std::get<0>(i)) << " = ";
-      os << emitter.getOrCreateName(std::get<1>(i)) << ";";
-      os << "\n";
     }
   }
 
-  for (auto result : forOp.getResults()) {
-    if (failed(emitter.emitVariableDeclaration(result,
-                                               /*trailingSemicolon=*/true)))
+  for (auto pair : llvm::zip(iterArgs, operands)) {
+    if (failed(emitter.emitType(std::get<0>(pair).getType())))
       return failure();
+    os << " " << emitter.getOrCreateName(std::get<0>(pair)) << " = ";
+    os << emitter.getOrCreateName(std::get<1>(pair)) << ";";
+    os << "\n";
   }
 
   os << "for (";
@@ -208,37 +215,68 @@ static LogicalResult printForOp(CppEmitter &emitter, emitc::ForOp forOp) {
     return failure();
   os << " ";
   os << emitter.getOrCreateName(forOp.getInductionVar());
-  os << "=";
-  os << emitter.getOrCreateName(forOp.lowerBound());
+
+  if (emitter.restrictedToC()) {
+    os << " = ";
+    os << emitter.getOrCreateName(forOp.lowerBound());
+  } else {
+    os << "{";
+    os << emitter.getOrCreateName(forOp.lowerBound());
+    os << "}";
+  }
+
   os << "; ";
   os << emitter.getOrCreateName(forOp.getInductionVar());
-  os << "<";
+  os << " < ";
   os << emitter.getOrCreateName(forOp.upperBound());
   os << "; ";
   os << emitter.getOrCreateName(forOp.getInductionVar());
-  os << "=";
-  os << emitter.getOrCreateName(forOp.getInductionVar());
-  os << "+";
+  os << " += ";
   os << emitter.getOrCreateName(forOp.step());
   os << ") {\n";
 
   auto &forRegion = forOp.region();
-  for (auto &op : forRegion.getOps()) {
-    if (failed(emitter.emitOperation(op)))
+  auto regionOps = forRegion.getOps();
+
+  // We skip the trailing yield op because this updates the result variables of
+  // the for op in the generated code. Instead we update the iterArgs at the end
+  // of a loop iteration and set the result variables after the for loop.
+  for (auto it = regionOps.begin(); std::next(it) != regionOps.end(); ++it) {
+    if (failed(emitter.emitOperation(*it, /*trailingSemicolon=*/true)))
       return failure();
   }
 
+  auto yieldOp = forRegion.getBlocks().front().getTerminator();
+  // Copy yield operands into iterArgs at the end of a loop iteration.
+  for (auto pair : llvm::zip(iterArgs, yieldOp->getOperands())) {
+    auto iterArg = std::get<0>(pair);
+    auto operand = std::get<1>(pair);
+    os << emitter.getOrCreateName(iterArg) << " = "
+       << emitter.getOrCreateName(operand) << ";\n";
+  }
+
   os << "}\n";
+
+  // Copy iterArgs into results after the for loop.
+  for (auto pair : llvm::zip(results, iterArgs)) {
+    auto result = std::get<0>(pair);
+    auto iterArg = std::get<1>(pair);
+    os << emitter.getOrCreateName(result) << " = "
+       << emitter.getOrCreateName(iterArg) << ";\n";
+  }
+
   return success();
 }
 
 static LogicalResult printIfOp(CppEmitter &emitter, emitc::IfOp ifOp) {
   auto &os = emitter.ostream();
 
-  for (auto result : ifOp.getResults()) {
-    if (failed(emitter.emitVariableDeclaration(result,
-                                               /*trailingSemicolon=*/true)))
-      return failure();
+  if (!emitter.forwardDeclaredVariables()) {
+    for (auto result : ifOp.getResults()) {
+      if (failed(emitter.emitVariableDeclaration(result,
+                                                 /*trailingSemicolon=*/true)))
+        return failure();
+    }
   }
 
   os << "if (";
@@ -248,7 +286,7 @@ static LogicalResult printIfOp(CppEmitter &emitter, emitc::IfOp ifOp) {
 
   auto &thenRegion = ifOp.thenRegion();
   for (auto &op : thenRegion.getOps()) {
-    if (failed(emitter.emitOperation(op)))
+    if (failed(emitter.emitOperation(op, /*trailingSemicolon=*/true)))
       return failure();
   }
 
@@ -259,7 +297,7 @@ static LogicalResult printIfOp(CppEmitter &emitter, emitc::IfOp ifOp) {
     os << "else {\n";
 
     for (auto &op : elseRegion.getOps()) {
-      if (failed(emitter.emitOperation(op)))
+      if (failed(emitter.emitOperation(op, /*trailingSemicolon=*/true)))
         return failure();
     }
 
@@ -277,15 +315,20 @@ static LogicalResult printYieldOp(CppEmitter &emitter, emitc::YieldOp yieldOp) {
     return failure();
   }
 
-  for (auto pair : llvm::zip(parentOp.getResults(), yieldOp.getOperands())) {
-    auto result = std::get<0>(pair);
-    auto operand = std::get<1>(pair);
-    os << emitter.getOrCreateName(result) << " = ";
+  if (failed(interleaveWithError(
+          llvm::zip(parentOp.getResults(), yieldOp.getOperands()),
+          [&](auto pair) -> LogicalResult {
+            auto result = std::get<0>(pair);
+            auto operand = std::get<1>(pair);
+            os << emitter.getOrCreateName(result) << " = ";
 
-    if (!emitter.hasValueInScope(operand))
-      return yieldOp.emitError() << "operand value not in scope";
-    os << emitter.getOrCreateName(operand) << ";\n";
-  }
+            if (!emitter.hasValueInScope(operand))
+              return yieldOp.emitError() << "operand value not in scope";
+            os << emitter.getOrCreateName(operand);
+            return success();
+          },
+          [&]() { os << ";\n"; })))
+    return failure();
 
   return success();
 }
@@ -369,18 +412,27 @@ static LogicalResult printFunction(CppEmitter &emitter, FuncOp functionOp) {
   os << ") {\n";
 
   if (emitter.forwardDeclaredVariables()) {
-    for (Operation &op : functionOp.front()) {
-      for (auto result : op.getResults()) {
-        if (failed(emitter.emitVariableDeclaration(
-                result, /*trailingSemicolon=*/true))) {
-          return op.emitError() << "Unable to declare result variable for op";
-        }
-      }
-    }
+    // We forward decalre all result variables including results from ops inside
+    // of regions.
+    auto result =
+        functionOp.walk<WalkOrder::PreOrder>([&](Operation *op) -> WalkResult {
+          for (auto result : op->getResults()) {
+            if (failed(emitter.emitVariableDeclaration(
+                    result, /*trailingSemicolon=*/true))) {
+              return WalkResult(
+                  op->emitError("Unable to declare result variable for op"));
+            }
+          }
+          return WalkResult::advance();
+        });
+    if (result.wasInterrupted())
+      return failure();
   }
 
   for (Operation &op : functionOp.front()) {
-    if (failed(emitter.emitOperation(op)))
+    bool trailingSemicolon = !isa<emitc::IfOp, emitc::ForOp>(op);
+    if (failed(
+            emitter.emitOperation(op, /*trailingSemicolon=*/trailingSemicolon)))
       return failure();
   }
   os << "}\n";
@@ -587,15 +639,22 @@ LogicalResult CppEmitter::emitAssignPrefix(Operation &op) {
     break;
   case 1: {
     auto result = op.getResult(0);
-    if (failed(emitVariableDeclaration(result, /*trailingSemicolon=*/false)))
-      return op.emitError() << "unable to emit type " << result.getType();
-    os << " = ";
+    if (forwardDeclaredVariables()) {
+      if (failed(emitVariableAssignment(result)))
+        return op.emitError() << "unable to emit type " << result.getType();
+    } else {
+      if (failed(emitVariableDeclaration(result, /*trailingSemicolon=*/false)))
+        return op.emitError() << "unable to emit type " << result.getType();
+      os << " = ";
+    }
     break;
   }
   default:
-    for (auto result : op.getResults()) {
-      if (failed(emitVariableDeclaration(result, /*trailingSemicolon=*/true)))
-        return failure();
+    if (!forwardDeclaredVariables()) {
+      for (auto result : op.getResults()) {
+        if (failed(emitVariableDeclaration(result, /*trailingSemicolon=*/true)))
+          return failure();
+      }
     }
     os << "std::tie(";
     interleaveComma(op.getResults(), os,

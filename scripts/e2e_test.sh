@@ -69,7 +69,7 @@ echo "Converting mhlo dialect to emitc dialect"
 "$EMITC_OPT" --mhlo-control-flow-to-scf --convert-mhlo-region-ops-to-emitc --convert-mhlo-to-emitc --convert-scf-to-emitc --convert-std-to-emitc "$OUTPUT_DIR"/model_fix_name.mlir > "$OUTPUT_DIR"/model_emitc.mlir 
 
 echo "Translating emitc dialect to cpp header"
-"$EMITC_TRANSLATE" --mlir-to-cpp "$OUTPUT_DIR"/model_emitc.mlir > "$OUTPUT_DIR"/model_generated.h
+"$EMITC_TRANSLATE" --mlir-to-cpp --forward-declare-variables "$OUTPUT_DIR"/model_emitc.mlir > "$OUTPUT_DIR"/model_generated.h
 
 echo "Generating test case"
 python generate_testscases.py --file-format cpp --count 1 --batch-size "$BATCH_SIZE" --seed "$SEED" "$MODEL" "$OUTPUT_DIR"

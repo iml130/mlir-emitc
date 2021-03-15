@@ -46,7 +46,7 @@ def main():
     model = MobileNetV2(weights='imagenet')
     if args.fake_weights:
         set_fake_weights(model)
-    model.save(args.output_path)
+    model.save(args.output_file)
 
 
 if __name__ == "__main__":

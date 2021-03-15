@@ -541,13 +541,13 @@ static void print(OpAsmPrinter &p, emitc::YieldOp op) {
 Type emitc::EmitCDialect::parseType(DialectAsmParser &parser) const {
   llvm::SMLoc typeLoc = parser.getCurrentLocation();
   StringRef mnemonic;
-  if (parser.parseKeyword(&mnemonic)) {
+  if (parser.parseKeyword(&mnemonic))
     return Type();
-  }
-  auto genType = generatedTypeParser(getContext(), parser, mnemonic);
-  if (genType != Type()) {
+  Type genType;
+  auto parseResult =
+      generatedTypeParser(getContext(), parser, mnemonic, genType);
+  if (parseResult.hasValue())
     return genType;
-  }
   parser.emitError(typeLoc, "unknown type in EmitC dialect");
   return Type();
 }

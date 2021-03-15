@@ -63,10 +63,10 @@ inline Src reciprocal(Src x) {
 }
 
 // ReluNOp
-template <typename Src, typename Limit>
-inline Src reluN(Src operand, Limit max_value) {
-  Tensor0D<Limit> min{0};
-  Tensor0D<Limit> max{max_value};
+template <typename Src>
+inline Src reluN(Src operand, typename Src::value_type max_value) {
+  Tensor<typename Src::value_type> min{0};
+  Tensor<typename Src::value_type> max{max_value};
   return emitc::clamp(min, operand, max);
 }
 

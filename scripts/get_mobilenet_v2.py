@@ -11,11 +11,42 @@
 # limitations under the License.
 
 from tensorflow.keras.applications.mobilenet_v2 import MobileNetV2
+import argparse
+import numpy as np
+import random
+
+
+def set_fake_weights(model):
+    for layer in model.layers:
+        if layer.get_weights():
+            new_weights = []
+            for weight in layer.get_weights():
+                const_weight = np.full(weight.shape, random.uniform(0.0, 1.0))
+                new_weights.append(const_weight)
+            layer.set_weights(new_weights)
+    return model
 
 
 def main():
+    parser = argparse.ArgumentParser(
+        description="Downloads MobileNetV2 keras model")
+    parser.add_argument(
+        "--output-path",
+        default="mobilenet_v2.h5",
+        help="Output path",
+    )
+    parser.add_argument(
+        "--fake-weights",
+        action='store_true',
+        default=False,
+        help="Sets all weights within a layer to a randomly generated constant"
+    )
+    args = parser.parse_args()
+
     model = MobileNetV2(weights='imagenet')
-    model.save('mobilenet_v2.h5')
+    if args.fake_weights:
+        set_fake_weights(model)
+    model.save(args.output_path)
 
 
 if __name__ == "__main__":

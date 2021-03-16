@@ -63,7 +63,7 @@ OpFoldResult ConstOp::fold(ArrayRef<Attribute> operands) {
 //===----------------------------------------------------------------------===//
 // ForOp
 //===----------------------------------------------------------------------===//
-// Adopted from SCF dialect
+// Adopted from SCF dialect.
 
 void ForOp::build(OpBuilder &builder, OperationState &result, Value lb,
                   Value ub, Value step, ValueRange iterArgs,
@@ -357,7 +357,7 @@ ValueVector mlir::emitc::buildLoopNest(
 //===----------------------------------------------------------------------===//
 // IfOp
 //===----------------------------------------------------------------------===//
-// Adopted from SCF dialect
+// Adopted from SCF dialect.
 
 void IfOp::build(OpBuilder &builder, OperationState &result, Value cond,
                  bool withElseRegion) {
@@ -507,7 +507,7 @@ void IfOp::getSuccessorRegions(Optional<unsigned> index,
 //===----------------------------------------------------------------------===//
 // YieldOp
 //===----------------------------------------------------------------------===//
-// Adopted from SCF dialect
+// Adopted from SCF dialect.
 
 static ParseResult parseYieldOp(OpAsmParser &parser, OperationState &result) {
   SmallVector<OpAsmParser::OperandType, 4> operands;

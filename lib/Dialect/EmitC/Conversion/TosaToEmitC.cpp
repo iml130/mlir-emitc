@@ -24,7 +24,7 @@ namespace emitc {
 
 namespace {
 
-// Common functions
+/// Common functions.
 DenseIntElementsAttr getI64ElementsAttr(const ArrayAttr values,
                                         MLIRContext *ctx) {
   RankedTensorType ty = RankedTensorType::get(
@@ -32,7 +32,7 @@ DenseIntElementsAttr getI64ElementsAttr(const ArrayAttr values,
 
   SmallVector<int64_t> valuesAsI64;
 
-  // convert values to int64_t
+  // Convert values to int64_t
   for (auto &value : values) {
     auto valueAsIntAttr = value.cast<IntegerAttr>();
     valuesAsI64.push_back(valueAsIntAttr.getInt());
@@ -48,6 +48,7 @@ SmallVector<Attribute, 2> indexSequence(int64_t n, MLIRContext *ctx) {
       }));
 }
 
+/// Convert a common `tosa` operation into an `emitc.call` operation.
 template <typename SrcOp>
 class CallOpConversion : public OpConversionPattern<SrcOp> {
   using OpConversionPattern<SrcOp>::OpConversionPattern;
@@ -108,6 +109,8 @@ public:
   }
 };
 
+/// Convert a common `tosa` convolution operation into an `emitc.call`
+/// operation.
 template <typename SrcOp>
 class GenericConvOpConversion : public OpConversionPattern<SrcOp> {
   using OpConversionPattern<SrcOp>::OpConversionPattern;
@@ -120,7 +123,7 @@ private:
   LogicalResult
   matchAndRewrite(SrcOp convOp, ArrayRef<Value> operands,
                   ConversionPatternRewriter &rewriter) const override {
-    // fail if quantization is requested
+    // Fail if quantization is requested
     if (convOp.quantization_info().hasValue()) {
       return convOp.emitError("Quantization for " + convOp.getOperationName() +
                               " is currently not supported.");
@@ -147,7 +150,7 @@ private:
     ArrayAttr templateArgs =
         rewriter.getArrayAttr({TypeAttr::get(convOp.getResult().getType())});
 
-    // create convOp
+    // Create convOp
     auto emitcConvOp =
         rewriter.create<emitc::CallOp>(convOp->getLoc(), convOp.getType(),
                                        callee, args, templateArgs, operands);
@@ -164,6 +167,7 @@ private:
   StringRef funcName;
 };
 
+/// Convert `tosa.fully_connected` into an `emitc.call` operation.
 class FullyConnectedOpConversion
     : public OpConversionPattern<tosa::FullyConnectedOp> {
   using OpConversionPattern<tosa::FullyConnectedOp>::OpConversionPattern;
@@ -197,6 +201,7 @@ private:
   }
 };
 
+/// Convert `tosa.matmul` into an `emitc.call` operation.
 class MatMulOpConversion : public OpConversionPattern<tosa::MatMulOp> {
   using OpConversionPattern<tosa::MatMulOp>::OpConversionPattern;
 
@@ -225,6 +230,7 @@ private:
   }
 };
 
+/// Convert `tosa.reluN` into an `emitc.call` operation.
 class ReluNOpConversion : public OpConversionPattern<tosa::ReluNOp> {
   using OpConversionPattern<tosa::ReluNOp>::OpConversionPattern;
 
@@ -250,11 +256,11 @@ private:
     auto elementType =
         operands[0].getType().cast<RankedTensorType>().getElementType();
     if (elementType.isa<IntegerType>()) {
-      // Change the max_int type to the element type of the operand
+      // Change the max_int type to the element type of the operand.
       auto maxInt = reluNOp.max_int();
       args_.push_back(mlir::IntegerAttr::get(elementType, maxInt));
     } else if (elementType.isa<FloatType>()) {
-      // Change the max_fp type to the element type of the operand
+      // Change the max_fp type to the element type of the operand.
       auto maxFp = reluNOp.max_fpAttr().getValueAsDouble();
       args_.push_back(mlir::FloatAttr::get(elementType, maxFp));
     } else {
@@ -271,6 +277,7 @@ private:
   }
 };
 
+/// Convert `tosa.rsqrt` into an `emitc.call` operation.
 class RsqrtOpConversion : public OpConversionPattern<tosa::RsqrtOp> {
   using OpConversionPattern<tosa::RsqrtOp>::OpConversionPattern;
 
@@ -285,7 +292,7 @@ private:
     ArrayAttr args;
     ArrayAttr templateArgs;
 
-    // create sqrt op
+    // Create sqrt op
     StringRef sqrtFuncName = "emitc::sqrt";
     StringAttr sqrtCallee = rewriter.getStringAttr(sqrtFuncName);
 
@@ -293,7 +300,7 @@ private:
         rsqrtOp.getLoc(), rsqrtOp.getType(), sqrtCallee, args, templateArgs,
         operands);
 
-    // create reciprocal op
+    // Create reciprocal op
     StringRef reciprocalFuncName = "tosa::reciprocal";
     StringAttr reciprocalCallee = rewriter.getStringAttr(reciprocalFuncName);
 
@@ -307,6 +314,7 @@ private:
   }
 };
 
+/// Convert `tosa.fully_connected` into an `emitc.call` operation.
 template <typename SrcOp>
 SmallVector<Value, 2>
 createBroadcastOpIfNeeded(SrcOp &srcOp, ArrayRef<Value> operands,
@@ -331,7 +339,7 @@ createBroadcastOpIfNeeded(SrcOp &srcOp, ArrayRef<Value> operands,
     auto operandShape = operand.getType().cast<RankedTensorType>().getShape();
     auto operandRank = operand.getType().cast<RankedTensorType>().getRank();
 
-    // Insert a broadcast_in_dim Operation if shape of operands don't match
+    // Insert a broadcast_in_dim operation if shape of operands don't match.
     if (!operandShape.equals(opOutputShape)) {
       SmallVector<Attribute, 1> broadcastIndices;
       auto numBroadcastDims = opOutputRank - operandRank;
@@ -354,13 +362,15 @@ createBroadcastOpIfNeeded(SrcOp &srcOp, ArrayRef<Value> operands,
           srcOp->getLoc(), srcOp.getType(), broadcastCallee, broadcastArgs,
           templateBroadcastArgs, operand);
       // Replace the original operand with the result of the broadcast_in_dim
-      // operation
+      // operation.
       broadcastedOperands[i] = broadcastArg.getResult(0);
     }
   }
   return broadcastedOperands;
 }
 
+/// Convert a common, broadcastable `tosa` operation into an `emitc.call`
+/// operation.
 template <typename SrcOp>
 class CallOpBroadcastableConversion : public OpConversionPattern<SrcOp> {
   using OpConversionPattern<SrcOp>::OpConversionPattern;
@@ -407,12 +417,13 @@ private:
   }
 
   StringRef funcName;
-  // If set, use the result type of the operation as template parameter
+  // If set, use the result type of the operation as template parameter.
   bool explicitResultType;
-  // If set, use the operand types as (additional) template parameters
+  // If set, use the operand types as (additional) template parameters.
   bool explicitOperandTypes;
 };
 
+/// Convert `tosa.mul` into an `emitc.call` operation.
 class MulOpConversion : public OpConversionPattern<tosa::MulOp> {
   using OpConversionPattern<tosa::MulOp>::OpConversionPattern;
 
@@ -472,8 +483,8 @@ private:
 
     ArrayAttr args = rewriter.getArrayAttr(args_);
 
-    // we need to adjust output shape of reduce since our implementation does
-    // not keep reduced dimensions
+    // We need to adjust output shape of reduce since our implementation does
+    // not keep reduced dimensions.
     Value output = reduceOp.getResult();
     RankedTensorType reducedOutputType =
         output.getType().cast<RankedTensorType>();
@@ -484,7 +495,7 @@ private:
       newReducedOutputShape.push_back(dim);
     };
 
-    // remove reduced axis from shape
+    // Remove reduced axis from shape
     newReducedOutputShape.erase(newReducedOutputShape.begin() +
                                 reduceOp.axis());
 
@@ -499,7 +510,7 @@ private:
     auto emitcReduceOp = rewriter.create<emitc::CallOp>(
         reduceOp.getLoc(), newOutputType, callee, args, templateArgs, operands);
 
-    // create tosa.reshape op
+    // Create tosa.reshape op
     SmallVector<Attribute> newShapeAttr_;
     for (auto dim : output.getType().cast<RankedTensorType>().getShape()) {
       newShapeAttr_.push_back(
@@ -518,6 +529,7 @@ private:
   StringRef funcName;
 };
 
+/// Convert `tosa.pad` into an `emitc.call` operation.
 class PadOpConversion : public OpConversionPattern<tosa::PadOp> {
   using OpConversionPattern<tosa::PadOp>::OpConversionPattern;
 
@@ -553,10 +565,10 @@ private:
 
 void populateTosaToEmitcPatterns(MLIRContext *ctx,
                                  OwningRewritePatternList &patterns) {
-  // Data node ops
+  // Insert patterns for TOSA data node ops.
   patterns.insert<ConstOpConversion>(ctx);
 
-  // Unary elementwise ops
+  // Insert patterns for TOSA unary elementwise ops.
   patterns.insert<CallOpConversion<tosa::AbsOp>>(ctx, "tosa::abs");
   patterns.insert<CallOpConversion<tosa::CeilOp>>(ctx, "tosa::ceil");
   patterns.insert<CallOpConversion<tosa::ExpOp>>(ctx, "tosa::exp");
@@ -568,12 +580,12 @@ void populateTosaToEmitcPatterns(MLIRContext *ctx,
   patterns.insert<RsqrtOpConversion>(ctx);
   patterns.insert<CallOpConversion<tosa::TanhOp>>(ctx, "tosa::tanh");
 
-  // Binary elementwise ops
+  // Insert patterns for TOSA binary elementwise ops.
   patterns.insert<CallOpBroadcastableConversion<tosa::AddOp>>(ctx, "tosa::add");
   patterns.insert<MulOpConversion>(ctx, "tosa::mul");
   patterns.insert<CallOpBroadcastableConversion<tosa::SubOp>>(ctx, "tosa::sub");
 
-  // Other ops
+  // Insert patterns for other TOSA ops.
   patterns.insert<GenericConvOpConversion<tosa::Conv2DOp>>(ctx, "tosa::conv2d");
   patterns.insert<GenericConvOpConversion<tosa::DepthwiseConv2DOp>>(
       ctx, "tosa::depthwise_conv2d");
@@ -604,7 +616,7 @@ struct ConvertTosaToEmitCPass
     : public ConvertTosaToEmitCBase<ConvertTosaToEmitCPass> {
   /// Perform the lowering to EmitC dialect.
   void runOnFunction() override {
-    // Convert other ops
+
     ConversionTarget target(getContext());
 
     target.addLegalDialect<emitc::EmitCDialect>();

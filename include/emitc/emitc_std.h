@@ -10,7 +10,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// This file defines functions used by EmitC
+// This file defines functions used by EmitC.
 
 #ifndef EMITC_EMITC_STD_H
 #define EMITC_EMITC_STD_H

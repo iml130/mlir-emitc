@@ -10,7 +10,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// This file defines the EmitC core ops
+// This file defines the EmitC core ops.
 
 #ifndef EMITC_EMITC_CORE_OPS_H
 #define EMITC_EMITC_CORE_OPS_H
@@ -28,9 +28,9 @@
 
 namespace emitc {
 
-/// Functions for unary elementwise ops
+/// Functions for unary elementwise ops.
 // AbsOp
-// TODO support complex numbers
+// TODO: Add support for complex numbers.
 template <typename Src>
 inline Src abs(Src x) {
   using ET_Src = typename get_element_type<Src>::type;
@@ -167,7 +167,7 @@ inline Src sub(Src x, Src y) {
   return binary<Src>(x, y, f);
 }
 
-/// Other ops
+/// Other ops.
 // BroadcastInDimOp
 // The broadcast_dimensions argument maps from Src to Dest dimensions
 template <typename Dest, typename Src>
@@ -180,7 +180,7 @@ broadcast_in_dim(Src operand,
   std::vector<size_t> retainedDimensions(Dest::rank());
   std::iota(retainedDimensions.begin(), retainedDimensions.end(), 0);
 
-  // Checks if broadcast_dimensions is a subset of 0 .. Dest::rank()
+  // Checks if broadcast_dimensions is a subset of 0 .. Dest::rank().
   retainedDimensions.erase(
       std::remove_if(retainedDimensions.begin(), retainedDimensions.end(),
                      [&broadcast_dimensions](size_t i) {
@@ -195,7 +195,7 @@ broadcast_in_dim(Src operand,
   for (size_t i = 0; i < result.size(); i++) {
     auto dest_index = result.unravel_index(i);
 
-    // reverse mapping with broadcast_dimensions
+    // Reverse mapping with broadcast_dimensions
     std::array<size_t, Src::rank()> src_index;
     for (size_t j = 0; j < src_index.size(); j++) {
       src_index[j] = dest_index[broadcast_dimensions(j)];
@@ -291,7 +291,7 @@ inline Dest pad(Src operand,
   for (size_t i = 0; i < result.size(); i++) {
     auto index = result.unravel_index(i);
 
-    // shift by low padding
+    // Shift by low padding
     for (size_t j = 0; j < index.size(); j++) {
       index[j] -= edge_padding_low[j];
     }
@@ -299,7 +299,7 @@ inline Dest pad(Src operand,
     if (interior(index)) {
       result[i] = padding_value();
     } else {
-      // squeeze by interrior padding
+      // Squeeze by interrior padding
       for (size_t j = 0; j < index.size(); j++) {
         size_t pad = interior_padding[j];
         assert(index[j] % (pad + 1) == 0);

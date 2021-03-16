@@ -10,7 +10,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// This file defines the tensor class used by EmitC
+// This file defines the tensor class used by EmitC.
 
 #ifndef EMITC_EMITC_TYPES_H
 #define EMITC_EMITC_TYPES_H
@@ -68,7 +68,7 @@ struct conjunction<B1, Bn...>
 template <class... B>
 constexpr bool conjunction_v = conjunction<B...>::value;
 
-// template switch case statement.
+// Template switch case statement.
 // case_t => condition/case
 template <bool B, typename T>
 struct case_t {

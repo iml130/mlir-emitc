@@ -266,6 +266,8 @@ static LogicalResult printIfOp(CppEmitter &emitter, emitc::IfOp ifOp) {
 
   auto &thenRegion = ifOp.thenRegion();
   for (auto &op : thenRegion.getOps()) {
+    // Note: This prints a superfluous semicolon if the terminating yield op has
+    // zero results.
     if (failed(emitter.emitOperation(op, /*trailingSemicolon=*/true)))
       return failure();
   }
@@ -277,6 +279,8 @@ static LogicalResult printIfOp(CppEmitter &emitter, emitc::IfOp ifOp) {
     os << "else {\n";
 
     for (auto &op : elseRegion.getOps()) {
+      // Note: This prints a superfluous semicolon if the terminating yield op
+      // has zero results.
       if (failed(emitter.emitOperation(op, /*trailingSemicolon=*/true)))
         return failure();
     }

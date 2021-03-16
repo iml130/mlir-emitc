@@ -25,89 +25,68 @@ using namespace mlir;
 using namespace mlir::emitc;
 using llvm::formatv;
 
+template <typename ConstOpTy>
 static LogicalResult printConstantOp(CppEmitter &emitter,
-                                     ConstantOp constantOp) {
+                                     ConstOpTy constantOp) {
   auto &os = emitter.ostream();
   auto result = constantOp.getOperation()->getResult(0);
   auto value = constantOp.value();
 
-  bool isScalar = !result.getType().isa<TensorType>();
+  bool isScalar = !result.getType().template isa<TensorType>();
 
   // Add braces only if
   //  - cpp code is emitted,
   //  - variables are not forward declared
-  //  - and the emitted type is a scalar.
-  bool emitBraces = !emitter.restrictedToC() &&
-                    !emitter.forwardDeclaredVariables() && isScalar;
+  //  - and the emitted type is a scalar (to prevent double brace
+  //  initialization).
+  bool braceInitialization =
+      !emitter.restrictedToC() && !emitter.forwardDeclaredVariables();
+  bool emitBraces = braceInitialization && isScalar;
+  bool emitEqual = !braceInitialization;
 
   // Emit an assignment if variables are forward declared.
   if (emitter.forwardDeclaredVariables()) {
-    if (failed(emitter.emitVariableAssignment(result)))
-      return failure();
-  } else {
-    if (failed(emitter.emitVariableDeclaration(result,
-                                               /*trailingSemicolon=*/false)))
-      return failure();
-    if (emitter.restrictedToC())
-      os << " = ";
-  }
-
-  if (emitBraces)
-    os << "{";
-
-  if (failed(emitter.emitAttribute(value)))
-    return constantOp.emitError("unable to emit constant value");
-
-  if (emitBraces)
-    os << "}";
-
-  return success();
-}
-
-static LogicalResult printConstOp(CppEmitter &emitter, ConstOp constOp) {
-  auto &os = emitter.ostream();
-  auto result = constOp.getOperation()->getResult(0);
-  auto value = constOp.value();
-
-  bool isScalar = !result.getType().isa<TensorType>();
-
-  // Add braces only if
-  //  - cpp code is emitted,
-  //  - variables are not forward declared
-  //  - and the emitted type is a scalar.
-  bool braceInitialization = !emitter.restrictedToC() &&
-                             !emitter.forwardDeclaredVariables() && isScalar;
-
-  // Emit an assignment if variables are forward declared.
-  if (emitter.forwardDeclaredVariables()) {
-    if (auto sAttr = value.dyn_cast<StringAttr>()) {
+    // Special case for emitc.const
+    if (auto sAttr = value.template dyn_cast<StringAttr>()) {
       if (sAttr.getValue().empty())
         return success();
     }
+
     if (failed(emitter.emitVariableAssignment(result)))
       return failure();
-  } else {
-    if (failed(emitter.emitVariableDeclaration(result,
-                                               /*trailingSemicolon=*/false)))
-      return failure();
-    if (auto sAttr = value.dyn_cast<StringAttr>()) {
-      if (sAttr.getValue().empty()) {
-        os << ";";
-        return success();
-      }
-    }
-    if (!braceInitialization) {
-      os << " = ";
+    if (failed(emitter.emitAttribute(value)))
+      return constantOp.emitError("unable to emit constant value");
+    return success();
+  }
+
+  // Special case for emitc.const
+  if (auto sAttr = value.template dyn_cast<StringAttr>()) {
+    if (sAttr.getValue().empty()) {
+      if (failed(emitter.emitVariableDeclaration(result,
+                                                 /*trailingSemicolon=*/true)))
+        return failure();
+      return success();
     }
   }
 
-  if (braceInitialization)
+  if (emitEqual) {
+    if (failed(emitter.emitAssignPrefix(*constantOp.getOperation()))) {
+      return failure();
+    }
+    if (failed(emitter.emitAttribute(value)))
+      return constantOp.emitError("unable to emit constant value");
+    return success();
+  }
+
+  if (failed(emitter.emitVariableDeclaration(result,
+                                             /*trailingSemicolon=*/false)))
+    return failure();
+
+  if (emitBraces)
     os << "{";
-
   if (failed(emitter.emitAttribute(value)))
-    return constOp.emitError("unable to emit constant value");
-
-  if (braceInitialization)
+    return constantOp.emitError("unable to emit constant value");
+  if (emitBraces)
     os << "}";
 
   return success();
@@ -238,9 +217,10 @@ static LogicalResult printForOp(CppEmitter &emitter, emitc::ForOp forOp) {
   auto &forRegion = forOp.region();
   auto regionOps = forRegion.getOps();
 
-  // We skip the trailing yield op because this updates the result variables of
-  // the for op in the generated code. Instead we update the iterArgs at the end
-  // of a loop iteration and set the result variables after the for loop.
+  // We skip the trailing yield op because this updates the result variables
+  // of the for op in the generated code. Instead we update the iterArgs at
+  // the end of a loop iteration and set the result variables after the for
+  // loop.
   for (auto it = regionOps.begin(); std::next(it) != regionOps.end(); ++it) {
     if (failed(emitter.emitOperation(*it, /*trailingSemicolon=*/true)))
       return failure();
@@ -412,8 +392,8 @@ static LogicalResult printFunction(CppEmitter &emitter, FuncOp functionOp) {
   os << ") {\n";
 
   if (emitter.forwardDeclaredVariables()) {
-    // We forward decalre all result variables including results from ops inside
-    // of regions.
+    // We forward decalre all result variables including results from ops
+    // inside of regions.
     auto result =
         functionOp.walk<WalkOrder::PreOrder>([&](Operation *op) -> WalkResult {
           for (auto result : op->getResults()) {
@@ -537,7 +517,7 @@ LogicalResult CppEmitter::emitAttribute(Attribute attr) {
     if (auto iType = dense.getType()
                          .cast<TensorType>()
                          .getElementType()
-                         .cast<IntegerType>()) {
+                         .dyn_cast<IntegerType>()) {
       os << '{';
       interleaveComma(dense, os, [&](APInt val) {
         printInt(val, mapToSigned(iType.getSignedness()));
@@ -548,7 +528,7 @@ LogicalResult CppEmitter::emitAttribute(Attribute attr) {
     if (auto iType = dense.getType()
                          .cast<TensorType>()
                          .getElementType()
-                         .cast<IndexType>()) {
+                         .dyn_cast<IndexType>()) {
       os << '{';
       interleaveComma(dense, os, [&](APInt val) { printInt(val, false); });
       os << '}';
@@ -680,7 +660,7 @@ static LogicalResult printOperation(CppEmitter &emitter, Operation &op) {
   if (auto constantOp = dyn_cast<ConstantOp>(op))
     return printConstantOp(emitter, constantOp);
   if (auto constOp = dyn_cast<emitc::ConstOp>(op))
-    return printConstOp(emitter, constOp);
+    return printConstantOp(emitter, constOp);
   if (auto returnOp = dyn_cast<ReturnOp>(op))
     return printReturnOp(emitter, returnOp);
   if (auto moduleOp = dyn_cast<ModuleOp>(op))

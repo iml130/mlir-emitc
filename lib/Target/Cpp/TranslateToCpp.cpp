@@ -62,8 +62,9 @@ static LogicalResult printConstantOp(CppEmitter &emitter,
   // Special case for emitc.const
   if (auto sAttr = value.template dyn_cast<StringAttr>()) {
     if (sAttr.getValue().empty()) {
+      // The semicolon gets printed by the emitOperation function;
       if (failed(emitter.emitVariableDeclaration(result,
-                                                 /*trailingSemicolon=*/true)))
+                                                 /*trailingSemicolon=*/false)))
         return failure();
       return success();
     }

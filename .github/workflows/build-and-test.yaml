@@ -167,7 +167,7 @@ jobs:
         path: ${{ env.E2E }}
         key: ${{ runner.os }}-e2e-${{ hashFiles('emitc/scripts/*.py', 'emitc/scripts/requirements.txt') }}
 
-    - name: Run e2e test
+    - name: Run MHLO e2e test
       run: |
         ./${EMITC}/build_release/bin/emitc-opt --canonicalize --inline --symbol-dce ${E2E}/model_mhlo.mlir > ${E2E}/model_canon.mlir
         FUNCTION_NAME=$(grep -oe "@[^(]*" "${E2E}"/model_canon.mlir)
@@ -177,4 +177,14 @@ jobs:
         ./${EMITC}/build_release/bin/emitc-translate --mlir-to-cpp "${E2E}"/model_emitc.mlir > "${E2E}"/model_generated.h
         cd ${E2E}
         clang++ test.cpp -O3 -I `pwd`/../emitc/include/emitc -I `pwd` -o test
+        ./test
+
+    - name: Run TOSA e2e test
+      run: |
+        mkdir -p ${EMITC}/build_e2e
+        ./${EMITC}/build_release/bin/emitc-opt --convert-tosa-to-emitc ${EMITC}/test/MobileNetV2_tosa.mlir > ${EMITC}/build_e2e/model_emitc.mlir
+        ./${EMITC}/build_release/bin/emitc-translate --mlir-to-cpp ${EMITC}/build_e2e/model_emitc.mlir > ${EMITC}/build_e2e/model_generated.h
+        cp ${EMITC}/test/MobileNetV2_tosa_test.cpp ${EMITC}/build_e2e/test.cpp
+        cd ${EMITC}/build_e2e/
+        clang++ test.cpp -O3 -I `pwd`/../include/emitc -I `pwd` -o test
         ./test

@@ -1,11 +1,6 @@
 // RUN: emitc-translate -mlir-to-cpp %s | FileCheck %s
 
-// CHECK: // Forward declare functions.
-// CHECK: void test_foo_print();
-// CHECK: int32_t test_single_return(int32_t);
-// CHECK: std::tuple<int32_t, int32_t> test_multiple_return();
-
-// CHECK: void test_foo_print()
+// CHECK: void test_foo_print() {
 func @test_foo_print() {
   // CHECK: [[V1:[^ ]*]] = foo::constant({0, 1});
   %0 = emitc.call "foo::constant"() {args = [dense<[0, 1]> : tensor<2xi32>]} : () -> (i32)

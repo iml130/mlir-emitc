@@ -71,7 +71,7 @@ struct CppEmitter {
   LogicalResult emitAttribute(Attribute attr);
 
   /// Emits operation 'op' with/without training semicolon or returns failure.
-  LogicalResult emitOperation(Operation &op, bool trailingSemicolon = true);
+  LogicalResult emitOperation(Operation &op, bool trailingSemicolon);
 
   /// Emits type 'type' or returns failure.
   LogicalResult emitType(Type type);
@@ -85,6 +85,9 @@ struct CppEmitter {
   /// Emits array of types as a std::tuple of the emitted types independently of
   /// the array size.
   LogicalResult emitTupleType(ArrayRef<Type> types);
+
+  /// Emits an assignment for a variable which has been declared previously.
+  LogicalResult emitVariableAssignment(OpResult result);
 
   /// Emits a variable declaration for a result of an operation.
   LogicalResult emitVariableDeclaration(OpResult result,

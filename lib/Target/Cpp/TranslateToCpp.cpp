@@ -343,6 +343,7 @@ static LogicalResult printModule(CppEmitter &emitter, ModuleOp moduleOp) {
 
   if (emitter.restrictedToC()) {
     os << "#include <stdbool.h>\n";
+    os << "#include <stddef.h>\n";
     os << "#include <stdint.h>\n\n";
   } else {
     os << "#include <cmath>\n\n";

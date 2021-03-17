@@ -42,7 +42,6 @@ static LogicalResult printConstantOp(CppEmitter &emitter,
   bool braceInitialization =
       !emitter.restrictedToC() && !emitter.forwardDeclaredVariables();
   bool emitBraces = braceInitialization && isScalar;
-  bool emitEqual = !braceInitialization;
 
   // Emit an assignment if variables are forward declared.
   if (emitter.forwardDeclaredVariables()) {
@@ -62,7 +61,7 @@ static LogicalResult printConstantOp(CppEmitter &emitter,
   // Special case for emitc.const
   if (auto sAttr = value.template dyn_cast<StringAttr>()) {
     if (sAttr.getValue().empty()) {
-      // The semicolon gets printed by the emitOperation function;
+      // The semicolon gets printed by the emitOperation function.
       if (failed(emitter.emitVariableDeclaration(result,
                                                  /*trailingSemicolon=*/false)))
         return failure();
@@ -70,7 +69,9 @@ static LogicalResult printConstantOp(CppEmitter &emitter,
     }
   }
 
-  if (emitEqual) {
+  // We have to emit a variable declaration.
+  if (!braceInitialization) {
+    // If brace initialization is not used, we have to emit an assignment.
     if (failed(emitter.emitAssignPrefix(*constantOp.getOperation()))) {
       return failure();
     }

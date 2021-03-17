@@ -51,6 +51,65 @@ void emitc::buildTerminatedBody(OpBuilder &builder, Location loc) {
 }
 
 //===----------------------------------------------------------------------===//
+// CallOp
+//===----------------------------------------------------------------------===//
+
+static LogicalResult verify(mlir::emitc::CallOp op) {
+  // callee must not be empty.
+  if (op.callee().empty()) {
+    return op.emitOpError("callee must not be empty");
+  }
+
+  auto argsAttr = op.args();
+  if (argsAttr.hasValue()) {
+    for (auto &arg : argsAttr.getValue()) {
+      // args elements of type index must be in range [0..operands.size).
+      if (auto iArg = arg.dyn_cast<IntegerAttr>()) {
+        if (iArg.getType().isIndex()) {
+          int64_t index = iArg.getInt();
+          if ((index < 0) ||
+              (index >= static_cast<int64_t>(op.getNumOperands()))) {
+            return op.emitOpError("index argument is out of range");
+          }
+        }
+      }
+      // args elements of type ArrayAttr must have a type.
+      else if (auto aArg = arg.dyn_cast<ArrayAttr>()) {
+        if (aArg.getType().isa<NoneType>()) {
+          return op.emitOpError("array argument has no type");
+        }
+      }
+    }
+  }
+
+  auto templateArgsAttr = op.template_args();
+  if (templateArgsAttr.hasValue()) {
+    for (auto &tArg : templateArgsAttr.getValue()) {
+      // C++ forbids float literals as template arguments.
+      if (auto iArg = tArg.dyn_cast<FloatAttr>()) {
+        return op.emitOpError("float literal as template argument is invalid");
+      } else if (auto aArg = tArg.dyn_cast<ArrayAttr>()) {
+        // template_args elements of type ArrayAttr must have a type.
+        if (aArg.getType().isa<NoneType>()) {
+          return op.emitOpError("array template argument has no type");
+        }
+        // template_args elements of type ArrayAttr may not be of type float,
+        // since C++ forbids float literals as template arguments.
+        if (aArg.getType().isa<FloatType>()) {
+          return op.emitOpError(
+              "float literals as template arguments are invalid");
+        }
+        // template_args elements of type DenseElementsAttr are not allowed.
+      } else if (auto dArg = tArg.dyn_cast<DenseElementsAttr>()) {
+        return op.emitOpError("dense elements as template "
+                              "argument are invalid");
+      }
+    }
+  }
+  return success();
+}
+
+//===----------------------------------------------------------------------===//
 // ConstOp
 //===----------------------------------------------------------------------===//
 // Folder

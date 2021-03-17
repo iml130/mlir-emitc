@@ -99,8 +99,52 @@ jobs:
         python3 ../${EMITC}/scripts/tf_to_mhlo_dialect.py model_tf_opt.mlir ../${E2E}/model_mhlo.mlir
         python3 ../${EMITC}/scripts/generate_testscases.py --file-format cpp --count 1 --batch-size 2 --seed 1234 mobilenet_v2.h5 ../${E2E}/
 
-  build:
-    name: Build and test EmitC
+  build-debug:
+    name: Build and test EmitC (Debug)
+    needs: build-llvm
+    runs-on: ubuntu-20.04
+    steps:
+    - name: Configure environment
+      run: echo "$GITHUB_WORKSPACE/${LLVM}/install/bin" >> $GITHUB_PATH
+
+    - name: Checkout EmitC
+      uses: actions/checkout@v2
+      with:
+        path: ${{ env.EMITC }}
+        submodules: 'true'
+
+    - name: Get LLVM hash
+      id: get-llvm-hash
+      run: echo "llvm_hash=$(cat ${{ env.EMITC }}/build_tools/llvm_version.txt)" >> $GITHUB_ENV
+      shell: bash
+
+    - name: Cache LLVM
+      id: cache-llvm
+      uses: actions/cache@v2
+      with:
+        path: ${{ env.LLVM }}
+        key: ${{ runner.os }}-llvm-20.04-install-${{ env.llvm_hash }}
+
+    - name: Build and test EmitC
+      id: build-emitc-debug
+      run: |
+        mkdir -p ${EMITC}/build_debug
+        cd ${EMITC}/build_debug
+        cmake .. \
+          -DCMAKE_BUILD_TYPE=Debug \
+          -DLLVM_ENABLE_ASSERTIONS=ON \
+          -DMLIR_DIR=$GITHUB_WORKSPACE/${LLVM}/install/lib/cmake/mlir/ \
+          -DLLVM_DIR=$GITHUB_WORKSPACE/${LLVM}/install/lib/cmake/llvm/ \
+          -DCMAKE_LINKER=lld \
+          -DCMAKE_C_COMPILER=clang \
+          -DCMAKE_CXX_COMPILER=clang++ \
+          -DLLVM_EXTERNAL_LIT=`pwd`/../../${LLVM}/build/bin/llvm-lit
+        cmake --build . --target check-emitc -- -j$(nproc)
+        cmake --build . --target MLIREmitCAllTests -- -j$(nproc)
+        ./unittests/MLIREmitCAllTests
+
+  build-release:
+    name: Build and test EmitC (Release)
     needs: [build-llvm, prepare-e2e-test]
     runs-on: ubuntu-20.04
     steps:
@@ -125,25 +169,7 @@ jobs:
         path: ${{ env.LLVM }}
         key: ${{ runner.os }}-llvm-20.04-install-${{ env.llvm_hash }}
 
-    - name: Build and test EmitC (Debug)
-      id: build-emitc-debug
-      run: |
-        mkdir -p ${EMITC}/build_debug
-        cd ${EMITC}/build_debug
-        cmake .. \
-          -DCMAKE_BUILD_TYPE=Debug \
-          -DLLVM_ENABLE_ASSERTIONS=ON \
-          -DMLIR_DIR=$GITHUB_WORKSPACE/${LLVM}/install/lib/cmake/mlir/ \
-          -DLLVM_DIR=$GITHUB_WORKSPACE/${LLVM}/install/lib/cmake/llvm/ \
-          -DCMAKE_LINKER=lld \
-          -DCMAKE_C_COMPILER=clang \
-          -DCMAKE_CXX_COMPILER=clang++ \
-          -DLLVM_EXTERNAL_LIT=`pwd`/../../${LLVM}/build/bin/llvm-lit
-        cmake --build . --target check-emitc -- -j$(nproc)
-        cmake --build . --target MLIREmitCAllTests -- -j$(nproc)
-        ./unittests/MLIREmitCAllTests
-
-    - name: Build and test EmitC (Release)
+    - name: Build and test EmitC
       id: build-emitc-release
       run: |
         mkdir -p ${EMITC}/build_release

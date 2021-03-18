@@ -17,7 +17,7 @@ import argparse
 from tensorflow.python import pywrap_mlir  # pylint: disable=no-name-in-module
 
 
-def translate(model_path: str, output_path: str):
+def convert(model_path: str, output_path: str):
     pass_pipeline = ",".join([
         "xla-legalize-tf", "canonicalize",
         "tf-saved-model-optimize-global-tensors"
@@ -42,7 +42,7 @@ def main():
                         help="Output path")
     args = parser.parse_args()
 
-    translate(args.model_path, args.output_path)
+    convert(args.model_path, args.output_path)
 
 
 if __name__ == "__main__":

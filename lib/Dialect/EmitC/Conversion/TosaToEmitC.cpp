@@ -82,7 +82,10 @@ private:
       }
     }
 
-    ArrayAttr templateArgs = ArrayAttr::get(srcOp.getContext(), templateArgs_);
+    ArrayAttr templateArgs;
+    if (!templateArgs_.empty()) {
+      templateArgs = ArrayAttr::get(srcOp.getContext(), templateArgs_);
+    }
 
     rewriter.replaceOpWithNewOp<emitc::CallOp>(srcOp, srcOp.getType(), callee,
                                                args, templateArgs, operands);
@@ -404,7 +407,10 @@ private:
       }
     }
 
-    ArrayAttr templateArgs = ArrayAttr::get(srcOp.getContext(), templateArgs_);
+    ArrayAttr templateArgs;
+    if (!templateArgs_.empty()) {
+      templateArgs = ArrayAttr::get(srcOp.getContext(), templateArgs_);
+    }
 
     SmallVector<Value, 2> broadcastedOperands =
         createBroadcastOpIfNeeded(srcOp, operands, rewriter);

@@ -238,8 +238,10 @@ private:
         templateArgs_.push_back(TypeAttr::get(type));
       }
     }
-
-    ArrayAttr templateArgs = ArrayAttr::get(srcOp.getContext(), templateArgs_);
+    ArrayAttr templateArgs;
+    if (!templateArgs_.empty()) {
+      templateArgs = ArrayAttr::get(srcOp.getContext(), templateArgs_);
+    }
 
     rewriter.replaceOpWithNewOp<emitc::CallOp>(srcOp, srcOp.getType(), callee,
                                                args, templateArgs, operands);

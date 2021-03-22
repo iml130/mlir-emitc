@@ -90,7 +90,7 @@ static LogicalResult verify(mlir::emitc::CallOp op) {
       if (auto iArg = tArg.dyn_cast<FloatAttr>()) {
         return op.emitOpError("float literal as template argument is invalid");
       }
-      // Template args with elements of type ArrayAttr are not allowed
+      // Template args with elements of type ArrayAttr are not allowed.
       else if (auto aArg = tArg.dyn_cast<ArrayAttr>()) {
         return op.emitOpError("array as template arguments is invalid");
       }

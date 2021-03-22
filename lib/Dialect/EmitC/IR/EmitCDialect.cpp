@@ -63,10 +63,11 @@ static LogicalResult verify(mlir::emitc::CallOp op) {
   auto argsAttr = op.args();
   if (argsAttr.hasValue()) {
     for (auto &arg : argsAttr.getValue()) {
-      // Args with elements of type index must be in range [0..operands.size).
       if (auto iArg = arg.dyn_cast<IntegerAttr>()) {
         if (iArg.getType().isIndex()) {
           int64_t index = iArg.getInt();
+          // Args with elements of type index must be in range
+          // [0..operands.size).
           if ((index < 0) ||
               (index >= static_cast<int64_t>(op.getNumOperands()))) {
             return op.emitOpError("index argument is out of range");
@@ -89,7 +90,7 @@ static LogicalResult verify(mlir::emitc::CallOp op) {
       if (auto iArg = tArg.dyn_cast<FloatAttr>()) {
         return op.emitOpError("float literal as template argument is invalid");
       }
-      // Template args with elements of type array are not allowed
+      // Template args with elements of type ArrayAttr are not allowed
       else if (auto aArg = tArg.dyn_cast<ArrayAttr>()) {
         return op.emitOpError("array as template arguments is invalid");
       }

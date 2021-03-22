@@ -136,7 +136,7 @@ static LogicalResult printCallOp(CppEmitter &emitter, emitc::CallOp callOp) {
   if (callOp.template_args()) {
     if (emitter.restrictedToC()) {
       return op.emitOpError()
-             << "template arguments are invalid if translating to C";
+             << "template arguments are not supported if emitting C";
     }
     os << "<";
     if (failed(interleaveCommaWithError(*callOp.template_args(), os, emitArgs)))

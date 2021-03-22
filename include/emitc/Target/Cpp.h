@@ -101,6 +101,9 @@ struct CppEmitter {
   /// any result type could not be converted.
   LogicalResult emitAssignPrefix(Operation &op);
 
+  /// Emits a label for the block.
+  LogicalResult emitLabel(Block &block);
+
   /// Emits the operands and atttributes of the operation. All operands are
   /// emitted first and then all attributes in alphabetical order.
   LogicalResult emitOperandsAndAttributes(Operation &op,
@@ -112,12 +115,16 @@ struct CppEmitter {
   /// Return the existing or a new name for a Value.
   StringRef getOrCreateName(Value val);
 
+  /// Return the existing or a new name for a Block.
+  StringRef getOrCreateName(Block &block);
+
   /// Whether to map an mlir integer to a signed integer in C++.
   bool mapToSigned(IntegerType::SignednessSemantics val);
 
   /// RAII helper function to manage entering/exiting C++ scopes.
   struct Scope {
-    Scope(CppEmitter &emitter) : mapperScope(emitter.mapper), emitter(emitter) {
+    Scope(CppEmitter &emitter)
+        : mapperScope(emitter.valMapper), emitter(emitter) {
       emitter.valueInScopeCount.push(emitter.valueInScopeCount.top());
     }
     ~Scope() { emitter.valueInScopeCount.pop(); }
@@ -130,6 +137,9 @@ struct CppEmitter {
   /// Returns wether the Value is assigned to a C++ variable in the scope.
   bool hasValueInScope(Value val);
 
+  // Returns wether the Block has a C++ label assigned to it.
+  bool hasBlockLabel(Block &block);
+
   /// Returns the output stream.
   raw_ostream &ostream() { return os; };
 
@@ -141,6 +151,7 @@ struct CppEmitter {
 
 private:
   using ValMapper = llvm::ScopedHashTable<Value, std::string>;
+  using BlockMapper = llvm::DenseMap<Block *, std::string>;
 
   /// Output stream to emit to.
   raw_ostream &os;
@@ -152,7 +163,10 @@ private:
   bool forwardDeclareVariables;
 
   /// Map from value to name of C++ variable that contain the name.
-  ValMapper mapper;
+  ValMapper valMapper;
+
+  /// Map from block to name of C++ label.
+  BlockMapper blockMapper;
 
   /// The number of values in the current scope. This is used to declare the
   /// names of values in a scope.

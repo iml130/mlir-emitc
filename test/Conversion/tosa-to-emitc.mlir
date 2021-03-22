@@ -12,37 +12,37 @@ func @test_const(%arg0 : index) -> tensor<4xi32> {
 // Unary elementwise ops
 
 func @test_abs(%arg0: tensor<13x21x3xf32>) -> tensor<13x21x3xf32> {
-  // CHECK: emitc.call "tosa::abs"(%arg0) {template_args = []} : (tensor<13x21x3xf32>) -> tensor<13x21x3xf32>
+  // CHECK: emitc.call "tosa::abs"(%arg0) : (tensor<13x21x3xf32>) -> tensor<13x21x3xf32>
   %0 = "tosa.abs"(%arg0) : (tensor<13x21x3xf32>) -> tensor<13x21x3xf32>
   return %0 : tensor<13x21x3xf32>
 }
 
 func @test_ceil(%arg0: tensor<13x21x3xf32>) -> tensor<13x21x3xf32> {
-  // CHECK: emitc.call "tosa::ceil"(%arg0) {template_args = []} : (tensor<13x21x3xf32>) -> tensor<13x21x3xf32>
+  // CHECK: emitc.call "tosa::ceil"(%arg0) : (tensor<13x21x3xf32>) -> tensor<13x21x3xf32>
   %0 = "tosa.ceil"(%arg0) : (tensor<13x21x3xf32>) -> tensor<13x21x3xf32>
   return %0 : tensor<13x21x3xf32>
 }
 
 func @test_exp(%arg0: tensor<13x21x3xf32>) -> tensor<13x21x3xf32> {
-  // CHECK: emitc.call "tosa::exp"(%arg0) {template_args = []} : (tensor<13x21x3xf32>) -> tensor<13x21x3xf32>
+  // CHECK: emitc.call "tosa::exp"(%arg0) : (tensor<13x21x3xf32>) -> tensor<13x21x3xf32>
   %0 = "tosa.exp"(%arg0) : (tensor<13x21x3xf32>) -> tensor<13x21x3xf32>
   return %0 : tensor<13x21x3xf32>
 }
 
 func @test_floor(%arg0: tensor<13x21x3xf32>) -> tensor<13x21x3xf32> {
-  // CHECK: emitc.call "tosa::floor"(%arg0) {template_args = []} : (tensor<13x21x3xf32>) -> tensor<13x21x3xf32>
+  // CHECK: emitc.call "tosa::floor"(%arg0) : (tensor<13x21x3xf32>) -> tensor<13x21x3xf32>
   %0 = "tosa.floor"(%arg0) : (tensor<13x21x3xf32>) -> tensor<13x21x3xf32>
   return %0 : tensor<13x21x3xf32>
 }
 
 func @test_log(%arg0: tensor<13x21x3xf32>) -> tensor<13x21x3xf32> {
-  // CHECK: emitc.call "tosa::log"(%arg0) {template_args = []} : (tensor<13x21x3xf32>) -> tensor<13x21x3xf32>
+  // CHECK: emitc.call "tosa::log"(%arg0) : (tensor<13x21x3xf32>) -> tensor<13x21x3xf32>
   %0 = "tosa.log"(%arg0) : (tensor<13x21x3xf32>) -> tensor<13x21x3xf32>
   return %0 : tensor<13x21x3xf32>
 }
 
 func @test_reciprocal(%arg0: tensor<13x21x3xf32>) -> tensor<13x21x3xf32> {
-  // CHECK: %0 = emitc.call "tosa::reciprocal"(%arg0) {template_args = []} : (tensor<13x21x3xf32>) -> tensor<13x21x3xf32>
+  // CHECK: %0 = emitc.call "tosa::reciprocal"(%arg0) : (tensor<13x21x3xf32>) -> tensor<13x21x3xf32>
   %0 = "tosa.reciprocal"(%arg0) : (tensor<13x21x3xf32>) -> tensor<13x21x3xf32>
   return %0 : tensor<13x21x3xf32>
 }
@@ -55,7 +55,7 @@ func @test_rsqrt(%arg0: tensor<13x21x3xf32>) -> tensor<13x21x3xf32> {
 }
 
 func @test_tanh(%arg0: tensor<13x21x3xf32>) -> tensor<13x21x3xf32> {
-  // CHECK: %0 = emitc.call "tosa::tanh"(%arg0) {template_args = []} : (tensor<13x21x3xf32>) -> tensor<13x21x3xf32>
+  // CHECK: %0 = emitc.call "tosa::tanh"(%arg0) : (tensor<13x21x3xf32>) -> tensor<13x21x3xf32>
   %0 = "tosa.tanh"(%arg0) : (tensor<13x21x3xf32>) -> tensor<13x21x3xf32>
   return %0 : tensor<13x21x3xf32>
 }
@@ -64,7 +64,7 @@ func @test_tanh(%arg0: tensor<13x21x3xf32>) -> tensor<13x21x3xf32> {
 
 func @test_add(%arg0: tensor<13x21x1xf32>, %arg1: tensor<13x21x3xf32>) -> tensor<13x21x3xf32> {
   // CHECK: emitc.call "emitc::broadcast_in_dim"(%arg0) {args = [0 : index, dense<[0, 1, 2]> : tensor<3xi64>], template_args = [tensor<13x21x3xf32>]} : (tensor<13x21x1xf32>) -> tensor<13x21x3xf32>
-  // CHECK: emitc.call "tosa::add"(%0, %arg1) {template_args = []} : (tensor<13x21x3xf32>, tensor<13x21x3xf32>) -> tensor<13x21x3xf32>
+  // CHECK: emitc.call "tosa::add"(%0, %arg1) : (tensor<13x21x3xf32>, tensor<13x21x3xf32>) -> tensor<13x21x3xf32>
   %0 = "tosa.add"(%arg0, %arg1) : (tensor<13x21x1xf32>, tensor<13x21x3xf32>) -> tensor<13x21x3xf32>
   return %0 : tensor<13x21x3xf32>
 }
@@ -118,7 +118,7 @@ func @test_mul5(%arg0: tensor<2x13x21x3xi32>, %arg1: tensor<21x3xi32>) -> tensor
 
 func @test_sub(%arg0: tensor<13x21x1xf32>, %arg1: tensor<13x21x3xf32>) -> tensor<13x21x3xf32> {
   // CHECK: emitc.call "emitc::broadcast_in_dim"(%arg0) {args = [0 : index, dense<[0, 1, 2]> : tensor<3xi64>], template_args = [tensor<13x21x3xf32>]} : (tensor<13x21x1xf32>) -> tensor<13x21x3xf32>
-  // CHECK: emitc.call "tosa::sub"(%0, %arg1) {template_args = []} : (tensor<13x21x3xf32>, tensor<13x21x3xf32>) -> tensor<13x21x3xf32>
+  // CHECK: emitc.call "tosa::sub"(%0, %arg1) : (tensor<13x21x3xf32>, tensor<13x21x3xf32>) -> tensor<13x21x3xf32>
   %0 = "tosa.sub"(%arg0, %arg1) : (tensor<13x21x1xf32>, tensor<13x21x3xf32>) -> tensor<13x21x3xf32>
   return %0 : tensor<13x21x3xf32>
 }
@@ -128,7 +128,7 @@ func @test_sub(%arg0: tensor<13x21x1xf32>, %arg1: tensor<13x21x3xf32>) -> tensor
 func @test_conv2d(%arg0: tensor<1x4x4x4xf32>, %arg1: tensor<8x1x1x4xf32>, %arg2: tensor<8xf32>) -> tensor<1x4x4x8xf32> {
     // CHECK: %0 = emitc.call "tosa::conv2d"(%arg0, %arg1) {args = [0 : index, 1 : index, dense<0> : tensor<4xi64>, dense<1> : tensor<2xi64>, dense<1> : tensor<2xi64>], template_args = [tensor<1x4x4x8xf32>]} : (tensor<1x4x4x4xf32>, tensor<8x1x1x4xf32>) -> tensor<1x4x4x8xf32>
     // CHECK: %1 = emitc.call "emitc::broadcast_in_dim"(%arg2) {args = [0 : index, dense<3> : tensor<1xi64>], template_args = [tensor<1x4x4x8xf32>]} : (tensor<8xf32>) -> tensor<1x4x4x8xf32>
-    // CHECK: %2 = emitc.call "tosa::add"(%0, %1) {template_args = []} : (tensor<1x4x4x8xf32>, tensor<1x4x4x8xf32>) -> tensor<1x4x4x8xf32>
+    // CHECK: %2 = emitc.call "tosa::add"(%0, %1) : (tensor<1x4x4x8xf32>, tensor<1x4x4x8xf32>) -> tensor<1x4x4x8xf32>
     %0 = "tosa.conv2d"(%arg0, %arg1, %arg2) {dilation = [1, 1], pad = [0, 0, 0, 0], stride = [1, 1]} : (tensor<1x4x4x4xf32>, tensor<8x1x1x4xf32>, tensor<8xf32>) -> tensor<1x4x4x8xf32>
     return %0 : tensor<1x4x4x8xf32>
 }
@@ -136,7 +136,7 @@ func @test_conv2d(%arg0: tensor<1x4x4x4xf32>, %arg1: tensor<8x1x1x4xf32>, %arg2:
 func @test_depthwise_conv2d(%arg0: tensor<1x4x5x2xf32>, %arg1: tensor<2x2x2x2xf32>, %arg2: tensor<4xf32>) -> tensor<1x3x4x4xf32> {
     // CHECK: %0 = emitc.call "tosa::depthwise_conv2d"(%arg0, %arg1) {args = [0 : index, 1 : index, dense<0> : tensor<4xi64>, dense<1> : tensor<2xi64>, dense<1> : tensor<2xi64>], template_args = [tensor<1x3x4x4xf32>]} : (tensor<1x4x5x2xf32>, tensor<2x2x2x2xf32>) -> tensor<1x3x4x4xf32>
     // CHECK: %1 = emitc.call "emitc::broadcast_in_dim"(%arg2) {args = [0 : index, dense<3> : tensor<1xi64>], template_args = [tensor<1x3x4x4xf32>]} : (tensor<4xf32>) -> tensor<1x3x4x4xf32>
-    // CHECK: %2 = emitc.call "tosa::add"(%0, %1) {template_args = []} : (tensor<1x3x4x4xf32>, tensor<1x3x4x4xf32>) -> tensor<1x3x4x4xf32>
+    // CHECK: %2 = emitc.call "tosa::add"(%0, %1) : (tensor<1x3x4x4xf32>, tensor<1x3x4x4xf32>) -> tensor<1x3x4x4xf32>
     %0 = "tosa.depthwise_conv2d"(%arg0, %arg1, %arg2) {dilation = [1, 1], pad = [0, 0, 0, 0], stride = [1, 1]} : (tensor<1x4x5x2xf32>, tensor<2x2x2x2xf32>, tensor<4xf32>) -> tensor<1x3x4x4xf32>
     return %0 : tensor<1x3x4x4xf32>
 }

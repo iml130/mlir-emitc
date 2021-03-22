@@ -88,21 +88,15 @@ static LogicalResult verify(mlir::emitc::CallOp op) {
       // C++ forbids float literals as template arguments.
       if (auto iArg = tArg.dyn_cast<FloatAttr>()) {
         return op.emitOpError("float literal as template argument is invalid");
-      } else if (auto aArg = tArg.dyn_cast<ArrayAttr>()) {
-        // Template args with elements of type array must have a type.
-        if (aArg.getType().isa<NoneType>()) {
-          return op.emitOpError("array template argument has no type");
-        }
-        // Template args with elements of type array may not be of type float,
-        // since C++ forbids float literals as template arguments.
-        if (aArg.getType().isa<FloatType>()) {
-          return op.emitOpError(
-              "float literals as template arguments are invalid");
-        }
-        // Template args  with elements of type DenseFPElementsAttr are not
-        // allowed.
-      } else if (auto dArg = tArg.dyn_cast<DenseFPElementsAttr>()) {
-        return op.emitOpError("dense float elements as template "
+      }
+      // Template args with elements of type array are not allowed
+      else if (auto aArg = tArg.dyn_cast<ArrayAttr>()) {
+        return op.emitOpError("array as template arguments is invalid");
+      }
+      // Template args with elements of type DenseElementsAttr are not
+      // allowed.
+      else if (auto dArg = tArg.dyn_cast<DenseElementsAttr>()) {
+        return op.emitOpError("dense elements as template "
                               "argument are invalid");
       }
     }

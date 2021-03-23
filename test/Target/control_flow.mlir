@@ -93,7 +93,7 @@ func @block_labels0() {
   // CPP-FWDDECL-NEXT: }
 
 
-// Repeat the same function to make sure the block labels get reset
+// Repeat the same function to make sure the names of the block labels get reset.
 func @block_labels1() {
 ^bb1:
     br ^bb2

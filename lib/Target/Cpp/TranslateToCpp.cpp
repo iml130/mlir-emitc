@@ -776,29 +776,30 @@ static LogicalResult printOperation(CppEmitter &emitter, Operation &op) {
     return printCallOp(emitter, callOp);
   if (auto constOp = dyn_cast<emitc::ConstOp>(op))
     return printConstantOp(emitter, constOp);
+  if (auto forOp = dyn_cast<emitc::ForOp>(op))
+    return printForOp(emitter, forOp);
   if (auto getAdressOfOp = dyn_cast<emitc::GetAddressOfOp>(op))
     return printGetAddressOfOp(emitter, getAdressOfOp);
   if (auto ifOp = dyn_cast<emitc::IfOp>(op))
     return printIfOp(emitter, ifOp);
-  if (auto forOp = dyn_cast<emitc::ForOp>(op))
-    return printForOp(emitter, forOp);
   if (auto yieldOp = dyn_cast<emitc::YieldOp>(op))
     return printYieldOp(emitter, yieldOp);
+
   // Standard ops.
-  if (auto branchOp = dyn_cast<mlir::BranchOp>(op))
+  if (auto branchOp = dyn_cast<BranchOp>(op))
     return printBranchOp(emitter, branchOp);
   if (auto callOp = dyn_cast<mlir::CallOp>(op))
     return printCallOp(emitter, callOp);
-  if (auto branchOp = dyn_cast<mlir::CondBranchOp>(op))
+  if (auto branchOp = dyn_cast<CondBranchOp>(op))
     return printCondBranchOp(emitter, branchOp);
   if (auto constantOp = dyn_cast<ConstantOp>(op))
     return printConstantOp(emitter, constantOp);
-  if (auto returnOp = dyn_cast<ReturnOp>(op))
-    return printReturnOp(emitter, returnOp);
-  if (auto moduleOp = dyn_cast<ModuleOp>(op))
-    return printModule(emitter, moduleOp);
   if (auto funcOp = dyn_cast<FuncOp>(op))
     return printFunction(emitter, funcOp);
+  if (auto moduleOp = dyn_cast<ModuleOp>(op))
+    return printModule(emitter, moduleOp);
+  if (auto returnOp = dyn_cast<ReturnOp>(op))
+    return printReturnOp(emitter, returnOp);
   if (isa<ModuleTerminatorOp>(op))
     return success();
 

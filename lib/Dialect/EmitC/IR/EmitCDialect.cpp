@@ -51,6 +51,61 @@ void emitc::buildTerminatedBody(OpBuilder &builder, Location loc) {
 }
 
 //===----------------------------------------------------------------------===//
+// CallOp
+//===----------------------------------------------------------------------===//
+
+static LogicalResult verify(mlir::emitc::CallOp op) {
+  // Callee must not be empty.
+  if (op.callee().empty()) {
+    return op.emitOpError("callee must not be empty");
+  }
+
+  auto argsAttr = op.args();
+  if (argsAttr.hasValue()) {
+    for (auto &arg : argsAttr.getValue()) {
+      if (auto iArg = arg.dyn_cast<IntegerAttr>()) {
+        if (iArg.getType().isIndex()) {
+          int64_t index = iArg.getInt();
+          // Args with elements of type index must be in range
+          // [0..operands.size).
+          if ((index < 0) ||
+              (index >= static_cast<int64_t>(op.getNumOperands()))) {
+            return op.emitOpError("index argument is out of range");
+          }
+        }
+      }
+      // Args with elements of type ArrayAttr must have a type.
+      else if (auto aArg = arg.dyn_cast<ArrayAttr>()) {
+        if (aArg.getType().isa<NoneType>()) {
+          return op.emitOpError("array argument has no type");
+        }
+      }
+    }
+  }
+
+  auto templateArgsAttr = op.template_args();
+  if (templateArgsAttr.hasValue()) {
+    for (auto &tArg : templateArgsAttr.getValue()) {
+      // C++ forbids float literals as template arguments.
+      if (auto iArg = tArg.dyn_cast<FloatAttr>()) {
+        return op.emitOpError("float literal as template argument is invalid");
+      }
+      // Template args with elements of type ArrayAttr are not allowed.
+      else if (auto aArg = tArg.dyn_cast<ArrayAttr>()) {
+        return op.emitOpError("array as template arguments is invalid");
+      }
+      // Template args with elements of type DenseElementsAttr are not
+      // allowed.
+      else if (auto dArg = tArg.dyn_cast<DenseElementsAttr>()) {
+        return op.emitOpError("dense elements as template "
+                              "argument are invalid");
+      }
+    }
+  }
+  return success();
+}
+
+//===----------------------------------------------------------------------===//
 // ConstOp
 //===----------------------------------------------------------------------===//
 // Folder

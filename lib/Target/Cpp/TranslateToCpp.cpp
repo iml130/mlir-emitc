@@ -124,7 +124,7 @@ static LogicalResult printCondBranchOp(CppEmitter &emitter,
   os << "if (" << emitter.getOrCreateName(condBranchOp.getCondition())
      << ") {\n";
 
-  // true case
+  // If condition is true.
   for (auto pair : llvm::zip(condBranchOp.getTrueOperands(),
                              trueSuccessor.getArguments())) {
     auto &operand = std::get<0>(pair);
@@ -140,7 +140,7 @@ static LogicalResult printCondBranchOp(CppEmitter &emitter,
   }
   os << emitter.getOrCreateName(trueSuccessor) << ";\n";
   os << "} else {\n";
-  // false case
+  // If condition is false.
   for (auto pair : llvm::zip(condBranchOp.getFalseOperands(),
                              falseSuccessor.getArguments())) {
     auto &operand = std::get<0>(pair);
@@ -771,7 +771,7 @@ LogicalResult CppEmitter::emitLabel(Block &block) {
 }
 
 static LogicalResult printOperation(CppEmitter &emitter, Operation &op) {
-  // emitc ops
+  // EmitC ops.
   if (auto callOp = dyn_cast<emitc::CallOp>(op))
     return printCallOp(emitter, callOp);
   if (auto constOp = dyn_cast<emitc::ConstOp>(op))
@@ -784,8 +784,7 @@ static LogicalResult printOperation(CppEmitter &emitter, Operation &op) {
     return printForOp(emitter, forOp);
   if (auto yieldOp = dyn_cast<emitc::YieldOp>(op))
     return printYieldOp(emitter, yieldOp);
-  // std ops
-  // control flow
+  // Standard ops.
   if (auto branchOp = dyn_cast<mlir::BranchOp>(op))
     return printBranchOp(emitter, branchOp);
   if (auto callOp = dyn_cast<mlir::CallOp>(op))

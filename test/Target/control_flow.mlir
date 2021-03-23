@@ -70,3 +70,46 @@ func @simple(i64, i1) -> i64 {
     // CPP-FWDDECL-NEXT: [[BB4]]:
     // CPP-FWDDECL-NEXT: [[V0]] = add([[D]], [[E]]);
     // CPP-FWDDECL-NEXT: return [[V0]];
+
+
+func @block_labels0() {
+^bb1:
+    br ^bb2
+^bb2:
+    return
+}
+// C-FWDDECL: void block_labels0() {
+  // C-FWDDECL-NEXT: label1:
+  // C-FWDDECL-NEXT: goto label2;
+  // C-FWDDECL-NEXT: label2:
+  // C-FWDDECL-NEXT: return;
+  // C-FWDDECL-NEXT: }
+
+// CPP-FWDDECL: void block_labels0() {
+  // CPP-FWDDECL-NEXT: label1:
+  // CPP-FWDDECL-NEXT: goto label2;
+  // CPP-FWDDECL-NEXT: label2:
+  // CPP-FWDDECL-NEXT: return;
+  // CPP-FWDDECL-NEXT: }
+
+
+// Repeat the same function to make sure the names of the block labels get reset.
+func @block_labels1() {
+^bb1:
+    br ^bb2
+^bb2:
+    return
+}
+// C-FWDDECL: void block_labels1() {
+  // C-FWDDECL-NEXT: label1:
+  // C-FWDDECL-NEXT: goto label2;
+  // C-FWDDECL-NEXT: label2:
+  // C-FWDDECL-NEXT: return;
+  // C-FWDDECL-NEXT: }
+
+// CPP-FWDDECL: void block_labels1() {
+  // CPP-FWDDECL-NEXT: label1:
+  // CPP-FWDDECL-NEXT: goto label2;
+  // CPP-FWDDECL-NEXT: label2:
+  // CPP-FWDDECL-NEXT: return;
+  // CPP-FWDDECL-NEXT: }

@@ -534,6 +534,7 @@ CppEmitter::CppEmitter(raw_ostream &os, bool restrictToC,
     : os(os), restrictToC(restrictToC),
       forwardDeclareVariables(forwardDeclareVariables) {
   valueInScopeCount.push(0);
+  labelInScopeCount.push(0);
 }
 
 /// Return the existing or a new name for a Value.
@@ -546,8 +547,8 @@ StringRef CppEmitter::getOrCreateName(Value val) {
 /// Return the existing or a new name for a Block.
 StringRef CppEmitter::getOrCreateName(Block &block) {
   if (!blockMapper.count(&block))
-    blockMapper.try_emplace(&block, formatv("label{0}", blockMapper.size()));
-  return blockMapper[&block];
+    blockMapper.insert(&block, formatv("label{0}", ++labelInScopeCount.top()));
+  return *blockMapper.begin(&block);
 }
 
 bool CppEmitter::mapToSigned(IntegerType::SignednessSemantics val) {

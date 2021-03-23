@@ -45,7 +45,7 @@ static LogicalResult printConstantOp(CppEmitter &emitter,
 
   // Emit an assignment if variables are forward declared.
   if (emitter.forwardDeclaredVariables()) {
-    // Special case for emitc.const
+    // Special case for emitc.const.
     if (auto sAttr = value.template dyn_cast<StringAttr>()) {
       if (sAttr.getValue().empty())
         return success();
@@ -58,7 +58,7 @@ static LogicalResult printConstantOp(CppEmitter &emitter,
     return success();
   }
 
-  // Special case for emitc.const
+  // Special case for emitc.const.
   if (auto sAttr = value.template dyn_cast<StringAttr>()) {
     if (sAttr.getValue().empty()) {
       // The semicolon gets printed by the emitOperation function.
@@ -612,7 +612,7 @@ LogicalResult CppEmitter::emitAttribute(Attribute attr) {
     return success();
   }
   if (auto dense = attr.dyn_cast<mlir::DenseFPElementsAttr>()) {
-    // Dense attributes are not supported if emitting C
+    // Dense attributes are not supported if emitting C.
     if (restrictedToC())
       return failure();
     os << '{';
@@ -633,7 +633,7 @@ LogicalResult CppEmitter::emitAttribute(Attribute attr) {
     }
   }
   if (auto dense = attr.dyn_cast<DenseIntElementsAttr>()) {
-    // Dense attributes are not supported if emitting C
+    // Dense attributes are not supported if emitting C.
     if (restrictedToC())
       return failure();
     if (auto iType = dense.getType()
@@ -849,7 +849,7 @@ LogicalResult CppEmitter::emitType(Type type) {
     return (os << "size_t"), success();
   }
   if (auto tType = type.dyn_cast<TensorType>()) {
-    // TensorType is not supported if emitting C
+    // TensorType is not supported if emitting C.
     if (restrictedToC())
       return failure();
     if (!tType.hasStaticShape())

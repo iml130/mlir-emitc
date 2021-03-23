@@ -94,6 +94,71 @@ static LogicalResult printConstantOp(CppEmitter &emitter,
   return success();
 }
 
+static LogicalResult printBranchOp(CppEmitter &emitter,
+                                   mlir::BranchOp branchOp) {
+  auto &os = emitter.ostream();
+  Block &successor = *branchOp.getSuccessor();
+
+  for (auto pair :
+       llvm::zip(branchOp.getOperands(), successor.getArguments())) {
+    auto &operand = std::get<0>(pair);
+    auto &argument = std::get<1>(pair);
+    os << emitter.getOrCreateName(argument) << " = "
+       << emitter.getOrCreateName(operand) << ";\n";
+  }
+
+  os << "goto ";
+  if (!(emitter.hasBlockLabel(successor))) {
+    return branchOp.emitOpError() << "Unable to find label for successor block";
+  }
+  os << emitter.getOrCreateName(successor);
+  return success();
+}
+
+static LogicalResult printCondBranchOp(CppEmitter &emitter,
+                                       mlir::CondBranchOp condBranchOp) {
+  auto &os = emitter.ostream();
+  Block &trueSuccessor = *condBranchOp.getTrueDest();
+  Block &falseSuccessor = *condBranchOp.getFalseDest();
+
+  os << "if (" << emitter.getOrCreateName(condBranchOp.getCondition())
+     << ") {\n";
+
+  // If condition is true.
+  for (auto pair : llvm::zip(condBranchOp.getTrueOperands(),
+                             trueSuccessor.getArguments())) {
+    auto &operand = std::get<0>(pair);
+    auto &argument = std::get<1>(pair);
+    os << emitter.getOrCreateName(argument) << " = "
+       << emitter.getOrCreateName(operand) << ";\n";
+  }
+
+  os << "goto ";
+  if (!(emitter.hasBlockLabel(trueSuccessor))) {
+    return condBranchOp.emitOpError()
+           << "Unable to find label for successor block";
+  }
+  os << emitter.getOrCreateName(trueSuccessor) << ";\n";
+  os << "} else {\n";
+  // If condition is false.
+  for (auto pair : llvm::zip(condBranchOp.getFalseOperands(),
+                             falseSuccessor.getArguments())) {
+    auto &operand = std::get<0>(pair);
+    auto &argument = std::get<1>(pair);
+    os << emitter.getOrCreateName(argument) << " = "
+       << emitter.getOrCreateName(operand) << ";\n";
+  }
+
+  os << "goto ";
+  if (!(emitter.hasBlockLabel(falseSuccessor))) {
+    return condBranchOp.emitOpError()
+           << "Unable to find label for successor block";
+  }
+  os << emitter.getOrCreateName(falseSuccessor) << ";\n";
+  os << "}";
+  return success();
+}
+
 static LogicalResult printCallOp(CppEmitter &emitter, mlir::CallOp callOp) {
   if (failed(emitter.emitAssignPrefix(*callOp.getOperation())))
     return failure();
@@ -379,9 +444,12 @@ static LogicalResult printModule(CppEmitter &emitter, ModuleOp moduleOp) {
 }
 
 static LogicalResult printFunction(CppEmitter &emitter, FuncOp functionOp) {
-  auto &blocks = functionOp.getBlocks();
-  if (blocks.size() != 1)
-    return functionOp.emitOpError() << "only single block functions supported";
+  // We need to forward-declare variables if the function has multiple blocks.
+  if (!emitter.forwardDeclaredVariables() &&
+      functionOp.getBlocks().size() > 1) {
+    return functionOp.emitOpError()
+           << "with multiple blocks needs forward declared variables";
+  }
 
   CppEmitter::Scope scope(emitter);
   auto &os = emitter.ostream();
@@ -403,7 +471,7 @@ static LogicalResult printFunction(CppEmitter &emitter, FuncOp functionOp) {
   os << ") {\n";
 
   if (emitter.forwardDeclaredVariables()) {
-    // We forward decalre all result variables including results from ops
+    // We forward declare all result variables including results from ops
     // inside of regions.
     auto result =
         functionOp.walk<WalkOrder::PreOrder>([&](Operation *op) -> WalkResult {
@@ -420,11 +488,42 @@ static LogicalResult printFunction(CppEmitter &emitter, FuncOp functionOp) {
       return failure();
   }
 
-  for (Operation &op : functionOp.front()) {
-    bool trailingSemicolon = !isa<emitc::IfOp, emitc::ForOp>(op);
-    if (failed(
-            emitter.emitOperation(op, /*trailingSemicolon=*/trailingSemicolon)))
-      return failure();
+  auto &blocks = functionOp.getBlocks();
+  // Create label names for basic blocks.
+  for (auto &block : blocks) {
+    emitter.getOrCreateName(block);
+  }
+
+  // Emit variables for basic block arguments.
+  for (auto it = std::next(blocks.begin()); it != blocks.end(); ++it) {
+    Block &block = *it;
+    for (auto &arg : block.getArguments()) {
+      if (emitter.hasValueInScope(arg))
+        return failure();
+      if (failed(emitter.emitType(arg.getType()))) {
+        return failure();
+      }
+      os << " " << emitter.getOrCreateName(arg) << ";\n";
+    }
+  }
+
+  for (auto &block : blocks) {
+    // Only print a label if there is more than one block.
+    if (blocks.size() > 1) {
+      if (failed(emitter.emitLabel(block))) {
+        return functionOp.emitOpError()
+               << "Unable to print label for basic block";
+      }
+    }
+    for (Operation &op : block.getOperations()) {
+      // Don't print additional semicolons after these operations.
+      bool trailingSemicolon =
+          !isa<emitc::IfOp, emitc::ForOp, mlir::CondBranchOp>(op);
+
+      if (failed(emitter.emitOperation(
+              op, /*trailingSemicolon=*/trailingSemicolon)))
+        return failure();
+    }
   }
   os << "}\n";
   return success();
@@ -437,11 +536,18 @@ CppEmitter::CppEmitter(raw_ostream &os, bool restrictToC,
   valueInScopeCount.push(0);
 }
 
-/// Return the existing or a new name for a Value*.
+/// Return the existing or a new name for a Value.
 StringRef CppEmitter::getOrCreateName(Value val) {
-  if (!mapper.count(val))
-    mapper.insert(val, formatv("v{0}", ++valueInScopeCount.top()));
-  return *mapper.begin(val);
+  if (!valMapper.count(val))
+    valMapper.insert(val, formatv("v{0}", ++valueInScopeCount.top()));
+  return *valMapper.begin(val);
+}
+
+/// Return the existing or a new name for a Block.
+StringRef CppEmitter::getOrCreateName(Block &block) {
+  if (!blockMapper.count(&block))
+    blockMapper.try_emplace(&block, formatv("label{0}", blockMapper.size()));
+  return blockMapper[&block];
 }
 
 bool CppEmitter::mapToSigned(IntegerType::SignednessSemantics val) {
@@ -455,7 +561,11 @@ bool CppEmitter::mapToSigned(IntegerType::SignednessSemantics val) {
   }
 }
 
-bool CppEmitter::hasValueInScope(Value val) { return mapper.count(val); }
+bool CppEmitter::hasValueInScope(Value val) { return valMapper.count(val); }
+
+bool CppEmitter::hasBlockLabel(Block &block) {
+  return blockMapper.count(&block);
+}
 
 LogicalResult CppEmitter::emitAttribute(Attribute attr) {
 
@@ -655,29 +765,44 @@ LogicalResult CppEmitter::emitAssignPrefix(Operation &op) {
   return success();
 }
 
+LogicalResult CppEmitter::emitLabel(Block &block) {
+  if (!hasBlockLabel(block)) {
+    return block.getParentOp()->emitError("Label for block not found.");
+  }
+  os << getOrCreateName(block) << ":\n";
+  return success();
+}
+
 static LogicalResult printOperation(CppEmitter &emitter, Operation &op) {
-  if (auto callOp = dyn_cast<mlir::CallOp>(op))
-    return printCallOp(emitter, callOp);
+  // EmitC ops.
   if (auto callOp = dyn_cast<emitc::CallOp>(op))
     return printCallOp(emitter, callOp);
+  if (auto constOp = dyn_cast<emitc::ConstOp>(op))
+    return printConstantOp(emitter, constOp);
+  if (auto forOp = dyn_cast<emitc::ForOp>(op))
+    return printForOp(emitter, forOp);
   if (auto getAdressOfOp = dyn_cast<emitc::GetAddressOfOp>(op))
     return printGetAddressOfOp(emitter, getAdressOfOp);
   if (auto ifOp = dyn_cast<emitc::IfOp>(op))
     return printIfOp(emitter, ifOp);
   if (auto yieldOp = dyn_cast<emitc::YieldOp>(op))
     return printYieldOp(emitter, yieldOp);
-  if (auto forOp = dyn_cast<emitc::ForOp>(op))
-    return printForOp(emitter, forOp);
+
+  // Standard ops.
+  if (auto branchOp = dyn_cast<BranchOp>(op))
+    return printBranchOp(emitter, branchOp);
+  if (auto callOp = dyn_cast<mlir::CallOp>(op))
+    return printCallOp(emitter, callOp);
+  if (auto branchOp = dyn_cast<CondBranchOp>(op))
+    return printCondBranchOp(emitter, branchOp);
   if (auto constantOp = dyn_cast<ConstantOp>(op))
     return printConstantOp(emitter, constantOp);
-  if (auto constOp = dyn_cast<emitc::ConstOp>(op))
-    return printConstantOp(emitter, constOp);
-  if (auto returnOp = dyn_cast<ReturnOp>(op))
-    return printReturnOp(emitter, returnOp);
-  if (auto moduleOp = dyn_cast<ModuleOp>(op))
-    return printModule(emitter, moduleOp);
   if (auto funcOp = dyn_cast<FuncOp>(op))
     return printFunction(emitter, funcOp);
+  if (auto moduleOp = dyn_cast<ModuleOp>(op))
+    return printModule(emitter, moduleOp);
+  if (auto returnOp = dyn_cast<ReturnOp>(op))
+    return printReturnOp(emitter, returnOp);
   if (isa<ModuleTerminatorOp>(op))
     return success();
 

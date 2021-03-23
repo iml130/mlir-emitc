@@ -98,7 +98,7 @@ struct ConvertScfToEmitCPass
     target.addLegalDialect<scf::SCFDialect>();
     target.addIllegalOp<scf::ForOp, scf::IfOp, scf::YieldOp>();
 
-    OwningRewritePatternList patterns;
+    OwningRewritePatternList patterns(&getContext());
     populateScfToEmitcPatterns(&getContext(), patterns);
 
     if (failed(

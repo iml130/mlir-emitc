@@ -639,7 +639,7 @@ struct ConvertMhloToEmitCPass
                         mhlo::RngBitGeneratorOp>();
     // clang-format on
 
-    OwningRewritePatternList patterns;
+    OwningRewritePatternList patterns(&getContext());
     populateMhloToEmitcPatterns(&getContext(), patterns);
 
     if (failed(

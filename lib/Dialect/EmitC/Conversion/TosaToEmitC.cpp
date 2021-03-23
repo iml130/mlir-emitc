@@ -667,7 +667,7 @@ struct ConvertTosaToEmitCPass
     target.addIllegalOp<tosa::PadOp>();
     target.addIllegalOp<tosa::TransposeOp>();
 
-    OwningRewritePatternList patterns;
+    OwningRewritePatternList patterns(&getContext());
     populateTosaToEmitcPatterns(&getContext(), patterns);
 
     if (failed(

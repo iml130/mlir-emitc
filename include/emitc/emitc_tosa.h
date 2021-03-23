@@ -21,7 +21,7 @@
 
 namespace tosa {
 
-/// Unary elementwise ops
+/// Functions for unary elementwise TOSA ops.
 // AbsOp
 template <typename Src>
 inline Src abs(Src x) {
@@ -76,7 +76,7 @@ inline Src tanh(Src x) {
   return emitc::tanh<Src>(x);
 }
 
-/// Binary elementwise ops
+/// Functions for binary elementwise TOSA ops.
 // AddOp
 template <typename Src>
 inline Src add(Src x, Src y) {
@@ -113,7 +113,7 @@ inline Src sub(Src x, Src y) {
   return emitc::sub<Src>(x, y);
 }
 
-/// Other ops
+/// Functions for other TOSA ops.
 // Conv2DOp
 template <typename Dest, typename Src, typename Weights>
 Dest conv2d(Src input, Weights weights, Tensor1D<int64_t, 4> padding,
@@ -321,9 +321,8 @@ Tensor2D<T, M, N> matmul(Tensor2D<T, M, K> a, Tensor2D<T, K, N> b) {
   return emitc::dot<Tensor2D<T, M, N>>(a, b);
 }
 
-/// Reduce ops
 namespace {
-// ReduceOp
+// Common reduce function used by specialized TOSA reduce ops.
 template <typename Dest, typename Src, typename Computation>
 inline Dest reduce(Src operand, typename get_element_type<Src>::type initValue,
                    int64_t dimension, Computation computation) {

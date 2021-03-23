@@ -87,7 +87,7 @@ struct switch_t<T> {
 
 template <bool B, typename T>
 struct switch_t<case_t<B, T>> {
-  // one statement needs to be true
+  // One statement needs to be true.
   static_assert(B, "None of the supplied conditions evaluate to true.");
   using type = T;
 };

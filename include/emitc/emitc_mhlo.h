@@ -394,7 +394,7 @@ inline Dest concatenate(Src1 input1, Src... inputs) {
 }
 
 // SliceOp
-// Overload for 1d case
+// Overload for 1d case.
 template <typename Dest, typename Src, IsTensorOfDim<1, Src> = true>
 Dest slice(Src x, Tensor<int64_t, 1> start_indices,
            Tensor<int64_t, 1> limit_indices, Tensor<int64_t, 1> strides) {
@@ -408,7 +408,7 @@ Dest slice(Src x, Tensor<int64_t, 1> start_indices,
   return z;
 }
 
-// Overload for 2d case
+// Overload for 2d case.
 template <typename Dest, typename Src, IsTensorOfDim<2, Src> = true>
 Dest slice(Src x, Tensor<int64_t, 2> start_indices,
            Tensor<int64_t, 2> limit_indices, Tensor<int64_t, 2> strides) {
@@ -424,7 +424,7 @@ Dest slice(Src x, Tensor<int64_t, 2> start_indices,
   return z;
 }
 
-// Overload for 3d case
+// Overload for 3d case.
 template <typename Dest, typename Src, IsTensorOfDim<3, Src> = true>
 Dest slice(Src x, Tensor<int64_t, 3> start_indices,
            Tensor<int64_t, 3> limit_indices, Tensor<int64_t, 3> strides) {
@@ -443,7 +443,7 @@ Dest slice(Src x, Tensor<int64_t, 3> start_indices,
   return z;
 }
 
-// Overload for 4d case
+// Overload for 4d case.
 template <typename Dest, typename Src, IsTensorOfDim<4, Src> = true>
 Dest slice(Src x, Tensor<int64_t, 4> start_indices,
            Tensor<int64_t, 4> limit_indices, Tensor<int64_t, 4> strides) {
@@ -466,7 +466,7 @@ Dest slice(Src x, Tensor<int64_t, 4> start_indices,
 }
 
 // DynamicSliceOp
-// Overload for 1d case
+// Overload for 1d case.
 template <typename Dest, typename Src, IsTensorOfDim<1, Src> = true>
 Dest dynamic_slice(Src x, Tensor<int32_t> start_index,
                    Tensor<int64_t, 1> slice_sizes) {
@@ -483,7 +483,7 @@ Dest dynamic_slice(Src x, Tensor<int32_t> start_index,
   return slice<Dest, Src>(x, start_indices, limit_indices, strides);
 }
 
-// Overload for 2d case
+// Overload for 2d case.
 template <typename Dest, typename Src, IsTensorOfDim<2, Src> = true>
 Dest dynamic_slice(Src x, Tensor<int32_t> start_index_x,
                    Tensor<int32_t> start_index_y,
@@ -507,7 +507,7 @@ Dest dynamic_slice(Src x, Tensor<int32_t> start_index_x,
 }
 
 // DynamicUpdateSliceOp
-// Overload for 1d case
+// Overload for 1d case.
 template <typename Update, typename Src, IsTensorOfDim<1, Src> = true>
 Src dynamic_update_slice(Src x, Update update, Tensor<int32_t> start_index) {
   auto clamp = [](int64_t value, int64_t minValue, int64_t maxValue) {
@@ -526,7 +526,7 @@ Src dynamic_update_slice(Src x, Update update, Tensor<int32_t> start_index) {
   return z;
 }
 
-// Overload for 2d case
+// Overload for 2d case.
 template <typename Update, typename Src, IsTensorOfDim<2, Src> = true>
 Src dynamic_update_slice(Src x, Update update, Tensor<int32_t> start_index_x,
                          Tensor<int32_t> start_index_y) {
@@ -557,7 +557,7 @@ inline Dest reshape(Src x) {
 }
 
 // PadOp
-// TODO: Support negative edge padding
+// TODO: Support negative edge padding.
 template <typename Dest, typename Src>
 inline Dest pad(Src operand,
                 Tensor<typename get_element_type<Src>::type> padding_value,
@@ -671,9 +671,9 @@ inline Dest reduce_window(
       baseIndex[j] = index[j] * window_strides(j);
     }
 
-    // Iterate over input window
+    // Iterate over input window.
     for (auto &inputIndex : operand.window(baseIndex, windowDimensionsArr)) {
-      // Get input value (check out of bounds access)
+      // Get input value (check out of bounds access).
       Tensor<ET_Src> value;
       if (out_of_bounds(inputIndex)) {
         value[0] = initValue[0];
@@ -686,12 +686,12 @@ inline Dest reduce_window(
         value[0] = operand[operand.ravel_index(_index)];
       }
 
-      // Get reduction value
+      // Get reduction value.
       auto reductionValue = Tensor<ET_Src>{result[result.ravel_index(index)]};
-      // Run computation
+      // Run computation.
       Tensor<ET_Dest> resultValue = computation(reductionValue, value);
 
-      // Update result value
+      // Update result value.
       result[result.ravel_index(index)] = resultValue();
     }
   }

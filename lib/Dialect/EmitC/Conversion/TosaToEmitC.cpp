@@ -32,7 +32,7 @@ DenseIntElementsAttr getI64ElementsAttr(const ArrayAttr values,
 
   SmallVector<int64_t> valuesAsI64;
 
-  // Convert values to int64_t
+  // Convert values to int64_t.
   for (auto &value : values) {
     auto valueAsIntAttr = value.cast<IntegerAttr>();
     valuesAsI64.push_back(valueAsIntAttr.getInt());
@@ -94,9 +94,9 @@ private:
   }
 
   StringRef funcName;
-  // If set, use the result type of the operation as template parameter
+  // If set, use the result type of the operation as template parameter.
   bool explicitResultType;
-  // If set, use the operand types as (additional) template parameters
+  // If set, use the operand types as (additional) template parameters.
   bool explicitOperandTypes;
 };
 
@@ -126,7 +126,7 @@ private:
   LogicalResult
   matchAndRewrite(SrcOp convOp, ArrayRef<Value> operands,
                   ConversionPatternRewriter &rewriter) const override {
-    // Fail if quantization is requested
+    // Fail if quantization is requested.
     if (convOp.quantization_info().hasValue()) {
       return convOp.emitError("Quantization for " + convOp.getOperationName() +
                               " is currently not supported.");
@@ -153,7 +153,7 @@ private:
     ArrayAttr templateArgs =
         rewriter.getArrayAttr({TypeAttr::get(convOp.getResult().getType())});
 
-    // Create convOp
+    // Create conv op.
     auto emitcConvOp =
         rewriter.create<emitc::CallOp>(convOp->getLoc(), convOp.getType(),
                                        callee, args, templateArgs, operands);
@@ -295,7 +295,7 @@ private:
     ArrayAttr args;
     ArrayAttr templateArgs;
 
-    // Create sqrt op
+    // Create sqrt op.
     StringRef sqrtFuncName = "emitc::sqrt";
     StringAttr sqrtCallee = rewriter.getStringAttr(sqrtFuncName);
 
@@ -303,7 +303,7 @@ private:
         rsqrtOp.getLoc(), rsqrtOp.getType(), sqrtCallee, args, templateArgs,
         operands);
 
-    // Create reciprocal op
+    // Create reciprocal op.
     StringRef reciprocalFuncName = "tosa::reciprocal";
     StringAttr reciprocalCallee = rewriter.getStringAttr(reciprocalFuncName);
 
@@ -501,7 +501,7 @@ private:
       newReducedOutputShape.push_back(dim);
     };
 
-    // Remove reduced axis from shape
+    // Remove reduced axis from shape.
     newReducedOutputShape.erase(newReducedOutputShape.begin() +
                                 reduceOp.axis());
 
@@ -516,7 +516,7 @@ private:
     auto emitcReduceOp = rewriter.create<emitc::CallOp>(
         reduceOp.getLoc(), newOutputType, callee, args, templateArgs, operands);
 
-    // Create tosa.reshape op
+    // Create tosa.reshape op.
     SmallVector<Attribute> newShapeAttr_;
     for (auto dim : output.getType().cast<RankedTensorType>().getShape()) {
       newShapeAttr_.push_back(

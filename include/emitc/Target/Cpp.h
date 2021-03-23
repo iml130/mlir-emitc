@@ -124,13 +124,19 @@ struct CppEmitter {
   /// RAII helper function to manage entering/exiting C++ scopes.
   struct Scope {
     Scope(CppEmitter &emitter)
-        : mapperScope(emitter.valMapper), emitter(emitter) {
+        : valMapperScope(emitter.valMapper),
+          blockMapperScope(emitter.blockMapper), emitter(emitter) {
       emitter.valueInScopeCount.push(emitter.valueInScopeCount.top());
+      emitter.labelInScopeCount.push(emitter.labelInScopeCount.top());
     }
-    ~Scope() { emitter.valueInScopeCount.pop(); }
+    ~Scope() {
+      emitter.valueInScopeCount.pop();
+      emitter.labelInScopeCount.pop();
+    }
 
   private:
-    llvm::ScopedHashTableScope<Value, std::string> mapperScope;
+    llvm::ScopedHashTableScope<Value, std::string> valMapperScope;
+    llvm::ScopedHashTableScope<Block *, std::string> blockMapperScope;
     CppEmitter &emitter;
   };
 
@@ -151,7 +157,7 @@ struct CppEmitter {
 
 private:
   using ValMapper = llvm::ScopedHashTable<Value, std::string>;
-  using BlockMapper = llvm::DenseMap<Block *, std::string>;
+  using BlockMapper = llvm::ScopedHashTable<Block *, std::string>;
 
   /// Output stream to emit to.
   raw_ostream &os;
@@ -171,6 +177,7 @@ private:
   /// The number of values in the current scope. This is used to declare the
   /// names of values in a scope.
   std::stack<int64_t> valueInScopeCount;
+  std::stack<int64_t> labelInScopeCount;
 };
 
 /// Translates the given operation to C++ code. The operation or operations in

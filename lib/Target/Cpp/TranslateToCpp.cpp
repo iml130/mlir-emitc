@@ -468,7 +468,7 @@ static LogicalResult printFunction(CppEmitter &emitter, FuncOp functionOp) {
   os << ") {\n";
 
   if (emitter.forwardDeclaredVariables()) {
-    // We forward decalre all result variables including results from ops
+    // We forward declare all result variables including results from ops
     // inside of regions.
     auto result =
         functionOp.walk<WalkOrder::PreOrder>([&](Operation *op) -> WalkResult {
@@ -533,14 +533,14 @@ CppEmitter::CppEmitter(raw_ostream &os, bool restrictToC,
   valueInScopeCount.push(0);
 }
 
-/// Return the existing or a new name for a Value*.
+/// Return the existing or a new name for a Value.
 StringRef CppEmitter::getOrCreateName(Value val) {
   if (!valMapper.count(val))
     valMapper.insert(val, formatv("v{0}", ++valueInScopeCount.top()));
   return *valMapper.begin(val);
 }
 
-/// Return the existing or a new name for a Block*.
+/// Return the existing or a new name for a Block.
 StringRef CppEmitter::getOrCreateName(Block &block) {
   if (!blockMapper.count(&block))
     blockMapper.try_emplace(&block, formatv("label{0}", blockMapper.size()));

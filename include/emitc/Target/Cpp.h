@@ -115,7 +115,7 @@ struct CppEmitter {
   /// Return the existing or a new name for a Value.
   StringRef getOrCreateName(Value val);
 
-  /// Return the existing or a new label of a block.
+  /// Return the existing or a new label of a Block.
   StringRef getOrCreateName(Block &block);
 
   /// Whether to map an mlir integer to a signed integer in C++.

@@ -444,8 +444,7 @@ static LogicalResult printFunction(CppEmitter &emitter, FuncOp functionOp) {
   if (!emitter.forwardDeclaredVariables() &&
       functionOp.getBlocks().size() > 1) {
     return functionOp.emitOpError()
-           << "Need to enable variable forward declaration when emitting code "
-              "for function with multiple blocks";
+           << "with multiple blocks needs forward declared variables";
   }
 
   CppEmitter::Scope scope(emitter);

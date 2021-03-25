@@ -73,7 +73,7 @@ struct ConvertTensorToEmitCPass
     target.addLegalDialect<emitc::EmitCDialect>();
     target.addIllegalOp<mlir::tensor::ExtractOp>();
 
-    OwningRewritePatternList patterns;
+    OwningRewritePatternList patterns(&getContext());
     populateTensorToEmitcPatterns(&getContext(), patterns);
 
     if (failed(

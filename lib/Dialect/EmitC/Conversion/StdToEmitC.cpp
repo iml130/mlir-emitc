@@ -95,7 +95,7 @@ struct ConvertStdToEmitCPass
     target.addIllegalOp<IndexCastOp>();
     target.addIllegalOp<SplatOp>();
 
-    OwningRewritePatternList patterns;
+    OwningRewritePatternList patterns(&getContext());
     populateStdToEmitcPatterns(&getContext(), patterns);
 
     if (failed(

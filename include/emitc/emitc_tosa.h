@@ -125,6 +125,12 @@ inline Src mul(Src x, Src y, const int32_t shift) {
   }
 }
 
+// PowOp
+template <typename Src>
+inline Src pow(Src x, Src y) {
+  return emitc::pow(x, y);
+}
+
 // SubOp
 template <typename Src>
 inline Src sub(Src x, Src y) {

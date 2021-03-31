@@ -21,6 +21,7 @@ The table below shows the supported TOSA ops.
 | maximum               | :heavy_check_mark: | |
 | minimum               | :heavy_check_mark: | |
 | mul                   | :heavy_check_mark: | |
+| pow                   | :heavy_check_mark: | |
 | sub                   | :heavy_check_mark: | |
 | **Other ops**
 | conv2d                | :white_check_mark: | Quantization and dilation not supported |

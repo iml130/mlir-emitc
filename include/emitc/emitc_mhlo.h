@@ -234,31 +234,7 @@ inline Src mul(Src x, Src y) {
 // PowOp
 template <typename Src>
 inline Src pow(Src x, Src y) {
-  using ET_Src = typename get_element_type<Src>::type;
-
-  auto f = [](ET_Src a, ET_Src b) -> ET_Src {
-    if (std::is_integral<ET_Src>::value) {
-      const bool negative = b < 0;
-      if (b < 0) {
-        b = -b;
-      }
-
-      ET_Src result = 1;
-
-      for (ET_Src i = 0; i < b; i++) {
-        result *= a;
-      }
-
-      if (negative) {
-        result = 1 / result;
-      }
-      return result;
-    } else {
-      return std::pow(a, b);
-    }
-  };
-
-  return binary<Src>(x, y, f);
+  return emitc::pow(x, y);
 }
 
 // ShiftLeftOp

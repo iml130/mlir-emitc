@@ -233,6 +233,35 @@ private:
   }
 };
 
+/// Convert `tosa.negate` into an `emitc.call` operation.
+class NegateOpConversion : public OpConversionPattern<tosa::NegateOp> {
+  using OpConversionPattern<tosa::NegateOp>::OpConversionPattern;
+
+public:
+  NegateOpConversion(MLIRContext *ctx)
+      : OpConversionPattern<tosa::NegateOp>(ctx) {}
+
+private:
+  LogicalResult
+  matchAndRewrite(tosa::NegateOp negateOp, ArrayRef<Value> operands,
+                  ConversionPatternRewriter &rewriter) const override {
+    if (negateOp.quantization_info().hasValue()) {
+      return negateOp.emitError(
+          "Quantization of tosa.negate is currently not supported.");
+    }
+
+    StringRef funcName = "tosa::negate";
+    StringAttr callee = rewriter.getStringAttr(funcName);
+
+    ArrayAttr args;
+    ArrayAttr templateArgs;
+
+    rewriter.replaceOpWithNewOp<emitc::CallOp>(
+        negateOp, negateOp.getType(), callee, args, templateArgs, operands);
+    return success();
+  }
+};
+
 /// Convert `tosa.reluN` into an `emitc.call` operation.
 class ReluNOpConversion : public OpConversionPattern<tosa::ReluNOp> {
   using OpConversionPattern<tosa::ReluNOp>::OpConversionPattern;
@@ -580,6 +609,7 @@ void populateTosaToEmitcPatterns(MLIRContext *ctx,
   patterns.insert<CallOpConversion<tosa::ExpOp>>(ctx, "tosa::exp");
   patterns.insert<CallOpConversion<tosa::FloorOp>>(ctx, "tosa::floor");
   patterns.insert<CallOpConversion<tosa::LogOp>>(ctx, "tosa::log");
+  patterns.insert<NegateOpConversion>(ctx);
   patterns.insert<CallOpConversion<tosa::ReciprocalOp>>(ctx,
                                                         "tosa::reciprocal");
   patterns.insert<ReluNOpConversion>(ctx);
@@ -647,6 +677,7 @@ struct ConvertTosaToEmitCPass
     target.addIllegalOp<tosa::ExpOp>();
     target.addIllegalOp<tosa::FloorOp>();
     target.addIllegalOp<tosa::LogOp>();
+    target.addIllegalOp<tosa::NegateOp>();
     target.addIllegalOp<tosa::ReciprocalOp>();
     target.addIllegalOp<tosa::ReluNOp>();
     target.addIllegalOp<tosa::RsqrtOp>();

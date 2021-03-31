@@ -220,23 +220,13 @@ inline Src div(Src x, Src y) {
 // MaxOp
 template <typename Src>
 inline Src max(Src x, Src y) {
-  using ET_Src = typename get_element_type<Src>::type;
-
-  auto f =
-      static_cast<const ET_Src &(*)(const ET_Src &, const ET_Src &)>(std::max);
-
-  return binary<Src>(x, y, f);
+  return emitc::max(x, y);
 }
 
 // MinOp
 template <typename Src>
 inline Src min(Src x, Src y) {
-  using ET_Src = typename get_element_type<Src>::type;
-
-  auto f =
-      static_cast<const ET_Src &(*)(const ET_Src &, const ET_Src &)>(std::min);
-
-  return binary<Src>(x, y, f);
+  return emitc::min(x, y);
 }
 
 // MulOp

@@ -17,6 +17,8 @@ The table below shows the supported TOSA ops.
 | tanh                  | :heavy_check_mark: | |
 | **Binary elementwise ops**
 | add                   | :heavy_check_mark: | |
+| maximum               | :heavy_check_mark: | |
+| minimum               | :heavy_check_mark: | |
 | mul                   | :heavy_check_mark: | |
 | sub                   | :heavy_check_mark: | |
 | **Other ops**

@@ -151,11 +151,7 @@ inline Src log_plus_one(Src x) {
 // NegOp
 template <typename Src>
 inline Src negate(Src x) {
-  using ET_Src = typename get_element_type<Src>::type;
-
-  auto f = std::negate<ET_Src>{};
-
-  return unary<Src>(x, f);
+  return emitc::negate(x);
 }
 
 // RoundOp

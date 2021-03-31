@@ -52,6 +52,12 @@ inline Src log(Src x) {
   return emitc::log<Src>(x);
 }
 
+// NegateOp
+template <typename Src>
+inline Src negate(Src x) {
+  return emitc::negate(x);
+}
+
 // ReciprocalOp
 template <typename Src>
 inline Src reciprocal(Src x) {

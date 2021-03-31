@@ -12,6 +12,7 @@ The table below shows the supported TOSA ops.
 | exp                   | :heavy_check_mark: | |
 | floor                 | :heavy_check_mark: | |
 | log                   | :heavy_check_mark: | |
+| negate                | :heavy_check_mark: | |
 | reciprocal            | :heavy_check_mark: | |
 | rsqrt                 | :heavy_check_mark: | |
 | tanh                  | :heavy_check_mark: | |

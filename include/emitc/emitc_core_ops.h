@@ -80,6 +80,16 @@ inline Src log(Src x) {
   return unary<Src>(x, f);
 }
 
+// NegateOp
+template <typename Src>
+inline Src negate(Src x) {
+  using ET_Src = typename get_element_type<Src>::type;
+
+  auto f = std::negate<ET_Src>{};
+
+  return unary<Src>(x, f);
+}
+
 // ReluNOp
 template <typename Min, typename Src, typename Max>
 inline Src clamp(Min min, Src operand, Max max) {

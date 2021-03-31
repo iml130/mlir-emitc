@@ -588,6 +588,10 @@ void populateTosaToEmitcPatterns(MLIRContext *ctx,
 
   // Insert patterns for TOSA binary elementwise ops.
   patterns.insert<CallOpBroadcastableConversion<tosa::AddOp>>(ctx, "tosa::add");
+  patterns.insert<CallOpBroadcastableConversion<tosa::MaximumOp>>(
+      ctx, "tosa::maximum");
+  patterns.insert<CallOpBroadcastableConversion<tosa::MinimumOp>>(
+      ctx, "tosa::minimum");
   patterns.insert<MulOpConversion>(ctx, "tosa::mul");
   patterns.insert<CallOpBroadcastableConversion<tosa::SubOp>>(ctx, "tosa::sub");
 
@@ -649,6 +653,8 @@ struct ConvertTosaToEmitCPass
 
     // Binary elementwise ops
     target.addIllegalOp<tosa::AddOp>();
+    target.addIllegalOp<tosa::MaximumOp>();
+    target.addIllegalOp<tosa::MinimumOp>();
     target.addIllegalOp<tosa::MulOp>();
     target.addIllegalOp<tosa::SubOp>();
 

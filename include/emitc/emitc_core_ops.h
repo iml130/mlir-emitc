@@ -147,6 +147,28 @@ inline Src add(Src x, Src y) {
   return binary<Src>(x, y, f);
 }
 
+// MaxOp
+template <typename Src>
+inline Src max(Src x, Src y) {
+  using ET_Src = typename get_element_type<Src>::type;
+
+  auto f =
+      static_cast<const ET_Src &(*)(const ET_Src &, const ET_Src &)>(std::max);
+
+  return binary<Src>(x, y, f);
+}
+
+// MinOp
+template <typename Src>
+inline Src min(Src x, Src y) {
+  using ET_Src = typename get_element_type<Src>::type;
+
+  auto f =
+      static_cast<const ET_Src &(*)(const ET_Src &, const ET_Src &)>(std::min);
+
+  return binary<Src>(x, y, f);
+}
+
 // MulOp
 template <typename Src>
 inline Src mul(Src x, Src y) {

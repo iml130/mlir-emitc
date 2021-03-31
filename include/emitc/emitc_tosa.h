@@ -89,6 +89,18 @@ inline Src mul(Src x, Src y) {
   return emitc::mul(x, y);
 }
 
+// MaxOp
+template <typename Src>
+inline Src maximum(Src x, Src y) {
+  return emitc::max(x, y);
+}
+
+// MinOp
+template <typename Src>
+inline Src minimum(Src x, Src y) {
+  return emitc::min(x, y);
+}
+
 template <typename Src, IsTensorOfType<Src, int32_t> = true>
 inline Src mul(Src x, Src y, const int32_t shift) {
   // Adopted from

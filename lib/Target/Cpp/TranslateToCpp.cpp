@@ -801,8 +801,6 @@ static LogicalResult printOperation(CppEmitter &emitter, Operation &op) {
     return printModule(emitter, moduleOp);
   if (auto returnOp = dyn_cast<ReturnOp>(op))
     return printReturnOp(emitter, returnOp);
-  if (isa<ModuleTerminatorOp>(op))
-    return success();
 
   return op.emitOpError() << "unable to find printer for op";
 }

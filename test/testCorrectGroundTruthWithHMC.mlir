@@ -7005,5 +7005,4 @@
     %299 = "mhlo.tuple"(%295, %298) {name = "tuple.2629"} : (tensor<1000x4xf32>, tensor<1000x4xi1>) -> tuple<tensor<1000x4xf32>, tensor<1000x4xi1>>
     "std.return"(%299) : (tuple<tensor<1000x4xf32>, tensor<1000x4xi1>>) -> ()
   }) {sym_name = "main", type = (tensor<4xf32>, tensor<f32>, tensor<f32>, tensor<4xf32>, tensor<f32>, tensor<f32>, tensor<f32>, tensor<f32>, tensor<i32>) -> tuple<tensor<1000x4xf32>, tensor<1000x4xi1>>} : () -> ()
-  "module_terminator"() : () -> ()
 }) : () -> ()

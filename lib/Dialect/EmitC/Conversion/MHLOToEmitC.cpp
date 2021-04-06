@@ -577,7 +577,6 @@ struct ConvertMhloToEmitCPass
     target.addLegalDialect<StandardOpsDialect>();
     target.addLegalOp<FuncOp>();
     target.addLegalOp<ModuleOp>();
-    target.addLegalOp<ModuleTerminatorOp>();
 
     // clang-format off
     // MHLO nullary ops

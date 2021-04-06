@@ -666,7 +666,6 @@ struct ConvertTosaToEmitCPass
     // target.addLegalDialect<StandardOpsDialect>();
     // target.addLegalOp<FuncOp>();
     // target.addLegalOp<ModuleOp>();
-    // target.addLegalOp<ModuleTerminatorOp>();
 
     // Data node ops
     target.addIllegalOp<tosa::ConstOp>();

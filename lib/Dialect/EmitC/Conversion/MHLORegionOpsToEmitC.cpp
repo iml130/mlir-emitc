@@ -195,7 +195,7 @@ private:
 
     SmallVector<Attribute, 2> args_ = indexSequence(operands.size(), ctx);
 
-    size_t dim = op.getResult().getType().cast<RankedTensorType>().getRank();
+    size_t dim = op.getResult(0).getType().cast<RankedTensorType>().getRank();
     args_.push_back(op.window_dimensions());
     args_.push_back(
         op.window_strides().getValueOr(i64ElementsAttr(1, dim, ctx)));
@@ -209,10 +209,10 @@ private:
     ArrayAttr args = ArrayAttr::get(ctx, args_);
 
     ArrayAttr templateArgs =
-        ArrayAttr::get(ctx, {TypeAttr::get(op.getResult().getType())});
+        ArrayAttr::get(ctx, {TypeAttr::get(op.getResult(0).getType())});
 
     emitc::CallOp callOp = builder.create<emitc::CallOp>(
-        op.getLoc(), op.getType(), callee, args, templateArgs, operands);
+        op.getLoc(), op.getType(0), callee, args, templateArgs, operands);
     op.replaceAllUsesWith(callOp);
     op.erase();
     return success();

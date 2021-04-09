@@ -60,9 +60,12 @@ python optimize_tf_dialect.py "$OUTPUT_DIR"/model_tf.mlir "$OUTPUT_DIR"/model_tf
 echo "Converting tf dialect to tosa dialect"
 "$TF_OPT" --tf-to-tosa-pipeline "$OUTPUT_DIR"/model_tf_opt.mlir > "$OUTPUT_DIR"/model_tosa.mlir
 
+echo "Removing tf._input_shapes attribute"
+sed "s/tf._input_shapes =.*]//" "$OUTPUT_DIR"/model_tosa.mlir > "$OUTPUT_DIR"/model_tosa_noattr.mlir
+
 echo "Fixing function name"
-FUNCTION_NAME=$(grep -oe "@[^(]*" "$OUTPUT_DIR"/model_tosa.mlir)
-sed "s/$FUNCTION_NAME/@predict/g" "$OUTPUT_DIR"/model_tosa.mlir > "$OUTPUT_DIR"/model_fix_name.mlir
+FUNCTION_NAME=$(grep -oe "@[^(]*" "$OUTPUT_DIR"/model_tosa_noattr.mlir)
+sed "s/$FUNCTION_NAME/@predict/g" "$OUTPUT_DIR"/model_tosa_noattr.mlir > "$OUTPUT_DIR"/model_fix_name.mlir
 
 echo "Converting tosa dialect to emitc dialect"
 "$EMITC_OPT" --convert-tosa-to-emitc "$OUTPUT_DIR"/model_fix_name.mlir > "$OUTPUT_DIR"/model_emitc.mlir

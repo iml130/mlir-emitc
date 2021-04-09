@@ -80,7 +80,7 @@ jobs:
       uses: actions/cache@v2
       with:
         path: ${{ env.E2E }}
-        key: ${{ runner.os }}-e2e-${{ hashFiles('emitc/scripts/*.py', 'emitc/scripts/requirements.txt') }}
+        key: ${{ runner.os }}-e2e-${{ hashFiles('emitc/scripts/*.py', 'emitc/scripts/requirements.txt', 'emitc/scripts/e2e*.sh') }}
 
     - name: Install TensorFlow
       if: steps.cache-e2e.outputs.cache-hit != 'true'
@@ -192,7 +192,7 @@ jobs:
       uses: actions/cache@v2
       with:
         path: ${{ env.E2E }}
-        key: ${{ runner.os }}-e2e-${{ hashFiles('emitc/scripts/*.py', 'emitc/scripts/requirements.txt') }}
+        key: ${{ runner.os }}-e2e-${{ hashFiles('emitc/scripts/*.py', 'emitc/scripts/requirements.txt', 'emitc/scripts/e2e*.sh') }}
 
     - name: Run MHLO e2e test
       run: |

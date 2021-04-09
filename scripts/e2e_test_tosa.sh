@@ -62,6 +62,7 @@ echo "Converting tf dialect to tosa dialect"
 
 echo "Removing tf._input_shapes attribute"
 sed "s/tf._input_shapes =.*]//" "$OUTPUT_DIR"/model_tosa.mlir > "$OUTPUT_DIR"/model_tosa_noattr.mlir
+sed -i "s/, }/}/" "$OUTPUT_DIR"/model_mhlo_noattr.mlir
 
 echo "Fixing function name"
 FUNCTION_NAME=$(grep -oe "@[^(]*" "$OUTPUT_DIR"/model_tosa_noattr.mlir)

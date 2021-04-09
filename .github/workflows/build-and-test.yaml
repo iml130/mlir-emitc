@@ -98,6 +98,7 @@ jobs:
         python3 ../${EMITC}/scripts/optimize_tf_dialect.py model_tf.mlir model_tf_opt.mlir
         python3 ../${EMITC}/scripts/tf_to_mhlo_dialect.py model_tf_opt.mlir model_mhlo.mlir
         sed "s/tf._input_shapes =.*]//" model_mhlo.mlir > ../${E2E}/model_mhlo_noattr.mlir
+        sed -i "s/, }/}/" ../${E2E}/model_mhlo_noattr.mlir
         python3 ../${EMITC}/scripts/generate_testscases.py --file-format cpp --count 1 --batch-size 2 --seed 1234 mobilenet_v2.h5 ../${E2E}/
 
   build-debug:

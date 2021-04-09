@@ -58,8 +58,11 @@ python optimize_tf_dialect.py "$OUTPUT_DIR"/model_tf.mlir "$OUTPUT_DIR"/model_tf
 echo "Converting tf dialect to mhlo dialect"
 python tf_to_mhlo_dialect.py "$OUTPUT_DIR"/model_tf_opt.mlir "$OUTPUT_DIR"/model_mhlo.mlir
 
+echo "Removing tf._input_shapes attribute"
+sed "s/tf._input_shapes =.*]//" "$OUTPUT_DIR"/model_mhlo.mlir > "$OUTPUT_DIR"/model_mhlo_noattr.mlir
+
 echo "Canonicalizing mhlo dialect"
-"$EMITC_OPT" --canonicalize --inline --symbol-dce "$OUTPUT_DIR"/model_mhlo.mlir > "$OUTPUT_DIR"/model_canon.mlir
+"$EMITC_OPT" --canonicalize --inline --symbol-dce "$OUTPUT_DIR"/model_mhlo_noattr.mlir > "$OUTPUT_DIR"/model_canon.mlir
 
 echo "Fixing function name"
 FUNCTION_NAME=$(grep -oe "@[^(]*" "$OUTPUT_DIR"/model_canon.mlir)

@@ -108,8 +108,18 @@ static LogicalResult verify(mlir::emitc::CallOp op) {
 //===----------------------------------------------------------------------===//
 // ConstOp
 //===----------------------------------------------------------------------===//
-// Folder
 
+/// The constant op requires that the attribute's type matches the return type.
+static LogicalResult verify(ConstOp &op) {
+  auto value = op.value();
+  Type type = op.getType();
+  if (!value.getType().isa<NoneType>() && type != value.getType())
+    return op.emitOpError() << "requires attribute's type (" << value.getType()
+                            << ") to match op's return type (" << type << ")";
+  return success();
+}
+
+// Folder.
 OpFoldResult ConstOp::fold(ArrayRef<Attribute> operands) {
   assert(operands.empty() && "constant has no operands");
   return value();

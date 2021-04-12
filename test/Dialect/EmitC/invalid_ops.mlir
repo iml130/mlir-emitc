@@ -1,5 +1,21 @@
 // RUN: emitc-opt %s -split-input-file -verify-diagnostics
 
+func @const_attribute_return_type_1() {
+    // expected-error @+1 {{'emitc.const' op requires attribute's type ('i64') to match op's return type ('i32')}}
+    %c0 = "emitc.const"(){value = 42: i64} : () -> i32
+    return
+}
+
+// -----
+
+func @const_attribute_return_type_2() {
+    // expected-error @+1 {{'emitc.const' op requires attribute's type ('!emitc.opaque<"int32_t*">') to match op's return type ('!emitc.opaque<"int32_t">')}}
+    %c0 = "emitc.const"(){value = "nullptr" : !emitc.opaque<"int32_t*">} : () -> !emitc.opaque<"int32_t">
+    return
+}
+
+// -----
+
 func @index_args_out_of_range_1() {
     // expected-error @+1 {{'emitc.call' op index argument is out of range}}
     emitc.call "test" () {args = [0 : index]} : () -> ()

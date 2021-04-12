@@ -596,6 +596,38 @@ private:
   }
 };
 
+/// Convert `tosa.slice` into an `emitc.call` operation.
+class SliceOpConversion : public OpConversionPattern<tosa::SliceOp> {
+  using OpConversionPattern<tosa::SliceOp>::OpConversionPattern;
+
+public:
+  SliceOpConversion(MLIRContext *ctx)
+      : OpConversionPattern<tosa::SliceOp>(ctx) {}
+
+private:
+  LogicalResult
+  matchAndRewrite(tosa::SliceOp sliceOp, ArrayRef<Value> operands,
+                  ConversionPatternRewriter &rewriter) const override {
+    StringAttr callee = rewriter.getStringAttr("tosa::slice");
+
+    // clang-format off
+    ArrayAttr args = rewriter.getArrayAttr({
+      rewriter.getIndexAttr(0),
+      getI64ElementsAttr(sliceOp.startAttr(), sliceOp.getContext()),
+      getI64ElementsAttr(sliceOp.sizeAttr(), sliceOp.getContext()),
+    });
+    // clang-format on
+
+    Type resultType = sliceOp.output().getType();
+    ArrayAttr templateArgs = rewriter.getArrayAttr({TypeAttr::get(resultType)});
+
+    rewriter.replaceOpWithNewOp<emitc::CallOp>(
+        sliceOp, sliceOp.getType(), callee, args, templateArgs, operands);
+
+    return success();
+  }
+};
+
 } // namespace
 
 void populateTosaToEmitcPatterns(MLIRContext *ctx,
@@ -646,6 +678,7 @@ void populateTosaToEmitcPatterns(MLIRContext *ctx,
                                                          "tosa::reduce_sum");
   patterns.insert<CallOpConversion<tosa::ReshapeOp>>(
       ctx, "tosa::reshape", /*explicitResultType=*/true);
+  patterns.insert<SliceOpConversion>(ctx);
   patterns.insert<PadOpConversion>(ctx);
   patterns.insert<CallOpConversion<tosa::TransposeOp>>(
       ctx, "tosa::transpose", /*explicitResultType=*/true);
@@ -703,6 +736,7 @@ struct ConvertTosaToEmitCPass
     target.addIllegalOp<tosa::ReduceSumOp>();
     target.addIllegalOp<tosa::ReshapeOp>();
     target.addIllegalOp<tosa::PadOp>();
+    target.addIllegalOp<tosa::SliceOp>();
     target.addIllegalOp<tosa::TransposeOp>();
 
     OwningRewritePatternList patterns(&getContext());

@@ -18,6 +18,7 @@
 #include <limits>
 
 #include "emitc_core_ops.h"
+#include "emitc_std.h"
 
 namespace tosa {
 
@@ -470,6 +471,17 @@ inline Dest reduce_sum(Src input, int64_t dimension) {
 template <typename Dest, typename Src>
 inline Dest reshape(Src x) {
   return emitc::reshape<Dest>(x);
+}
+
+// SliceOp
+template <typename Dest, typename Src>
+Dest slice(Src x, Tensor<int64_t, Src::rank()> start_indices,
+           Tensor<int64_t, Src::rank()> slice_sizes) {
+  Tensor<int64_t, Src::rank()> limit_indices =
+      emitc::add(start_indices, slice_sizes);
+  Tensor<int64_t, Src::rank()> strides =
+      standard::splat<Tensor<int64_t, Src::rank()>>(1);
+  return emitc::slice<Dest, Src>(x, start_indices, limit_indices, strides);
 }
 
 // PadOp

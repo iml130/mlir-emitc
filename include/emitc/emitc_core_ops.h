@@ -314,6 +314,78 @@ inline Dest reshape(Src x) {
   return z;
 }
 
+// SliceOp
+// Overload for 1d case.
+template <typename Dest, typename Src, IsTensorOfDim<1, Src> = true>
+Dest slice(Src x, Tensor<int64_t, 1> start_indices,
+           Tensor<int64_t, 1> limit_indices, Tensor<int64_t, 1> strides) {
+  Dest z;
+
+  size_t index = 0;
+  for (int64_t i = start_indices[0]; i < limit_indices[0]; i += strides[0]) {
+    z[index++] = x(i);
+  }
+
+  return z;
+}
+
+// Overload for 2d case.
+template <typename Dest, typename Src, IsTensorOfDim<2, Src> = true>
+Dest slice(Src x, Tensor<int64_t, 2> start_indices,
+           Tensor<int64_t, 2> limit_indices, Tensor<int64_t, 2> strides) {
+  Dest z;
+
+  size_t index = 0;
+  for (int64_t i = start_indices[0]; i < limit_indices[0]; i += strides[0]) {
+    for (int64_t j = start_indices[1]; j < limit_indices[1]; j += strides[1]) {
+      z[index++] = x(i, j);
+    }
+  }
+
+  return z;
+}
+
+// Overload for 3d case.
+template <typename Dest, typename Src, IsTensorOfDim<3, Src> = true>
+Dest slice(Src x, Tensor<int64_t, 3> start_indices,
+           Tensor<int64_t, 3> limit_indices, Tensor<int64_t, 3> strides) {
+  Dest z;
+
+  size_t index = 0;
+  for (int64_t i = start_indices[0]; i < limit_indices[0]; i += strides[0]) {
+    for (int64_t j = start_indices[1]; j < limit_indices[1]; j += strides[1]) {
+      for (int64_t k = start_indices[2]; k < limit_indices[2];
+           k += strides[2]) {
+        z[index++] = x(i, j, k);
+      }
+    }
+  }
+
+  return z;
+}
+
+// Overload for 4d case.
+template <typename Dest, typename Src, IsTensorOfDim<4, Src> = true>
+Dest slice(Src x, Tensor<int64_t, 4> start_indices,
+           Tensor<int64_t, 4> limit_indices, Tensor<int64_t, 4> strides) {
+  Dest z;
+
+  size_t index = 0;
+  for (int64_t i = start_indices[0]; i < limit_indices[0]; i += strides[0]) {
+    for (int64_t j = start_indices[1]; j < limit_indices[1]; j += strides[1]) {
+      for (int64_t k = start_indices[2]; k < limit_indices[2];
+           k += strides[2]) {
+        for (int64_t c = start_indices[3]; c < limit_indices[3];
+             c += strides[3]) {
+          z[index++] = x(i, j, k, c);
+        }
+      }
+    }
+  }
+
+  return z;
+}
+
 // PadOp
 // TODO: Add support for negative edge padding
 template <typename Dest, typename Src>

@@ -223,6 +223,12 @@ func @test_reduce_sum(%arg0: tensor<13x21x3xf32>) -> tensor<13x1x3xf32> {
   return %0 : tensor<13x1x3xf32>
 }
 
+func @test_slice(%arg0: tensor<13x21x3xf32>) -> tensor<4x11x1xf32> {
+  // CHECK: %0 = emitc.call "tosa::slice"(%arg0) {args = [0 : index, dense<[6, 8, 0]> : tensor<3xi64>, dense<[4, 11, 1]> : tensor<3xi64>], template_args = [tensor<4x11x1xf32>]} : (tensor<13x21x3xf32>) -> tensor<4x11x1xf32>
+  %0 = "tosa.slice"(%arg0) {start = [6, 8, 0], size = [4, 11, 1]} : (tensor<13x21x3xf32>) -> tensor<4x11x1xf32>
+  return %0 : tensor<4x11x1xf32>
+}
+
 func @test_pad(%arg0: tensor<2x3xf32>, %arg1: tensor<2x2xi32>) -> tensor<3x6xf32> {
   // CHECK: %0 = emitc.call "tosa::pad"(%arg0, %arg1) {template_args = [tensor<3x6xf32>]} : (tensor<2x3xf32>, tensor<2x2xi32>) -> tensor<3x6xf32>
   %0 = "tosa.pad"(%arg0, %arg1) : (tensor<2x3xf32>, tensor<2x2xi32>) -> tensor<3x6xf32>

@@ -9,11 +9,13 @@ The table below shows the supported TOSA ops.
 | **Unary elementwise ops**
 | abs                   | :heavy_check_mark: | |
 | ceil                  | :heavy_check_mark: | |
+| clamp                 | :heavy_check_mark: | |
 | exp                   | :heavy_check_mark: | |
 | floor                 | :heavy_check_mark: | |
 | log                   | :heavy_check_mark: | |
 | negate                | :heavy_check_mark: | |
 | reciprocal            | :heavy_check_mark: | |
+| reluN                 | :heavy_check_mark: | |
 | rsqrt                 | :heavy_check_mark: | |
 | tanh                  | :heavy_check_mark: | |
 | **Binary elementwise ops**

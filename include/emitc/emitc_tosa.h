@@ -29,16 +29,16 @@ inline Src abs(Src x) {
   return emitc::abs<Src>(x);
 }
 
+// CastOp
+template <typename Dest, typename Src>
+inline Dest cast(Src x) {
+  return emitc::convert<Dest>(x);
+}
+
 // CeilOp
 template <typename Src>
 inline Src ceil(Src x) {
   return emitc::ceil<Src>(x);
-}
-
-// ConvertOp
-template <typename Dest, typename Src>
-inline Dest cast(Src x) {
-  return emitc::convert<Dest>(x);
 }
 
 // ExpOp

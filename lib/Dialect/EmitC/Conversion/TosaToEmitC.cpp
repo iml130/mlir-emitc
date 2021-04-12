@@ -738,8 +738,8 @@ struct ConvertTosaToEmitCPass
     target.addIllegalOp<tosa::ReduceProdOp>();
     target.addIllegalOp<tosa::ReduceSumOp>();
     target.addIllegalOp<tosa::ReshapeOp>();
-    target.addIllegalOp<tosa::PadOp>();
     target.addIllegalOp<tosa::SliceOp>();
+    target.addIllegalOp<tosa::PadOp>();
     target.addIllegalOp<tosa::TransposeOp>();
 
     OwningRewritePatternList patterns(&getContext());

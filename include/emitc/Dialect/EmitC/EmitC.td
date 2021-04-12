@@ -112,6 +112,8 @@ def EmitC_ConstOp : EmitC_Op<"const", [ConstantLike, NoSideEffect]> {
   let arguments = (ins AnyAttr:$value);
   let results = (outs AnyType);
 
+  let verifier = [{ return ::verify(*this); }];
+
   let hasFolder = 1;
 }
 

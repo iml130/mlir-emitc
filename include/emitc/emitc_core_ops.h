@@ -50,6 +50,17 @@ inline Src ceil(Src x) {
   return unary<Src>(x, f);
 }
 
+// ConvertOp
+template <typename Dest, typename Src>
+inline Dest convert(Src x) {
+  using ET_Dest = typename get_element_type<Dest>::type;
+  using ET_Src = typename get_element_type<Src>::type;
+
+  auto cast = [](ET_Src value) { return static_cast<ET_Dest>(value); };
+
+  return unary<Dest, Src, UnaryFuncType<ET_Dest, ET_Src>>(x, cast);
+}
+
 // ExpOp
 template <typename Src>
 inline Src exp(Src x) {

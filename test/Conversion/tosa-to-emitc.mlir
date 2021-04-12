@@ -17,6 +17,13 @@ func @test_abs(%arg0: tensor<13x21x3xf32>) -> tensor<13x21x3xf32> {
   return %0 : tensor<13x21x3xf32>
 }
 
+// CHECK-LABEL: cast
+func @test_cast(%arg0: tensor<13x21x3xi32>) -> tensor<13x21x3xf32> {
+  // CHECK: %0 = emitc.call "tosa::cast"(%arg0) {template_args = [tensor<13x21x3xf32>]} : (tensor<13x21x3xi32>) -> tensor<13x21x3xf32>
+  %0 = "tosa.cast"(%arg0) : (tensor<13x21x3xi32>) -> tensor<13x21x3xf32>
+  return %0 : tensor<13x21x3xf32>
+}
+
 func @test_ceil(%arg0: tensor<13x21x3xf32>) -> tensor<13x21x3xf32> {
   // CHECK: emitc.call "tosa::ceil"(%arg0) : (tensor<13x21x3xf32>) -> tensor<13x21x3xf32>
   %0 = "tosa.ceil"(%arg0) : (tensor<13x21x3xf32>) -> tensor<13x21x3xf32>

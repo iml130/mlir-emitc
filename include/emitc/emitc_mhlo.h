@@ -78,12 +78,7 @@ typename replace_element_type<bool, Src>::type compare(Src x, Src y) {
 // ConvertOp
 template <typename Dest, typename Src>
 inline Dest convert(Src x) {
-  using ET_Dest = typename get_element_type<Dest>::type;
-  using ET_Src = typename get_element_type<Src>::type;
-
-  auto cast = [](ET_Src value) { return static_cast<ET_Dest>(value); };
-
-  return unary<Dest, Src, UnaryFuncType<ET_Dest, ET_Src>>(x, cast);
+  return emitc::convert<Dest>(x);
 }
 
 // CosOp

@@ -35,6 +35,12 @@ inline Src ceil(Src x) {
   return emitc::ceil<Src>(x);
 }
 
+// ConvertOp
+template <typename Dest, typename Src>
+inline Dest cast(Src x) {
+  return emitc::convert<Dest>(x);
+}
+
 // ExpOp
 template <typename Src>
 inline Src exp(Src x) {

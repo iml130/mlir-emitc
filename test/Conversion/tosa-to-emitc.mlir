@@ -23,6 +23,18 @@ func @test_ceil(%arg0: tensor<13x21x3xf32>) -> tensor<13x21x3xf32> {
   return %0 : tensor<13x21x3xf32>
 }
 
+func @test_clamp0(%arg0: tensor<13x21x3xf32>) -> tensor<13x21x3xf32> {
+  // CHECK: %0 = emitc.call "tosa::clamp"(%arg0) {args = [0 : index, 0.000000e+00 : f32, 1.000000e+00 : f32]} : (tensor<13x21x3xf32>) -> tensor<13x21x3xf32>
+  %0 = "tosa.clamp"(%arg0) {min_fp = 0.0 : f32, max_fp = 1.0 : f32, min_int = -2 : i64, max_int = 2 : i64} : (tensor<13x21x3xf32>) -> tensor<13x21x3xf32>
+  return %0 : tensor<13x21x3xf32>
+}
+
+func @test_clamp1(%arg0: tensor<13x21x3xi32>) -> tensor<13x21x3xi32> {
+  // CHECK: %0 = emitc.call "tosa::clamp"(%arg0) {args = [0 : index, -2 : i32, 2 : i32]} : (tensor<13x21x3xi32>) -> tensor<13x21x3xi32>
+  %0 = "tosa.clamp"(%arg0) {min_fp = 0.0 : f32, max_fp = 1.0 : f32, min_int = -2 : i64, max_int = 2 : i64} : (tensor<13x21x3xi32>) -> tensor<13x21x3xi32>
+  return %0 : tensor<13x21x3xi32>
+}
+
 func @test_exp(%arg0: tensor<13x21x3xf32>) -> tensor<13x21x3xf32> {
   // CHECK: emitc.call "tosa::exp"(%arg0) : (tensor<13x21x3xf32>) -> tensor<13x21x3xf32>
   %0 = "tosa.exp"(%arg0) : (tensor<13x21x3xf32>) -> tensor<13x21x3xf32>

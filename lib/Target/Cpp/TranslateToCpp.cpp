@@ -476,7 +476,6 @@ static LogicalResult printFunction(CppEmitter &emitter, FuncOp functionOp) {
             if (failed(emitter.emitVariableDeclaration(
                     result, /*trailingSemicolon=*/true))) {
               return WalkResult(failure());
-              // op->emitOpError("Unable to declare result variable for op"));
             }
           }
           return WalkResult::advance();
@@ -510,8 +509,6 @@ static LogicalResult printFunction(CppEmitter &emitter, FuncOp functionOp) {
     if (blocks.size() > 1) {
       if (failed(emitter.emitLabel(block))) {
         return failure();
-        // return functionOp.emitOpError()
-        //        << "Unable to print label for basic block";
       }
     }
     for (Operation &op : block.getOperations()) {

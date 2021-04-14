@@ -25,6 +25,29 @@ using ::testing::Pointwise;
 const float EPSILON = 5e-4;
 
 // Unary elementwise ops
+TEST(tosa, clamp) {
+  Tensor<float, 2, 1> t0{-1.5f, 5.0f};
+  float min0 = -1.0f;
+  float max0 = 3.0f;
+  Tensor<float, 2, 1> expected_result0{-1.0, 3.0f};
+  Tensor<float, 2, 1> s0 = tosa::clamp(t0, min0, max0);
+
+  EXPECT_THAT(s0, Pointwise(FloatEq(), expected_result0));
+
+  Tensor<int64_t, 4, 2, 1> t1{-2, 2, -2, 3, 4, -5, 5, 5};
+  int64_t min1 = 1;
+  int64_t max1 = 3;
+  Tensor<int64_t, 4, 2, 1> expected_result1{1, 2, 1, 3, 3, 1, 3, 3};
+  Tensor<int64_t, 4, 2, 1> s1 = tosa::clamp(t1, min1, max1);
+  EXPECT_THAT(s1, Pointwise(Eq(), expected_result1));
+
+  int64_t min2 = -1;
+  int64_t max2 = 4;
+  Tensor<int64_t, 4, 2, 1> expected_result2{-1, 2, -1, 3, 4, -1, 4, 4};
+  Tensor<int64_t, 4, 2, 1> s2 = tosa::clamp(t1, min2, max2);
+  EXPECT_THAT(s2, Pointwise(Eq(), expected_result2));
+}
+
 TEST(tosa, reciprocal) {
   Tensor<float, 4> t0{1.0f, 2.0f, 3.0f, 4.0f};
   Tensor<float, 4> expected{1.0f, 0.5f, 0.3333f, 0.25f};

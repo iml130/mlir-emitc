@@ -233,6 +233,57 @@ private:
   }
 };
 
+/// Convert `tosa.clamp` into an `emitc.call` operation.
+class ClampOpConversion : public OpConversionPattern<tosa::ClampOp> {
+  using OpConversionPattern<tosa::ClampOp>::OpConversionPattern;
+
+public:
+  ClampOpConversion(MLIRContext *ctx)
+      : OpConversionPattern<tosa::ClampOp>(ctx) {}
+
+private:
+  LogicalResult
+  matchAndRewrite(tosa::ClampOp clampOp, ArrayRef<Value> operands,
+                  ConversionPatternRewriter &rewriter) const override {
+
+    StringRef funcName = "tosa::clamp";
+    StringAttr callee = rewriter.getStringAttr(funcName);
+
+    SmallVector<Attribute, 2> args_;
+    args_.push_back(rewriter.getIndexAttr(0));
+
+    // TOSA specifies the min/max attributes to be either exact i64 or f32,
+    // regardless of the operand's element type. So we need to make sure that
+    // the min/max attribute type match the operand's element type and it's bit
+    // width.
+    auto elementType =
+        operands[0].getType().cast<RankedTensorType>().getElementType();
+    if (elementType.isa<IntegerType>()) {
+      // Change the {min,max}_int type to the element type of the operand.
+      auto minInt = clampOp.min_int();
+      auto maxInt = clampOp.max_int();
+      args_.push_back(mlir::IntegerAttr::get(elementType, minInt));
+      args_.push_back(mlir::IntegerAttr::get(elementType, maxInt));
+    } else if (elementType.isa<FloatType>()) {
+      // Change the {min,max}_fp type to the element type of the operand.
+      auto minFp = clampOp.min_fpAttr().getValueAsDouble();
+      auto maxFp = clampOp.max_fpAttr().getValueAsDouble();
+      args_.push_back(mlir::FloatAttr::get(elementType, minFp));
+      args_.push_back(mlir::FloatAttr::get(elementType, maxFp));
+    } else {
+      return clampOp.emitError(
+          "Operand of tosa.clamp has to be tensor of integer or float values.");
+    }
+    ArrayAttr args = rewriter.getArrayAttr(args_);
+    ArrayAttr templateArgs;
+
+    rewriter.replaceOpWithNewOp<emitc::CallOp>(
+        clampOp, clampOp.getType(), callee, args, templateArgs, operands);
+
+    return success();
+  }
+};
+
 /// Convert `tosa.negate` into an `emitc.call` operation.
 class NegateOpConversion : public OpConversionPattern<tosa::NegateOp> {
   using OpConversionPattern<tosa::NegateOp>::OpConversionPattern;
@@ -640,6 +691,7 @@ void populateTosaToEmitcPatterns(MLIRContext *ctx,
   patterns.insert<CallOpConversion<tosa::CastOp>>(ctx, "tosa::cast",
                                                   /*explicitResultType=*/true);
   patterns.insert<CallOpConversion<tosa::CeilOp>>(ctx, "tosa::ceil");
+  patterns.insert<ClampOpConversion>(ctx);
   patterns.insert<CallOpConversion<tosa::ExpOp>>(ctx, "tosa::exp");
   patterns.insert<CallOpConversion<tosa::FloorOp>>(ctx, "tosa::floor");
   patterns.insert<CallOpConversion<tosa::LogOp>>(ctx, "tosa::log");
@@ -709,6 +761,7 @@ struct ConvertTosaToEmitCPass
     target.addIllegalOp<tosa::AbsOp>();
     target.addIllegalOp<tosa::CastOp>();
     target.addIllegalOp<tosa::CeilOp>();
+    target.addIllegalOp<tosa::ClampOp>();
     target.addIllegalOp<tosa::ExpOp>();
     target.addIllegalOp<tosa::FloorOp>();
     target.addIllegalOp<tosa::LogOp>();

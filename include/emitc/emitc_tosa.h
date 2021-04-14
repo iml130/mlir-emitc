@@ -41,6 +41,15 @@ inline Src ceil(Src x) {
   return emitc::ceil<Src>(x);
 }
 
+// ClampOp
+template <typename Src>
+inline Src clamp(Src operand, typename Src::value_type min_value,
+                 typename Src::value_type max_value) {
+  Tensor<typename Src::value_type> min{min_value};
+  Tensor<typename Src::value_type> max{max_value};
+  return emitc::clamp(min, operand, max);
+}
+
 // ExpOp
 template <typename Src>
 inline Src exp(Src x) {

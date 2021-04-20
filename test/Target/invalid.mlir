@@ -47,3 +47,8 @@ func @memref_type(%arg0 : memref<100xf32>) {
 }
 
 // -----
+
+// expected-error@+1 {{cannot emit type 'vector<100xf32>'}}
+func @vector_type(%arg0 : vector<100xf32>) {
+  return
+}

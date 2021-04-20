@@ -846,6 +846,8 @@ LogicalResult CppEmitter::emitType(Operation &op, Type type) {
     // TensorType is not supported if emitting C.
     if (restrictedToC())
       return op.emitError("cannot emit tensor type if emitting C");
+    if (!tType.hasRank())
+      return op.emitError("cannot emit unranked tensor type");
     if (!tType.hasStaticShape())
       return op.emitError("cannot emit tensor type with non static shape");
     os << "Tensor<";

@@ -6,3 +6,8 @@ func @non_static_shape(%arg0 : tensor<?xf32>) {
 }
 
 // -----
+
+// expected-error@+1 {{cannot emit unranked tensor type}}
+func @unranked_tensor(%arg0 : tensor<*xf32>) {
+  return
+}

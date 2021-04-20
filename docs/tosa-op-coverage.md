@@ -8,6 +8,7 @@ The table below shows the supported TOSA ops.
 | const                 | :heavy_check_mark: | |
 | **Unary elementwise ops**
 | abs                   | :heavy_check_mark: | |
+| cast                  | :heavy_check_mark: | |
 | ceil                  | :heavy_check_mark: | |
 | clamp                 | :heavy_check_mark: | |
 | exp                   | :heavy_check_mark: | |
@@ -37,5 +38,6 @@ The table below shows the supported TOSA ops.
 | reduce_prod           | :heavy_check_mark: | |
 | reduce_sum            | :heavy_check_mark: | |
 | reshape               | :heavy_check_mark: | |
+| slice                 | :white_check_mark: | Only for 1D to 4D inputs |
 | pad                   | :white_check_mark: | Quantization not supported |
 | transpose             | :heavy_check_mark: | |

@@ -14,3 +14,8 @@ func @c(%arg0: i32) {
   %1 = "emitc.const"(){value = 42 : i32} : () -> i32
   return
 }
+
+func @a(%arg0: i32) {
+  %1 = "emitc.getaddressof"(%arg0) : (i32) -> !emitc.opaque<"int32_t*">
+  return
+}

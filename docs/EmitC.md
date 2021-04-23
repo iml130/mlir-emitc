@@ -277,7 +277,7 @@ yielded.
 
 ## Type definition
 
-### `OpaqueType` (OpaqueType)
+### OpaqueType
 
 An opaque type
 
@@ -291,7 +291,7 @@ Examples:
 !emitc.opaque<"std::vector<std::string>">
 ```
 
-#### Type parameters:
+#### Parameters:
 
 | Parameter | C++ type | Description |
 | :-------: | :-------: | ----------- |

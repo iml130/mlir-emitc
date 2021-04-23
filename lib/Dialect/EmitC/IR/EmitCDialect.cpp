@@ -51,6 +51,25 @@ void emitc::buildTerminatedBody(OpBuilder &builder, Location loc) {
 }
 
 //===----------------------------------------------------------------------===//
+// ApplyOp
+//===----------------------------------------------------------------------===//
+
+static LogicalResult verify(mlir::emitc::ApplyOp op) {
+  StringRef applicableOperator = op.applicableOperator();
+
+  // Applicable operator must not be empty.
+  if (applicableOperator.empty()) {
+    return op.emitOpError("applicable operator must not be empty");
+  }
+
+  // Only `*` and `&` are supported.
+  if (!applicableOperator.equals("&") && !applicableOperator.equals("*"))
+    return op.emitOpError("applicable operator is illegal");
+
+  return success();
+}
+
+//===----------------------------------------------------------------------===//
 // CallOp
 //===----------------------------------------------------------------------===//
 

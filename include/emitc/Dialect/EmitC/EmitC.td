@@ -79,6 +79,22 @@ def OpaqueType : EmitC_Type<"Opaque"> {
 class EmitC_Op<string mnemonic, list<OpTrait> traits = []> :
     Op<EmitC_Dialect, mnemonic, traits>;
 
+def EmitC_ApplyOp : EmitC_Op<"apply", []> {
+  let summary = "apply operation";
+  let description = [{
+    With the "apply" operation the operators & (address of) and * (contents of)
+    can be applied to a single operand.
+  }];
+  let arguments = (ins
+    Arg<StrAttr, "the operator to apply">:$applicableOperator,
+    AnyType:$operand);
+  let results = (outs AnyType:$result);
+  let assemblyFormat = [{
+    $applicableOperator `(` $operand `)` attr-dict `:` functional-type($operand, results)
+  }];
+  let verifier = [{ return ::verify(*this); }];
+}
+
 def EmitC_CallOp : EmitC_Op<"call", []> {
   let summary = "call operation";
   let description = [{
@@ -115,15 +131,6 @@ def EmitC_ConstOp : EmitC_Op<"const", [ConstantLike, NoSideEffect]> {
   let verifier = [{ return ::verify(*this); }];
 
   let hasFolder = 1;
-}
-
-def EmitC_GetAddressOfOp : EmitC_Op<"getaddressof", []> {
-  let summary = "get address of operation";
-  let description = [{
-    The "getaddressof" operation gets the address via the & operator in C++.
-  }];
-  let arguments = (ins AnyType:$operand);
-  let results = (outs OpaqueType:$result);
 }
 
 def EmitC_ForOp : EmitC_Op<"for",

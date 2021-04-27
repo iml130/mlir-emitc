@@ -15,7 +15,8 @@ func @c(%arg0: i32) {
   return
 }
 
-func @a(%arg0: i32) {
-  %1 = "emitc.getaddressof"(%arg0) : (i32) -> !emitc.opaque<"int32_t*">
+func @a(%arg0: i32, %arg1: i32) {
+  %1 = "emitc.apply"(%arg0) {applicableOperator = "&"} : (i32) -> !emitc.opaque<"int32_t*">
+  %2 = emitc.apply "&"(%arg1) : (i32) -> !emitc.opaque<"int32_t*">
   return
 }

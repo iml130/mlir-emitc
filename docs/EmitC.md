@@ -18,6 +18,38 @@ Examples:
 
 ## Operation definition
 
+### `emitc.apply` (::mlir::emitc::ApplyOp)
+
+apply operation
+
+
+Syntax:
+
+```
+operation ::= `emitc.apply` $applicableOperator `(` $operand `)` attr-dict `:` functional-type($operand, results)
+```
+
+With the "apply" operation the operators & (address of) and * (contents of)
+can be applied to a single operand.
+
+#### Attributes:
+
+| Attribute | MLIR Type | Description |
+| :-------: | :-------: | ----------- |
+`applicableOperator` | ::mlir::StringAttr | string attribute
+
+#### Operands:
+
+| Operand | Description |
+| :-----: | ----------- |
+`operand` | any type
+
+#### Results:
+
+| Result | Description |
+| :----: | ----------- |
+`result` | any type
+
 ### `emitc.call` (::mlir::emitc::CallOp)
 
 call operation
@@ -177,24 +209,6 @@ func @conditional_reduce(%buffer: memref<1024xf32>, %lb: index,
 | Result | Description |
 | :----: | ----------- |
 `results` | any type
-
-### `emitc.getaddressof` (::mlir::emitc::GetAddressOfOp)
-
-get address of operation
-
-The "getaddressof" operation gets the address via the & operator in C++.
-
-#### Operands:
-
-| Operand | Description |
-| :-----: | ----------- |
-`operand` | any type
-
-#### Results:
-
-| Result | Description |
-| :----: | ----------- |
-`result` | An opaque type
 
 ### `emitc.if` (::mlir::emitc::IfOp)
 

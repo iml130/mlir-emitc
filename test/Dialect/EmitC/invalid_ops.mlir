@@ -69,3 +69,19 @@ func @dense_template_argument(%arg : i32) {
     emitc.call "dense_template_argument"(%arg) {template_args = [dense<[1.0, 1.0]> : tensor<2xf32>]} : (i32) -> i32
     return
 }
+
+// -----
+
+func @empty_operator(%arg : i32) {
+    // expected-error @+1 {{'emitc.apply' op applicable operator must not be empty}}
+    %2 = emitc.apply ""(%arg) : (i32) -> !emitc.opaque<"int32_t*">
+    return
+}
+
+// -----
+
+func @illegal_operator(%arg : i32) {
+    // expected-error @+1 {{'emitc.apply' op applicable operator is illegal}}
+    %2 = emitc.apply "+"(%arg) : (i32) -> !emitc.opaque<"int32_t*">
+    return
+}

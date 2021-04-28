@@ -220,15 +220,14 @@ static LogicalResult printCallOp(CppEmitter &emitter, emitc::CallOp callOp) {
   return success();
 }
 
-static LogicalResult printGetAddressOfOp(CppEmitter &emitter,
-                                         emitc::GetAddressOfOp getAddressOfOp) {
+static LogicalResult printApplyOp(CppEmitter &emitter, emitc::ApplyOp applyOp) {
   auto &os = emitter.ostream();
-  auto &op = *getAddressOfOp.getOperation();
+  auto &op = *applyOp.getOperation();
 
   if (failed(emitter.emitAssignPrefix(op)))
     return failure();
-  os << "&";
-  os << emitter.getOrCreateName(getAddressOfOp.getOperand());
+  os << applyOp.applicableOperator();
+  os << emitter.getOrCreateName(applyOp.getOperand());
 
   return success();
 }
@@ -772,14 +771,14 @@ LogicalResult CppEmitter::emitLabel(Block &block) {
 
 static LogicalResult printOperation(CppEmitter &emitter, Operation &op) {
   // EmitC ops.
+  if (auto applyOp = dyn_cast<emitc::ApplyOp>(op))
+    return printApplyOp(emitter, applyOp);
   if (auto callOp = dyn_cast<emitc::CallOp>(op))
     return printCallOp(emitter, callOp);
   if (auto constOp = dyn_cast<emitc::ConstOp>(op))
     return printConstantOp(emitter, constOp);
   if (auto forOp = dyn_cast<emitc::ForOp>(op))
     return printForOp(emitter, forOp);
-  if (auto getAdressOfOp = dyn_cast<emitc::GetAddressOfOp>(op))
-    return printGetAddressOfOp(emitter, getAdressOfOp);
   if (auto ifOp = dyn_cast<emitc::IfOp>(op))
     return printIfOp(emitter, ifOp);
   if (auto yieldOp = dyn_cast<emitc::YieldOp>(op))

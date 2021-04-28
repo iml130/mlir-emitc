@@ -53,7 +53,7 @@ static LogicalResult printConstantOp(CppEmitter &emitter,
 
     if (failed(emitter.emitVariableAssignment(result)))
       return failure();
-    if (failed(emitter.emitAttribute(*constantOp, value)))
+    if (failed(emitter.emitAttribute(*constantOp.getOperation(), value)))
       return failure();
     return success();
   }
@@ -75,7 +75,7 @@ static LogicalResult printConstantOp(CppEmitter &emitter,
     if (failed(emitter.emitAssignPrefix(*constantOp.getOperation()))) {
       return failure();
     }
-    if (failed(emitter.emitAttribute(*constantOp, value)))
+    if (failed(emitter.emitAttribute(*constantOp.getOperation(), value)))
       return failure();
     return success();
   }
@@ -86,7 +86,7 @@ static LogicalResult printConstantOp(CppEmitter &emitter,
 
   if (emitBraces)
     os << "{";
-  if (failed(emitter.emitAttribute(*constantOp, value)))
+  if (failed(emitter.emitAttribute(*constantOp.getOperation(), value)))
     return failure();
   if (emitBraces)
     os << "}";
@@ -174,6 +174,7 @@ static LogicalResult printCallOp(CppEmitter &emitter, mlir::CallOp callOp) {
 static LogicalResult printCallOp(CppEmitter &emitter, emitc::CallOp callOp) {
   auto &os = emitter.ostream();
   auto &op = *callOp.getOperation();
+
   if (failed(emitter.emitAssignPrefix(op)))
     return failure();
   os << callOp.callee();
@@ -192,7 +193,7 @@ static LogicalResult printCallOp(CppEmitter &emitter, emitc::CallOp callOp) {
         return success();
       }
     }
-    if (failed(emitter.emitAttribute(*callOp, attr))) {
+    if (failed(emitter.emitAttribute(op, attr))) {
       return failure();
     }
     return success();
@@ -249,7 +250,8 @@ static LogicalResult printForOp(CppEmitter &emitter, emitc::ForOp forOp) {
   }
 
   for (auto pair : llvm::zip(iterArgs, operands)) {
-    if (failed(emitter.emitType(*forOp, std::get<0>(pair).getType())))
+    if (failed(emitter.emitType(*forOp.getOperation(),
+                                std::get<0>(pair).getType())))
       return failure();
     os << " " << emitter.getOrCreateName(std::get<0>(pair)) << " = ";
     os << emitter.getOrCreateName(std::get<1>(pair)) << ";";
@@ -257,7 +259,8 @@ static LogicalResult printForOp(CppEmitter &emitter, emitc::ForOp forOp) {
   }
 
   os << "for (";
-  if (failed(emitter.emitType(*forOp, forOp.getInductionVar().getType())))
+  if (failed(emitter.emitType(*forOp.getOperation(),
+                              forOp.getInductionVar().getType())))
     return failure();
   os << " ";
   os << emitter.getOrCreateName(forOp.getInductionVar());
@@ -360,7 +363,7 @@ static LogicalResult printIfOp(CppEmitter &emitter, emitc::IfOp ifOp) {
 
 static LogicalResult printYieldOp(CppEmitter &emitter, emitc::YieldOp yieldOp) {
   auto &os = emitter.ostream();
-  auto &parentOp = *yieldOp->getParentOp();
+  auto &parentOp = *yieldOp.getOperation()->getParentOp();
 
   if (yieldOp.getNumOperands() != parentOp.getNumResults()) {
     return yieldOp.emitOpError("'s number of operands have to match the number "
@@ -421,12 +424,13 @@ static LogicalResult printModule(CppEmitter &emitter, ModuleOp moduleOp) {
 
   os << "// Forward declare functions.\n";
   for (FuncOp funcOp : moduleOp.getOps<FuncOp>()) {
-    if (failed(emitter.emitTypes(*funcOp, funcOp.getType().getResults())))
+    if (failed(emitter.emitTypes(*funcOp.getOperation(),
+                                 funcOp.getType().getResults())))
       return failure();
     os << " " << funcOp.getName() << "(";
     if (failed(interleaveCommaWithError(
             funcOp.getArguments(), os, [&](BlockArgument arg) {
-              return emitter.emitType(*funcOp, arg.getType());
+              return emitter.emitType(*funcOp.getOperation(), arg.getType());
             })))
       return failure();
     os << ");\n";
@@ -450,7 +454,8 @@ static LogicalResult printFunction(CppEmitter &emitter, FuncOp functionOp) {
 
   CppEmitter::Scope scope(emitter);
   auto &os = emitter.ostream();
-  if (failed(emitter.emitTypes(*functionOp, functionOp.getType().getResults())))
+  if (failed(emitter.emitTypes(*functionOp.getOperation(),
+                               functionOp.getType().getResults())))
     return failure();
   os << " " << functionOp.getName();
 
@@ -458,7 +463,8 @@ static LogicalResult printFunction(CppEmitter &emitter, FuncOp functionOp) {
   if (failed(interleaveCommaWithError(
           functionOp.getArguments(), os,
           [&](BlockArgument arg) -> LogicalResult {
-            if (failed(emitter.emitType(*functionOp, arg.getType())))
+            if (failed(emitter.emitType(*functionOp.getOperation(),
+                                        arg.getType())))
               return failure();
             os << " " << emitter.getOrCreateName(arg);
             return success();

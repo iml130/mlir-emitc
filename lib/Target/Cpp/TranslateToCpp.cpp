@@ -480,7 +480,8 @@ static LogicalResult printFunction(CppEmitter &emitter, FuncOp functionOp) {
           for (auto result : op->getResults()) {
             if (failed(emitter.emitVariableDeclaration(
                     result, /*trailingSemicolon=*/true))) {
-              return WalkResult(failure());
+              return WalkResult(
+                  op->emitError("Unable to declare result variable for op"));
             }
           }
           return WalkResult::advance();

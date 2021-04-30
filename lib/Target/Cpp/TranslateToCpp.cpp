@@ -366,8 +366,8 @@ static LogicalResult printYieldOp(CppEmitter &emitter, emitc::YieldOp yieldOp) {
   auto &parentOp = *yieldOp.getOperation()->getParentOp();
 
   if (yieldOp.getNumOperands() != parentOp.getNumResults()) {
-    return yieldOp.emitOpError("'s number of operands have to match the number "
-                               "of parent op's results");
+    return yieldOp.emitError("number of operands does not to match the number "
+                             "of the parent op's results");
   }
 
   if (failed(interleaveWithError(
@@ -378,7 +378,7 @@ static LogicalResult printYieldOp(CppEmitter &emitter, emitc::YieldOp yieldOp) {
             os << emitter.getOrCreateName(result) << " = ";
 
             if (!emitter.hasValueInScope(operand))
-              return yieldOp.emitOpError() << "operand value not in scope";
+              return yieldOp.emitError() << "operand value not in scope";
             os << emitter.getOrCreateName(operand);
             return success();
           },
@@ -664,7 +664,7 @@ LogicalResult CppEmitter::emitAttribute(Operation &op, Attribute attr) {
   }
   if (auto sAttr = attr.dyn_cast<SymbolRefAttr>()) {
     if (sAttr.getNestedReferences().size() > 1) {
-      return op.emitError(" attribute has more than 1 nested references");
+      return op.emitError(" attribute has more than 1 nested reference");
     }
     os << sAttr.getRootReference();
     return success();
@@ -723,7 +723,7 @@ LogicalResult CppEmitter::emitVariableAssignment(OpResult result) {
 LogicalResult CppEmitter::emitVariableDeclaration(OpResult result,
                                                   bool trailingSemicolon) {
   if (hasValueInScope(result)) {
-    return result.getDefiningOp()->emitOpError(
+    return result.getDefiningOp()->emitError(
         "result variable for the operation already declared.");
   }
   if (failed(emitType(*result.getOwner(), result.getType()))) {
@@ -769,7 +769,7 @@ LogicalResult CppEmitter::emitAssignPrefix(Operation &op) {
 
 LogicalResult CppEmitter::emitLabel(Block &block) {
   if (!hasBlockLabel(block)) {
-    return block.getParentOp()->emitOpError("label for block not found.");
+    return block.getParentOp()->emitError("Label for block not found.");
   }
   os << getOrCreateName(block) << ":\n";
   return success();

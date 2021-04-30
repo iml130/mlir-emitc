@@ -11,14 +11,6 @@ func @multiple_blocks() {
 
 // -----
 
-func @index_argument_out_of_range(%arg0 : f32, %arg1 : f32) {
-  // expected-error@+1 {{'emitc.call' op index argument is out of range}}
-  %0 = emitc.call "add"(%arg0, %arg1) {args = [1 : index, 2 : index]} : (f32, f32) -> f32
-  return
-}
-
-// -----
-
 func @unsupported_std_op(%arg0: f64) -> f64 {
   // expected-error@+1 {{'std.absf' op unable to find printer for op}}
   %0 = absf %arg0 : f64

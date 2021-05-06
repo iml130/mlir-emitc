@@ -4,7 +4,7 @@
 // RUN: emitc-translate -mlir-to-cpp -forward-declare-variables %s | FileCheck %s -check-prefix=CPP-FWDDECL
 
 func @test_if(%arg0: i1, %arg1: f32) {
-  emitc.if %arg0 {
+  scf.if %arg0 {
      %0 = emitc.call "func_const"(%arg1) : (f32) -> i32
   }
   return
@@ -45,7 +45,7 @@ func @test_if(%arg0: i1, %arg1: f32) {
 
 
 func @test_if_else(%arg0: i1, %arg1: f32) {
-  emitc.if %arg0 {
+  scf.if %arg0 {
     %0 = emitc.call "func_true"(%arg1) : (f32) -> i32
   } else {
     %0 = emitc.call "func_false"(%arg1) : (f32) -> i32
@@ -107,14 +107,14 @@ func @test_if_else(%arg0: i1, %arg1: f32) {
 
 func @test_if_yield(%arg0: i1, %arg1: f32) {
   %0 = constant 0 : i8
-  %x, %y = emitc.if %arg0 -> (i32, f64) {
+  %x, %y = scf.if %arg0 -> (i32, f64) {
     %1 = emitc.call "func_true_1"(%arg1) : (f32) -> i32
     %2 = emitc.call "func_true_2"(%arg1) : (f32) -> f64
-    emitc.yield %1, %2 : i32, f64
+    scf.yield %1, %2 : i32, f64
   } else {
     %1 = emitc.call "func_false_1"(%arg1) : (f32) -> i32
     %2 = emitc.call "func_false_2"(%arg1) : (f32) -> f64
-    emitc.yield %1, %2 : i32, f64
+    scf.yield %1, %2 : i32, f64
   }
   return
 }

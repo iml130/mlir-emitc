@@ -1,7 +1,6 @@
 set(LLVM_OPTIONAL_SOURCES
   MHLOToEmitC.cpp
   MHLORegionOpsToEmitC.cpp
-  SCFToEmitC.cpp
   StdToEmitC.cpp
   TensorToEmitC.cpp
   TosaToEmitC.cpp
@@ -42,22 +41,6 @@ if(EMITC_ENABLE_HLO)
     MLIRTransformUtils
   )
 endif()
-
-add_mlir_library(MLIRSCFToEmitC
-  SCFToEmitC.cpp
-
-  DEPENDS
-  MLIREmitCIncGen
-  MLIREmitCPassIncGen
-
-  LINK_COMPONENTS
-  Core
-
-  LINK_LIBS PUBLIC
-  MLIRIR
-  MLIRPass
-  MLIRTransformUtils
-)
 
 add_mlir_library(MLIRStdToEmitC
   StdToEmitC.cpp

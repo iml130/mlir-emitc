@@ -34,8 +34,8 @@ The table below shows the supported MHLO ops.
 | shift_right_logical   | :heavy_check_mark: | |
 | subtract              | :heavy_check_mark: | |
 | **Control flow ops**
-| if                    | :white_check_mark: | `--mhlo-control-flow-to-scf`, `--convert-scf-to-emitc`|
-| while                 | :white_check_mark: | `--mhlo-control-flow-to-scf`, `--convert-scf-to-emitc`|
+| if                    | :white_check_mark: | `--mhlo-control-flow-to-scf` |
+| while                 | :white_check_mark: | `--mhlo-control-flow-to-scf` |
 | **Binary logical elementwise ops**
 | or                    | :heavy_check_mark: | |
 | xor                   | :heavy_check_mark: | |

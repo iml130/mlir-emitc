@@ -72,7 +72,6 @@ set(LIBS
   MLIRSupport
   MLIRIR
   MLIREmitC
-  MLIRSCFToEmitC
   MLIRStdToEmitC
   MLIRTensorToEmitC
   MLIRTosaToEmitC

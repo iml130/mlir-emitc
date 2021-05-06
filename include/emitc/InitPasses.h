@@ -36,7 +36,6 @@ inline void registerAllEmitCPasses() {
   registerConvertMHLORegionOpsToEmitCPass();
   registerConvertMHLOToEmitCPass();
 #endif // EMITC_BUILD_HLO
-  registerConvertSCFToEmitCPass();
   registerConvertStdToEmitCPass();
   registerConvertTensorToEmitCPass();
   registerConvertTosaToEmitCPass();

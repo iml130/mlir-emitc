@@ -9,6 +9,7 @@
 #include "emitc/Dialect/EmitC/EmitCDialect.h"
 #include "emitc/Target/Cpp.h"
 #include "emitc/Target/TranslationFlags.h"
+#include "mlir/Dialect/SCF/SCF.h"
 #include "mlir/Dialect/StandardOps/IR/Ops.h"
 #include "mlir/IR/BuiltinOps.h"
 #include "mlir/IR/Dialect.h"
@@ -27,7 +28,11 @@ namespace mlir {
 void registerMlirToCppTranslation() {
   TranslateFromMLIRRegistration reg(
       "mlir-to-cpp", MlirToCppTranslateFunction, [](DialectRegistry &registry) {
-        registry.insert<emitc::EmitCDialect, StandardOpsDialect>();
+        // clang-format off
+        registry.insert<emitc::EmitCDialect,
+                        StandardOpsDialect,
+                        scf::SCFDialect>();
+        // clang-format on
       });
 }
 } // namespace mlir

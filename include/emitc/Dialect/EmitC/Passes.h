@@ -21,7 +21,6 @@ namespace emitc {
 std::unique_ptr<OperationPass<ModuleOp>>
 createConvertMhloRegionOpsToEmitCPass();
 std::unique_ptr<FunctionPass> createConvertMhloToEmitCPass();
-std::unique_ptr<FunctionPass> createConvertScfToEmitCPass();
 std::unique_ptr<FunctionPass> createConvertStdToEmitCPass();
 std::unique_ptr<FunctionPass> createConvertTensorToEmitCPass();
 std::unique_ptr<FunctionPass> createConvertTosaToEmitCPass();

@@ -8,6 +8,7 @@
 
 #include "emitc/Dialect/EmitC/EmitCDialect.h"
 #include "emitc/Target/Cpp.h"
+#include "mlir/Dialect/SCF/SCF.h"
 #include "mlir/Dialect/StandardOps/IR/Ops.h"
 #include "mlir/IR/BuiltinOps.h"
 #include "mlir/IR/BuiltinTypes.h"
@@ -233,7 +234,7 @@ static LogicalResult printApplyOp(CppEmitter &emitter, emitc::ApplyOp applyOp) {
   return success();
 }
 
-static LogicalResult printForOp(CppEmitter &emitter, emitc::ForOp forOp) {
+static LogicalResult printForOp(CppEmitter &emitter, scf::ForOp forOp) {
 
   auto &os = emitter.ostream();
 
@@ -318,7 +319,7 @@ static LogicalResult printForOp(CppEmitter &emitter, emitc::ForOp forOp) {
   return success();
 }
 
-static LogicalResult printIfOp(CppEmitter &emitter, emitc::IfOp ifOp) {
+static LogicalResult printIfOp(CppEmitter &emitter, scf::IfOp ifOp) {
   auto &os = emitter.ostream();
 
   if (!emitter.forwardDeclaredVariables()) {
@@ -361,7 +362,7 @@ static LogicalResult printIfOp(CppEmitter &emitter, emitc::IfOp ifOp) {
   return success();
 }
 
-static LogicalResult printYieldOp(CppEmitter &emitter, emitc::YieldOp yieldOp) {
+static LogicalResult printYieldOp(CppEmitter &emitter, scf::YieldOp yieldOp) {
   auto &os = emitter.ostream();
   auto &parentOp = *yieldOp.getOperation()->getParentOp();
 
@@ -519,8 +520,7 @@ static LogicalResult printFunction(CppEmitter &emitter, FuncOp functionOp) {
     }
     for (Operation &op : block.getOperations()) {
       // Don't print additional semicolons after these operations.
-      bool trailingSemicolon =
-          !isa<emitc::IfOp, emitc::ForOp, mlir::CondBranchOp>(op);
+      bool trailingSemicolon = !isa<scf::IfOp, scf::ForOp, CondBranchOp>(op);
 
       if (failed(emitter.emitOperation(
               op, /*trailingSemicolon=*/trailingSemicolon)))
@@ -784,11 +784,13 @@ static LogicalResult printOperation(CppEmitter &emitter, Operation &op) {
     return printCallOp(emitter, callOp);
   if (auto constOp = dyn_cast<emitc::ConstOp>(op))
     return printConstantOp(emitter, constOp);
-  if (auto forOp = dyn_cast<emitc::ForOp>(op))
+
+  // SCF ops.
+  if (auto forOp = dyn_cast<scf::ForOp>(op))
     return printForOp(emitter, forOp);
-  if (auto ifOp = dyn_cast<emitc::IfOp>(op))
+  if (auto ifOp = dyn_cast<scf::IfOp>(op))
     return printIfOp(emitter, ifOp);
-  if (auto yieldOp = dyn_cast<emitc::YieldOp>(op))
+  if (auto yieldOp = dyn_cast<scf::YieldOp>(op))
     return printYieldOp(emitter, yieldOp);
 
   // Standard ops.

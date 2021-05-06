@@ -4,6 +4,6 @@ The table below shows the supported SCF ops.
 
 | op                    | supported          | comment |
 | :-------------------- |:------------------:| :------ |
-| for                   | :heavy_check_mark: | |
-| if                    | :heavy_check_mark: | |
-| yield                 | :heavy_check_mark: | |
+| for                   | :white_check_mark: | via `emitc-translate` |
+| if                    | :white_check_mark: | via `emitc-translate` |
+| yield                 | :white_check_mark: | via `emitc-translate` |

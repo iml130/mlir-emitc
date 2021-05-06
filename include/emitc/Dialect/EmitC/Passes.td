@@ -23,12 +23,6 @@ def ConvertMHLOToEmitC : FunctionPass<"convert-mhlo-to-emitc"> {
   let dependentDialects = ["EmitCDialect"];
 }
 
-def ConvertSCFToEmitC : FunctionPass<"convert-scf-to-emitc"> {
-  let summary = "Convert SCF dialect to EmitC dialect, replacing IfOp and ForOp.";
-  let constructor = "createConvertScfToEmitCPass()";
-  let dependentDialects = ["EmitCDialect"];
-}
-
 def ConvertStdToEmitC : FunctionPass<"convert-std-to-emitc"> {
   let summary = "Convert std dialect to EmitC dialect, replacing IndexCastOp and SplatOp.";
   let constructor = "createConvertStdToEmitCPass()";

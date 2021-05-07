@@ -423,6 +423,11 @@ static LogicalResult printModule(CppEmitter &emitter, ModuleOp moduleOp) {
     os << "#include \"emitc_tosa.h\"\n\n";
   }
 
+  for (emitc::IncludeOp includeOp : moduleOp.getOps<emitc::IncludeOp>()) {
+          os << "#include " << includeOp.include() << "\n";
+  }
+  os << "\n";
+
   os << "// Forward declare functions.\n";
   for (FuncOp funcOp : moduleOp.getOps<FuncOp>()) {
     if (failed(emitter.emitTypes(*funcOp.getOperation(),
@@ -784,6 +789,9 @@ static LogicalResult printOperation(CppEmitter &emitter, Operation &op) {
     return printCallOp(emitter, callOp);
   if (auto constOp = dyn_cast<emitc::ConstOp>(op))
     return printConstantOp(emitter, constOp);
+  if (auto includeOp = dyn_cast<emitc::IncludeOp>(op))
+    // IncludeOp were already printed via printModule.
+    return success();
 
   // SCF ops.
   if (auto forOp = dyn_cast<scf::ForOp>(op))

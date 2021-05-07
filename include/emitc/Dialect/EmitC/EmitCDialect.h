@@ -13,6 +13,7 @@
 #ifndef EMITC_DIALECT_EMITC_EMITCDIALECT_H
 #define EMITC_DIALECT_EMITC_EMITCDIALECT_H
 
+#include "mlir/IR/BuiltinOps.h"
 #include "mlir/IR/BuiltinTypes.h"
 #include "mlir/IR/Dialect.h"
 #include "mlir/IR/OpDefinition.h"

@@ -27,6 +27,7 @@
 
 #include "emitc_core_ops.h"
 
+namespace emitc {
 namespace mhlo {
 /// See
 /// https://github.com/tensorflow/tensorflow/blob/6f59650012f8904745dffaba540afc794c6613be/tensorflow/compiler/xla/service/hlo_evaluator.cc
@@ -822,5 +823,6 @@ Dest dot(Lhs lhs, Rhs rhs) {
 }
 
 } // namespace mhlo
+} // namespace emitc
 
 #endif // EMITC_EMITC_MHLO_H

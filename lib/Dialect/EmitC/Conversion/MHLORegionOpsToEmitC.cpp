@@ -155,7 +155,7 @@ private:
 
     auto operands = op.getOperands();
 
-    StringRef funcName = "mhlo::reduce";
+    StringRef funcName = "emitc::mhlo::reduce";
     StringAttr callee = StringAttr::get(ctx, funcName);
 
     SmallVector<Attribute, 2> args_ =
@@ -190,7 +190,7 @@ private:
 
     auto operands = op.getOperands();
 
-    StringRef funcName = "mhlo::reduce_window";
+    StringRef funcName = "emitc::mhlo::reduce_window";
     StringAttr callee = StringAttr::get(ctx, funcName);
 
     SmallVector<Attribute, 2> args_ = indexSequence(operands.size(), ctx);

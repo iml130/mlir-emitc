@@ -17,6 +17,7 @@
 
 namespace {
 
+using namespace emitc;
 using ::testing::DoubleEq;
 using ::testing::Eq;
 using ::testing::FloatEq;

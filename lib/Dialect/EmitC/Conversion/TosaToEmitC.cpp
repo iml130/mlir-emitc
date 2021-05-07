@@ -189,7 +189,7 @@ private:
           "Quantization of tosa.fully_connected is currently not supported.");
     }
 
-    StringRef funcName = "tosa::fully_connected";
+    StringRef funcName = "emitc::tosa::fully_connected";
     StringAttr callee = rewriter.getStringAttr(funcName);
 
     Type type = fullyConnectedOp.getType();
@@ -221,7 +221,7 @@ private:
           "Quantization of tosa.matmul is currently not supported.");
     }
 
-    StringRef funcName = "tosa::matmul";
+    StringRef funcName = "emitc::tosa::matmul";
     StringAttr callee = rewriter.getStringAttr(funcName);
 
     ArrayAttr args;
@@ -246,7 +246,7 @@ private:
   matchAndRewrite(tosa::ClampOp clampOp, ArrayRef<Value> operands,
                   ConversionPatternRewriter &rewriter) const override {
 
-    StringRef funcName = "tosa::clamp";
+    StringRef funcName = "emitc::tosa::clamp";
     StringAttr callee = rewriter.getStringAttr(funcName);
 
     SmallVector<Attribute, 2> args_;
@@ -301,7 +301,7 @@ private:
           "Quantization of tosa.negate is currently not supported.");
     }
 
-    StringRef funcName = "tosa::negate";
+    StringRef funcName = "emitc::tosa::negate";
     StringAttr callee = rewriter.getStringAttr(funcName);
 
     ArrayAttr args;
@@ -326,7 +326,7 @@ private:
   matchAndRewrite(tosa::ReluNOp reluNOp, ArrayRef<Value> operands,
                   ConversionPatternRewriter &rewriter) const override {
 
-    StringRef funcName = "tosa::reluN";
+    StringRef funcName = "emitc::tosa::reluN";
     StringAttr callee = rewriter.getStringAttr(funcName);
 
     SmallVector<Attribute, 2> args_;
@@ -384,7 +384,7 @@ private:
         operands);
 
     // Create reciprocal op.
-    StringRef reciprocalFuncName = "tosa::reciprocal";
+    StringRef reciprocalFuncName = "emitc::tosa::reciprocal";
     StringAttr reciprocalCallee = rewriter.getStringAttr(reciprocalFuncName);
 
     auto reciprocalOp = rewriter.create<emitc::CallOp>(
@@ -523,7 +523,7 @@ private:
   LogicalResult
   matchAndRewrite(tosa::MulOp mulOp, ArrayRef<Value> operands,
                   ConversionPatternRewriter &rewriter) const override {
-    StringRef funcName = "tosa::mul";
+    StringRef funcName = "emitc::tosa::mul";
     StringAttr callee = rewriter.getStringAttr(funcName);
 
     auto shiftAttr = mulOp.shiftAttr();
@@ -631,7 +631,7 @@ private:
           "Quantization of tosa.pad is currently not supported.");
     }
 
-    StringAttr callee = rewriter.getStringAttr("tosa::pad");
+    StringAttr callee = rewriter.getStringAttr("emitc::tosa::pad");
 
     // No arguments! Pad itself is an operand and not an argument. Therefore, we
     // have to handle any conversion in tosa::pad.
@@ -659,7 +659,7 @@ private:
   LogicalResult
   matchAndRewrite(tosa::SliceOp sliceOp, ArrayRef<Value> operands,
                   ConversionPatternRewriter &rewriter) const override {
-    StringAttr callee = rewriter.getStringAttr("tosa::slice");
+    StringAttr callee = rewriter.getStringAttr("emitc::tosa::slice");
 
     // clang-format off
     ArrayAttr args = rewriter.getArrayAttr({
@@ -687,55 +687,60 @@ void populateTosaToEmitcPatterns(MLIRContext *ctx,
   patterns.insert<ConstOpConversion>(ctx);
 
   // Insert patterns for TOSA unary elementwise ops.
-  patterns.insert<CallOpConversion<tosa::AbsOp>>(ctx, "tosa::abs");
-  patterns.insert<CallOpConversion<tosa::CastOp>>(ctx, "tosa::cast",
+  patterns.insert<CallOpConversion<tosa::AbsOp>>(ctx, "emitc::tosa::abs");
+  patterns.insert<CallOpConversion<tosa::CastOp>>(ctx, "emitc::tosa::cast",
                                                   /*explicitResultType=*/true);
-  patterns.insert<CallOpConversion<tosa::CeilOp>>(ctx, "tosa::ceil");
+  patterns.insert<CallOpConversion<tosa::CeilOp>>(ctx, "emitc::tosa::ceil");
   patterns.insert<ClampOpConversion>(ctx);
-  patterns.insert<CallOpConversion<tosa::ExpOp>>(ctx, "tosa::exp");
-  patterns.insert<CallOpConversion<tosa::FloorOp>>(ctx, "tosa::floor");
-  patterns.insert<CallOpConversion<tosa::LogOp>>(ctx, "tosa::log");
+  patterns.insert<CallOpConversion<tosa::ExpOp>>(ctx, "emitc::tosa::exp");
+  patterns.insert<CallOpConversion<tosa::FloorOp>>(ctx, "emitc::tosa::floor");
+  patterns.insert<CallOpConversion<tosa::LogOp>>(ctx, "emitc::tosa::log");
   patterns.insert<NegateOpConversion>(ctx);
-  patterns.insert<CallOpConversion<tosa::ReciprocalOp>>(ctx,
-                                                        "tosa::reciprocal");
+  patterns.insert<CallOpConversion<tosa::ReciprocalOp>>(
+      ctx, "emitc::tosa::reciprocal");
   patterns.insert<ReluNOpConversion>(ctx);
   patterns.insert<RsqrtOpConversion>(ctx);
-  patterns.insert<CallOpConversion<tosa::TanhOp>>(ctx, "tosa::tanh");
+  patterns.insert<CallOpConversion<tosa::TanhOp>>(ctx, "emitc::tosa::tanh");
 
   // Insert patterns for TOSA binary elementwise ops.
-  patterns.insert<CallOpBroadcastableConversion<tosa::AddOp>>(ctx, "tosa::add");
+  patterns.insert<CallOpBroadcastableConversion<tosa::AddOp>>(
+      ctx, "emitc::tosa::add");
   patterns.insert<CallOpBroadcastableConversion<tosa::MaximumOp>>(
-      ctx, "tosa::maximum");
+      ctx, "emitc::tosa::maximum");
   patterns.insert<CallOpBroadcastableConversion<tosa::MinimumOp>>(
-      ctx, "tosa::minimum");
-  patterns.insert<MulOpConversion>(ctx, "tosa::mul");
-  patterns.insert<CallOpBroadcastableConversion<tosa::PowOp>>(ctx, "tosa::pow");
-  patterns.insert<CallOpBroadcastableConversion<tosa::SubOp>>(ctx, "tosa::sub");
+      ctx, "emitc::tosa::minimum");
+  patterns.insert<MulOpConversion>(ctx, "emitc::tosa::mul");
+  patterns.insert<CallOpBroadcastableConversion<tosa::PowOp>>(
+      ctx, "emitc::tosa::pow");
+  patterns.insert<CallOpBroadcastableConversion<tosa::SubOp>>(
+      ctx, "emitc::tosa::sub");
 
   // Insert patterns for other TOSA ops.
-  patterns.insert<GenericConvOpConversion<tosa::Conv2DOp>>(ctx, "tosa::conv2d");
+  patterns.insert<GenericConvOpConversion<tosa::Conv2DOp>>(
+      ctx, "emitc::tosa::conv2d");
   patterns.insert<GenericConvOpConversion<tosa::DepthwiseConv2DOp>>(
-      ctx, "tosa::depthwise_conv2d");
-  patterns.insert<FullyConnectedOpConversion>(ctx, "tosa::fully_connected");
+      ctx, "emitc::tosa::depthwise_conv2d");
+  patterns.insert<FullyConnectedOpConversion>(ctx,
+                                              "emitc::tosa::fully_connected");
   patterns.insert<MatMulOpConversion>(ctx);
-  patterns.insert<ReduceOpConversion<tosa::ReduceAllOp>>(ctx,
-                                                         "tosa::reduce_all");
-  patterns.insert<ReduceOpConversion<tosa::ReduceAnyOp>>(ctx,
-                                                         "tosa::reduce_any");
-  patterns.insert<ReduceOpConversion<tosa::ReduceMaxOp>>(ctx,
-                                                         "tosa::reduce_max");
-  patterns.insert<ReduceOpConversion<tosa::ReduceMinOp>>(ctx,
-                                                         "tosa::reduce_min");
-  patterns.insert<ReduceOpConversion<tosa::ReduceProdOp>>(ctx,
-                                                          "tosa::reduce_prod");
-  patterns.insert<ReduceOpConversion<tosa::ReduceSumOp>>(ctx,
-                                                         "tosa::reduce_sum");
+  patterns.insert<ReduceOpConversion<tosa::ReduceAllOp>>(
+      ctx, "emitc::tosa::reduce_all");
+  patterns.insert<ReduceOpConversion<tosa::ReduceAnyOp>>(
+      ctx, "emitc::tosa::reduce_any");
+  patterns.insert<ReduceOpConversion<tosa::ReduceMaxOp>>(
+      ctx, "emitc::tosa::reduce_max");
+  patterns.insert<ReduceOpConversion<tosa::ReduceMinOp>>(
+      ctx, "emitc::tosa::reduce_min");
+  patterns.insert<ReduceOpConversion<tosa::ReduceProdOp>>(
+      ctx, "emitc::tosa::reduce_prod");
+  patterns.insert<ReduceOpConversion<tosa::ReduceSumOp>>(
+      ctx, "emitc::tosa::reduce_sum");
   patterns.insert<CallOpConversion<tosa::ReshapeOp>>(
-      ctx, "tosa::reshape", /*explicitResultType=*/true);
+      ctx, "emitc::tosa::reshape", /*explicitResultType=*/true);
   patterns.insert<SliceOpConversion>(ctx);
   patterns.insert<PadOpConversion>(ctx);
   patterns.insert<CallOpConversion<tosa::TransposeOp>>(
-      ctx, "tosa::transpose", /*explicitResultType=*/true);
+      ctx, "emitc::tosa::transpose", /*explicitResultType=*/true);
 }
 
 namespace {

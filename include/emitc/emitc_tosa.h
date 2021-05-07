@@ -20,6 +20,7 @@
 #include "emitc_core_ops.h"
 #include "emitc_std.h"
 
+namespace emitc {
 namespace tosa {
 
 /// Functions for unary elementwise TOSA ops.
@@ -568,5 +569,6 @@ inline Dest transpose(Src input, Tensor1D<int32_t, Src::rank()> perms) {
 }
 
 } // namespace tosa
+} // namespace emitc
 
 #endif // EMITC_EMITC_TOSA_H

@@ -17,6 +17,7 @@
 
 #include "emitc_types.h"
 
+namespace emitc {
 namespace tensor {
 
 // ExtractOp
@@ -26,5 +27,6 @@ inline T extract(Tensor<T, Shape...> x, Indices... indices) {
 }
 
 } // namespace tensor
+} // namespace emitc
 
 #endif // EMITC_EMITC_TENSOR_H

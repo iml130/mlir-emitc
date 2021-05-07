@@ -37,7 +37,7 @@ private:
   LogicalResult
   matchAndRewrite(mlir::tensor::ExtractOp indexCastOp, ArrayRef<Value> operands,
                   ConversionPatternRewriter &rewriter) const override {
-    StringAttr callee = rewriter.getStringAttr("tensor::extract");
+    StringAttr callee = rewriter.getStringAttr("emitc::tensor::extract");
 
     Type elementType = indexCastOp.getType();
     if (auto tensorType = elementType.dyn_cast<TensorType>()) {

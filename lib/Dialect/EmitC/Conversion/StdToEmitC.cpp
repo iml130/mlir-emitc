@@ -36,7 +36,7 @@ private:
   LogicalResult
   matchAndRewrite(IndexCastOp indexCastOp, ArrayRef<Value> operands,
                   ConversionPatternRewriter &rewriter) const override {
-    StringAttr callee = rewriter.getStringAttr("standard::index_cast");
+    StringAttr callee = rewriter.getStringAttr("emitc::standard::index_cast");
 
     ArrayAttr args;
     Type resultType = indexCastOp.getResult().getType();
@@ -61,7 +61,7 @@ private:
   LogicalResult
   matchAndRewrite(SplatOp splatOp, ArrayRef<Value> operands,
                   ConversionPatternRewriter &rewriter) const override {
-    StringAttr callee = rewriter.getStringAttr("standard::splat");
+    StringAttr callee = rewriter.getStringAttr("emitc::standard::splat");
 
     ArrayAttr args;
     Type resultType = splatOp.getResult().getType();

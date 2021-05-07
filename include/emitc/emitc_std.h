@@ -19,6 +19,7 @@
 
 #include "emitc_types.h"
 
+namespace emitc {
 namespace standard {
 
 // IndexCastOp
@@ -43,5 +44,6 @@ inline Dest splat(Src x) {
 }
 
 } // namespace standard
+} // namespace emitc
 
 #endif // EMITC_EMITC_STD_H

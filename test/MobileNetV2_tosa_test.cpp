@@ -17,9 +17,9 @@ bool check_tensor(T result, U expected, float eps, bool print_error) {
 int main() {
 
   Tensor<float, 1, 224, 224, 3> input0 =
-      standard::splat<Tensor<float, 1, 224, 224, 3>>(0.5f);
+      emitc::standard::splat<Tensor<float, 1, 224, 224, 3>>(0.5f);
   Tensor<float, 1, 1000> output0 =
-      standard::splat<Tensor<float, 1, 1000>>(0.0010000000474974513f);
+      emitc::standard::splat<Tensor<float, 1, 1000>>(0.0010000000474974513f);
   Tensor<float, 1, 1000> result0;
   bool error = false;
   float EPS = 1e-4;

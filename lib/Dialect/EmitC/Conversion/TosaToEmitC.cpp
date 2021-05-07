@@ -549,6 +549,7 @@ private:
   }
 };
 
+/// Convert `tosa.reduce_*` into an `emitc.call` operation.
 template <typename SrcOp>
 class ReduceOpConversion : public OpConversionPattern<SrcOp> {
   using OpConversionPattern<SrcOp>::OpConversionPattern;
@@ -754,51 +755,49 @@ struct ConvertTosaToEmitCPass
 
     target.addLegalDialect<emitc::EmitCDialect>();
     target.addLegalDialect<tosa::TosaDialect>();
-    // TODO: We might to readd further legal dialects and ops
-    // target.addLegalDialect<StandardOpsDialect>();
-    // target.addLegalOp<FuncOp>();
-    // target.addLegalOp<ModuleOp>();
 
-    // Data node ops
+    // clang-format off
+    // Data node ops.
     target.addIllegalOp<tosa::ConstOp>();
 
-    // Unary elementwise ops
-    target.addIllegalOp<tosa::AbsOp>();
-    target.addIllegalOp<tosa::CastOp>();
-    target.addIllegalOp<tosa::CeilOp>();
-    target.addIllegalOp<tosa::ClampOp>();
-    target.addIllegalOp<tosa::ExpOp>();
-    target.addIllegalOp<tosa::FloorOp>();
-    target.addIllegalOp<tosa::LogOp>();
-    target.addIllegalOp<tosa::NegateOp>();
-    target.addIllegalOp<tosa::ReciprocalOp>();
-    target.addIllegalOp<tosa::ReluNOp>();
-    target.addIllegalOp<tosa::RsqrtOp>();
-    target.addIllegalOp<tosa::TanhOp>();
+    // Unary elementwise ops.
+    target.addIllegalOp<tosa::AbsOp,
+                        tosa::CastOp,
+                        tosa::CeilOp,
+                        tosa::ClampOp,
+                        tosa::ExpOp,
+                        tosa::FloorOp,
+                        tosa::LogOp,
+                        tosa::NegateOp,
+                        tosa::ReciprocalOp,
+                        tosa::ReluNOp,
+                        tosa::RsqrtOp,
+                        tosa::TanhOp>();
 
-    // Binary elementwise ops
-    target.addIllegalOp<tosa::AddOp>();
-    target.addIllegalOp<tosa::MaximumOp>();
-    target.addIllegalOp<tosa::MinimumOp>();
-    target.addIllegalOp<tosa::MulOp>();
-    target.addIllegalOp<tosa::PowOp>();
-    target.addIllegalOp<tosa::SubOp>();
+    // Binary elementwise ops.
+    target.addIllegalOp<tosa::AddOp,
+                        tosa::MaximumOp,
+                        tosa::MinimumOp,
+                        tosa::MulOp,
+                        tosa::PowOp,
+                        tosa::SubOp>();
 
-    // Other ops
-    target.addIllegalOp<tosa::Conv2DOp>();
-    target.addIllegalOp<tosa::DepthwiseConv2DOp>();
-    target.addIllegalOp<tosa::FullyConnectedOp>();
-    target.addIllegalOp<tosa::MatMulOp>();
-    target.addIllegalOp<tosa::ReduceAllOp>();
-    target.addIllegalOp<tosa::ReduceAnyOp>();
-    target.addIllegalOp<tosa::ReduceMaxOp>();
-    target.addIllegalOp<tosa::ReduceMinOp>();
-    target.addIllegalOp<tosa::ReduceProdOp>();
-    target.addIllegalOp<tosa::ReduceSumOp>();
-    target.addIllegalOp<tosa::ReshapeOp>();
-    target.addIllegalOp<tosa::SliceOp>();
-    target.addIllegalOp<tosa::PadOp>();
-    target.addIllegalOp<tosa::TransposeOp>();
+    // Other ops.
+    target.addIllegalOp<tosa::Conv2DOp,
+                        tosa::DepthwiseConv2DOp,
+                        tosa::FullyConnectedOp,
+                        tosa::MatMulOp,
+                        tosa::ReduceAllOp,
+                        tosa::ReduceAnyOp,
+                        tosa::ReduceMaxOp,
+                        tosa::ReduceMinOp,
+                        tosa::ReduceProdOp,
+                        tosa::ReduceSumOp,
+                        tosa::ReshapeOp,
+                        tosa::SliceOp,
+                        tosa::PadOp,
+                        tosa::TransposeOp>();
+    // clang-format on
 
     OwningRewritePatternList patterns(&getContext());
     populateTosaToEmitcPatterns(&getContext(), patterns);

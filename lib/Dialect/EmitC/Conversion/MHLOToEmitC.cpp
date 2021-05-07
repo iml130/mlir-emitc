@@ -579,14 +579,12 @@ struct ConvertMhloToEmitCPass
 
     target.addLegalDialect<emitc::EmitCDialect>();
     target.addLegalDialect<mhlo::MhloDialect>();
-    target.addLegalDialect<StandardOpsDialect>();
-    target.addLegalOp<FuncOp>();
-    target.addLegalOp<ModuleOp>();
 
     // clang-format off
     // MHLO nullary ops
     target.addIllegalOp<mhlo::ConstOp>();
-    // MHLO unary elementwise ops
+
+    // MHLO unary elementwise ops.
     target.addIllegalOp<mhlo::AbsOp,
                         mhlo::CeilOp,
                         mhlo::ConvertOp,
@@ -602,7 +600,8 @@ struct ConvertMhloToEmitCPass
                         mhlo::SinOp,
                         mhlo::SqrtOp,
                         mhlo::TanhOp>();
-    // MHLO binary elementwise ops
+
+    // MHLO binary elementwise ops.
     target.addIllegalOp<mhlo::AddOp,
                         mhlo::Atan2Op,
                         mhlo::DivOp,
@@ -613,21 +612,26 @@ struct ConvertMhloToEmitCPass
                         mhlo::ShiftLeftOp,
                         mhlo::ShiftRightLogicalOp,
                         mhlo::SubOp>();
-    // MHLO binary logical elementwise ops
+
+    // MHLO binary logical elementwise ops.
     target.addIllegalOp<mhlo::OrOp,
                         mhlo::XorOp>();
-    // MHLO tuple ops
+
+    // MHLO tuple ops.
     target.addIllegalOp<mhlo::CompareOp,
                         mhlo::TupleOp,
                         mhlo::GetTupleElementOp>();
-    // MHLO slice ops
+
+    // MHLO slice ops.
     target.addIllegalOp<mhlo::DynamicSliceOp,
                         mhlo::DynamicUpdateSliceOp,
                         mhlo::SliceOp>();
-    // MHLO region ops
+
+    // MHLO region ops.
     target.addIllegalOp<mhlo::ReduceOp,
                         mhlo::ReturnOp>();
-    // Other MHLO ops
+
+    // Other MHLO ops.
     target.addIllegalOp<mhlo::BatchNormInferenceOp,
                         mhlo::BitcastConvertOp,
                         mhlo::BroadcastInDimOp,
@@ -638,7 +642,8 @@ struct ConvertMhloToEmitCPass
                         mhlo::PadOp,
                         mhlo::ReshapeOp,
                         mhlo::SelectOp>();
-    // MHLO RNG ops
+
+    // MHLO RNG ops.
     target.addIllegalOp<mhlo::RngUniformOp,
                         mhlo::RngBitGeneratorOp>();
     // clang-format on

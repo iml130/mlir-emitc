@@ -68,7 +68,7 @@ private:
                   ConversionPatternRewriter &rewriter) const override {
     typename mhlo::BatchNormInferenceOp::Adaptor adaptor(operands);
 
-    StringRef funcName = "mhlo::batch_norm_inference";
+    StringRef funcName = "emitc::mhlo::batch_norm_inference";
     StringAttr callee = rewriter.getStringAttr(funcName);
 
     SmallVector<Attribute, 2> args_ =
@@ -102,7 +102,7 @@ private:
   matchAndRewrite(mhlo::BroadcastInDimOp broadcastInDimOp,
                   ArrayRef<Value> operands,
                   ConversionPatternRewriter &rewriter) const override {
-    StringRef funcName = "mhlo::broadcast_in_dim";
+    StringRef funcName = "emitc::mhlo::broadcast_in_dim";
     StringAttr callee = rewriter.getStringAttr(funcName);
 
     SmallVector<Attribute, 2> args_ =
@@ -135,7 +135,7 @@ private:
   matchAndRewrite(mhlo::ConcatenateOp concatenateOp, ArrayRef<Value> operands,
                   ConversionPatternRewriter &rewriter) const override {
 
-    StringRef funcName = "mhlo::concatenate";
+    StringRef funcName = "emitc::mhlo::concatenate";
     StringAttr callee = rewriter.getStringAttr(funcName);
 
     ArrayAttr args;
@@ -164,7 +164,7 @@ private:
     typename mhlo::ConvOp::Adaptor adaptor(operands);
     auto ctx = convOp.getContext();
 
-    StringRef funcName = "mhlo::convolution";
+    StringRef funcName = "emitc::mhlo::convolution";
     StringAttr callee = rewriter.getStringAttr(funcName);
 
     SmallVector<Attribute, 2> args_ =
@@ -268,7 +268,7 @@ private:
   LogicalResult
   matchAndRewrite(mhlo::CompareOp compareOp, ArrayRef<Value> operands,
                   ConversionPatternRewriter &rewriter) const override {
-    StringAttr callee = rewriter.getStringAttr("mhlo::compare");
+    StringAttr callee = rewriter.getStringAttr("emitc::mhlo::compare");
 
     StringRef comparisonDirection = compareOp.comparison_direction();
     Optional<StringRef> functionName =
@@ -339,7 +339,7 @@ private:
   LogicalResult
   matchAndRewrite(mhlo::SliceOp sliceOp, ArrayRef<Value> operands,
                   ConversionPatternRewriter &rewriter) const override {
-    StringRef funcName = "mhlo::slice";
+    StringRef funcName = "emitc::mhlo::slice";
     StringAttr callee = rewriter.getStringAttr(funcName);
 
     SmallVector<Attribute, 2> args_ =
@@ -373,7 +373,7 @@ private:
   LogicalResult
   matchAndRewrite(mhlo::DynamicSliceOp dynamicSliceOp, ArrayRef<Value> operands,
                   ConversionPatternRewriter &rewriter) const override {
-    StringRef funcName = "mhlo::dynamic_slice";
+    StringRef funcName = "emitc::mhlo::dynamic_slice";
     StringAttr callee = rewriter.getStringAttr(funcName);
 
     SmallVector<Attribute, 2> args_ =
@@ -410,7 +410,7 @@ private:
                   ConversionPatternRewriter &rewriter) const override {
     typename mhlo::DynamicUpdateSliceOp::Adaptor adaptor(operands);
 
-    StringRef funcName = "mhlo::dynamic_update_slice";
+    StringRef funcName = "emitc::mhlo::dynamic_update_slice";
     StringAttr callee = rewriter.getStringAttr(funcName);
 
     ArrayAttr args;
@@ -436,7 +436,7 @@ private:
   LogicalResult
   matchAndRewrite(mhlo::PadOp padOp, ArrayRef<Value> operands,
                   ConversionPatternRewriter &rewriter) const override {
-    StringAttr callee = rewriter.getStringAttr("mhlo::pad");
+    StringAttr callee = rewriter.getStringAttr("emitc::mhlo::pad");
 
     SmallVector<Attribute, 2> args_ =
         indexSequence(operands.size(), padOp.getContext());
@@ -471,7 +471,7 @@ private:
   matchAndRewrite(mhlo::RngBitGeneratorOp rngBitGeneratorOp,
                   ArrayRef<Value> operands,
                   ConversionPatternRewriter &rewriter) const override {
-    StringRef funcName = "mhlo::rng_bit_generator";
+    StringRef funcName = "emitc::mhlo::rng_bit_generator";
     StringAttr callee = rewriter.getStringAttr(funcName);
 
     ArrayAttr args;
@@ -495,40 +495,45 @@ void populateMhloToEmitcPatterns(MLIRContext *ctx,
   patterns.insert<ConstOpConversion>(ctx);
 
   // Insert patterns for MHLO unary elementwise ops.
-  patterns.insert<CallOpConversion<mhlo::AbsOp>>(ctx, "mhlo::abs");
-  patterns.insert<CallOpConversion<mhlo::CeilOp>>(ctx, "mhlo::ceil");
+  patterns.insert<CallOpConversion<mhlo::AbsOp>>(ctx, "emitc::mhlo::abs");
+  patterns.insert<CallOpConversion<mhlo::CeilOp>>(ctx, "emitc::mhlo::ceil");
   patterns.insert<CallOpConversion<mhlo::ConvertOp>>(
-      ctx, "mhlo::convert", /*explicitResultType=*/true);
-  patterns.insert<CallOpConversion<mhlo::CosOp>>(ctx, "mhlo::cos");
-  patterns.insert<CallOpConversion<mhlo::ExpOp>>(ctx, "mhlo::exponential");
+      ctx, "emitc::mhlo::convert", /*explicitResultType=*/true);
+  patterns.insert<CallOpConversion<mhlo::CosOp>>(ctx, "emitc::mhlo::cos");
+  patterns.insert<CallOpConversion<mhlo::ExpOp>>(ctx,
+                                                 "emitc::mhlo::exponential");
   patterns.insert<CallOpConversion<mhlo::Expm1Op>>(
-      ctx, "mhlo::exponential_minus_one");
-  patterns.insert<CallOpConversion<mhlo::FloorOp>>(ctx, "mhlo::floor");
-  patterns.insert<CallOpConversion<mhlo::IsFiniteOp>>(ctx, "mhlo::is_finite");
-  patterns.insert<CallOpConversion<mhlo::LogOp>>(ctx, "mhlo::log");
-  patterns.insert<CallOpConversion<mhlo::Log1pOp>>(ctx, "mhlo::log_plus_one");
-  patterns.insert<CallOpConversion<mhlo::NegOp>>(ctx, "mhlo::negate");
-  patterns.insert<CallOpConversion<mhlo::RoundOp>>(ctx, "mhlo::round");
-  patterns.insert<CallOpConversion<mhlo::SinOp>>(ctx, "mhlo::sin");
-  patterns.insert<CallOpConversion<mhlo::SqrtOp>>(ctx, "mhlo::sqrt");
-  patterns.insert<CallOpConversion<mhlo::TanhOp>>(ctx, "mhlo::tanh");
+      ctx, "emitc::mhlo::exponential_minus_one");
+  patterns.insert<CallOpConversion<mhlo::FloorOp>>(ctx, "emitc::mhlo::floor");
+  patterns.insert<CallOpConversion<mhlo::IsFiniteOp>>(ctx,
+                                                      "emitc::mhlo::is_finite");
+  patterns.insert<CallOpConversion<mhlo::LogOp>>(ctx, "emitc::mhlo::log");
+  patterns.insert<CallOpConversion<mhlo::Log1pOp>>(ctx,
+                                                   "emitc::mhlo::log_plus_one");
+  patterns.insert<CallOpConversion<mhlo::NegOp>>(ctx, "emitc::mhlo::negate");
+  patterns.insert<CallOpConversion<mhlo::RoundOp>>(ctx, "emitc::mhlo::round");
+  patterns.insert<CallOpConversion<mhlo::SinOp>>(ctx, "emitc::mhlo::sin");
+  patterns.insert<CallOpConversion<mhlo::SqrtOp>>(ctx, "emitc::mhlo::sqrt");
+  patterns.insert<CallOpConversion<mhlo::TanhOp>>(ctx, "emitc::mhlo::tanh");
 
   // Insert patterns for MHLO binary elementwise ops.
-  patterns.insert<CallOpConversion<mhlo::AddOp>>(ctx, "mhlo::add");
-  patterns.insert<CallOpConversion<mhlo::Atan2Op>>(ctx, "mhlo::atan2");
-  patterns.insert<CallOpConversion<mhlo::DivOp>>(ctx, "mhlo::div");
-  patterns.insert<CallOpConversion<mhlo::MaxOp>>(ctx, "mhlo::max");
-  patterns.insert<CallOpConversion<mhlo::MinOp>>(ctx, "mhlo::min");
-  patterns.insert<CallOpConversion<mhlo::MulOp>>(ctx, "mhlo::mul");
-  patterns.insert<CallOpConversion<mhlo::PowOp>>(ctx, "mhlo::pow");
-  patterns.insert<CallOpConversion<mhlo::ShiftLeftOp>>(ctx, "mhlo::shift_left");
+  patterns.insert<CallOpConversion<mhlo::AddOp>>(ctx, "emitc::mhlo::add");
+  patterns.insert<CallOpConversion<mhlo::Atan2Op>>(ctx, "emitc::mhlo::atan2");
+  patterns.insert<CallOpConversion<mhlo::DivOp>>(ctx, "emitc::mhlo::div");
+  patterns.insert<CallOpConversion<mhlo::MaxOp>>(ctx, "emitc::mhlo::max");
+  patterns.insert<CallOpConversion<mhlo::MinOp>>(ctx, "emitc::mhlo::min");
+  patterns.insert<CallOpConversion<mhlo::MulOp>>(ctx, "emitc::mhlo::mul");
+  patterns.insert<CallOpConversion<mhlo::PowOp>>(ctx, "emitc::mhlo::pow");
+  patterns.insert<CallOpConversion<mhlo::ShiftLeftOp>>(
+      ctx, "emitc::mhlo::shift_left");
   patterns.insert<CallOpConversion<mhlo::ShiftRightLogicalOp>>(
-      ctx, "mhlo::shift_right_logical");
-  patterns.insert<CallOpConversion<mhlo::SubOp>>(ctx, "mhlo::sub");
+      ctx, "emitc::mhlo::shift_right_logical");
+  patterns.insert<CallOpConversion<mhlo::SubOp>>(ctx, "emitc::mhlo::sub");
 
   // Insert patterns for MHLO binary logical elementwise ops.
-  patterns.insert<CallOpConversion<mhlo::OrOp>>(ctx, "mhlo::logical_or");
-  patterns.insert<CallOpConversion<mhlo::XorOp>>(ctx, "mhlo::logical_xor");
+  patterns.insert<CallOpConversion<mhlo::OrOp>>(ctx, "emitc::mhlo::logical_or");
+  patterns.insert<CallOpConversion<mhlo::XorOp>>(ctx,
+                                                 "emitc::mhlo::logical_xor");
 
   // Insert patterns for MHLO tuple ops.
   patterns.insert<CompareOpConversion>(ctx);
@@ -543,23 +548,23 @@ void populateMhloToEmitcPatterns(MLIRContext *ctx,
   // Insert patterns for other MHLO ops.
   patterns.insert<BatchNormInferenceOpConversion>(ctx);
   patterns.insert<CallOpConversion<mhlo::BitcastConvertOp>>(
-      ctx, "mhlo::bitcast_convert", /*explicitResultType=*/true);
+      ctx, "emitc::mhlo::bitcast_convert", /*explicitResultType=*/true);
   patterns.insert<BroadcastInDimOpConversion>(ctx);
   patterns.insert<CallOpConversion<mhlo::ClampOp>>(
-      ctx, "mhlo::clamp", /*explicitResultType=*/false,
+      ctx, "emitc::mhlo::clamp", /*explicitResultType=*/false,
       /*explicitOperandTypes=*/true);
   patterns.insert<ConcatenateOpConversion>(ctx);
   patterns.insert<ConvOpConversion>(ctx);
-  patterns.insert<CallOpConversion<mhlo::DotOp>>(ctx, "mhlo::dot",
+  patterns.insert<CallOpConversion<mhlo::DotOp>>(ctx, "emitc::mhlo::dot",
                                                  /*explicitResultType=*/true);
   patterns.insert<PadOpConversion>(ctx);
   patterns.insert<CallOpConversion<mhlo::ReshapeOp>>(
-      ctx, "mhlo::reshape", /*explicitResultType=*/true);
-  patterns.insert<CallOpConversion<mhlo::SelectOp>>(ctx, "mhlo::select");
+      ctx, "emitc::mhlo::reshape", /*explicitResultType=*/true);
+  patterns.insert<CallOpConversion<mhlo::SelectOp>>(ctx, "emitc::mhlo::select");
 
   // Insert patterns for MHLO RNG ops.
   patterns.insert<CallOpConversion<mhlo::RngUniformOp>>(
-      ctx, "mhlo::rng_uniform", /*explicitResultType=*/true);
+      ctx, "emitc::mhlo::rng_uniform", /*explicitResultType=*/true);
   patterns.insert<RngBitGeneratorOpConversion>(ctx);
 }
 

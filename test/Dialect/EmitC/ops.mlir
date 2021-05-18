@@ -1,5 +1,8 @@
 // RUN: emitc-opt -allow-unregistered-dialect -verify-diagnostics %s | FileCheck %s
 
+"emitc.include" (){include = "test.h", is_standard_include} : () -> ()
+emitc.include "test.h" is_standard_include
+
 // CHECK-LABEL: func @f(%{{.*}}: i32, %{{.*}}: !custom.int32_t) -> i1 {
 func @f(%arg0: i32, %f: !custom<"int32_t">) -> i1 {
   %1 = "emitc.call"() {callee = "blah"} : () -> i64

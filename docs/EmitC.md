@@ -130,6 +130,27 @@ is intended to support opaque attributes and EmitC's opaque type.
 | :----: | ----------- |
 &laquo;unnamed&raquo; | any type
 
+### `emitc.include` (::mlir::emitc::IncludeOp)
+
+include operation
+
+
+Syntax:
+
+```
+operation ::= `emitc.include` $include attr-dict (`is_standard_include` $is_standard_include^)?
+```
+
+The `include` operation allows to define a source file inclusion via the
+`#include` directive.
+
+#### Attributes:
+
+| Attribute | MLIR Type | Description |
+| :-------: | :-------: | ----------- |
+`include` | ::mlir::StringAttr | string attribute
+`is_standard_include` | ::mlir::UnitAttr | unit attribute
+
 ## Type definition
 
 ### OpaqueType

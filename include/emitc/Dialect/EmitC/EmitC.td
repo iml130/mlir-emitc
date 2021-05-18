@@ -177,4 +177,18 @@ def EmitC_ConstOp : EmitC_Op<"const", [ConstantLike, NoSideEffect]> {
   let hasFolder = 1;
 }
 
+def EmitC_IncludeOp : EmitC_Op<"include", [NoSideEffect, HasParent<"ModuleOp">]> {
+  let summary = "include operation";
+  let description = [{
+    The `include` operation allows to define a source file inclusion via the
+    `#include` directive.
+  }];
+  let arguments = (ins
+    Arg<StrAttr, "source file to include">:$include,
+    UnitAttr:$is_standard_include);
+  let assemblyFormat = [{
+    $include attr-dict (`is_standard_include` $is_standard_include^)?
+  }];
+}
+
 #endif // EMITC_OPS

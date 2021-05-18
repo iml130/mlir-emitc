@@ -1,5 +1,10 @@
 // RUN: emitc-translate -mlir-to-cpp %s | FileCheck %s
 
+// CHECK: #include "myheader.h"
+emitc.include "myheader.h"
+// CHECK: #include <myheader.h>
+emitc.include "myheader.h" is_standard_include
+
 // CHECK: void test_foo_print() {
 func @test_foo_print() {
   // CHECK: [[V1:[^ ]*]] = foo::constant({0, 1});

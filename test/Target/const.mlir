@@ -5,10 +5,10 @@
 
 
 func @emitc_constant() {
-  %c0 = "emitc.const"(){value = "" : i32} : () -> i32
+  %c0 = "emitc.const"(){value = #emitc.opaque<""> : i32} : () -> i32
   %c1 = "emitc.const"(){value = 42 : i32} : () -> i32
-  %c2 = "emitc.const"(){value = "" : !emitc.opaque<"int32_t*">} : () -> !emitc.opaque<"int32_t*">
-  %c3 = "emitc.const"(){value = "NULL" : !emitc.opaque<"int32_t*">} : () -> !emitc.opaque<"int32_t*">
+  %c2 = "emitc.const"(){value = #emitc.opaque<""> : !emitc.opaque<"int32_t*">} : () -> !emitc.opaque<"int32_t*">
+  %c3 = "emitc.const"(){value = #emitc.opaque<"NULL"> : !emitc.opaque<"int32_t*">} : () -> !emitc.opaque<"int32_t*">
   return
 }
 // C-DEFAULT: void emitc_constant() {

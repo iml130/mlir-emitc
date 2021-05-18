@@ -35,6 +35,10 @@ void emitc::EmitCDialect::initialize() {
 #define GET_TYPEDEF_LIST
 #include "emitc/Dialect/EmitC/EmitCTypes.cpp.inc"
       >();
+  addAttributes<
+#define GET_ATTRDEF_LIST
+#include "emitc/Dialect/EmitC/EmitCAttrDefs.cpp.inc"
+      >();
 }
 
 /// Materialize a single constant operation from a given attribute value with
@@ -145,6 +149,30 @@ OpFoldResult ConstOp::fold(ArrayRef<Attribute> operands) {
 
 #define GET_OP_CLASSES
 #include "emitc/Dialect/EmitC/EmitC.cpp.inc"
+
+#define GET_ATTRDEF_CLASSES
+#include "emitc/Dialect/EmitC/EmitCAttrDefs.cpp.inc"
+
+Attribute emitc::EmitCDialect::parseAttribute(DialectAsmParser &parser,
+                                              Type type) const {
+  llvm::SMLoc typeLoc = parser.getCurrentLocation();
+  StringRef mnemonic;
+  if (parser.parseKeyword(&mnemonic))
+    return Attribute();
+  Attribute genAttr;
+  auto parseResult =
+      generatedAttributeParser(getContext(), parser, mnemonic, type, genAttr);
+  if (parseResult.hasValue())
+    return genAttr;
+  parser.emitError(typeLoc, "unknown attribute in EmitC dialect");
+  return Attribute();
+}
+
+void emitc::EmitCDialect::printAttribute(Attribute attr,
+                                         DialectAsmPrinter &os) const {
+  if (failed(generatedAttributePrinter(attr, os)))
+    llvm_unreachable("unexpected 'EmitC' attribute kind");
+}
 
 #define GET_TYPEDEF_CLASSES
 #include "emitc/Dialect/EmitC/EmitCTypes.cpp.inc"

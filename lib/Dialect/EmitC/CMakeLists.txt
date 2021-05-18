@@ -6,6 +6,7 @@ add_mlir_dialect_library(MLIREmitC
 
   DEPENDS
   MLIREmitCIncGen
+  MLIREmitCAttrDefsIncGen
 
   LINK_COMPONENTS
   Support

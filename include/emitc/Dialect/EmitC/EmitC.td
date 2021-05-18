@@ -28,6 +28,50 @@ def EmitC_Dialect : Dialect {
 }
 
 //===----------------------------------------------------------------------===//
+// EmitC attribute definitions
+//===----------------------------------------------------------------------===//
+
+class EmitC_Attr<string name> : AttrDef<EmitC_Dialect, name> { }
+
+def OpaqueAttr : EmitC_Attr<"Opaque"> {
+  let mnemonic = "opaque";
+
+  let summary = "An opaque attribute";
+
+  let description = [{
+    An opaque attribute of which the value gets emitted as is.
+
+    Examples:
+
+    ```mlir
+    #emitc.opaque<"">
+    #emitc.opaque<"NULL">
+    #emitc.opaque<"nullptr">
+    ```
+  }];
+
+  let parameters = (ins StringRefParameter<"the opaque value">:$value);
+
+  let printer = [{
+    $_printer << "opaque<\"" << getValue() << "\">";
+  }];
+
+  let parser = [{
+    if ($_parser.parseLess())
+      return Attribute();
+    StringRef value;
+    auto loc = $_parser.getCurrentLocation();
+    if ($_parser.parseOptionalString(&value)) {
+      $_parser.emitError(loc) << "expected string";
+      return Attribute();
+    }
+    if ($_parser.parseGreater())
+      return Attribute();
+    return get($_ctxt, value);
+  }];
+}
+
+//===----------------------------------------------------------------------===//
 // EmitC type definitions
 //===----------------------------------------------------------------------===//
 

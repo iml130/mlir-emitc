@@ -20,6 +20,9 @@
 
 #include "emitc/Dialect/EmitC/EmitCDialect.h.inc"
 
+#define GET_ATTRDEF_CLASSES
+#include "emitc/Dialect/EmitC/EmitCAttrDefs.h.inc"
+
 #define GET_TYPEDEF_CLASSES
 #include "emitc/Dialect/EmitC/EmitCTypes.h.inc"
 

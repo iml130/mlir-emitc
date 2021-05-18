@@ -3,6 +3,28 @@
 
 [TOC]
 
+## Attribute definition
+
+### OpaqueAttr
+
+An opaque attribute
+
+An opaque attribute of which the value gets emitted as is.
+
+Examples:
+
+```mlir
+#emitc.opaque<"">
+#emitc.opaque<"NULL">
+#emitc.opaque<"nullptr">
+```
+
+#### Parameters:
+
+| Parameter | C++ type | Description |
+| :-------: | :-------: | ----------- |
+| value | `::llvm::StringRef` | the opaque value |
+
 ## Type constraint definition
 
 ### An opaque type

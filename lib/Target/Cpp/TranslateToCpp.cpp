@@ -47,8 +47,8 @@ static LogicalResult printConstantOp(CppEmitter &emitter,
   // Emit an assignment if variables are forward declared.
   if (emitter.forwardDeclaredVariables()) {
     // Special case for emitc.const.
-    if (auto sAttr = value.template dyn_cast<StringAttr>()) {
-      if (sAttr.getValue().empty())
+    if (auto oAttr = value.template dyn_cast<emitc::OpaqueAttr>()) {
+      if (oAttr.getValue().empty())
         return success();
     }
 
@@ -60,8 +60,8 @@ static LogicalResult printConstantOp(CppEmitter &emitter,
   }
 
   // Special case for emitc.const.
-  if (auto sAttr = value.template dyn_cast<StringAttr>()) {
-    if (sAttr.getValue().empty()) {
+  if (auto oAttr = value.template dyn_cast<emitc::OpaqueAttr>()) {
+    if (oAttr.getValue().empty()) {
       // The semicolon gets printed by the emitOperation function.
       if (failed(emitter.emitVariableDeclaration(result,
                                                  /*trailingSemicolon=*/false)))
@@ -659,8 +659,8 @@ LogicalResult CppEmitter::emitAttribute(Operation &op, Attribute attr) {
       return success();
     }
   }
-  if (auto sAttr = attr.dyn_cast<StringAttr>()) {
-    os << sAttr.getValue();
+  if (auto oAttr = attr.dyn_cast<emitc::OpaqueAttr>()) {
+    os << oAttr.getValue();
     return success();
   }
   if (auto sAttr = attr.dyn_cast<SymbolRefAttr>()) {

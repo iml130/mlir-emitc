@@ -268,6 +268,8 @@ private:
   LogicalResult
   matchAndRewrite(mhlo::CompareOp compareOp, ArrayRef<Value> operands,
                   ConversionPatternRewriter &rewriter) const override {
+    auto ctx = compareOp.getContext();
+
     StringAttr callee = rewriter.getStringAttr("emitc::mhlo::compare");
 
     StringRef comparisonDirection = compareOp.comparison_direction();
@@ -288,7 +290,7 @@ private:
     ArrayAttr args;
     ArrayAttr templateArgs = rewriter.getArrayAttr(
         {TypeAttr::get(elementType),
-         rewriter.getStringAttr(functionName.getValue())});
+         emitc::OpaqueAttr::get(ctx, functionName.getValue())});
 
     rewriter.replaceOpWithNewOp<emitc::CallOp>(
         compareOp, compareOp.getType(), callee, args, templateArgs, operands);

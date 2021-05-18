@@ -183,9 +183,11 @@ def EmitC_IncludeOp : EmitC_Op<"include", [NoSideEffect, HasParent<"ModuleOp">]>
     The `include` operation allows to define a source file inclusion via the
     `#include` directive.
   }];
-  let arguments = (ins Arg<StrAttr, "source file to include">:$include);
+  let arguments = (ins
+    Arg<StrAttr, "source file to include">:$include,
+    UnitAttr:$is_standard_include);
   let assemblyFormat = [{
-    $include attr-dict
+    $include attr-dict (`is_standard_include` $is_standard_include^)?
   }];
 }
 

@@ -138,7 +138,7 @@ include operation
 Syntax:
 
 ```
-operation ::= `emitc.include` $include attr-dict
+operation ::= `emitc.include` $include attr-dict (`is_standard_include` $is_standard_include^)?
 ```
 
 The `include` operation allows to define a source file inclusion via the
@@ -149,6 +149,7 @@ The `include` operation allows to define a source file inclusion via the
 | Attribute | MLIR Type | Description |
 | :-------: | :-------: | ----------- |
 `include` | ::mlir::StringAttr | string attribute
+`is_standard_include` | ::mlir::UnitAttr | unit attribute
 
 ## Type definition
 

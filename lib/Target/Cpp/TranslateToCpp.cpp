@@ -424,7 +424,12 @@ static LogicalResult printModule(CppEmitter &emitter, ModuleOp moduleOp) {
   }
 
   for (emitc::IncludeOp includeOp : moduleOp.getOps<emitc::IncludeOp>()) {
-          os << "#include " << includeOp.include() << "\n";
+    os << "#include ";
+    if (includeOp.is_standard_include()) {
+      os << "<" << includeOp.include() << ">\n";
+    } else {
+      os << "\"" << includeOp.include() << "\"\n";
+    }
   }
   os << "\n";
 

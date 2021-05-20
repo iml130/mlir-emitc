@@ -10,8 +10,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef EMITC_DIALECT_EMITC_EMITCDIALECT_H
-#define EMITC_DIALECT_EMITC_EMITCDIALECT_H
+#ifndef EMITC_DIALECT_EMITC_IR_EMITCDIALECT_H
+#define EMITC_DIALECT_EMITC_IR_EMITCDIALECT_H
 
 #include "mlir/IR/BuiltinOps.h"
 #include "mlir/IR/BuiltinTypes.h"
@@ -19,15 +19,15 @@
 #include "mlir/IR/OpDefinition.h"
 #include "mlir/Interfaces/SideEffectInterfaces.h"
 
-#include "emitc/Dialect/EmitC/EmitCDialect.h.inc"
+#include "emitc/Dialect/EmitC/IR/EmitCDialect.h.inc"
 
 #define GET_ATTRDEF_CLASSES
-#include "emitc/Dialect/EmitC/EmitCAttrDefs.h.inc"
+#include "emitc/Dialect/EmitC/IR/EmitCAttrDefs.h.inc"
 
 #define GET_TYPEDEF_CLASSES
-#include "emitc/Dialect/EmitC/EmitCTypes.h.inc"
+#include "emitc/Dialect/EmitC/IR/EmitCTypes.h.inc"
 
 #define GET_OP_CLASSES
-#include "emitc/Dialect/EmitC/EmitC.h.inc"
+#include "emitc/Dialect/EmitC/IR/EmitC.h.inc"
 
-#endif // EMITC_DIALECT_EMITC_EMITCDIALECT_H
+#endif // EMITC_DIALECT_EMITC_IR_EMITCDIALECT_H

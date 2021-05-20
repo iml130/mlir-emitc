@@ -12,7 +12,7 @@
 //===----------------------------------------------------------------------===//
 
 #include "PassDetail.h"
-#include "emitc/Dialect/EmitC/EmitCDialect.h"
+#include "emitc/Dialect/EmitC/IR/EmitCDialect.h"
 #include "emitc/Dialect/EmitC/Passes.h"
 #include "mlir-hlo/Dialect/mhlo/IR/hlo_ops.h"
 #include "mlir/IR/BlockAndValueMapping.h"

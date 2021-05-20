@@ -10,7 +10,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "emitc/Dialect/EmitC/EmitCDialect.h"
+#include "emitc/Dialect/EmitC/IR/EmitCDialect.h"
 #include "mlir/Dialect/StandardOps/IR/Ops.h"
 #include "mlir/IR/Builders.h"
 #include "mlir/IR/DialectImplementation.h"
@@ -29,15 +29,15 @@ using namespace emitc;
 void emitc::EmitCDialect::initialize() {
   addOperations<
 #define GET_OP_LIST
-#include "emitc/Dialect/EmitC/EmitC.cpp.inc"
+#include "emitc/Dialect/EmitC/IR/EmitC.cpp.inc"
       >();
   addTypes<
 #define GET_TYPEDEF_LIST
-#include "emitc/Dialect/EmitC/EmitCTypes.cpp.inc"
+#include "emitc/Dialect/EmitC/IR/EmitCTypes.cpp.inc"
       >();
   addAttributes<
 #define GET_ATTRDEF_LIST
-#include "emitc/Dialect/EmitC/EmitCAttrDefs.cpp.inc"
+#include "emitc/Dialect/EmitC/IR/EmitCAttrDefs.cpp.inc"
       >();
 }
 
@@ -148,10 +148,10 @@ OpFoldResult ConstOp::fold(ArrayRef<Attribute> operands) {
 //===----------------------------------------------------------------------===//
 
 #define GET_OP_CLASSES
-#include "emitc/Dialect/EmitC/EmitC.cpp.inc"
+#include "emitc/Dialect/EmitC/IR/EmitC.cpp.inc"
 
 #define GET_ATTRDEF_CLASSES
-#include "emitc/Dialect/EmitC/EmitCAttrDefs.cpp.inc"
+#include "emitc/Dialect/EmitC/IR/EmitCAttrDefs.cpp.inc"
 
 Attribute emitc::EmitCDialect::parseAttribute(DialectAsmParser &parser,
                                               Type type) const {
@@ -175,7 +175,7 @@ void emitc::EmitCDialect::printAttribute(Attribute attr,
 }
 
 #define GET_TYPEDEF_CLASSES
-#include "emitc/Dialect/EmitC/EmitCTypes.cpp.inc"
+#include "emitc/Dialect/EmitC/IR/EmitCTypes.cpp.inc"
 
 Type emitc::EmitCDialect::parseType(DialectAsmParser &parser) const {
   llvm::SMLoc typeLoc = parser.getCurrentLocation();

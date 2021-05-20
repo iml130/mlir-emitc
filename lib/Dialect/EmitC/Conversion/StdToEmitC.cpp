@@ -11,7 +11,7 @@
 //===----------------------------------------------------------------------===//
 
 #include "PassDetail.h"
-#include "emitc/Dialect/EmitC/EmitCDialect.h"
+#include "emitc/Dialect/EmitC/IR/EmitCDialect.h"
 #include "emitc/Dialect/EmitC/Passes.h"
 #include "mlir/Dialect/StandardOps/IR/Ops.h"
 #include "mlir/IR/BuiltinOps.h"

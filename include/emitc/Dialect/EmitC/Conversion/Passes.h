@@ -10,8 +10,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef EMITC_DIALECT_EMITC_PASSES_H
-#define EMITC_DIALECT_EMITC_PASSES_H
+#ifndef EMITC_DIALECT_EMITC_CONVERSION_PASSES_H
+#define EMITC_DIALECT_EMITC_CONVERSION_PASSES_H
 
 #include "mlir/Pass/Pass.h"
 
@@ -26,9 +26,9 @@ std::unique_ptr<FunctionPass> createConvertTensorToEmitCPass();
 std::unique_ptr<FunctionPass> createConvertTosaToEmitCPass();
 
 #define GEN_PASS_REGISTRATION
-#include "emitc/Dialect/EmitC/Passes.h.inc"
+#include "emitc/Dialect/EmitC/Conversion/Passes.h.inc"
 
 } // namespace emitc
 } // namespace mlir
 
-#endif // EMITC_DIALECT_EMITC_PASSES_H
+#endif // EMITC_DIALECT_EMITC_CONVERSION_PASSES_H

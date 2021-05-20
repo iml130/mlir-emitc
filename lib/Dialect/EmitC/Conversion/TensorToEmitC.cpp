@@ -11,8 +11,8 @@
 //===----------------------------------------------------------------------===//
 
 #include "PassDetail.h"
+#include "emitc/Dialect/EmitC/Conversion/Passes.h"
 #include "emitc/Dialect/EmitC/IR/EmitCDialect.h"
-#include "emitc/Dialect/EmitC/Passes.h"
 #include "mlir/Dialect/Tensor/IR/Tensor.h"
 #include "mlir/IR/BuiltinOps.h"
 #include "mlir/IR/PatternMatch.h"

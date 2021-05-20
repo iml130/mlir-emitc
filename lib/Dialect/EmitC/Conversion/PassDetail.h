@@ -20,7 +20,7 @@ namespace emitc {
 class EmitCDialect;
 
 #define GEN_PASS_CLASSES
-#include "emitc/Dialect/EmitC/Passes.h.inc"
+#include "emitc/Dialect/EmitC/Conversion/Passes.h.inc"
 
 } // namespace emitc
 } // namespace mlir

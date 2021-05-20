@@ -10,8 +10,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef EMITC_OPS
-#define EMITC_OPS
+#ifndef EMITC_DIALECT_EMITC_IR_EMITC
+#define EMITC_DIALECT_EMITC_IR_EMITC
 
 include "mlir/Interfaces/ControlFlowInterfaces.td"
 include "mlir/Interfaces/LoopLikeInterface.td"
@@ -191,4 +191,4 @@ def EmitC_IncludeOp : EmitC_Op<"include", [NoSideEffect, HasParent<"ModuleOp">]>
   }];
 }
 
-#endif // EMITC_OPS
+#endif // EMITC_DIALECT_EMITC_IR_EMITC

@@ -6,8 +6,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef EMITC_TARGET_TRANSLATIONFLAGS_H
-#define EMITC_TARGET_TRANSLATIONFLAGS_H
+#ifndef EMITC_TARGET_CPP_TRANSLATIONFLAGS_H
+#define EMITC_TARGET_CPP_TRANSLATIONFLAGS_H
 
 #include "emitc/Target/Cpp/Cpp.h"
 
@@ -20,4 +20,4 @@ TargetOptions getTargetOptionsFromFlags();
 } // namespace emitc
 } // namespace mlir
 
-#endif // EMITC_TARGET_TRANSLATIONFLAGS_H
+#endif // EMITC_TARGET_CPP_TRANSLATIONFLAGS_H

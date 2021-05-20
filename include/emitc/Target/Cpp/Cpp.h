@@ -10,8 +10,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef EMITC_TARGET_CPP_H
-#define EMITC_TARGET_CPP_H
+#ifndef EMITC_TARGET_CPP_CPP_H
+#define EMITC_TARGET_CPP_CPP_H
 
 #include "mlir/IR/BuiltinTypes.h"
 #include "mlir/IR/Value.h"
@@ -191,4 +191,4 @@ LogicalResult TranslateToC(Operation &op, TargetOptions targetOptions,
 } // namespace emitc
 } // namespace mlir
 
-#endif // EMITC_TARGET_CPP_H
+#endif // EMITC_TARGET_CPP_CPP_H

@@ -6,8 +6,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "emitc/Target/TranslationFlags.h"
-#include "emitc/Target/Cpp.h"
+#include "emitc/Target/Cpp/TranslationFlags.h"
+#include "emitc/Target/Cpp/Cpp.h"
 
 #include "llvm/Support/CommandLine.h"
 

@@ -1,5 +1,5 @@
 add_mlir_dialect_library(MLIREmitC
-  EmitCDialect.cpp
+  EmitC.cpp
 
   ADDITIONAL_HEADER_DIRS
   ${EMITC_MAIN_INCLUDE_DIR}/emitc/Dialect/EmitC

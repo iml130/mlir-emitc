@@ -1,4 +1,4 @@
-//===- EmitCDialect.h - MLIR Dialect to EmitC -------------------*- C++ -*-===//
+//===- EmitC.h - EmitC Dialect ----------------------------------*- C++ -*-===//
 //
 // Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
 // See https://llvm.org/LICENSE.txt for license information.
@@ -6,12 +6,12 @@
 //
 //===----------------------------------------------------------------------===//
 //
-// This file declares the EmitC in MLIR.
+// This file declares EmitC in MLIR.
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef EMITC_DIALECT_EMITC_IR_EMITCDIALECT_H
-#define EMITC_DIALECT_EMITC_IR_EMITCDIALECT_H
+#ifndef EMITC_DIALECT_EMITC_IR_EMITC_H
+#define EMITC_DIALECT_EMITC_IR_EMITC_H
 
 #include "mlir/IR/BuiltinOps.h"
 #include "mlir/IR/BuiltinTypes.h"
@@ -30,4 +30,4 @@
 #define GET_OP_CLASSES
 #include "emitc/Dialect/EmitC/IR/EmitC.h.inc"
 
-#endif // EMITC_DIALECT_EMITC_IR_EMITCDIALECT_H
+#endif // EMITC_DIALECT_EMITC_IR_EMITC_H

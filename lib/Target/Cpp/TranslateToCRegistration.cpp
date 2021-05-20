@@ -6,7 +6,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "emitc/Dialect/EmitC/IR/EmitCDialect.h"
+#include "emitc/Dialect/EmitC/IR/EmitC.h"
 #include "emitc/Target/Cpp/Cpp.h"
 #include "emitc/Target/Cpp/TranslationFlags.h"
 #include "mlir/Dialect/SCF/SCF.h"

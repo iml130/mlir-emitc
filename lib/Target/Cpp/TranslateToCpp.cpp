@@ -7,7 +7,7 @@
 //===----------------------------------------------------------------------===//
 
 #include "emitc/Dialect/EmitC/IR/EmitCDialect.h"
-#include "emitc/Target/Cpp.h"
+#include "emitc/Target/Cpp/Cpp.h"
 #include "mlir/Dialect/SCF/SCF.h"
 #include "mlir/Dialect/StandardOps/IR/Ops.h"
 #include "mlir/IR/BuiltinOps.h"

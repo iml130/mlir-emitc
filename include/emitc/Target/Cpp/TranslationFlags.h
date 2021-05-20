@@ -9,7 +9,7 @@
 #ifndef EMITC_TARGET_TRANSLATIONFLAGS_H
 #define EMITC_TARGET_TRANSLATIONFLAGS_H
 
-#include "emitc/Target/Cpp.h"
+#include "emitc/Target/Cpp/Cpp.h"
 
 namespace mlir {
 namespace emitc {

@@ -6,8 +6,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef EMITC_DIALECT_EMITC_PASSES
-#define EMITC_DIALECT_EMITC_PASSES
+#ifndef EMITC_DIALECT_EMITC_CONVERSION_PASSES
+#define EMITC_DIALECT_EMITC_CONVERSION_PASSES
 
 include "mlir/Pass/PassBase.td"
 
@@ -41,4 +41,4 @@ def ConvertTosaToEmitC : FunctionPass<"convert-tosa-to-emitc"> {
   let dependentDialects = ["EmitCDialect"];
 }
 
-#endif // EMITC_DIALECT_EMITC_PASSES
+#endif // EMITC_DIALECT_EMITC_CONVERSION_PASSES

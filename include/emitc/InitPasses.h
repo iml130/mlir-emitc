@@ -14,7 +14,7 @@
 #ifndef EMITC_INITPASSES_H
 #define EMITC_INITPASSES_H
 
-#include "emitc/Dialect/EmitC/Passes.h"
+#include "emitc/Dialect/EmitC/Conversion/Passes.h"
 #include "mlir/Conversion/Passes.h"
 #include "mlir/Transforms/Passes.h"
 

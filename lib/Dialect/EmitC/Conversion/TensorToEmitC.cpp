@@ -11,8 +11,8 @@
 //===----------------------------------------------------------------------===//
 
 #include "PassDetail.h"
-#include "emitc/Dialect/EmitC/EmitCDialect.h"
-#include "emitc/Dialect/EmitC/Passes.h"
+#include "emitc/Dialect/EmitC/Conversion/Passes.h"
+#include "emitc/Dialect/EmitC/IR/EmitC.h"
 #include "mlir/Dialect/Tensor/IR/Tensor.h"
 #include "mlir/IR/BuiltinOps.h"
 #include "mlir/IR/PatternMatch.h"
@@ -23,6 +23,8 @@ namespace mlir {
 namespace emitc {
 
 namespace {
+
+/// Convert `tensor.extract` into an `emitc.call` operation.
 class ExtractOpConversion
     : public OpConversionPattern<mlir::tensor::ExtractOp> {
   using OpConversionPattern<mlir::tensor::ExtractOp>::OpConversionPattern;
@@ -35,7 +37,7 @@ private:
   LogicalResult
   matchAndRewrite(mlir::tensor::ExtractOp indexCastOp, ArrayRef<Value> operands,
                   ConversionPatternRewriter &rewriter) const override {
-    StringAttr callee = rewriter.getStringAttr("standard::extract_element");
+    StringAttr callee = rewriter.getStringAttr("emitc::tensor::extract");
 
     Type elementType = indexCastOp.getType();
     if (auto tensorType = elementType.dyn_cast<TensorType>()) {
@@ -71,7 +73,7 @@ struct ConvertTensorToEmitCPass
     target.addLegalDialect<emitc::EmitCDialect>();
     target.addIllegalOp<mlir::tensor::ExtractOp>();
 
-    OwningRewritePatternList patterns;
+    OwningRewritePatternList patterns(&getContext());
     populateTensorToEmitcPatterns(&getContext(), patterns);
 
     if (failed(

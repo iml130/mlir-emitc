@@ -10,13 +10,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// This file defines functions used by EmitC
+// This file defines functions used by EmitC.
 
 #ifndef EMITC_EMITC_TENSOR_H
 #define EMITC_EMITC_TENSOR_H
 
 #include "emitc_types.h"
 
+namespace emitc {
 namespace tensor {
 
 // ExtractOp
@@ -26,5 +27,6 @@ inline T extract(Tensor<T, Shape...> x, Indices... indices) {
 }
 
 } // namespace tensor
+} // namespace emitc
 
 #endif // EMITC_EMITC_TENSOR_H

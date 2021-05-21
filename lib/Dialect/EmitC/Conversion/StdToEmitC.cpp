@@ -11,8 +11,8 @@
 //===----------------------------------------------------------------------===//
 
 #include "PassDetail.h"
-#include "emitc/Dialect/EmitC/EmitCDialect.h"
-#include "emitc/Dialect/EmitC/Passes.h"
+#include "emitc/Dialect/EmitC/Conversion/Passes.h"
+#include "emitc/Dialect/EmitC/IR/EmitC.h"
 #include "mlir/Dialect/StandardOps/IR/Ops.h"
 #include "mlir/IR/BuiltinOps.h"
 #include "mlir/IR/PatternMatch.h"
@@ -23,6 +23,8 @@ namespace mlir {
 namespace emitc {
 
 namespace {
+
+/// Convert `std.index_cast` into an `emitc.call` operation.
 class IndexCastOpConversion : public OpConversionPattern<IndexCastOp> {
   using OpConversionPattern<IndexCastOp>::OpConversionPattern;
 
@@ -34,7 +36,7 @@ private:
   LogicalResult
   matchAndRewrite(IndexCastOp indexCastOp, ArrayRef<Value> operands,
                   ConversionPatternRewriter &rewriter) const override {
-    StringAttr callee = rewriter.getStringAttr("standard::index_cast");
+    StringAttr callee = rewriter.getStringAttr("emitc::standard::index_cast");
 
     ArrayAttr args;
     Type resultType = indexCastOp.getResult().getType();
@@ -48,6 +50,7 @@ private:
   }
 };
 
+/// Convert `std.splat` into an `emitc.call` operation.
 class SplatOpConversion : public OpConversionPattern<SplatOp> {
   using OpConversionPattern<SplatOp>::OpConversionPattern;
 
@@ -58,7 +61,7 @@ private:
   LogicalResult
   matchAndRewrite(SplatOp splatOp, ArrayRef<Value> operands,
                   ConversionPatternRewriter &rewriter) const override {
-    StringAttr callee = rewriter.getStringAttr("standard::splat");
+    StringAttr callee = rewriter.getStringAttr("emitc::standard::splat");
 
     ArrayAttr args;
     Type resultType = splatOp.getResult().getType();
@@ -92,7 +95,7 @@ struct ConvertStdToEmitCPass
     target.addIllegalOp<IndexCastOp>();
     target.addIllegalOp<SplatOp>();
 
-    OwningRewritePatternList patterns;
+    OwningRewritePatternList patterns(&getContext());
     populateStdToEmitcPatterns(&getContext(), patterns);
 
     if (failed(

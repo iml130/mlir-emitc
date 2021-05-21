@@ -10,7 +10,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// This file defines the tensor class used by EmitC
+// This file defines the tensor class used by EmitC.
 
 #ifndef EMITC_EMITC_TYPES_H
 #define EMITC_EMITC_TYPES_H
@@ -22,12 +22,14 @@
 #include <numeric>
 #include <vector>
 
+#include "emitc_utility.h"
+
 namespace detail {
 template <size_t N>
 constexpr size_t sum(const std::array<size_t, N> arr) {
   size_t result = 0;
 
-  for (size_t i = 0; i < arr.size(); i++) {
+  for (size_t i = 0; i < arr.size(); ++i) {
     result += arr[i];
   }
   return result;
@@ -47,7 +49,7 @@ constexpr bool all_same(const std::array<size_t, N> arr) {
 
   size_t first = arr[0];
 
-  for (size_t i = 1; i < arr.size(); i++) {
+  for (size_t i = 1; i < arr.size(); ++i) {
     if (arr[i] != first) {
       return false;
     }
@@ -65,6 +67,30 @@ struct conjunction<B1, Bn...>
 
 template <class... B>
 constexpr bool conjunction_v = conjunction<B...>::value;
+
+// Template switch case statement.
+// case_t => condition/case
+template <bool B, typename T>
+struct case_t {
+  static constexpr bool value = B;
+  using type = T;
+};
+
+// switch_t => template switch case
+template <typename First, typename... Rest>
+struct switch_t : std::conditional_t<First::value, First, switch_t<Rest...>> {};
+
+template <typename T>
+struct switch_t<T> {
+  using type = T;
+};
+
+template <bool B, typename T>
+struct switch_t<case_t<B, T>> {
+  // One statement needs to be true.
+  static_assert(B, "None of the supplied conditions evaluate to true.");
+  using type = T;
+};
 } // namespace detail
 
 template <typename T, size_t... Shape>
@@ -91,31 +117,10 @@ public:
 
   static constexpr std::array<size_t, rank()> shape() { return {Shape...}; }
 
-  static constexpr size_t size() {
-    constexpr std::array<size_t, rank()> s = {Shape...};
-
-    size_t result = 1;
-    for (size_t i = 0; i < rank(); i++) {
-      result *= s[i];
-    }
-    return result;
-  }
+  static constexpr size_t size() { return emitc::utility::size<Shape...>(); }
 
   static constexpr std::array<size_t, rank()> strides() {
-    std::array<size_t, rank()> result = {};
-    constexpr std::array<size_t, rank()> s = {Shape...};
-
-    if (rank() == 0) {
-      return result;
-    }
-
-    result[rank() - 1] = 1;
-
-    for (size_t i = rank() - 1; i > 0; i--) {
-      result[i - 1] = result[i] * s[i];
-    }
-
-    return result;
+    return emitc::utility::strides<Shape...>();
   }
 
   std::vector<std::array<size_t, rank()>>
@@ -139,7 +144,7 @@ public:
         u[i] = iotas[i][q.rem];
       }
 
-      for (size_t i = 0; i < index.size(); i++) {
+      for (size_t i = 0; i < index.size(); ++i) {
         u[i] += index[i];
       }
       result.push_back(u);
@@ -175,32 +180,11 @@ public:
   }
 
   constexpr size_t ravel_index(std::array<size_t, rank()> indices) {
-    for (size_t i = 0; i < rank(); i++) {
-      assert(indices[i] < dim(i));
-    }
-
-    std::array<size_t, rank()> s = strides();
-
-    size_t result = 0;
-    for (size_t i = 0; i < indices.size(); i++) {
-      result += indices[i] * s[i];
-    }
-
-    return result;
+    return emitc::utility::ravel_index<Shape...>(indices);
   }
 
   constexpr std::array<size_t, rank()> unravel_index(size_t index) {
-    assert(index < size());
-
-    std::array<size_t, rank()> s = strides();
-
-    std::array<size_t, rank()> result = {};
-    for (size_t i = 0; i < rank(); i++) {
-      result[i] = index / s[i];
-      index = index % s[i];
-    }
-
-    return result;
+    return emitc::utility::unravel_index<Shape...>(index);
   }
 
 private:
@@ -258,6 +242,10 @@ template <typename T, size_t... Shape>
 struct get_element_type<Tensor<T, Shape...>> {
   using type = T;
 };
+
+template <typename T, typename ET>
+using IsTensorOfType = std::enable_if_t<
+    std::is_same<typename get_element_type<T>::type, ET>::value, bool>;
 
 template <typename Dest, typename Src>
 struct replace_element_type {
@@ -324,4 +312,48 @@ struct concat<Dim, T, Tensor2D<T, Xs, Ys>...> {
                detail::sum<sizeof...(Ys)>({Ys...})>>;
 };
 
+template <typename T, size_t Dim, size_t... Xs, size_t... Ys, size_t... Zs>
+struct concat<Dim, T, Tensor3D<T, Xs, Ys, Zs>...> {
+  static_assert(0 <= Dim && Dim < 3, "Dimension index out of bounds");
+
+  using type = typename detail::switch_t<
+      detail::case_t<Dim == 0, Tensor3D<T, detail::sum<sizeof...(Xs)>({Xs...}),
+                                        detail::first<sizeof...(Ys)>({Ys...}),
+                                        detail::first<sizeof...(Zs)>({Zs...})>>,
+      detail::case_t<Dim == 1,
+                     Tensor3D<T, detail::first<sizeof...(Xs)>({Xs...}),
+                              detail::sum<sizeof...(Ys)>({Ys...}),
+                              detail::first<sizeof...(Zs)>({Zs...})>>,
+      detail::case_t<Dim == 2,
+                     Tensor3D<T, detail::first<sizeof...(Xs)>({Xs...}),
+                              detail::first<sizeof...(Ys)>({Ys...}),
+                              detail::sum<sizeof...(Zs)>({Zs...})>>>::type;
+};
+
+template <typename T, size_t Dim, size_t... D0, size_t... D1, size_t... D2,
+          size_t... D3>
+struct concat<Dim, T, Tensor4D<T, D0, D1, D2, D3>...> {
+  static_assert(0 <= Dim && Dim < 4, "Dimension index out of bounds");
+
+  using type = typename detail::switch_t<
+      detail::case_t<Dim == 0, Tensor4D<T, detail::sum<sizeof...(D0)>({D0...}),
+                                        detail::first<sizeof...(D1)>({D1...}),
+                                        detail::first<sizeof...(D2)>({D2...}),
+                                        detail::first<sizeof...(D3)>({D3...})>>,
+      detail::case_t<Dim == 1,
+                     Tensor4D<T, detail::first<sizeof...(D0)>({D0...}),
+                              detail::sum<sizeof...(D1)>({D1...}),
+                              detail::first<sizeof...(D2)>({D2...}),
+                              detail::first<sizeof...(D3)>({D3...})>>,
+      detail::case_t<Dim == 2,
+                     Tensor4D<T, detail::first<sizeof...(D0)>({D0...}),
+                              detail::first<sizeof...(D1)>({D1...}),
+                              detail::sum<sizeof...(D2)>({D2...}),
+                              detail::first<sizeof...(D3)>({D3...})>>,
+      detail::case_t<Dim == 3,
+                     Tensor4D<T, detail::first<sizeof...(D0)>({D0...}),
+                              detail::first<sizeof...(D1)>({D1...}),
+                              detail::first<sizeof...(D2)>({D2...}),
+                              detail::sum<sizeof...(D3)>({D3...})>>>::type;
+};
 #endif // EMITC_EMITC_TYPES_H

@@ -631,4 +631,39 @@ TEST(types, unravel_index) {
   EXPECT_THAT(t4.unravel_index(211), Pointwise(Eq(), {1, 2, 3, 4}));
 }
 
+TEST(types, concat) {
+  using test_2D_42 =
+      typename concat<0, int, Tensor2D<int, 2, 2>, Tensor2D<int, 2, 2>>::type;
+  using test_2D_24 =
+      typename concat<1, int, Tensor2D<int, 2, 2>, Tensor2D<int, 2, 2>>::type;
+
+  using test_3D_422 = typename concat<0, int, Tensor3D<int, 2, 2, 2>,
+                                      Tensor3D<int, 2, 2, 2>>::type;
+  using test_3D_242 = typename concat<1, int, Tensor3D<int, 2, 2, 2>,
+                                      Tensor3D<int, 2, 2, 2>>::type;
+  using test_3D_224 = typename concat<2, int, Tensor3D<int, 2, 2, 2>,
+                                      Tensor3D<int, 2, 2, 2>>::type;
+
+  using test_4D_4222 = typename concat<0, int, Tensor4D<int, 2, 2, 2, 2>,
+                                       Tensor4D<int, 2, 2, 2, 2>>::type;
+  using test_4D_2422 = typename concat<1, int, Tensor4D<int, 2, 2, 2, 2>,
+                                       Tensor4D<int, 2, 2, 2, 2>>::type;
+  using test_4D_2242 = typename concat<2, int, Tensor4D<int, 2, 2, 2, 2>,
+                                       Tensor4D<int, 2, 2, 2, 2>>::type;
+  using test_4D_2224 = typename concat<3, int, Tensor4D<int, 2, 2, 2, 2>,
+                                       Tensor4D<int, 2, 2, 2, 2>>::type;
+
+  ASSERT_THAT(test_2D_42::shape(), Pointwise(Eq(), {4, 2}));
+  ASSERT_THAT(test_2D_24::shape(), Pointwise(Eq(), {2, 4}));
+
+  ASSERT_THAT(test_3D_422::shape(), Pointwise(Eq(), {4, 2, 2}));
+  ASSERT_THAT(test_3D_242::shape(), Pointwise(Eq(), {2, 4, 2}));
+  ASSERT_THAT(test_3D_224::shape(), Pointwise(Eq(), {2, 2, 4}));
+
+  ASSERT_THAT(test_4D_4222::shape(), Pointwise(Eq(), {4, 2, 2, 2}));
+  ASSERT_THAT(test_4D_2422::shape(), Pointwise(Eq(), {2, 4, 2, 2}));
+  ASSERT_THAT(test_4D_2242::shape(), Pointwise(Eq(), {2, 2, 4, 2}));
+  ASSERT_THAT(test_4D_2224::shape(), Pointwise(Eq(), {2, 2, 2, 4}));
+}
+
 } // namespace

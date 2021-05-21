@@ -62,6 +62,8 @@ def save_examples(path: str, examples, file_format: str):
         dtype = array.dtype
         if dtype == np.float32:
             return "float"
+        elif dtype == np.int32:
+            return "int32_t"
         else:
             raise ValueError(
                 f"C type conversion for dtype '{dtype}' not implemented.'")
@@ -120,6 +122,13 @@ bool check_tensor(T result, U expected, float eps, bool print_error) {
                 )
 
             for i, curr_output in enumerate(outputs):
+                if not isinstance(curr_output, np.ndarray):
+                    if isinstance(curr_output, int):
+                        curr_output = np.asarray(curr_output, dtype=np.int32)
+                    else:
+                        raise NotImplementedError(
+                            "Only int32 supported as scalar output.")
+
                 shape = curr_output.shape
                 c_type = c_type_specifier(curr_output)
                 shape_str = ','.join(map(str, shape))
@@ -127,8 +136,11 @@ bool check_tensor(T result, U expected, float eps, bool print_error) {
                 output_file.write(
                     f"static const {c_type} output{i}[] = {{{', '.join(map(c_value, curr_output.flat))}}};\n"
                 )
-                output_file.write(
-                    f"Tensor<{c_type}, {shape_str}> result{i};\n")
+                if not shape_str:
+                    output_file.write(f"Tensor<{c_type}> result{i};\n")
+                else:
+                    output_file.write(
+                        f"Tensor<{c_type}, {shape_str}> result{i};\n")
 
             output_file.write("bool error = false;\n")
             output_file.write("float EPS = 1e-4;\n")

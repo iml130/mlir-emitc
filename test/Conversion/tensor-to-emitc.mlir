@@ -1,14 +1,24 @@
-// RUN: emitc-opt -convert-tensor-to-emitc %s | emitc-translate --mlir-to-cpp | FileCheck %s
+// RUN: emitc-opt -convert-tensor-to-emitc %s | FileCheck %s
+// RUN: emitc-opt -convert-tensor-to-emitc %s | emitc-translate --mlir-to-cpp | FileCheck %s -check-prefix=CPP
 
-// CHECK: void std_extract_element(Tensor0D<int32_t> v1, Tensor1D<int32_t, 2> v2)
 func @std_extract_element(%arg0: tensor<i32>, %arg1: tensor<2xi32>) -> () {
   %0 = constant 0 : index
   %1 = constant 1 : index
-  // CHECK: standard::extract_element(v1)
   %2 = tensor.extract %arg0[] : tensor<i32>
-  // CHECK: standard::extract_element(v2, v3)
   %3 = tensor.extract %arg1[%0] : tensor<2xi32>
-  // CHECK: standard::extract_element(v2, v4)
   %4 = tensor.extract %arg1[%1] : tensor<2xi32>
   return 
 }
+// CHECK-LABEL: func @std_extract_element
+//  CHECK-NEXT: constant 0 : index
+//  CHECK-NEXT: constant 1 : index
+//  CHECK-NEXT: emitc.call "emitc::tensor::extract"(%arg0) : (tensor<i32>) -> i32
+//  CHECK-NEXT: emitc.call "emitc::tensor::extract"(%arg1, %c0) : (tensor<2xi32>, index) -> i32
+//  CHECK-NEXT: emitc.call "emitc::tensor::extract"(%arg1, %c1) : (tensor<2xi32>, index) -> i32
+
+// CPP-LABEL: void std_extract_element(Tensor<int32_t> v1, Tensor<int32_t, 2> v2)
+//  CPP-NEXT: size_t v3{0};
+//  CPP-NEXT: size_t v4{1};
+//  CPP-NEXT: emitc::tensor::extract(v1)
+//  CPP-NEXT: emitc::tensor::extract(v2, v3)
+//  CPP-NEXT: emitc::tensor::extract(v2, v4)

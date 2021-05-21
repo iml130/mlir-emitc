@@ -17,6 +17,7 @@
 
 namespace {
 
+using namespace emitc;
 using ::testing::Eq;
 
 TEST(tensor, extract) {

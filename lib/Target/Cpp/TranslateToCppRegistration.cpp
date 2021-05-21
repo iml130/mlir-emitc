@@ -6,8 +6,10 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "emitc/Dialect/EmitC/EmitCDialect.h"
-#include "emitc/Target/Cpp.h"
+#include "emitc/Dialect/EmitC/IR/EmitC.h"
+#include "emitc/Target/Cpp/Cpp.h"
+#include "emitc/Target/Cpp/TranslationFlags.h"
+#include "mlir/Dialect/SCF/SCF.h"
 #include "mlir/Dialect/StandardOps/IR/Ops.h"
 #include "mlir/IR/BuiltinOps.h"
 #include "mlir/IR/Dialect.h"
@@ -17,15 +19,20 @@ using namespace mlir;
 
 static LogicalResult MlirToCppTranslateFunction(ModuleOp module,
                                                 llvm::raw_ostream &output) {
-  return emitc::TranslateToCpp(*module.getOperation(), output,
+  return emitc::TranslateToCpp(*module.getOperation(),
+                               emitc::getTargetOptionsFromFlags(), output,
                                /*trailingSemiColon=*/false);
 }
 
 namespace mlir {
 void registerMlirToCppTranslation() {
   TranslateFromMLIRRegistration reg(
-    "mlir-to-cpp", MlirToCppTranslateFunction, [](DialectRegistry &registry) {
-        registry.insert<emitc::EmitCDialect, StandardOpsDialect>();
+      "mlir-to-cpp", MlirToCppTranslateFunction, [](DialectRegistry &registry) {
+        // clang-format off
+        registry.insert<emitc::EmitCDialect,
+                        StandardOpsDialect,
+                        scf::SCFDialect>();
+        // clang-format on
       });
 }
 } // namespace mlir

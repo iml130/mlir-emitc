@@ -4,6 +4,8 @@ The table below shows the supported MHLO ops.
 
 | op                    | supported          | comment |
 | :-------------------- |:------------------:| :------ |
+| **Nullary ops**
+| const                 | :heavy_check_mark: | |
 | **Unary elementwise ops**
 | abs                   | :heavy_check_mark: | |
 | ceil                  | :heavy_check_mark: | |
@@ -32,8 +34,8 @@ The table below shows the supported MHLO ops.
 | shift_right_logical   | :heavy_check_mark: | |
 | subtract              | :heavy_check_mark: | |
 | **Control flow ops**
-| if                    | :white_check_mark: | `--mhlo-control-flow-to-scf`, `--convert-scf-to-emitc`|
-| while                 | :white_check_mark: | `--mhlo-control-flow-to-scf`, `--convert-scf-to-emitc`|
+| if                    | :white_check_mark: | `--mhlo-control-flow-to-scf` |
+| while                 | :white_check_mark: | `--mhlo-control-flow-to-scf` |
 | **Binary logical elementwise ops**
 | or                    | :heavy_check_mark: | |
 | xor                   | :heavy_check_mark: | |
@@ -42,7 +44,7 @@ The table below shows the supported MHLO ops.
 | tuple                 | :heavy_check_mark: | |
 | compare               | :heavy_check_mark: | |
 | **Slice ops**
-| slice                 | :white_check_mark: | Only for 1D or 2D inputs |
+| slice                 | :white_check_mark: | Only for 1D to 4D inputs |
 | dynamic-slice         | :white_check_mark: | Only for 1D or 2D inputs |
 | dynamic-update-slice  | :white_check_mark: | Only for 1D or 2D inputs |
 | **Other ops**

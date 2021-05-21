@@ -11,8 +11,8 @@
 //===----------------------------------------------------------------------===//
 
 #include "PassDetail.h"
-#include "emitc/Dialect/EmitC/EmitCDialect.h"
-#include "emitc/Dialect/EmitC/Passes.h"
+#include "emitc/Dialect/EmitC/Conversion/Passes.h"
+#include "emitc/Dialect/EmitC/IR/EmitC.h"
 #include "mlir-hlo/Dialect/mhlo/IR/hlo_ops.h"
 #include "mlir/IR/BuiltinOps.h"
 #include "mlir/IR/PatternMatch.h"
@@ -24,8 +24,8 @@ namespace emitc {
 
 namespace {
 
-/// Common functions
-/// Adopted from mlir-hlo
+/// Common functions.
+/// Adopted from mlir-hlo.
 DenseIntElementsAttr i64ElementsAttr(int64_t value, size_t count,
                                      MLIRContext *ctx) {
   RankedTensorType ty = RankedTensorType::get({static_cast<int64_t>(count)},
@@ -41,6 +41,20 @@ SmallVector<Attribute, 2> indexSequence(int64_t n, MLIRContext *ctx) {
       }));
 }
 
+/// Convert `mhlo.constant` into an `emitc.const` operation.
+class ConstOpConversion : public OpRewritePattern<mhlo::ConstOp> {
+public:
+  using OpRewritePattern<mhlo::ConstOp>::OpRewritePattern;
+
+  LogicalResult matchAndRewrite(mhlo::ConstOp constOp,
+                                PatternRewriter &rewriter) const final {
+    rewriter.replaceOpWithNewOp<emitc::ConstOp>(constOp, constOp.getType(),
+                                                constOp.value());
+    return success();
+  }
+};
+
+/// Convert `mhlo.batch_norm_inference` into an `emitc.const` operation.
 class BatchNormInferenceOpConversion
     : public OpConversionPattern<mhlo::BatchNormInferenceOp> {
 
@@ -54,7 +68,7 @@ private:
                   ConversionPatternRewriter &rewriter) const override {
     typename mhlo::BatchNormInferenceOp::Adaptor adaptor(operands);
 
-    StringRef funcName = "mhlo::batch_norm_inference";
+    StringRef funcName = "emitc::mhlo::batch_norm_inference";
     StringAttr callee = rewriter.getStringAttr(funcName);
 
     SmallVector<Attribute, 2> args_ =
@@ -76,6 +90,7 @@ private:
   }
 };
 
+/// Convert `mhlo.broadcast_in_dim` into an `emitc.call` operation.
 class BroadcastInDimOpConversion
     : public OpConversionPattern<mhlo::BroadcastInDimOp> {
 
@@ -87,7 +102,7 @@ private:
   matchAndRewrite(mhlo::BroadcastInDimOp broadcastInDimOp,
                   ArrayRef<Value> operands,
                   ConversionPatternRewriter &rewriter) const override {
-    StringRef funcName = "mhlo::broadcast_in_dim";
+    StringRef funcName = "emitc::mhlo::broadcast_in_dim";
     StringAttr callee = rewriter.getStringAttr(funcName);
 
     SmallVector<Attribute, 2> args_ =
@@ -108,6 +123,7 @@ private:
   }
 };
 
+/// Convert `mhlo.concatenate` into an `emitc.call` operation.
 class ConcatenateOpConversion
     : public OpConversionPattern<mhlo::ConcatenateOp> {
 
@@ -119,7 +135,7 @@ private:
   matchAndRewrite(mhlo::ConcatenateOp concatenateOp, ArrayRef<Value> operands,
                   ConversionPatternRewriter &rewriter) const override {
 
-    StringRef funcName = "mhlo::concatenate";
+    StringRef funcName = "emitc::mhlo::concatenate";
     StringAttr callee = rewriter.getStringAttr(funcName);
 
     ArrayAttr args;
@@ -135,6 +151,7 @@ private:
   }
 };
 
+/// Convert `mhlo.convolution` into an `emitc.call` operation.
 class ConvOpConversion : public OpConversionPattern<mhlo::ConvOp> {
 
 public:
@@ -147,7 +164,7 @@ private:
     typename mhlo::ConvOp::Adaptor adaptor(operands);
     auto ctx = convOp.getContext();
 
-    StringRef funcName = "mhlo::convolution";
+    StringRef funcName = "emitc::mhlo::convolution";
     StringAttr callee = rewriter.getStringAttr(funcName);
 
     SmallVector<Attribute, 2> args_ =
@@ -188,6 +205,7 @@ private:
   }
 };
 
+/// Convert a common `mhlo` operation into an `emitc.call` operation.
 template <typename SrcOp>
 class CallOpConversion : public OpConversionPattern<SrcOp> {
   using OpConversionPattern<SrcOp>::OpConversionPattern;
@@ -220,8 +238,10 @@ private:
         templateArgs_.push_back(TypeAttr::get(type));
       }
     }
-
-    ArrayAttr templateArgs = ArrayAttr::get(templateArgs_, srcOp.getContext());
+    ArrayAttr templateArgs;
+    if (!templateArgs_.empty()) {
+      templateArgs = ArrayAttr::get(srcOp.getContext(), templateArgs_);
+    }
 
     rewriter.replaceOpWithNewOp<emitc::CallOp>(srcOp, srcOp.getType(), callee,
                                                args, templateArgs, operands);
@@ -230,12 +250,13 @@ private:
   }
 
   StringRef funcName;
-  // If set, use the result type of the operation as template parameter
+  // If set, use the result type of the operation as template parameter.
   bool explicitResultType;
-  // If set, use the operand types as (additional) template parameters
+  // If set, use the operand types as (additional) template parameters.
   bool explicitOperandTypes;
 };
 
+/// Convert `mhlo.compare` into an `emitc.call` operation.
 class CompareOpConversion : public OpConversionPattern<mhlo::CompareOp> {
   using OpConversionPattern<mhlo::CompareOp>::OpConversionPattern;
 
@@ -247,7 +268,9 @@ private:
   LogicalResult
   matchAndRewrite(mhlo::CompareOp compareOp, ArrayRef<Value> operands,
                   ConversionPatternRewriter &rewriter) const override {
-    StringAttr callee = rewriter.getStringAttr("mhlo::compare");
+    auto ctx = compareOp.getContext();
+
+    StringAttr callee = rewriter.getStringAttr("emitc::mhlo::compare");
 
     StringRef comparisonDirection = compareOp.comparison_direction();
     Optional<StringRef> functionName =
@@ -267,7 +290,7 @@ private:
     ArrayAttr args;
     ArrayAttr templateArgs = rewriter.getArrayAttr(
         {TypeAttr::get(elementType),
-         rewriter.getStringAttr(functionName.getValue())});
+         emitc::OpaqueAttr::get(ctx, functionName.getValue())});
 
     rewriter.replaceOpWithNewOp<emitc::CallOp>(
         compareOp, compareOp.getType(), callee, args, templateArgs, operands);
@@ -276,6 +299,7 @@ private:
   }
 };
 
+/// Convert `mhlo.get_tuple_element` into an `emitc.call` operation.
 class GetTupleElementOpConversion
     : public OpConversionPattern<mhlo::GetTupleElementOp> {
   using OpConversionPattern<mhlo::GetTupleElementOp>::OpConversionPattern;
@@ -305,6 +329,7 @@ private:
   }
 };
 
+/// Convert `mhlo.slice` into an `emitc.call` operation.
 class SliceOpConversion : public OpConversionPattern<mhlo::SliceOp> {
   using OpConversionPattern<mhlo::SliceOp>::OpConversionPattern;
 
@@ -316,7 +341,7 @@ private:
   LogicalResult
   matchAndRewrite(mhlo::SliceOp sliceOp, ArrayRef<Value> operands,
                   ConversionPatternRewriter &rewriter) const override {
-    StringRef funcName = "mhlo::slice";
+    StringRef funcName = "emitc::mhlo::slice";
     StringAttr callee = rewriter.getStringAttr(funcName);
 
     SmallVector<Attribute, 2> args_ =
@@ -337,6 +362,7 @@ private:
   }
 };
 
+/// Convert `mhlo.dynamic-slice` into an `emitc.call` operation.
 class DynamicSliceOpConversion
     : public OpConversionPattern<mhlo::DynamicSliceOp> {
   using OpConversionPattern<mhlo::DynamicSliceOp>::OpConversionPattern;
@@ -349,7 +375,7 @@ private:
   LogicalResult
   matchAndRewrite(mhlo::DynamicSliceOp dynamicSliceOp, ArrayRef<Value> operands,
                   ConversionPatternRewriter &rewriter) const override {
-    StringRef funcName = "mhlo::dynamic_slice";
+    StringRef funcName = "emitc::mhlo::dynamic_slice";
     StringAttr callee = rewriter.getStringAttr(funcName);
 
     SmallVector<Attribute, 2> args_ =
@@ -370,6 +396,7 @@ private:
   }
 };
 
+/// Convert `mhlo.dynamic-update-slice` into an `emitc.call` operation.
 class DynamicUpdateSliceOpConversion
     : public OpConversionPattern<mhlo::DynamicUpdateSliceOp> {
   using OpConversionPattern<mhlo::DynamicUpdateSliceOp>::OpConversionPattern;
@@ -385,7 +412,7 @@ private:
                   ConversionPatternRewriter &rewriter) const override {
     typename mhlo::DynamicUpdateSliceOp::Adaptor adaptor(operands);
 
-    StringRef funcName = "mhlo::dynamic_update_slice";
+    StringRef funcName = "emitc::mhlo::dynamic_update_slice";
     StringAttr callee = rewriter.getStringAttr(funcName);
 
     ArrayAttr args;
@@ -400,6 +427,7 @@ private:
   }
 };
 
+/// Convert `mhlo.pad` into an `emitc.call` operation.
 class PadOpConversion : public OpConversionPattern<mhlo::PadOp> {
   using OpConversionPattern<mhlo::PadOp>::OpConversionPattern;
 
@@ -410,7 +438,7 @@ private:
   LogicalResult
   matchAndRewrite(mhlo::PadOp padOp, ArrayRef<Value> operands,
                   ConversionPatternRewriter &rewriter) const override {
-    StringAttr callee = rewriter.getStringAttr("mhlo::pad");
+    StringAttr callee = rewriter.getStringAttr("emitc::mhlo::pad");
 
     SmallVector<Attribute, 2> args_ =
         indexSequence(operands.size(), padOp.getContext());
@@ -431,6 +459,7 @@ private:
   }
 };
 
+/// Convert `mhlo.rng_bit_generator` into an `emitc.call` operation.
 class RngBitGeneratorOpConversion
     : public OpConversionPattern<mhlo::RngBitGeneratorOp> {
   using OpConversionPattern<mhlo::RngBitGeneratorOp>::OpConversionPattern;
@@ -444,7 +473,7 @@ private:
   matchAndRewrite(mhlo::RngBitGeneratorOp rngBitGeneratorOp,
                   ArrayRef<Value> operands,
                   ConversionPatternRewriter &rewriter) const override {
-    StringRef funcName = "mhlo::rng_bit_generator";
+    StringRef funcName = "emitc::mhlo::rng_bit_generator";
     StringAttr callee = rewriter.getStringAttr(funcName);
 
     ArrayAttr args;
@@ -464,41 +493,49 @@ private:
 
 void populateMhloToEmitcPatterns(MLIRContext *ctx,
                                  OwningRewritePatternList &patterns) {
-  /// Insert patterns for MHLO unary elementwise ops.
-  patterns.insert<CallOpConversion<mhlo::AbsOp>>(ctx, "mhlo::abs");
-  patterns.insert<CallOpConversion<mhlo::CeilOp>>(ctx, "mhlo::ceil");
+  // Insert patterns for MHLO nullary ops.
+  patterns.insert<ConstOpConversion>(ctx);
+
+  // Insert patterns for MHLO unary elementwise ops.
+  patterns.insert<CallOpConversion<mhlo::AbsOp>>(ctx, "emitc::mhlo::abs");
+  patterns.insert<CallOpConversion<mhlo::CeilOp>>(ctx, "emitc::mhlo::ceil");
   patterns.insert<CallOpConversion<mhlo::ConvertOp>>(
-      ctx, "mhlo::convert", /*explicitResultType=*/true);
-  patterns.insert<CallOpConversion<mhlo::CosOp>>(ctx, "mhlo::cos");
-  patterns.insert<CallOpConversion<mhlo::ExpOp>>(ctx, "mhlo::exponential");
+      ctx, "emitc::mhlo::convert", /*explicitResultType=*/true);
+  patterns.insert<CallOpConversion<mhlo::CosOp>>(ctx, "emitc::mhlo::cos");
+  patterns.insert<CallOpConversion<mhlo::ExpOp>>(ctx,
+                                                 "emitc::mhlo::exponential");
   patterns.insert<CallOpConversion<mhlo::Expm1Op>>(
-      ctx, "mhlo::exponential_minus_one");
-  patterns.insert<CallOpConversion<mhlo::FloorOp>>(ctx, "mhlo::floor");
-  patterns.insert<CallOpConversion<mhlo::IsFiniteOp>>(ctx, "mhlo::is_finite");
-  patterns.insert<CallOpConversion<mhlo::LogOp>>(ctx, "mhlo::log");
-  patterns.insert<CallOpConversion<mhlo::Log1pOp>>(ctx, "mhlo::log_plus_one");
-  patterns.insert<CallOpConversion<mhlo::NegOp>>(ctx, "mhlo::negate");
-  patterns.insert<CallOpConversion<mhlo::RoundOp>>(ctx, "mhlo::round");
-  patterns.insert<CallOpConversion<mhlo::SinOp>>(ctx, "mhlo::sin");
-  patterns.insert<CallOpConversion<mhlo::SqrtOp>>(ctx, "mhlo::sqrt");
-  patterns.insert<CallOpConversion<mhlo::TanhOp>>(ctx, "mhlo::tanh");
+      ctx, "emitc::mhlo::exponential_minus_one");
+  patterns.insert<CallOpConversion<mhlo::FloorOp>>(ctx, "emitc::mhlo::floor");
+  patterns.insert<CallOpConversion<mhlo::IsFiniteOp>>(ctx,
+                                                      "emitc::mhlo::is_finite");
+  patterns.insert<CallOpConversion<mhlo::LogOp>>(ctx, "emitc::mhlo::log");
+  patterns.insert<CallOpConversion<mhlo::Log1pOp>>(ctx,
+                                                   "emitc::mhlo::log_plus_one");
+  patterns.insert<CallOpConversion<mhlo::NegOp>>(ctx, "emitc::mhlo::negate");
+  patterns.insert<CallOpConversion<mhlo::RoundOp>>(ctx, "emitc::mhlo::round");
+  patterns.insert<CallOpConversion<mhlo::SinOp>>(ctx, "emitc::mhlo::sin");
+  patterns.insert<CallOpConversion<mhlo::SqrtOp>>(ctx, "emitc::mhlo::sqrt");
+  patterns.insert<CallOpConversion<mhlo::TanhOp>>(ctx, "emitc::mhlo::tanh");
 
-  /// Insert patterns for MHLO binary elementwise ops.
-  patterns.insert<CallOpConversion<mhlo::AddOp>>(ctx, "mhlo::add");
-  patterns.insert<CallOpConversion<mhlo::Atan2Op>>(ctx, "mhlo::atan2");
-  patterns.insert<CallOpConversion<mhlo::DivOp>>(ctx, "mhlo::div");
-  patterns.insert<CallOpConversion<mhlo::MaxOp>>(ctx, "mhlo::max");
-  patterns.insert<CallOpConversion<mhlo::MinOp>>(ctx, "mhlo::min");
-  patterns.insert<CallOpConversion<mhlo::MulOp>>(ctx, "mhlo::mul");
-  patterns.insert<CallOpConversion<mhlo::PowOp>>(ctx, "mhlo::pow");
-  patterns.insert<CallOpConversion<mhlo::ShiftLeftOp>>(ctx, "mhlo::shift_left");
+  // Insert patterns for MHLO binary elementwise ops.
+  patterns.insert<CallOpConversion<mhlo::AddOp>>(ctx, "emitc::mhlo::add");
+  patterns.insert<CallOpConversion<mhlo::Atan2Op>>(ctx, "emitc::mhlo::atan2");
+  patterns.insert<CallOpConversion<mhlo::DivOp>>(ctx, "emitc::mhlo::div");
+  patterns.insert<CallOpConversion<mhlo::MaxOp>>(ctx, "emitc::mhlo::max");
+  patterns.insert<CallOpConversion<mhlo::MinOp>>(ctx, "emitc::mhlo::min");
+  patterns.insert<CallOpConversion<mhlo::MulOp>>(ctx, "emitc::mhlo::mul");
+  patterns.insert<CallOpConversion<mhlo::PowOp>>(ctx, "emitc::mhlo::pow");
+  patterns.insert<CallOpConversion<mhlo::ShiftLeftOp>>(
+      ctx, "emitc::mhlo::shift_left");
   patterns.insert<CallOpConversion<mhlo::ShiftRightLogicalOp>>(
-      ctx, "mhlo::shift_right_logical");
-  patterns.insert<CallOpConversion<mhlo::SubOp>>(ctx, "mhlo::sub");
+      ctx, "emitc::mhlo::shift_right_logical");
+  patterns.insert<CallOpConversion<mhlo::SubOp>>(ctx, "emitc::mhlo::sub");
 
-  // Insert patterns for MHLO MHLO binary logical elementwise ops.
-  patterns.insert<CallOpConversion<mhlo::OrOp>>(ctx, "mhlo::logical_or");
-  patterns.insert<CallOpConversion<mhlo::XorOp>>(ctx, "mhlo::logical_xor");
+  // Insert patterns for MHLO binary logical elementwise ops.
+  patterns.insert<CallOpConversion<mhlo::OrOp>>(ctx, "emitc::mhlo::logical_or");
+  patterns.insert<CallOpConversion<mhlo::XorOp>>(ctx,
+                                                 "emitc::mhlo::logical_xor");
 
   // Insert patterns for MHLO tuple ops.
   patterns.insert<CompareOpConversion>(ctx);
@@ -513,23 +550,23 @@ void populateMhloToEmitcPatterns(MLIRContext *ctx,
   // Insert patterns for other MHLO ops.
   patterns.insert<BatchNormInferenceOpConversion>(ctx);
   patterns.insert<CallOpConversion<mhlo::BitcastConvertOp>>(
-      ctx, "mhlo::bitcast_convert", /*explicitResultType=*/true);
+      ctx, "emitc::mhlo::bitcast_convert", /*explicitResultType=*/true);
   patterns.insert<BroadcastInDimOpConversion>(ctx);
   patterns.insert<CallOpConversion<mhlo::ClampOp>>(
-      ctx, "mhlo::clamp", /*explicitResultType=*/false,
+      ctx, "emitc::mhlo::clamp", /*explicitResultType=*/false,
       /*explicitOperandTypes=*/true);
   patterns.insert<ConcatenateOpConversion>(ctx);
   patterns.insert<ConvOpConversion>(ctx);
-  patterns.insert<CallOpConversion<mhlo::DotOp>>(ctx, "mhlo::dot",
+  patterns.insert<CallOpConversion<mhlo::DotOp>>(ctx, "emitc::mhlo::dot",
                                                  /*explicitResultType=*/true);
   patterns.insert<PadOpConversion>(ctx);
   patterns.insert<CallOpConversion<mhlo::ReshapeOp>>(
-      ctx, "mhlo::reshape", /*explicitResultType=*/true);
-  patterns.insert<CallOpConversion<mhlo::SelectOp>>(ctx, "mhlo::select");
+      ctx, "emitc::mhlo::reshape", /*explicitResultType=*/true);
+  patterns.insert<CallOpConversion<mhlo::SelectOp>>(ctx, "emitc::mhlo::select");
 
   // Insert patterns for MHLO RNG ops.
   patterns.insert<CallOpConversion<mhlo::RngUniformOp>>(
-      ctx, "mhlo::rng_uniform", /*explicitResultType=*/true);
+      ctx, "emitc::mhlo::rng_uniform", /*explicitResultType=*/true);
   patterns.insert<RngBitGeneratorOpConversion>(ctx);
 }
 
@@ -539,18 +576,17 @@ struct ConvertMhloToEmitCPass
     : public ConvertMHLOToEmitCBase<ConvertMhloToEmitCPass> {
   /// Perform the lowering to EmitC dialect.
   void runOnFunction() override {
-    // Convert other ops
+
     ConversionTarget target(getContext());
 
     target.addLegalDialect<emitc::EmitCDialect>();
     target.addLegalDialect<mhlo::MhloDialect>();
-    target.addLegalDialect<StandardOpsDialect>();
-    target.addLegalOp<FuncOp>();
-    target.addLegalOp<ModuleOp>();
-    target.addLegalOp<ModuleTerminatorOp>();
 
     // clang-format off
-    // MHLO unary elementwise ops
+    // MHLO nullary ops
+    target.addIllegalOp<mhlo::ConstOp>();
+
+    // MHLO unary elementwise ops.
     target.addIllegalOp<mhlo::AbsOp,
                         mhlo::CeilOp,
                         mhlo::ConvertOp,
@@ -566,7 +602,8 @@ struct ConvertMhloToEmitCPass
                         mhlo::SinOp,
                         mhlo::SqrtOp,
                         mhlo::TanhOp>();
-    // MHLO binary elementwise ops
+
+    // MHLO binary elementwise ops.
     target.addIllegalOp<mhlo::AddOp,
                         mhlo::Atan2Op,
                         mhlo::DivOp,
@@ -577,21 +614,26 @@ struct ConvertMhloToEmitCPass
                         mhlo::ShiftLeftOp,
                         mhlo::ShiftRightLogicalOp,
                         mhlo::SubOp>();
-    // MHLO binary logical elementwise ops
+
+    // MHLO binary logical elementwise ops.
     target.addIllegalOp<mhlo::OrOp,
                         mhlo::XorOp>();
-    // MHLO tuple ops
+
+    // MHLO tuple ops.
     target.addIllegalOp<mhlo::CompareOp,
                         mhlo::TupleOp,
                         mhlo::GetTupleElementOp>();
-    // MHLO slice ops
+
+    // MHLO slice ops.
     target.addIllegalOp<mhlo::DynamicSliceOp,
                         mhlo::DynamicUpdateSliceOp,
                         mhlo::SliceOp>();
-    // MHLO region ops
+
+    // MHLO region ops.
     target.addIllegalOp<mhlo::ReduceOp,
                         mhlo::ReturnOp>();
-    // other MHLO ops
+
+    // Other MHLO ops.
     target.addIllegalOp<mhlo::BatchNormInferenceOp,
                         mhlo::BitcastConvertOp,
                         mhlo::BroadcastInDimOp,
@@ -602,12 +644,13 @@ struct ConvertMhloToEmitCPass
                         mhlo::PadOp,
                         mhlo::ReshapeOp,
                         mhlo::SelectOp>();
-    // MHLO RNG ops
+
+    // MHLO RNG ops.
     target.addIllegalOp<mhlo::RngUniformOp,
                         mhlo::RngBitGeneratorOp>();
     // clang-format on
 
-    OwningRewritePatternList patterns;
+    OwningRewritePatternList patterns(&getContext());
     populateMhloToEmitcPatterns(&getContext(), patterns);
 
     if (failed(

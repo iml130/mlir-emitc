@@ -10,7 +10,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// This file defines functions used by EmitC
+// This file defines functions emitted by MHLOToEmitC.
 
 #ifndef EMITC_EMITC_MHLO_H
 #define EMITC_EMITC_MHLO_H
@@ -25,33 +25,26 @@
 #include <type_traits>
 #include <vector>
 
-#include "emitc_types.h"
+#include "emitc_core_ops.h"
 
+namespace emitc {
 namespace mhlo {
 /// See
 /// https://github.com/tensorflow/tensorflow/blob/6f59650012f8904745dffaba540afc794c6613be/tensorflow/compiler/xla/service/hlo_evaluator.cc
 /// for the XLA implementation
 
-/// Functions for MHLO unary elementwise ops
+/// Functions for MHLO unary elementwise ops.
 // AbsOp
-// TODO support complex numbers
+// TODO: Add support for complex numbers.
 template <typename Src>
 inline Src abs(Src x) {
-  using ET_Src = typename get_element_type<Src>::type;
-
-  auto f = static_cast<ET_Src (*)(ET_Src)>(std::abs);
-
-  return unary<Src>(x, f);
+  return emitc::abs<Src>(x);
 }
 
 // CeilOp
 template <typename Src>
 inline Src ceil(Src x) {
-  using ET_Src = typename get_element_type<Src>::type;
-
-  auto f = static_cast<ET_Src (*)(ET_Src)>(std::ceil);
-
-  return unary<Src>(x, f);
+  return emitc::ceil<Src>(x);
 }
 
 // BitcastConvertOp
@@ -86,12 +79,7 @@ typename replace_element_type<bool, Src>::type compare(Src x, Src y) {
 // ConvertOp
 template <typename Dest, typename Src>
 inline Dest convert(Src x) {
-  using ET_Dest = typename get_element_type<Dest>::type;
-  using ET_Src = typename get_element_type<Src>::type;
-
-  auto cast = [](ET_Src value) { return static_cast<ET_Dest>(value); };
-
-  return unary<Dest, Src, UnaryFuncType<ET_Dest, ET_Src>>(x, cast);
+  return emitc::convert<Dest>(x);
 }
 
 // CosOp
@@ -107,11 +95,7 @@ inline Src cos(Src x) {
 // ExpOp
 template <typename Src>
 inline Src exponential(Src x) {
-  using ET_Src = typename get_element_type<Src>::type;
-
-  auto f = static_cast<ET_Src (*)(ET_Src)>(std::exp);
-
-  return unary<Src>(x, f);
+  return emitc::exp<Src>(x);
 }
 
 // Expm1Op
@@ -127,11 +111,7 @@ inline Src exponential_minus_one(Src x) {
 // FloorOp
 template <typename Src>
 inline Src floor(Src x) {
-  using ET_Src = typename get_element_type<Src>::type;
-
-  auto f = static_cast<ET_Src (*)(ET_Src)>(std::floor);
-
-  return unary<Src>(x, f);
+  return emitc::floor<Src>(x);
 }
 
 // IsFiniteOp
@@ -151,11 +131,7 @@ inline typename replace_element_type<bool, Src>::type is_finite(Src x) {
 // LogOp
 template <typename Src>
 inline Src log(Src x) {
-  using ET_Src = typename get_element_type<Src>::type;
-
-  auto f = static_cast<ET_Src (*)(ET_Src)>(std::log);
-
-  return unary<Src>(x, f);
+  return emitc::log<Src>(x);
 }
 
 // Log1pOp
@@ -171,11 +147,7 @@ inline Src log_plus_one(Src x) {
 // NegOp
 template <typename Src>
 inline Src negate(Src x) {
-  using ET_Src = typename get_element_type<Src>::type;
-
-  auto f = std::negate<ET_Src>{};
-
-  return unary<Src>(x, f);
+  return emitc::negate(x);
 }
 
 // RoundOp
@@ -201,32 +173,20 @@ inline Src sin(Src x) {
 // SqrtOp
 template <typename Src>
 inline Src sqrt(Src x) {
-  using ET_Src = typename get_element_type<Src>::type;
-
-  auto f = static_cast<ET_Src (*)(ET_Src)>(std::sqrt);
-
-  return unary<Src>(x, f);
+  return emitc::sqrt<Src>(x);
 }
 
 // TanhOp
 template <typename Src>
 inline Src tanh(Src x) {
-  using ET_Src = typename get_element_type<Src>::type;
-
-  auto f = static_cast<ET_Src (*)(ET_Src)>(std::tanh);
-
-  return unary<Src>(x, f);
+  return emitc::tanh<Src>(x);
 }
 
 /// Functions for MHLO binary elementwise ops.
 // AddOp
 template <typename Src>
 inline Src add(Src x, Src y) {
-  using ET_Src = typename get_element_type<Src>::type;
-
-  auto f = std::plus<ET_Src>{};
-
-  return binary<Src>(x, y, f);
+  return emitc::add<Src>(x, y);
 }
 
 // Atan2Op
@@ -252,63 +212,25 @@ inline Src div(Src x, Src y) {
 // MaxOp
 template <typename Src>
 inline Src max(Src x, Src y) {
-  using ET_Src = typename get_element_type<Src>::type;
-
-  auto f =
-      static_cast<const ET_Src &(*)(const ET_Src &, const ET_Src &)>(std::max);
-
-  return binary<Src>(x, y, f);
+  return emitc::max(x, y);
 }
 
 // MinOp
 template <typename Src>
 inline Src min(Src x, Src y) {
-  using ET_Src = typename get_element_type<Src>::type;
-
-  auto f =
-      static_cast<const ET_Src &(*)(const ET_Src &, const ET_Src &)>(std::min);
-
-  return binary<Src>(x, y, f);
+  return emitc::min(x, y);
 }
 
 // MulOp
 template <typename Src>
 inline Src mul(Src x, Src y) {
-  using ET_Src = typename get_element_type<Src>::type;
-
-  auto f = std::multiplies<ET_Src>{};
-
-  return binary<Src>(x, y, f);
+  return emitc::mul(x, y);
 }
 
 // PowOp
 template <typename Src>
 inline Src pow(Src x, Src y) {
-  using ET_Src = typename get_element_type<Src>::type;
-
-  auto f = [](ET_Src a, ET_Src b) -> ET_Src {
-    if (std::is_integral<ET_Src>::value) {
-      const bool negative = b < 0;
-      if (b < 0) {
-        b = -b;
-      }
-
-      ET_Src result = 1;
-
-      for (ET_Src i = 0; i < b; i++) {
-        result *= a;
-      }
-
-      if (negative) {
-        result = 1 / result;
-      }
-      return result;
-    } else {
-      return std::pow(a, b);
-    }
-  };
-
-  return binary<Src>(x, y, f);
+  return emitc::pow(x, y);
 }
 
 // ShiftLeftOp
@@ -338,11 +260,7 @@ inline Src shift_right_logical(Src x, Src y) {
 // SubOp
 template <typename Src>
 inline Src sub(Src x, Src y) {
-  using ET_Src = typename get_element_type<Src>::type;
-
-  auto f = std::minus<ET_Src>{};
-
-  return binary<Src>(x, y, f);
+  return emitc::sub<Src>(x, y);
 }
 
 /// Functions for MHLO binary logical elementwise ops.
@@ -368,77 +286,18 @@ inline Src logical_xor(Src x, Src y) {
 
 /// Functions for other MHLO ops.
 // BroadcastInDimOp
+// The broadcast_dimensions argument maps from Src to Dest dimensions.
 template <typename Dest, typename Src>
 inline Dest
 broadcast_in_dim(Src operand,
-                 Tensor1D<int64_t, Src::rank()> broadcast_dimensions) {
-  static_assert(is_tensor<Src>::value, "Expected tensor argument");
-  static_assert(is_tensor<Dest>::value, "Expected tensor result");
-
-  std::vector<size_t> retainedDimensions(Dest::rank());
-  std::iota(retainedDimensions.begin(), retainedDimensions.end(), 0);
-
-  retainedDimensions.erase(
-      std::remove_if(retainedDimensions.begin(), retainedDimensions.end(),
-                     [&broadcast_dimensions](size_t i) {
-                       return std::find(broadcast_dimensions.begin(),
-                                        broadcast_dimensions.end(),
-                                        i) == broadcast_dimensions.end();
-                     }),
-      retainedDimensions.end());
-
-  assert(retainedDimensions.size() == Src::rank());
-
-  Dest result;
-  for (size_t i = 0; i < result.size(); i++) {
-    auto index = result.unravel_index(i);
-
-    // reverse mapping with broadcast_dimensions
-    std::array<size_t, Src::rank()> reversedIndex;
-    for (size_t j = 0; j < reversedIndex.size(); j++) {
-      reversedIndex[j] = index[broadcast_dimensions(j)];
-    }
-
-    result[i] = operand[operand.ravel_index(reversedIndex)];
-  }
-
-  return result;
+                 Tensor<int64_t, Src::rank()> broadcast_dimensions) {
+  return emitc::broadcast_in_dim<Dest>(operand, broadcast_dimensions);
 }
 
 // ClampOp
 template <typename Min, typename Src, typename Max>
 inline Src clamp(Min min, Src operand, Max max) {
-  static_assert(
-      std::is_same<Min, Src>::value ||
-          (is_tensor_of_dim<0, Min>::value &&
-           std::is_same<typename get_element_type<Src>::type,
-                        typename get_element_type<Min>::type>::value),
-      "Expected the same type for min and operand or a 0-dim tensor of the "
-      "same element type for min");
-  static_assert(
-      std::is_same<Max, Src>::value ||
-          (is_tensor_of_dim<0, Max>::value &&
-           std::is_same<typename get_element_type<Src>::type,
-                        typename get_element_type<Min>::type>::value),
-      "Expected the same type for min and operand or a 0-dim tensor of the "
-      "same element type for max");
-
-  const bool broadcast_min = !std::is_same<Min, Src>::value;
-  const bool broadcast_max = !std::is_same<Max, Src>::value;
-
-  Src result;
-  for (size_t index = 0; index < Src::size(); index++) {
-    const auto value_min = broadcast_min ? min[0] : min[index];
-    const auto value_max = broadcast_max ? max[0] : max[index];
-
-    auto value = operand[index];
-    value = value < value_min ? value_min : value;
-    value = value > value_max ? value_max : value;
-
-    result[index] = value;
-  }
-
-  return result;
+  return emitc::clamp(min, operand, max);
 }
 
 // ConcatenateOp
@@ -452,8 +311,8 @@ template <int64_t Dimension, typename Dest, typename Src1, typename... Src>
 inline Dest concatenate(Src1 input1, Src... inputs) {
   static_assert(sizeof...(inputs) > 0, "Wrong template specialization chosen");
 
-  // concatenate all but the first input
-  // We need to build the correct return type for the rest of the inputs
+  // Concatenate all but the first input.
+  // We need to build the correct return type for the rest of the inputs.
   using ET_Src = typename get_element_type<Src1>::type;
   using Rest = typename concat<Dimension, ET_Src, Src...>::type;
   Rest rest = concatenate<Dimension, Rest, Src...>(inputs...);
@@ -470,7 +329,7 @@ inline Dest concatenate(Src1 input1, Src... inputs) {
   //    copy JxD elements from b_ptr to c_ptr
   //    move b_ptr, c_ptr by JxD elements
 
-  // take the product of all dimensions, starting at `Dimension`
+  // Take the product of all dimensions, starting at `Dimension`.
   auto calculate_shift = [](const auto &shape) {
     size_t shift = 1;
     for (size_t i = Dimension; i < shape.size(); i++) {
@@ -493,59 +352,36 @@ inline Dest concatenate(Src1 input1, Src... inputs) {
 }
 
 // SliceOp
-// Overload for 1d case
-template <typename Dest, typename Src, IsTensorOfDim<1, Src> = true>
-Dest slice(Src x, Tensor1D<int64_t, 1> start_indices,
-           Tensor1D<int64_t, 1> limit_indices, Tensor1D<int64_t, 1> strides) {
-  Dest z;
-
-  size_t index = 0;
-  for (int64_t i = start_indices[0]; i < limit_indices[0]; i += strides[0]) {
-    z[index++] = x(i);
-  }
-
-  return z;
-}
-
-// Overload for 2d case
-template <typename Dest, typename Src, IsTensorOfDim<2, Src> = true>
-Dest slice(Src x, Tensor1D<int64_t, 2> start_indices,
-           Tensor1D<int64_t, 2> limit_indices, Tensor1D<int64_t, 2> strides) {
-  Dest z;
-
-  size_t index = 0;
-  for (int64_t i = start_indices[0]; i < limit_indices[0]; i += strides[0]) {
-    for (int64_t j = start_indices[1]; j < limit_indices[1]; j += strides[1]) {
-      z[index++] = x(i, j);
-    }
-  }
-
-  return z;
+template <typename Dest, typename Src>
+Dest slice(Src x, Tensor<int64_t, Src::rank()> start_indices,
+           Tensor<int64_t, Src::rank()> limit_indices,
+           Tensor<int64_t, Src::rank()> strides) {
+  return emitc::slice<Dest, Src>(x, start_indices, limit_indices, strides);
 }
 
 // DynamicSliceOp
-// Overload for 1d case
+// Overload for 1d case.
 template <typename Dest, typename Src, IsTensorOfDim<1, Src> = true>
 Dest dynamic_slice(Src x, Tensor<int32_t> start_index,
-                   Tensor1D<int64_t, 1> slice_sizes) {
+                   Tensor<int64_t, 1> slice_sizes) {
   auto clamp = [](int64_t value, int64_t minValue, int64_t maxValue) {
     return std::max(minValue, std::min(maxValue, value));
   };
 
   int64_t dim_x = static_cast<int64_t>(Src::dim(0));
   int64_t start_index_eff = clamp(start_index[0], 0, dim_x - slice_sizes[0]);
-  Tensor1D<int64_t, 1> start_indices{start_index_eff};
-  Tensor1D<int64_t, 1> limit_indices{start_index_eff + slice_sizes[0]};
-  Tensor1D<int64_t, 1> strides{1};
+  Tensor<int64_t, 1> start_indices{start_index_eff};
+  Tensor<int64_t, 1> limit_indices{start_index_eff + slice_sizes[0]};
+  Tensor<int64_t, 1> strides{1};
 
   return slice<Dest, Src>(x, start_indices, limit_indices, strides);
 }
 
-// Overload for 2d case
+// Overload for 2d case.
 template <typename Dest, typename Src, IsTensorOfDim<2, Src> = true>
 Dest dynamic_slice(Src x, Tensor<int32_t> start_index_x,
                    Tensor<int32_t> start_index_y,
-                   Tensor1D<int64_t, 2> slice_sizes) {
+                   Tensor<int64_t, 2> slice_sizes) {
   auto clamp = [](int64_t value, int64_t minValue, int64_t maxValue) {
     return std::max(minValue, std::min(maxValue, value));
   };
@@ -556,16 +392,16 @@ Dest dynamic_slice(Src x, Tensor<int32_t> start_index_x,
       clamp(start_index_x[0], 0, dim_x - slice_sizes[0]);
   int64_t start_index_y_eff =
       clamp(start_index_y[0], 0, dim_y - slice_sizes[1]);
-  Tensor1D<int64_t, 2> start_indices{start_index_x_eff, start_index_y_eff};
-  Tensor1D<int64_t, 2> limit_indices{start_index_x_eff + slice_sizes[0],
-                                     start_index_y_eff + slice_sizes[1]};
-  Tensor1D<int64_t, 2> strides{1, 1};
+  Tensor<int64_t, 2> start_indices{start_index_x_eff, start_index_y_eff};
+  Tensor<int64_t, 2> limit_indices{start_index_x_eff + slice_sizes[0],
+                                   start_index_y_eff + slice_sizes[1]};
+  Tensor<int64_t, 2> strides{1, 1};
 
   return slice<Dest, Src>(x, start_indices, limit_indices, strides);
 }
 
 // DynamicUpdateSliceOp
-// Overload for 1d case
+// Overload for 1d case.
 template <typename Update, typename Src, IsTensorOfDim<1, Src> = true>
 Src dynamic_update_slice(Src x, Update update, Tensor<int32_t> start_index) {
   auto clamp = [](int64_t value, int64_t minValue, int64_t maxValue) {
@@ -584,7 +420,7 @@ Src dynamic_update_slice(Src x, Update update, Tensor<int32_t> start_index) {
   return z;
 }
 
-// Overload for 2d case
+// Overload for 2d case.
 template <typename Update, typename Src, IsTensorOfDim<2, Src> = true>
 Src dynamic_update_slice(Src x, Update update, Tensor<int32_t> start_index_x,
                          Tensor<int32_t> start_index_y) {
@@ -611,84 +447,19 @@ Src dynamic_update_slice(Src x, Update update, Tensor<int32_t> start_index_x,
 // ReshapeOp
 template <typename Dest, typename Src>
 inline Dest reshape(Src x) {
-  static_assert(is_tensor<Src>::value, "Expected tensor argument");
-  static_assert(is_tensor<Dest>::value, "Expected tensor result");
-
-  using ET_Src = typename get_element_type<Src>::type;
-  using ET_Dest = typename get_element_type<Dest>::type;
-
-  static_assert(std::is_same<ET_Src, ET_Dest>::value, "Element type mismatch");
-  static_assert(Src::size() == Dest::size(), "Tensor size mismatch");
-
-  Dest z;
-
-  std::copy(x.begin(), x.end(), z.begin());
-
-  return z;
+  return emitc::reshape<Dest>(x);
 }
 
 // PadOp
-// TODO support negative edge padding
+// TODO: Support negative edge padding.
 template <typename Dest, typename Src>
 inline Dest pad(Src operand,
                 Tensor<typename get_element_type<Src>::type> padding_value,
                 Tensor<int64_t, Src::rank()> edge_padding_low,
                 Tensor<int64_t, Src::rank()> edge_padding_high,
                 Tensor<int64_t, Src::rank()> interior_padding) {
-  assert(std::all_of(interior_padding.begin(), interior_padding.end(),
-                     [](int64_t i) { return i >= 0; }));
-
-  assert(std::all_of(edge_padding_low.begin(), edge_padding_low.end(),
-                     [](int64_t i) { return i >= 0; }));
-  assert(std::all_of(edge_padding_high.begin(), edge_padding_high.end(),
-                     [](int64_t i) { return i >= 0; }));
-
-  Dest result;
-
-  auto interior = [&interior_padding](std::array<size_t, Src::rank()> index) {
-    for (size_t i = 0; i < index.size(); i++) {
-      if (index[i] % (interior_padding[i] + 1) != 0) {
-        return true;
-      }
-    }
-    return false;
-  };
-
-  auto out_of_bounds = [](std::array<size_t, Src::rank()> index) {
-    for (size_t i = 0; i < index.size(); i++) {
-      if (index[i] < 0 || index[i] >= Src::dim(i)) {
-        return true;
-      }
-    }
-    return false;
-  };
-
-  for (size_t i = 0; i < result.size(); i++) {
-    auto index = result.unravel_index(i);
-
-    // shift by low padding
-    for (size_t j = 0; j < index.size(); j++) {
-      index[j] -= edge_padding_low[j];
-    }
-
-    if (interior(index)) {
-      result[i] = padding_value();
-    } else {
-      // squeeze by interrior padding
-      for (size_t j = 0; j < index.size(); j++) {
-        size_t pad = interior_padding[j];
-        assert(index[j] % (pad + 1) == 0);
-        index[j] /= (pad + 1);
-      }
-
-      if (out_of_bounds(index)) {
-        result[i] = padding_value();
-      } else {
-        result[i] = operand[operand.ravel_index(index)];
-      }
-    }
-  }
-  return result;
+  return emitc::pad<Dest>(operand, padding_value, edge_padding_low,
+                          edge_padding_low, interior_padding);
 }
 
 // ReduceOp
@@ -794,9 +565,9 @@ inline Dest reduce_window(
       baseIndex[j] = index[j] * window_strides(j);
     }
 
-    // iterate over input window
+    // Iterate over input window.
     for (auto &inputIndex : operand.window(baseIndex, windowDimensionsArr)) {
-      // get input value (check out of bounds access)
+      // Get input value (check out of bounds access).
       Tensor<ET_Src> value;
       if (out_of_bounds(inputIndex)) {
         value[0] = initValue[0];
@@ -809,12 +580,12 @@ inline Dest reduce_window(
         value[0] = operand[operand.ravel_index(_index)];
       }
 
-      // get reduction value
+      // Get reduction value.
       auto reductionValue = Tensor<ET_Src>{result[result.ravel_index(index)]};
-      // run computation
+      // Run computation.
       Tensor<ET_Dest> resultValue = computation(reductionValue, value);
 
-      // update result value
+      // Update result value.
       result[result.ravel_index(index)] = resultValue();
     }
   }
@@ -844,7 +615,7 @@ inline Src select(typename replace_element_type<bool, Src>::type pred,
 // RngUniformOp
 template <typename Dest, typename T, size_t N>
 inline Dest rng_uniform(Tensor<T> low, Tensor<T> high,
-                        Tensor1D<int64_t, N> shape) {
+                        Tensor<int64_t, N> shape) {
   static_assert(std::is_integral<T>::value || std::is_floating_point<T>::value,
                 "Expected integer or floating point type");
   using uniform_distribution =
@@ -854,7 +625,7 @@ inline Dest rng_uniform(Tensor<T> low, Tensor<T> high,
   T lowValue = low[0];
   T highValue = high[0];
 
-  // high value is exclusive in xla but inclusive in cpp
+  // High value is exclusive in XLA but inclusive in cpp
   // see https://www.tensorflow.org/xla/operation_semantics?hl=en#rnguniform
   // and
   // https://en.cppreference.com/w/cpp/numeric/random/uniform_int_distribution
@@ -878,7 +649,7 @@ inline Dest rng_uniform(Tensor<T> low, Tensor<T> high,
 // RngBitGeneratorOp
 template <typename Dest, int32_t RngAlgorithm>
 Dest rng_bit_generator(typename std::tuple_element<0, Dest>::type state) {
-  // TODO implement correct algorithm; starting point would be
+  // TODO: Implement correct algorithm; starting point would be
   // https://github.com/tensorflow/tensorflow/blob/6f59650012f8904745dffaba540afc794c6613be/tensorflow/compiler/xla/service/rng_bit_generator_expander.cc#L56
 
   using StateType = typename std::tuple_element<0, Dest>::type;
@@ -928,25 +699,25 @@ Src batch_norm_inference(Src input, Feature scale, Feature offset, Feature mean,
 }
 
 // ConvolutionOp
-// TODO replicate ConvDimensionNumbers struct
-// TODO implement general dimension numbers
-// TODO implement lhs_dilation
-// TODO implement rhs_dilation
-// TODO implement batch_group_count
+// TODO: Replicate ConvDimensionNumbers struct.
+// TODO: Implement general dimension numbers.
+// TODO: Implement lhs_dilation.
+// TODO: Implement rhs_dilation.
+// TODO: Implement batch_group_count.
 template <typename Dest, typename Src, typename Weights>
 Dest convolution(Src input, Weights weights, int64_t batch_group_count,
                  int64_t input_batch_dimension, int64_t input_feature_dimension,
-                 Tensor1D<int64_t, 2> input_spatial_dimensions,
+                 Tensor<int64_t, 2> input_spatial_dimensions,
                  int64_t kernel_input_feature_dimension,
                  int64_t kernel_output_feature_dimension,
-                 Tensor1D<int64_t, 2> kernel_spatial_dimensions,
+                 Tensor<int64_t, 2> kernel_spatial_dimensions,
                  int64_t output_batch_dimension,
                  int64_t output_feature_dimension,
-                 Tensor1D<int64_t, 2> output_spatial_dimensions,
-                 int64_t feature_group_count, Tensor2D<int64_t, 2, 2> padding,
-                 Tensor1D<int64_t, 2> lhs_dilation,
-                 Tensor1D<int64_t, 2> rhs_dilation,
-                 Tensor1D<int64_t, 2> window_strides) {
+                 Tensor<int64_t, 2> output_spatial_dimensions,
+                 int64_t feature_group_count, Tensor<int64_t, 2, 2> padding,
+                 Tensor<int64_t, 2> lhs_dilation,
+                 Tensor<int64_t, 2> rhs_dilation,
+                 Tensor<int64_t, 2> window_strides) {
   static_assert(is_tensor_of_dim<4, Src>::value,
                 "Expected 4 dimensional input");
   static_assert(is_tensor_of_dim<4, Dest>::value,
@@ -974,6 +745,9 @@ Dest convolution(Src input, Weights weights, int64_t batch_group_count,
   assert(input.dim(input_feature_dimension) % feature_group_count == 0);
   assert(weights.dim(kernel_input_feature_dimension) ==
          input.dim(input_feature_dimension) / feature_group_count);
+
+  assert(window_strides[0] > 0);
+  assert(window_strides[1] > 0);
 
   assert(lhs_dilation[0] == 1);
   assert(lhs_dilation[0] == 1);
@@ -1008,7 +782,7 @@ Dest convolution(Src input, Weights weights, int64_t batch_group_count,
   const int H_PAD = pt + H_IN + pb;
   const int W_PAD = pl + W_IN + pr;
 
-  // TODO test grouped convolutions
+  // TODO: Test grouped convolutions.
   assert(feature_group_count == 1 || feature_group_count == C_OUT);
 
   // Convolution
@@ -1045,23 +819,10 @@ Dest convolution(Src input, Weights weights, int64_t batch_group_count,
 // DotOp
 template <typename Dest, typename Lhs, typename Rhs>
 Dest dot(Lhs lhs, Rhs rhs) {
-  static_assert(is_tensor_of_dim<2, Lhs>::value, "Expected 2 dimensional lhs");
-  static_assert(is_tensor_of_dim<2, Rhs>::value, "Expected 2 dimensional rhs");
-  static_assert(Lhs::dim(1) == Rhs::dim(0),
-                "Expected contracting dimension to match");
-  Dest output;
-
-  for (size_t m = 0; m < lhs.dim(0); m++) {
-    for (size_t n = 0; n < lhs.dim(1); n++) {
-      for (size_t k = 0; k < rhs.dim(1); k++) {
-        output(m, k) += lhs(m, n) * rhs(n, k);
-      }
-    }
-  }
-
-  return output;
+  return emitc::dot<Dest>(lhs, rhs);
 }
 
 } // namespace mhlo
+} // namespace emitc
 
 #endif // EMITC_EMITC_MHLO_H

@@ -43,18 +43,20 @@ cmake --build . --target MLIREmitCAllTests
 ## Supported Conversions and Translations
 
 Conversions are supported for [MLIR-HLO](https://github.com/tensorflow/mlir-hlo) ops and some ops of the standard and SCF dialect.
+In addition, support for converting Tensor Operator Set Architecture [(TOSA)](https://mlir.llvm.org/docs/Dialects/TOSA/) dialect to EmitC is emerging.
 The `emitc-opt` tool enables conversions via the following options:
 
 | option                                   |                                                                          |
 | :--------------------------------------- |:------------------------------------------------------------------------ |
 | `--convert-mhlo-region-ops-to-emitc `    | Convert MHLO operations containing regions to EmitC dialect.             |
 | `--convert-mhlo-to-emitc `               | Convert from MHLO dialect to EmitC dialect.                              |
-| `--convert-scf-to-emitc`                 | Convert SCF dialect to EmitC dialect, replacing IfOp and ForOp.          |
 | `--convert-std-to-emitc `                | Convert std dialect to EmitC dialect, replacing IndexCastOp and SplatOp. |
 | `--convert-tensor-to-emitc `             | Convert tensor dialect to EmitC dialect, replacing ExtractOp.            |
+| `--convert-tosa-to-emitc `               | Convert TOSA dialect to EmitC dialect.                                   |
 
 The currently supported MHLO ops are listed in the [docs/mhlo-op-coverage.md](docs/mhlo-op-coverage.md) document.
+Supported TOSA ops are listed in the [docs/tosa-op-coverage.md](docs/tosa-op-coverage.md) document.
 
-Furthermore, the `emitc-opt` tools supports the conversion from `mhlo.constant` to `constant` via `--convert-mhlo-const-to-std `. This conversion is necessary because EmitC does not implement a conversion from `mhlo.constant`, but does support `constant` in the translation to C++.
-
-After converting to EmitC, C++ code can be emited using `emitc-translate --mlir-to-cpp`.
+After converting to EmitC dialect, C++ code can be emitted using `emitc-translate --mlir-to-cpp`.
+For a restricted set of operations C code can be emitted using `emitc-translate --mlir-to-c`.
+Furthermore, `emitc-translate` has specific support for the option `--forward-declare-variables`.

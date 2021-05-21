@@ -14,8 +14,7 @@
 #ifndef EMITC_INITPASSES_H
 #define EMITC_INITPASSES_H
 
-#include "emitc/Conversion/Passes.h"
-#include "emitc/Dialect/EmitC/Passes.h"
+#include "emitc/Dialect/EmitC/Conversion/Passes.h"
 #include "mlir/Conversion/Passes.h"
 #include "mlir/Transforms/Passes.h"
 
@@ -35,12 +34,11 @@ namespace emitc {
 inline void registerAllEmitCPasses() {
 #ifdef EMITC_BUILD_HLO
   registerConvertMHLORegionOpsToEmitCPass();
-  registerConvertMHLOToStandardPass();
   registerConvertMHLOToEmitCPass();
 #endif // EMITC_BUILD_HLO
-  registerConvertSCFToEmitCPass();
   registerConvertStdToEmitCPass();
   registerConvertTensorToEmitCPass();
+  registerConvertTosaToEmitCPass();
 }
 
 } // namespace emitc

@@ -12,11 +12,11 @@
 //===----------------------------------------------------------------------===//
 
 #include "PassDetail.h"
-#include "emitc/Dialect/EmitC/EmitCDialect.h"
-#include "emitc/Dialect/EmitC/Passes.h"
+#include "emitc/Dialect/EmitC/Conversion/Passes.h"
+#include "emitc/Dialect/EmitC/IR/EmitC.h"
 #include "mlir-hlo/Dialect/mhlo/IR/hlo_ops.h"
-#include "mlir/IR/BuiltinOps.h"
 #include "mlir/IR/BlockAndValueMapping.h"
+#include "mlir/IR/BuiltinOps.h"
 #include "mlir/Pass/Pass.h"
 
 namespace mlir {
@@ -24,8 +24,8 @@ namespace emitc {
 
 namespace {
 
-/// Common functions
-/// Adopted from mlir-hlo
+/// Common functions.
+/// Adopted from mlir-hlo.
 DenseIntElementsAttr i64ElementsAttr(int64_t value, size_t count,
                                      MLIRContext *ctx) {
   RankedTensorType ty = RankedTensorType::get({static_cast<int64_t>(count)},
@@ -155,16 +155,16 @@ private:
 
     auto operands = op.getOperands();
 
-    StringRef funcName = "mhlo::reduce";
-    StringAttr callee = StringAttr::get(funcName, ctx);
+    StringRef funcName = "emitc::mhlo::reduce";
+    StringAttr callee = StringAttr::get(ctx, funcName);
 
     SmallVector<Attribute, 2> args_ =
         indexSequence(operands.size(), op.getContext());
 
     args_.push_back(op.dimensions());
-    args_.push_back(SymbolRefAttr::get(funcOp.getName(), ctx));
+    args_.push_back(SymbolRefAttr::get(ctx, funcOp.getName()));
 
-    ArrayAttr args = ArrayAttr::get(args_, ctx);
+    ArrayAttr args = ArrayAttr::get(ctx, args_);
 
     SmallVector<Attribute, 2> templateArgs_ = llvm::to_vector<2>(
         llvm::map_range(llvm::seq<size_t>(0, op.getNumResults()),
@@ -175,7 +175,7 @@ private:
     templateArgs_.push_back(
         IntegerAttr::get(IntegerType::get(ctx, 64), op.dimensions().size()));
 
-    ArrayAttr templateArgs = ArrayAttr::get(templateArgs_, ctx);
+    ArrayAttr templateArgs = ArrayAttr::get(ctx, templateArgs_);
 
     emitc::CallOp callOp = builder.create<emitc::CallOp>(
         op.getLoc(), op.getResultTypes(), callee, args, templateArgs, operands);
@@ -190,12 +190,12 @@ private:
 
     auto operands = op.getOperands();
 
-    StringRef funcName = "mhlo::reduce_window";
-    StringAttr callee = StringAttr::get(funcName, ctx);
+    StringRef funcName = "emitc::mhlo::reduce_window";
+    StringAttr callee = StringAttr::get(ctx, funcName);
 
     SmallVector<Attribute, 2> args_ = indexSequence(operands.size(), ctx);
 
-    size_t dim = op.getResult().getType().cast<RankedTensorType>().getRank();
+    size_t dim = op.getResult(0).getType().cast<RankedTensorType>().getRank();
     args_.push_back(op.window_dimensions());
     args_.push_back(
         op.window_strides().getValueOr(i64ElementsAttr(1, dim, ctx)));
@@ -204,15 +204,15 @@ private:
     args_.push_back(
         op.window_dilations().getValueOr(i64ElementsAttr(1, dim, ctx)));
     args_.push_back(op.padding().getValueOr(i64ElementsAttr(0, 2 * dim, ctx)));
-    args_.push_back(SymbolRefAttr::get(funcOp.getName(), ctx));
+    args_.push_back(SymbolRefAttr::get(ctx, funcOp.getName()));
 
-    ArrayAttr args = ArrayAttr::get(args_, ctx);
+    ArrayAttr args = ArrayAttr::get(ctx, args_);
 
     ArrayAttr templateArgs =
-        ArrayAttr::get({TypeAttr::get(op.getResult().getType())}, ctx);
+        ArrayAttr::get(ctx, {TypeAttr::get(op.getResult(0).getType())});
 
     emitc::CallOp callOp = builder.create<emitc::CallOp>(
-        op.getLoc(), op.getType(), callee, args, templateArgs, operands);
+        op.getLoc(), op.getType(0), callee, args, templateArgs, operands);
     op.replaceAllUsesWith(callOp);
     op.erase();
     return success();

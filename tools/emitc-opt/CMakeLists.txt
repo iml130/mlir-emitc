@@ -14,8 +14,10 @@ if(${IREE_ENABLE_EMITC})
     MLIRSDBM
     MLIRSPIRV
     MLIRSPIRVTransforms
-    MLIRStandard
     MLIRShape
+    MLIRStandard
+    MLIRTosa
+    MLIRTosaTransforms
     MLIRTransforms
     MLIRVector
     )
@@ -36,12 +38,10 @@ if(${EMITC_ENABLE_HLO})
   set(HLO_LIBS
     MLIRMHLOToEmitC
     MLIRMHLORegionOpsToEmitC
-    MLIREmitCConversion
     MhloRegisterDialects
     AllMhloPasses
     )
   set(HLO_LIBS_DEPS
-    MLIREmitCMHLOPassIncGen
     MLIREmitCPassIncGen
     MLIRLmhloPassIncGen
     MLIRMhloPassIncGen
@@ -72,9 +72,9 @@ set(LIBS
   MLIRSupport
   MLIRIR
   MLIREmitC
-  MLIRSCFToEmitC
   MLIRStdToEmitC
   MLIRTensorToEmitC
+  MLIRTosaToEmitC
   ${HLO_LIBS}
   )
 

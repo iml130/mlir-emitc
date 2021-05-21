@@ -17,6 +17,7 @@
 
 namespace {
 
+using namespace emitc;
 using ::testing::DoubleEq;
 using ::testing::Eq;
 using ::testing::FloatEq;
@@ -801,6 +802,7 @@ TEST(mhlo, compare) {
 // Slice ops
 
 TEST(mhlo, slice) {
+  // Slice Tensor1D
   Tensor1D<float, 5> s1{0.0f, 1.0f, 2.0f, 3.0f, 4.0f};
   auto t1 =
       mhlo::slice<Tensor1D<float, 2>, Tensor1D<float, 5>>(s1, {2}, {4}, {1});
@@ -810,6 +812,7 @@ TEST(mhlo, slice) {
       mhlo::slice<Tensor1D<float, 2>, Tensor1D<float, 5>>(s1, {1}, {4}, {2});
   EXPECT_THAT(t1_strided, Pointwise(FloatEq(), {1.0f, 3.0f}));
 
+  // Slice Tensor2D
   Tensor2D<float, 4, 3> s2{0.0f, 1.0f, 2.0f, 3.0f, 4.0f,  5.0f,
                            6.0f, 7.0f, 8.0f, 9.0f, 10.0f, 11.0f};
   auto t2 = mhlo::slice<Tensor2D<float, 2, 2>, Tensor2D<float, 4, 3>>(
@@ -821,6 +824,53 @@ TEST(mhlo, slice) {
       s2, {1, 0}, {4, 3}, {2, 2});
 
   EXPECT_THAT(t2_strided, Pointwise(FloatEq(), {3.0f, 5.0f, 9.0f, 11.0f}));
+
+  // Slice Tensor3D
+  Tensor3D<float, 4, 3, 2> s3{0.0f,  1.0f,  2.0f,  3.0f,  4.0f,  5.0f,
+                              6.0f,  7.0f,  8.0f,  9.0f,  10.0f, 11.0f,
+                              12.0f, 13.0f, 14.0f, 15.0f, 16.0f, 17.0f,
+                              18.0f, 19.0f, 20.0f, 21.0f, 22.0f, 23.0f};
+  auto t3 = mhlo::slice<Tensor3D<float, 2, 2, 2>, Tensor3D<float, 4, 3, 2>>(
+      s3, {2, 1, 0}, {4, 3, 2}, {1, 1, 1});
+  EXPECT_THAT(t3, Pointwise(FloatEq(), {14.0f, 15.0f, 16.0f, 17.0f, 20.0f,
+                                        21.0f, 22.0f, 23.0f}));
+
+  auto t3_strided =
+      mhlo::slice<Tensor3D<float, 2, 2, 1>, Tensor3D<float, 4, 3, 2>>(
+          s3, {0, 1, 0}, {4, 3, 2}, {2, 1, 2});
+  EXPECT_THAT(t3_strided, Pointwise(FloatEq(), {2.0f, 4.0f, 14.0f, 16.0f}));
+
+  auto t3_strided2 =
+      mhlo::slice<Tensor3D<float, 1, 2, 1>, Tensor3D<float, 4, 3, 2>>(
+          s3, {0, 1, 0}, {2, 3, 2}, {2, 1, 2});
+  EXPECT_THAT(t3_strided2, Pointwise(FloatEq(), {2.0f, 4.0f}));
+
+  // Slice Tensor4D
+  Tensor4D<float, 4, 3, 1, 2> s4{0.0f,  1.0f,  2.0f,  3.0f,  4.0f,  5.0f,
+                                 6.0f,  7.0f,  8.0f,  9.0f,  10.0f, 11.0f,
+                                 12.0f, 13.0f, 14.0f, 15.0f, 16.0f, 17.0f,
+                                 18.0f, 19.0f, 20.0f, 21.0f, 22.0f, 23.0f};
+  auto t4 =
+      mhlo::slice<Tensor4D<float, 2, 2, 1, 2>, Tensor4D<float, 4, 3, 1, 2>>(
+          s4, {2, 1, 0, 0}, {4, 3, 1, 2}, {1, 1, 1, 1});
+  EXPECT_THAT(t4, Pointwise(FloatEq(), {14.0f, 15.0f, 16.0f, 17.0f, 20.0f,
+                                        21.0f, 22.0f, 23.0f}));
+
+  auto t4_2 =
+      mhlo::slice<Tensor4D<float, 4, 3, 1, 2>, Tensor4D<float, 4, 3, 1, 2>>(
+          s4, {0, 0, 0, 0}, {4, 3, 1, 2}, {1, 1, 1, 1});
+  EXPECT_THAT(t4_2, Pointwise(FloatEq(), s4));
+
+  auto t4_strided =
+      mhlo::slice<Tensor4D<float, 3, 2, 1, 1>, Tensor4D<float, 4, 3, 1, 2>>(
+          s4, {1, 0, 0, 0}, {4, 3, 1, 2}, {1, 2, 1, 2});
+  EXPECT_THAT(t4_strided,
+              Pointwise(FloatEq(), {6.0f, 10.0f, 12.0f, 16.0f, 18.0f, 22.0f}));
+
+  auto t4_strided_2 =
+      mhlo::slice<Tensor4D<float, 2, 1, 1, 1>, Tensor4D<float, 4, 3, 1, 2>>(
+          s4, {0, 2, 0, 0}, {4, 3, 1, 1}, {2, 1, 1, 1});
+  EXPECT_THAT(t4_strided_2, Pointwise(FloatEq(), {4.0f, 16.0f}));
 }
 
 TEST(mhlo, dynamic_slice) {
@@ -915,26 +965,79 @@ TEST(mhlo, broadcast_in_dim) {
   Tensor0D<int> t0{1};
   Tensor1D<int64_t, 0> b0;
 
-  Tensor1D<int, 4> expected_result1{1, 1, 1, 1};
-  Tensor1D<int, 4> result1 = mhlo::broadcast_in_dim<Tensor1D<int, 4>>(t0, b0);
-  EXPECT_THAT(result1, Pointwise(Eq(), expected_result1));
-
-  Tensor2D<int, 2, 3> expected_result2{1, 1, 1, 1, 1, 1};
-  Tensor2D<int, 2, 3> result2 =
-      mhlo::broadcast_in_dim<Tensor2D<int, 2, 3>>(t0, b0);
-  EXPECT_THAT(result2, Pointwise(Eq(), expected_result2));
+  { // 0D -> 1D
+    using Dest = Tensor1D<int, 4>;
+    Dest expected_result{1, 1, 1, 1};
+    Dest result = mhlo::broadcast_in_dim<Dest>(t0, b0);
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+  { // 0D -> 2D
+    using Dest = Tensor2D<int, 2, 3>;
+    Dest expected_result{1, 1, 1, 1, 1, 1};
+    Dest result = mhlo::broadcast_in_dim<Dest>(t0, b0);
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
 
   Tensor<int, 2> t1{1, 2};
+  { // 1D -> 2D
+    using Dest = Tensor<int, 3, 2>;
+    Dest expected_result{1, 2, 1, 2, 1, 2};
+    Dest result = mhlo::broadcast_in_dim<Dest>(t1, {1});
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+  { // 1D -> 2D
+    using Dest = Tensor<int, 2, 3>;
+    Dest expected_result{1, 1, 1, 2, 2, 2};
+    Dest result = mhlo::broadcast_in_dim<Dest>(t1, {0});
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
 
-  Tensor<int, 3, 2> expected_result3{1, 2, 1, 2, 1, 2};
-  Tensor2D<int, 3, 2> result3 =
-      mhlo::broadcast_in_dim<Tensor2D<int, 3, 2>>(t1, {1});
-  EXPECT_THAT(result3, Pointwise(Eq(), expected_result3));
+  Tensor<int, 2, 3> t2{1, 2, 3, 4, 5, 6};
+  { // 2D transpose
+    using Dest = Tensor<int, 3, 2>;
+    Dest expected_result{1, 4, 2, 5, 3, 6};
+    Dest result = mhlo::broadcast_in_dim<Dest>(t2, {1, 0});
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
 
-  Tensor<int, 2, 3> expected_result4{1, 1, 1, 2, 2, 2};
-  Tensor2D<int, 2, 3> result4 =
-      mhlo::broadcast_in_dim<Tensor2D<int, 2, 3>>(t1, {0});
-  EXPECT_THAT(result4, Pointwise(Eq(), expected_result4));
+  Tensor2D<float, 1, 3> t3{1.1, 1.2, 1.3};
+  { // 2D -> 3D
+    using Dest = Tensor3D<float, 1, 2, 3>;
+    Tensor1D<int64_t, 2> broadcast_dim{1, 2};
+    Dest result = mhlo::broadcast_in_dim<Dest>(t3, broadcast_dim);
+    Dest expected_result{1.1, 1.2, 1.3, 1.1, 1.2, 1.3};
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+  { // 2D -> 3D + transpose
+    using Dest = Tensor3D<float, 1, 3, 2>;
+    Tensor1D<int64_t, 2> broadcast_dim{2, 1};
+    Dest result = mhlo::broadcast_in_dim<Dest>(t3, broadcast_dim);
+    Dest expected_result{1.1, 1.1, 1.2, 1.2, 1.3, 1.3};
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+
+  { // 2D -> 4D
+    using Dest = Tensor4D<float, 1, 2, 2, 3>;
+    Tensor1D<int64_t, 2> broadcast_dim{2, 3};
+    Dest result = mhlo::broadcast_in_dim<Dest>(t3, broadcast_dim);
+    Dest expected_result{1.1, 1.2, 1.3, 1.1, 1.2, 1.3,
+                         1.1, 1.2, 1.3, 1.1, 1.2, 1.3};
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+
+  Tensor3D<float, 2, 2, 3> t4{1.1, 1.2, 1.3, 1.4, 1.5, 1.6,
+                              2.1, 2.2, 2.3, 2.4, 2.5, 2.6};
+  { // 3D -> 4D
+    using Dest = Tensor4D<float, 2, 2, 2, 3>;
+
+    Tensor1D<int64_t, 3> broadcast_dim{1, 2, 3};
+
+    Dest result = mhlo::broadcast_in_dim<Dest>(t4, broadcast_dim);
+    Dest expected_result{1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 2.1, 2.2,
+                         2.3, 2.4, 2.5, 2.6, 1.1, 1.2, 1.3, 1.4,
+                         1.5, 1.6, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6};
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
 }
 
 TEST(mhlo, clamp) {
@@ -1023,22 +1126,123 @@ TEST(mhlo, concatenate) {
   EXPECT_THAT(lambda_2d_3_col(),
               Pointwise(FloatEq(), {1.0f, 3.0f, 4.0f, 7.0f, 8.0f, 9.0f, 2.0f,
                                     5.0f, 6.0f, 10.0f, 11.0f, 12.0f}));
+
+  Tensor3D<float, 2, 2, 2> t7{1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f};
+  Tensor3D<float, 2, 2, 2> t8{9.0f,  10.0f, 11.0f, 12.0f,
+                              13.0f, 14.0f, 15.0f, 16.0f};
+  Tensor3D<float, 2, 2, 1> t9{9.0f, 10.0f, 11.0f, 12.0f};
+
+  auto lambda_3d_422 = [&t7, &t8]() -> Tensor3D<float, 4, 2, 2> {
+    return mhlo::concatenate<0, Tensor3D<float, 4, 2, 2>,
+                             Tensor3D<float, 2, 2, 2>,
+                             Tensor3D<float, 2, 2, 2>>(t7, t8);
+  };
+
+  EXPECT_THAT(lambda_3d_422(),
+              Pointwise(FloatEq(),
+                        {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f, 9.0f,
+                         10.0f, 11.0f, 12.0f, 13.0f, 14.0f, 15.0f, 16.0f}));
+
+  auto lambda_3d_242 = [&t7, &t8]() -> Tensor3D<float, 2, 4, 2> {
+    return mhlo::concatenate<1, Tensor3D<float, 2, 4, 2>,
+                             Tensor3D<float, 2, 2, 2>,
+                             Tensor3D<float, 2, 2, 2>>(t7, t8);
+  };
+
+  EXPECT_THAT(lambda_3d_242(),
+              Pointwise(FloatEq(),
+                        {1.0f, 2.0f, 3.0f, 4.0f, 9.0f, 10.0f, 11.0f, 12.0f,
+                         5.0f, 6.0f, 7.0f, 8.0f, 13.0f, 14.0f, 15.0f, 16.0f}));
+
+  auto lambda_3d_223 = [&t7, &t9]() -> Tensor3D<float, 2, 2, 3> {
+    return mhlo::concatenate<2, Tensor3D<float, 2, 2, 3>,
+                             Tensor3D<float, 2, 2, 2>,
+                             Tensor3D<float, 2, 2, 1>>(t7, t9);
+  };
+
+  EXPECT_THAT(lambda_3d_223(),
+              Pointwise(FloatEq(), {1.0f, 2.0f, 9.0f, 3.0f, 4.0f, 10.0f, 5.0f,
+                                    6.0f, 11.0f, 7.0f, 8.0f, 12.0f}));
+
+  Tensor4D<float, 2, 2, 2, 2> t10{1.0f,  2.0f,  3.0f,  4.0f,  5.0f,  6.0f,
+                                  7.0f,  8.0f,  9.0f,  10.0f, 11.0f, 12.0f,
+                                  13.0f, 14.0f, 15.0f, 16.0f};
+  Tensor4D<float, 2, 2, 2, 2> t11{17.0f, 18.0f, 19.0f, 20.0f, 21.0f, 22.0f,
+                                  23.0f, 24.0f, 25.0f, 26.0f, 27.0f, 28.0f,
+                                  29.0f, 30.0f, 31.0f, 32.0f};
+  Tensor4D<float, 2, 2, 1, 2> t12{33.0f, 34.0f, 35.0f, 36.0f,
+                                  37.0f, 38.0f, 39.0f, 40.0f};
+
+  auto lambda_4d_4222 = [&t10, &t11]() -> Tensor4D<float, 4, 2, 2, 2> {
+    return mhlo::concatenate<0, Tensor4D<float, 4, 2, 2, 2>,
+                             Tensor4D<float, 2, 2, 2, 2>,
+                             Tensor4D<float, 2, 2, 2, 2>>(t10, t11);
+  };
+
+  EXPECT_THAT(
+      lambda_4d_4222(),
+      Pointwise(FloatEq(),
+                {1.0f,  2.0f,  3.0f,  4.0f,  5.0f,  6.0f,  7.0f,  8.0f,
+                 9.0f,  10.0f, 11.0f, 12.0f, 13.0f, 14.0f, 15.0f, 16.0f,
+                 17.0f, 18.0f, 19.0f, 20.0f, 21.0f, 22.0f, 23.0f, 24.0f,
+                 25.0f, 26.0f, 27.0f, 28.0f, 29.0f, 30.0f, 31.0f, 32.0f}));
+
+  auto lambda_4d_2422 = [&t10, &t11]() -> Tensor4D<float, 2, 4, 2, 2> {
+    return mhlo::concatenate<1, Tensor4D<float, 2, 4, 2, 2>,
+                             Tensor4D<float, 2, 2, 2, 2>,
+                             Tensor4D<float, 2, 2, 2, 2>>(t10, t11);
+  };
+
+  EXPECT_THAT(
+      lambda_4d_2422(),
+      Pointwise(FloatEq(),
+                {1.0f,  2.0f,  3.0f,  4.0f,  5.0f,  6.0f,  7.0f,  8.0f,
+                 17.0f, 18.0f, 19.0f, 20.0f, 21.0f, 22.0f, 23.0f, 24.0f,
+                 9.0f,  10.0f, 11.0f, 12.0f, 13.0f, 14.0f, 15.0f, 16.0f,
+                 25.0f, 26.0f, 27.0f, 28.0f, 29.0f, 30.0f, 31.0f, 32.0f}));
+
+  auto lambda_4d_2242 = [&t10, &t11]() -> Tensor4D<float, 2, 2, 4, 2> {
+    return mhlo::concatenate<2, Tensor4D<float, 2, 2, 4, 2>,
+                             Tensor4D<float, 2, 2, 2, 2>,
+                             Tensor4D<float, 2, 2, 2, 2>>(t10, t11);
+  };
+
+  EXPECT_THAT(
+      lambda_4d_2242(),
+      Pointwise(FloatEq(),
+                {1.0f,  2.0f,  3.0f,  4.0f,  17.0f, 18.0f, 19.0f, 20.0f,
+                 5.0f,  6.0f,  7.0f,  8.0f,  21.0f, 22.0f, 23.0f, 24.0f,
+                 9.0f,  10.0f, 11.0f, 12.0f, 25.0f, 26.0f, 27.0f, 28.0f,
+                 13.0f, 14.0f, 15.0f, 16.0f, 29.0f, 30.0f, 31.0f, 32.0f}));
+
+  auto lambda_4d_2224 = [&t10, &t11]() -> Tensor4D<float, 2, 2, 2, 4> {
+    return mhlo::concatenate<3, Tensor4D<float, 2, 2, 2, 4>,
+                             Tensor4D<float, 2, 2, 2, 2>,
+                             Tensor4D<float, 2, 2, 2, 2>>(t10, t11);
+  };
+
+  EXPECT_THAT(
+      lambda_4d_2224(),
+      Pointwise(FloatEq(),
+                {1.0f,  2.0f,  17.0f, 18.0f, 3.0f,  4.0f,  19.0f, 20.0f,
+                 5.0f,  6.0f,  21.0f, 22.0f, 7.0f,  8.0f,  23.0f, 24.0f,
+                 9.0f,  10.0f, 25.0f, 26.0f, 11.0f, 12.0f, 27.0f, 28.0f,
+                 13.0f, 14.0f, 29.0f, 30.0f, 15.0f, 16.0f, 31.0f, 32.0f}));
+
+  auto lambda_4d_2232 = [&t10, &t12]() -> Tensor4D<float, 2, 2, 3, 2> {
+    return mhlo::concatenate<2, Tensor4D<float, 2, 2, 3, 2>,
+                             Tensor4D<float, 2, 2, 2, 2>,
+                             Tensor4D<float, 2, 2, 1, 2>>(t10, t12);
+  };
+
+  EXPECT_THAT(lambda_4d_2232(),
+              Pointwise(FloatEq(), {1.0f,  2.0f,  3.0f,  4.0f,  33.0f, 34.0f,
+                                    5.0f,  6.0f,  7.0f,  8.0f,  35.0f, 36.0f,
+                                    9.0f,  10.0f, 11.0f, 12.0f, 37.0f, 38.0f,
+                                    13.0f, 14.0f, 15.0f, 16.0f, 39.0f, 40.0f}));
 }
 
-/// Adapted from
-/// https://github.com/google/iree/blob/efd78a0b47a46457a644f43d98617d3e279b2a79/iree/test/e2e/xla_ops/convolution.mlir#L33
 TEST(mhlo, convolution) {
-  using InputType = Tensor4D<float, 1, 4, 5, 2>;  // N H W C
-  using WeightType = Tensor4D<float, 3, 2, 2, 1>; // KH KW CIN COUT
-  using ResultType = Tensor4D<float, 1, 4, 5, 1>; // N H W C
-  InputType input{1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14,
-                  15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28,
-                  29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40};
-  WeightType weights{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
-  ResultType expected_result{600,  736,  872,  1008, 476,  1310, 1466,
-                             1622, 1778, 805,  2090, 2246, 2402, 2558,
-                             1135, 1080, 1152, 1224, 1296, 524};
-
   int64_t batch_group_count = 1;
   int64_t input_batch_dimension = 0;
   int64_t input_feature_dimension = 3;
@@ -1050,20 +1254,64 @@ TEST(mhlo, convolution) {
   int64_t output_feature_dimension = 3;
   Tensor1D<int64_t, 2> output_spatial_dimensions{1, 2};
   int64_t feature_group_count = 1;
-  Tensor2D<int64_t, 2, 2> padding{1, 1, 0, 1}; // {pt, pb, pl, pr}
   Tensor1D<int64_t, 2> rhs_dilation{1, 1};
   Tensor1D<int64_t, 2> lhs_dilation{1, 1};
-  Tensor1D<int64_t, 2> window_strides{1, 1};
+  {
+    /// Adapted from
+    /// https://github.com/google/iree/blob/efd78a0b47a46457a644f43d98617d3e279b2a79/iree/test/e2e/xla_ops/convolution.mlir#L33
+    using InputType = Tensor4D<float, 1, 4, 5, 2>;  // N H W C
+    using WeightType = Tensor4D<float, 3, 2, 2, 1>; // KH KW CIN COUT
+    using ResultType = Tensor4D<float, 1, 4, 5, 1>; // N H W C
+    InputType input{1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14,
+                    15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28,
+                    29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40};
+    WeightType weights{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+    ResultType expected_result{600,  736,  872,  1008, 476,  1310, 1466,
+                               1622, 1778, 805,  2090, 2246, 2402, 2558,
+                               1135, 1080, 1152, 1224, 1296, 524};
 
-  ResultType result = mhlo::convolution<ResultType, InputType, WeightType>(
-      input, weights, batch_group_count, input_batch_dimension,
-      input_feature_dimension, input_spatial_dimensions,
-      kernel_input_feature_dimension, kernel_output_feature_dimension,
-      kernel_spatial_dimensions, output_batch_dimension,
-      output_feature_dimension, output_spatial_dimensions, feature_group_count,
-      padding, lhs_dilation, rhs_dilation, window_strides);
+    Tensor2D<int64_t, 2, 2> padding{1, 1, 0, 1}; // {pt, pb, pl, pr}
+    Tensor1D<int64_t, 2> window_strides{1, 1};
+    ResultType result = mhlo::convolution<ResultType, InputType, WeightType>(
+        input, weights, batch_group_count, input_batch_dimension,
+        input_feature_dimension, input_spatial_dimensions,
+        kernel_input_feature_dimension, kernel_output_feature_dimension,
+        kernel_spatial_dimensions, output_batch_dimension,
+        output_feature_dimension, output_spatial_dimensions,
+        feature_group_count, padding, lhs_dilation, rhs_dilation,
+        window_strides);
 
-  EXPECT_THAT(result, Pointwise(FloatNear(EPSILON), expected_result));
+    EXPECT_THAT(result, Pointwise(FloatNear(EPSILON), expected_result));
+  }
+  {
+    // Strided convolution
+    using InputType = Tensor4D<float, 1, 4, 4, 1>;  // N H W C
+    using WeightType = Tensor4D<float, 2, 2, 1, 1>; // KH KW CIN COUT
+    using ResultType = Tensor4D<float, 1, 2, 2, 1>; // N H W C
+    // clang-format off
+    InputType input{1,  2,  3,  4,
+                    5,  6,  7,  8,
+                    9,  10, 11, 12,
+                    13, 14, 15, 16};
+    WeightType weights{1, 2,
+                       3, 4};
+    ResultType expected_result{44,  64,
+                              124, 144};
+    // clang-format on
+
+    Tensor2D<int64_t, 2, 2> padding{0, 0, 0, 0}; // {pt, pb, pl, pr}
+    Tensor1D<int64_t, 2> window_strides{2, 2};
+    ResultType result = mhlo::convolution<ResultType, InputType, WeightType>(
+        input, weights, batch_group_count, input_batch_dimension,
+        input_feature_dimension, input_spatial_dimensions,
+        kernel_input_feature_dimension, kernel_output_feature_dimension,
+        kernel_spatial_dimensions, output_batch_dimension,
+        output_feature_dimension, output_spatial_dimensions,
+        feature_group_count, padding, lhs_dilation, rhs_dilation,
+        window_strides);
+
+    EXPECT_THAT(result, Pointwise(FloatNear(EPSILON), expected_result));
+  }
 }
 
 TEST(mhlo, convolution_depthwise) {

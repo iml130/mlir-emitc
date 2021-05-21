@@ -12,9 +12,6 @@
 #include "mlir/Pass/Pass.h"
 
 namespace mlir {
-
-class BuiltinDialect;
-
 namespace emitc {
 
 class EmitCDialect;

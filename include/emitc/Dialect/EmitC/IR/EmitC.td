@@ -13,8 +13,7 @@
 #ifndef EMITC_DIALECT_EMITC_IR_EMITC
 #define EMITC_DIALECT_EMITC_IR_EMITC
 
-include "mlir/Interfaces/ControlFlowInterfaces.td"
-include "mlir/Interfaces/LoopLikeInterface.td"
+include "mlir/IR/OpBase.td"
 include "mlir/Interfaces/SideEffectInterfaces.td"
 
 //===----------------------------------------------------------------------===//

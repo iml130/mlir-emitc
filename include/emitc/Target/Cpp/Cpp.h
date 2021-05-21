@@ -6,7 +6,7 @@
 //
 //===----------------------------------------------------------------------===//
 //
-// This file define a helpers to emit C++ code using the EmitC dialect.
+// This file defines helpers to emit C++ code using the EmitC dialect.
 //
 //===----------------------------------------------------------------------===//
 

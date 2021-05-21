@@ -19,10 +19,10 @@ from tensorflow.python import pywrap_mlir  # pylint: disable=no-name-in-module
 
 def optimize(model_path: str, output_path: str):
     pass_pipeline = ",".join([
-        "symbol-dce", "tf-executor-graph-pruning", "tf-standard-pipeline",
-        "tf-device-index-selector", "inline", "canonicalize",
-        "tf-device-decompose-resource-ops", "tf-shape-inference",
-        "tf-functional-control-flow-to-cfg", "inline", "symbol-dce",
+        "symbol-dce", "tf-standard-pipeline",
+        "func(tf-device-index-selector)", "inline", "canonicalize",
+        "func(tf-device-decompose-resource-ops)",
+        "func(tf-functional-control-flow-to-cfg)", "inline", "symbol-dce",
         "canonicalize", "tf-saved-model-optimize-global-tensors",
         "tf-saved-model-freeze-global-tensors"
     ])

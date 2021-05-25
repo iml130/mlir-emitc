@@ -63,7 +63,6 @@ set(LIBS
   MLIRLoopAnalysis
   MLIRAnalysis
   MLIRDialect
-  MLIREDSC
   MLIROptLib
   MLIRParser
   MLIRPass

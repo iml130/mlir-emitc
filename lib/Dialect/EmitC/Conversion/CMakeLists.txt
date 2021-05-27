@@ -12,7 +12,7 @@ if(EMITC_ENABLE_HLO)
 
     DEPENDS
     MLIREmitCIncGen
-    MLIREmitCPassIncGen
+    MLIREmitCConversionPassIncGen
     MLIRhlo_opsIncGen
 
     LINK_COMPONENTS
@@ -29,7 +29,7 @@ if(EMITC_ENABLE_HLO)
 
     DEPENDS
     MLIREmitCIncGen
-    MLIREmitCPassIncGen
+    MLIREmitCConversionPassIncGen
     MLIRhlo_opsIncGen
 
     LINK_COMPONENTS
@@ -47,7 +47,7 @@ add_mlir_library(MLIRStdToEmitC
 
   DEPENDS
   MLIREmitCIncGen
-  MLIREmitCPassIncGen
+  MLIREmitCConversionPassIncGen
 
   LINK_COMPONENTS
   Core
@@ -63,7 +63,7 @@ add_mlir_library(MLIRTensorToEmitC
 
   DEPENDS
   MLIREmitCIncGen
-  MLIREmitCPassIncGen
+  MLIREmitCConversionPassIncGen
 
   LINK_COMPONENTS
   Core
@@ -79,7 +79,7 @@ add_mlir_library(MLIRTosaToEmitC
 
   DEPENDS
   MLIREmitCIncGen
-  MLIREmitCPassIncGen
+  MLIREmitCConversionPassIncGen
 
   LINK_COMPONENTS
   Core

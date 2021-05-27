@@ -42,7 +42,7 @@ if(${EMITC_ENABLE_HLO})
     AllMhloPasses
     )
   set(HLO_LIBS_DEPS
-    MLIREmitCPassIncGen
+    MLIREmitCConversionPassIncGen
     MLIRLmhloPassIncGen
     MLIRMhloPassIncGen
     )

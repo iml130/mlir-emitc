@@ -75,6 +75,7 @@ set(LIBS
   MLIRTensorToEmitC
   MLIRTosaToEmitC
   MLIREmitCTransforms
+  MLIREmitCPipelines
   ${HLO_LIBS}
   )
 

@@ -1,5 +1,6 @@
 // RUN: emitc-opt -convert-tosa-to-emitc %s | FileCheck %s
 // RUN: emitc-opt -insert-emitc-tosa-include -convert-tosa-to-emitc %s | FileCheck %s --check-prefixes=CHECK,CHECK-INCLUDE
+// RUN: emitc-opt -tosa-to-emitc-pipeline %s | FileCheck %s --check-prefixes=CHECK,CHECK-INCLUDE
 
 // CHECK-INCLUDE: emitc.include "emitc_tosa.h"
 

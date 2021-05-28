@@ -1,6 +1,7 @@
 // RUN: emitc-opt -convert-tensor-to-emitc %s | FileCheck %s
 // RUN: emitc-opt -convert-tensor-to-emitc %s | emitc-translate --mlir-to-cpp | FileCheck %s -check-prefix=CPP
 // RUN: emitc-opt -insert-emitc-tensor-include -convert-tensor-to-emitc %s | FileCheck %s --check-prefixes=CHECK,CHECK-INCLUDE
+// RUN: emitc-opt -tensor-to-emitc-pipeline %s | FileCheck %s --check-prefixes=CHECK,CHECK-INCLUDE
 
 // CHECK-INCLUDE: emitc.include "emitc_tensor.h"
 

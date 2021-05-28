@@ -70,7 +70,14 @@ FUNCTION_NAME=$(grep -oe "@[^(]*" "$OUTPUT_DIR"/model_canon.mlir)
 sed "s/$FUNCTION_NAME/@predict/g" "$OUTPUT_DIR"/model_canon.mlir > "$OUTPUT_DIR"/model_fix_name.mlir
 
 echo "Converting mhlo dialect to emitc dialect"
-"$EMITC_OPT" --mhlo-control-flow-to-scf --convert-mhlo-region-ops-to-emitc --convert-mhlo-to-emitc --convert-std-to-emitc "$OUTPUT_DIR"/model_fix_name.mlir > "$OUTPUT_DIR"/model_emitc.mlir 
+"$EMITC_OPT" \
+  --mhlo-control-flow-to-scf \
+  --insert-emitc-mhlo-include \
+  --convert-mhlo-region-ops-to-emitc \
+  --convert-mhlo-to-emitc \
+  --insert-emitc-std-include \
+  --convert-std-to-emitc \
+  "$OUTPUT_DIR"/model_fix_name.mlir > "$OUTPUT_DIR"/model_emitc.mlir
 
 echo "Translating emitc dialect to cpp header"
 "$EMITC_TRANSLATE" --mlir-to-cpp "$OUTPUT_DIR"/model_emitc.mlir > "$OUTPUT_DIR"/model_generated.h

@@ -69,7 +69,7 @@ FUNCTION_NAME=$(grep -oe "@[^(]*" "$OUTPUT_DIR"/model_tosa_noattr.mlir)
 sed "s/$FUNCTION_NAME/@predict/g" "$OUTPUT_DIR"/model_tosa_noattr.mlir > "$OUTPUT_DIR"/model_fix_name.mlir
 
 echo "Converting tosa dialect to emitc dialect"
-"$EMITC_OPT" --convert-tosa-to-emitc "$OUTPUT_DIR"/model_fix_name.mlir > "$OUTPUT_DIR"/model_emitc.mlir
+"$EMITC_OPT" --insert-emitc-tosa-include --convert-tosa-to-emitc "$OUTPUT_DIR"/model_fix_name.mlir > "$OUTPUT_DIR"/model_emitc.mlir
 
 echo "Translating emitc dialect to cpp header"
 "$EMITC_TRANSLATE" --mlir-to-cpp "$OUTPUT_DIR"/model_emitc.mlir > "$OUTPUT_DIR"/model_generated.h

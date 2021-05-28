@@ -1,4 +1,7 @@
 // RUN: emitc-opt -convert-mhlo-region-ops-to-emitc -convert-mhlo-to-emitc %s | FileCheck %s
+// RUN: emitc-opt --insert-emitc-mhlo-include -convert-mhlo-region-ops-to-emitc -convert-mhlo-to-emitc %s | FileCheck %s  --check-prefixes=CHECK,CHECK-INCLUDE
+
+// CHECK-INCLUDE: emitc.include "emitc_mhlo.h"
 
 // Nullary ops
 

@@ -1,4 +1,4 @@
-//===- PassDetail.h - EmitC Conversion Pass class details -------*- C++ -*-===//
+//===- PassDetail.h - EmitC Transform Pass class details --------*- C++ -*-===//
 //
 // This file is licensed under the Apache License v2.0 with LLVM Exceptions.
 // See https://llvm.org/LICENSE.txt for license information.
@@ -6,8 +6,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef DIALECT_EMITC_CONVERSION_PASSDETAIL_H
-#define DIALECT_EMITC_CONVERSION_PASSDETAIL_H
+#ifndef DIALECT_EMITC_TRANSFORMS_PASSDETAIL_H
+#define DIALECT_EMITC_TRANSFORMS_PASSDETAIL_H
 
 #include "mlir/Pass/Pass.h"
 
@@ -17,9 +17,9 @@ namespace emitc {
 class EmitCDialect;
 
 #define GEN_PASS_CLASSES
-#include "emitc/Dialect/EmitC/Conversion/Passes.h.inc"
+#include "emitc/Dialect/EmitC/Transforms/Passes.h.inc"
 
 } // namespace emitc
 } // namespace mlir
 
-#endif // DIALECT_EMITC_CONVERSION_PASSDETAIL_H
+#endif // DIALECT_EMITC_TRANSFORMS_PASSDETAIL_H

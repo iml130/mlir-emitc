@@ -1,4 +1,4 @@
-//===- Passes.h - EmitC Passes ----------------------------------*- C++ -*-===//
+//===- Passes.h - EmitC Conversion Passes -----------------------*- C++ -*-===//
 //
 // This file is licensed under the Apache License v2.0 with LLVM Exceptions.
 // See https://llvm.org/LICENSE.txt for license information.
@@ -6,7 +6,7 @@
 //
 //===----------------------------------------------------------------------===//
 //
-// This file defines passes owned by the EmitC dialect.
+// This file defines conversion passes owned by the EmitC dialect.
 //
 //===----------------------------------------------------------------------===//
 

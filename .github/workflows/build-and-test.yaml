@@ -201,7 +201,14 @@ jobs:
         FUNCTION_NAME=$(grep -oe "@[^(]*" "${E2E}"/model_canon.mlir)
         FUNCTION_NAME="${FUNCTION_NAME:1}"
         sed "s/$FUNCTION_NAME/predict/g" "${E2E}"/model_canon.mlir > "${E2E}"/model_fix_name.mlir
-        ./${EMITC}/build_release/bin/emitc-opt --mhlo-control-flow-to-scf --convert-mhlo-region-ops-to-emitc --convert-mhlo-to-emitc --convert-std-to-emitc "${E2E}"/model_fix_name.mlir > "${E2E}"/model_emitc.mlir
+        ./${EMITC}/build_release/bin/emitc-opt \
+          --mhlo-control-flow-to-scf \
+          --insert-emitc-mhlo-include \
+          --convert-mhlo-region-ops-to-emitc \
+          --convert-mhlo-to-emitc \
+          --insert-emitc-std-include \
+          --convert-std-to-emitc \
+          "${E2E}"/model_fix_name.mlir > "${E2E}"/model_emitc.mlir
         ./${EMITC}/build_release/bin/emitc-translate --mlir-to-cpp "${E2E}"/model_emitc.mlir > "${E2E}"/model_generated.h
         cd ${E2E}
         clang++ test.cpp -O3 -I `pwd`/../emitc/include/emitc -I `pwd` -o test
@@ -210,7 +217,10 @@ jobs:
     - name: Run TOSA e2e test
       run: |
         mkdir -p ${EMITC}/build_e2e
-        ./${EMITC}/build_release/bin/emitc-opt --convert-tosa-to-emitc ${EMITC}/test/MobileNetV2_tosa.mlir > ${EMITC}/build_e2e/model_emitc.mlir
+        ./${EMITC}/build_release/bin/emitc-opt \
+          --insert-emitc-tosa-include \
+          --convert-tosa-to-emitc \
+          "${EMITC}"/test/MobileNetV2_tosa.mlir > "${EMITC}"/build_e2e/model_emitc.mlir
         ./${EMITC}/build_release/bin/emitc-translate --mlir-to-cpp ${EMITC}/build_e2e/model_emitc.mlir > ${EMITC}/build_e2e/model_generated.h
         cp ${EMITC}/test/MobileNetV2_tosa_test.cpp ${EMITC}/build_e2e/test.cpp
         cd ${EMITC}/build_e2e/

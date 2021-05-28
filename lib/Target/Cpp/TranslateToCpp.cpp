@@ -417,10 +417,6 @@ static LogicalResult printModule(CppEmitter &emitter, ModuleOp moduleOp) {
     os << "#include <stdint.h>\n\n";
   } else {
     os << "#include <cmath>\n\n";
-    os << "#include \"emitc_mhlo.h\"\n";
-    os << "#include \"emitc_std.h\"\n";
-    os << "#include \"emitc_tensor.h\"\n";
-    os << "#include \"emitc_tosa.h\"\n\n";
   }
 
   for (emitc::IncludeOp includeOp : moduleOp.getOps<emitc::IncludeOp>()) {

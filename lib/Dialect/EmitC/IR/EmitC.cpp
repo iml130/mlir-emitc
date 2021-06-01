@@ -146,6 +146,10 @@ OpFoldResult ConstOp::fold(ArrayRef<Attribute> operands) {
 #define GET_OP_CLASSES
 #include "emitc/Dialect/EmitC/IR/EmitC.cpp.inc"
 
+//===----------------------------------------------------------------------===//
+// EmitC Attributes
+//===----------------------------------------------------------------------===//
+
 #define GET_ATTRDEF_CLASSES
 #include "emitc/Dialect/EmitC/IR/EmitCAttrDefs.cpp.inc"
 
@@ -169,6 +173,10 @@ void emitc::EmitCDialect::printAttribute(Attribute attr,
   if (failed(generatedAttributePrinter(attr, os)))
     llvm_unreachable("unexpected 'EmitC' attribute kind");
 }
+
+//===----------------------------------------------------------------------===//
+// EmitC Types
+//===----------------------------------------------------------------------===//
 
 #define GET_TYPEDEF_CLASSES
 #include "emitc/Dialect/EmitC/IR/EmitCTypes.cpp.inc"

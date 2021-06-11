@@ -25,7 +25,7 @@ namespace mlir {
 void registerToCppTranslation() {
   TranslateFromMLIRRegistration reg(
       "mlir-to-cpp",
-      [](ModuleOp module, llvm::raw_ostream &output) {
+      [](ModuleOp module, raw_ostream &output) {
         return emitc::TranslateToCpp(*module.getOperation(), output,
                                      /*forwardDeclareVariables=*/false,
                                      /*trailingSemiColon=*/false);
@@ -40,7 +40,7 @@ void registerToCppTranslation() {
 
   TranslateFromMLIRRegistration regForwardDeclared(
       "mlir-to-cpp-forward-declared",
-      [](ModuleOp module, llvm::raw_ostream &output) {
+      [](ModuleOp module, raw_ostream &output) {
         return emitc::TranslateToCpp(*module.getOperation(), output,
                                      /*forwardDeclareVariables=*/true,
                                      /*trailingSemiColon=*/false);
@@ -61,7 +61,7 @@ void registerToCppTranslation() {
 void registerToCTranslation() {
   TranslateFromMLIRRegistration reg(
       "mlir-to-c",
-      [](ModuleOp module, llvm::raw_ostream &output) {
+      [](ModuleOp module, raw_ostream &output) {
         return emitc::TranslateToC(*module.getOperation(), output,
                                    /*forwardDeclareVariables=*/false,
                                    /*trailingSemiColon=*/false);
@@ -76,7 +76,7 @@ void registerToCTranslation() {
 
   TranslateFromMLIRRegistration regForwardDeclared(
       "mlir-to-c-forward-declared",
-      [](ModuleOp module, llvm::raw_ostream &output) {
+      [](ModuleOp module, raw_ostream &output) {
         return emitc::TranslateToC(*module.getOperation(), output,
                                    /*forwardDeclareVariables=*/true,
                                    /*trailingSemiColon=*/false);

@@ -153,6 +153,21 @@ OpFoldResult ConstOp::fold(ArrayRef<Attribute> operands) {
 #define GET_ATTRDEF_CLASSES
 #include "emitc/Dialect/EmitC/IR/EmitCAttrDefs.cpp.inc"
 
+Attribute emitc::OpaqueAttr::parse(MLIRContext *context,
+                                   DialectAsmParser &parser, Type type) {
+  if (parser.parseLess())
+    return Attribute();
+  StringRef value;
+  auto loc = parser.getCurrentLocation();
+  if (parser.parseOptionalString(&value)) {
+    parser.emitError(loc) << "expected string";
+    return Attribute();
+  }
+  if (parser.parseGreater())
+    return Attribute();
+  return get(context, value);
+}
+
 Attribute emitc::EmitCDialect::parseAttribute(DialectAsmParser &parser,
                                               Type type) const {
   llvm::SMLoc typeLoc = parser.getCurrentLocation();
@@ -180,6 +195,20 @@ void emitc::EmitCDialect::printAttribute(Attribute attr,
 
 #define GET_TYPEDEF_CLASSES
 #include "emitc/Dialect/EmitC/IR/EmitCTypes.cpp.inc"
+
+Type emitc::OpaqueType::parse(MLIRContext *context, DialectAsmParser &parser) {
+  if (parser.parseLess())
+    return Type();
+  StringRef value;
+  auto loc = parser.getCurrentLocation();
+  if (parser.parseOptionalString(&value) || value.empty()) {
+    parser.emitError(loc) << "expected non empty string";
+    return Type();
+  }
+  if (parser.parseGreater())
+    return Type();
+  return get(context, value);
+}
 
 Type emitc::EmitCDialect::parseType(DialectAsmParser &parser) const {
   llvm::SMLoc typeLoc = parser.getCurrentLocation();

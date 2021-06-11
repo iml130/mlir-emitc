@@ -22,7 +22,7 @@ using namespace emitc;
 // EmitCDialect
 //===----------------------------------------------------------------------===//
 
-void emitc::EmitCDialect::initialize() {
+void EmitCDialect::initialize() {
   addOperations<
 #define GET_OP_LIST
 #include "emitc/Dialect/EmitC/IR/EmitC.cpp.inc"
@@ -39,9 +39,9 @@ void emitc::EmitCDialect::initialize() {
 
 /// Materialize a single constant operation from a given attribute value with
 /// the desired resultant type.
-Operation *emitc::EmitCDialect::materializeConstant(OpBuilder &builder,
-                                                    Attribute value, Type type,
-                                                    Location loc) {
+Operation *EmitCDialect::materializeConstant(OpBuilder &builder,
+                                             Attribute value, Type type,
+                                             Location loc) {
   return builder.create<ConstantOp>(loc, type, value);
 }
 
@@ -49,7 +49,7 @@ Operation *emitc::EmitCDialect::materializeConstant(OpBuilder &builder,
 // ApplyOp
 //===----------------------------------------------------------------------===//
 
-static LogicalResult verify(mlir::emitc::ApplyOp op) {
+static LogicalResult verify(ApplyOp op) {
   StringRef applicableOperator = op.applicableOperator();
 
   // Applicable operator must not be empty.
@@ -68,7 +68,7 @@ static LogicalResult verify(mlir::emitc::ApplyOp op) {
 // CallOp
 //===----------------------------------------------------------------------===//
 
-static LogicalResult verify(mlir::emitc::CallOp op) {
+static LogicalResult verify(emitc::CallOp op) {
   // Callee must not be empty.
   if (op.callee().empty()) {
     return op.emitOpError("callee must not be empty");
@@ -168,8 +168,8 @@ Attribute emitc::OpaqueAttr::parse(MLIRContext *context,
   return get(context, value);
 }
 
-Attribute emitc::EmitCDialect::parseAttribute(DialectAsmParser &parser,
-                                              Type type) const {
+Attribute EmitCDialect::parseAttribute(DialectAsmParser &parser,
+                                       Type type) const {
   llvm::SMLoc typeLoc = parser.getCurrentLocation();
   StringRef mnemonic;
   if (parser.parseKeyword(&mnemonic))
@@ -183,8 +183,7 @@ Attribute emitc::EmitCDialect::parseAttribute(DialectAsmParser &parser,
   return Attribute();
 }
 
-void emitc::EmitCDialect::printAttribute(Attribute attr,
-                                         DialectAsmPrinter &os) const {
+void EmitCDialect::printAttribute(Attribute attr, DialectAsmPrinter &os) const {
   if (failed(generatedAttributePrinter(attr, os)))
     llvm_unreachable("unexpected 'EmitC' attribute kind");
 }
@@ -210,7 +209,7 @@ Type emitc::OpaqueType::parse(MLIRContext *context, DialectAsmParser &parser) {
   return get(context, value);
 }
 
-Type emitc::EmitCDialect::parseType(DialectAsmParser &parser) const {
+Type EmitCDialect::parseType(DialectAsmParser &parser) const {
   llvm::SMLoc typeLoc = parser.getCurrentLocation();
   StringRef mnemonic;
   if (parser.parseKeyword(&mnemonic))
@@ -224,7 +223,7 @@ Type emitc::EmitCDialect::parseType(DialectAsmParser &parser) const {
   return Type();
 }
 
-void emitc::EmitCDialect::printType(Type type, DialectAsmPrinter &os) const {
+void EmitCDialect::printType(Type type, DialectAsmPrinter &os) const {
   if (failed(generatedTypePrinter(type, os)))
     llvm_unreachable("unexpected 'EmitC' type kind");
 }

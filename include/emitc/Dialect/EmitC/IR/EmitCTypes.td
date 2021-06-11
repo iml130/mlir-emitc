@@ -44,20 +44,6 @@ def EmitC_OpaqueType : EmitC_Type<"Opaque", "opaque"> {
   let printer = [{
     $_printer << "opaque<\"" << getValue() << "\">";
   }];
-
-  let parser = [{
-    if ($_parser.parseLess())
-      return Type();
-    StringRef value;
-    auto loc = $_parser.getCurrentLocation();
-    if ($_parser.parseOptionalString(&value) || value.empty()) {
-      $_parser.emitError(loc) << "expected non empty string";
-      return Type();
-    }
-    if ($_parser.parseGreater())
-      return Type();
-    return get($_ctxt, value);
-  }];
 }
 
 #endif // EMITC_DIALECT_EMITC_IR_EMITCTYPES

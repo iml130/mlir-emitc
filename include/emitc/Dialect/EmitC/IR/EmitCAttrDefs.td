@@ -44,20 +44,6 @@ def EmitC_OpaqueAttr : EmitC_Attr<"Opaque", "opaque"> {
   let printer = [{
     $_printer << "opaque<\"" << getValue() << "\">";
   }];
-
-  let parser = [{
-    if ($_parser.parseLess())
-      return Attribute();
-    StringRef value;
-    auto loc = $_parser.getCurrentLocation();
-    if ($_parser.parseOptionalString(&value)) {
-      $_parser.emitError(loc) << "expected string";
-      return Attribute();
-    }
-    if ($_parser.parseGreater())
-      return Attribute();
-    return get($_ctxt, value);
-  }];
 }
 
 #endif // EMITC_DIALECT_EMITC_IR_EMITCATTRDEFS

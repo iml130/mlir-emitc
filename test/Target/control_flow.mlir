@@ -1,5 +1,5 @@
-// RUN: emitc-translate -mlir-to-c -forward-declare-variables %s | FileCheck %s -check-prefix=C-FWDDECL
-// RUN: emitc-translate -mlir-to-cpp -forward-declare-variables %s | FileCheck %s -check-prefix=CPP-FWDDECL
+// RUN: emitc-translate -mlir-to-c-forward-declared %s | FileCheck %s -check-prefix=C-FWDDECL
+// RUN: emitc-translate -mlir-to-cpp-forward-declared %s | FileCheck %s -check-prefix=CPP-FWDDECL
 
 // simple(10, true)  -> 20
 // simple(10, false) -> 30

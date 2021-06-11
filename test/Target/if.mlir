@@ -1,7 +1,7 @@
 // RUN: emitc-translate -mlir-to-c %s | FileCheck %s -check-prefix=C-DEFAULT
 // RUN: emitc-translate -mlir-to-cpp %s | FileCheck %s -check-prefix=CPP-DEFAULT
-// RUN: emitc-translate -mlir-to-c -forward-declare-variables %s | FileCheck %s -check-prefix=C-FWDDECL
-// RUN: emitc-translate -mlir-to-cpp -forward-declare-variables %s | FileCheck %s -check-prefix=CPP-FWDDECL
+// RUN: emitc-translate -mlir-to-c-forward-declared %s | FileCheck %s -check-prefix=C-FWDDECL
+// RUN: emitc-translate -mlir-to-cpp-forward-declared %s | FileCheck %s -check-prefix=CPP-FWDDECL
 
 func @test_if(%arg0: i1, %arg1: f32) {
   scf.if %arg0 {

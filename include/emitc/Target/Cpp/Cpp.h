@@ -182,12 +182,14 @@ private:
 
 /// Translates the given operation to C++ code. The operation or operations in
 /// the region of 'op' need almost all be in EmitC dialect.
-LogicalResult TranslateToCpp(Operation &op, TargetOptions targetOptions,
-                             raw_ostream &os, bool trailingSemicolon = false);
+LogicalResult TranslateToCpp(Operation &op, raw_ostream &os,
+                             bool forwardDeclareVariables = false,
+                             bool trailingSemicolon = false);
 
 /// Similar to `TranslateToCpp`, but translates the given operation to C code.
-LogicalResult TranslateToC(Operation &op, TargetOptions targetOptions,
-                           raw_ostream &os, bool trailingSemicolon = false);
+LogicalResult TranslateToC(Operation &op, raw_ostream &os,
+                           bool forwardDeclareVariables = false,
+                           bool trailingSemicolon = false);
 } // namespace emitc
 } // namespace mlir
 

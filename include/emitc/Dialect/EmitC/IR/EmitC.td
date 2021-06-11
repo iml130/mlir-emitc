@@ -30,9 +30,9 @@ class EmitC_Op<string mnemonic, list<OpTrait> traits = []> :
 }
 
 def EmitC_ApplyOp : EmitC_Op<"apply", []> {
-  let summary = "apply operation";
+  let summary = "Apply operation";
   let description = [{
-    With the "apply" operation the operators & (address of) and * (contents of)
+    With the `apply` operation the operators & (address of) and * (contents of)
     can be applied to a single operand.
   }];
   let arguments = (ins
@@ -45,9 +45,9 @@ def EmitC_ApplyOp : EmitC_Op<"apply", []> {
 }
 
 def EmitC_CallOp : EmitC_Op<"call", []> {
-  let summary = "call operation";
+  let summary = "Call operation";
   let description = [{
-    The "call" operation represents a C++ function call. The call allows
+    The `call` operation represents a C++ function call. The call allows
     specifying order of operands and attributes in the call as follows:
 
     - integer value of index type refers to an operand;
@@ -65,7 +65,7 @@ def EmitC_CallOp : EmitC_Op<"call", []> {
 }
 
 def EmitC_ConstantOp : EmitC_Op<"constant", [ConstantLike, NoSideEffect]> {
-  let summary = "Constant op";
+  let summary = "Constant operation";
   let description = [{
     The `constant` operation produces an SSA value equal to some constant
     specified by an attribute, similar to `std.constant`.
@@ -80,7 +80,7 @@ def EmitC_ConstantOp : EmitC_Op<"constant", [ConstantLike, NoSideEffect]> {
 }
 
 def EmitC_IncludeOp : EmitC_Op<"include", [NoSideEffect, HasParent<"ModuleOp">]> {
-  let summary = "include operation";
+  let summary = "Include operation";
   let description = [{
     The `include` operation allows to define a source file inclusion via the
     `#include` directive.

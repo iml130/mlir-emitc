@@ -7,7 +7,7 @@
 // Data node ops
 
 func @test_const(%arg0 : index) -> tensor<4xi32> {
-    // CHECK: "emitc.const"() {value = dense<[3, 0, 1, 2]> : tensor<4xi32>} : () -> tensor<4xi32>
+    // CHECK: "emitc.constant"() {value = dense<[3, 0, 1, 2]> : tensor<4xi32>} : () -> tensor<4xi32>
     %0 = "tosa.const"() {value = dense<[3, 0, 1, 2]> : tensor<4xi32>} : () -> tensor<4xi32>
     return %0 : tensor<4xi32>
 }
@@ -265,7 +265,7 @@ func @test_reshape(%arg0: tensor<13x21x3xf32>) -> tensor<1x819xf32> {
 }
 
 func @test_transpose(%arg0: tensor<13x21x3xf32>) -> tensor<3x13x21xf32> {
-  // CHECK: %0 = "emitc.const"() {value = dense<[2, 0, 1]> : tensor<3xi32>} : () -> tensor<3xi32>
+  // CHECK: %0 = "emitc.constant"() {value = dense<[2, 0, 1]> : tensor<3xi32>} : () -> tensor<3xi32>
   %0 = "tosa.const"() {value = dense<[2, 0, 1]> : tensor<3xi32>} : () -> tensor<3xi32>
   // CHECK-NEXT: %1 = emitc.call "emitc::tosa::transpose"(%arg0, %0) {template_args = [tensor<3x13x21xf32>]} : (tensor<13x21x3xf32>, tensor<3xi32>) -> tensor<3x13x21xf32>
   %1 = "tosa.transpose"(%arg0, %0) : (tensor<13x21x3xf32>, tensor<3xi32>) -> tensor<3x13x21xf32>

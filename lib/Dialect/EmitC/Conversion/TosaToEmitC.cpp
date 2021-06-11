@@ -100,14 +100,15 @@ private:
   bool explicitOperandTypes;
 };
 
+/// Convert `tosa.const` into an `emitc.constant` operation.
 class ConstOpConversion : public OpRewritePattern<tosa::ConstOp> {
 public:
   using OpRewritePattern<tosa::ConstOp>::OpRewritePattern;
 
   LogicalResult matchAndRewrite(tosa::ConstOp constOp,
                                 PatternRewriter &rewriter) const final {
-    rewriter.replaceOpWithNewOp<emitc::ConstOp>(constOp, constOp.getType(),
-                                                constOp.value());
+    rewriter.replaceOpWithNewOp<emitc::ConstantOp>(constOp, constOp.getType(),
+                                                   constOp.value());
     return success();
   }
 };

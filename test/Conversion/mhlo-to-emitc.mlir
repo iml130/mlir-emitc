@@ -7,7 +7,7 @@
 // Nullary ops
 
 func @mhlo_constant(%arg0: tensor<2xi32>) -> tensor<2xi32> {
-  // CHECK: "emitc.const"() {value = dense<1> : tensor<2xi32>} : () -> tensor<2xi32>
+  // CHECK: "emitc.constant"() {value = dense<1> : tensor<2xi32>} : () -> tensor<2xi32>
   %0 = "mhlo.constant"() {value = dense<1> : tensor<2xi32>} : () -> tensor<2xi32>
   return %0 : tensor<2xi32>
 }

@@ -54,7 +54,7 @@ public:
   }
 };
 
-/// Convert `mhlo.batch_norm_inference` into an `emitc.const` operation.
+/// Convert `mhlo.batch_norm_inference` into an `emitc.call` operation.
 class BatchNormInferenceOpConversion
     : public OpConversionPattern<mhlo::BatchNormInferenceOp> {
 

@@ -119,7 +119,7 @@ struct CppEmitter {
   StringRef getOrCreateName(Block &block);
 
   /// Whether to map an mlir integer to a signed integer in C++.
-  bool mapToSigned(IntegerType::SignednessSemantics val);
+  bool shouldMapToSigned(IntegerType::SignednessSemantics val);
 
   /// RAII helper function to manage entering/exiting C++ scopes.
   struct Scope {
@@ -182,12 +182,12 @@ private:
 
 /// Translates the given operation to C++ code. The operation or operations in
 /// the region of 'op' need almost all be in EmitC dialect.
-LogicalResult TranslateToCpp(Operation &op, raw_ostream &os,
+LogicalResult translateToCpp(Operation &op, raw_ostream &os,
                              bool forwardDeclareVariables = false,
                              bool trailingSemicolon = false);
 
-/// Similar to `TranslateToCpp`, but translates the given operation to C code.
-LogicalResult TranslateToC(Operation &op, raw_ostream &os,
+/// Similar to `translateToCpp`, but translates the given operation to C code.
+LogicalResult translateToC(Operation &op, raw_ostream &os,
                            bool forwardDeclareVariables = false,
                            bool trailingSemicolon = false);
 } // namespace emitc

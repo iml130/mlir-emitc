@@ -53,9 +53,8 @@ static LogicalResult verify(ApplyOp op) {
   StringRef applicableOperator = op.applicableOperator();
 
   // Applicable operator must not be empty.
-  if (applicableOperator.empty()) {
+  if (applicableOperator.empty())
     return op.emitOpError("applicable operator must not be empty");
-  }
 
   // Only `*` and `&` are supported.
   if (!applicableOperator.equals("&") && !applicableOperator.equals("*"))
@@ -70,9 +69,8 @@ static LogicalResult verify(ApplyOp op) {
 
 static LogicalResult verify(emitc::CallOp op) {
   // Callee must not be empty.
-  if (op.callee().empty()) {
+  if (op.callee().empty())
     return op.emitOpError("callee must not be empty");
-  }
 
   auto argsAttr = op.args();
   if (argsAttr.hasValue()) {
@@ -101,19 +99,16 @@ static LogicalResult verify(emitc::CallOp op) {
   if (templateArgsAttr.hasValue()) {
     for (auto &tArg : templateArgsAttr.getValue()) {
       // C++ forbids float literals as template arguments.
-      if (auto iArg = tArg.dyn_cast<FloatAttr>()) {
+      if (auto iArg = tArg.dyn_cast<FloatAttr>())
         return op.emitOpError("float literal as template argument is invalid");
-      }
       // Template args with elements of type ArrayAttr are not allowed.
-      else if (auto aArg = tArg.dyn_cast<ArrayAttr>()) {
+      if (auto aArg = tArg.dyn_cast<ArrayAttr>())
         return op.emitOpError("array as template arguments is invalid");
-      }
       // Template args with elements of type DenseElementsAttr are not
       // allowed.
-      else if (auto dArg = tArg.dyn_cast<DenseElementsAttr>()) {
+      if (auto dArg = tArg.dyn_cast<DenseElementsAttr>())
         return op.emitOpError("dense elements as template "
                               "argument are invalid");
-      }
     }
   }
   return success();
@@ -133,7 +128,6 @@ static LogicalResult verify(emitc::ConstantOp &op) {
   return success();
 }
 
-// Folder.
 OpFoldResult emitc::ConstantOp::fold(ArrayRef<Attribute> operands) {
   assert(operands.empty() && "constant has no operands");
   return value();

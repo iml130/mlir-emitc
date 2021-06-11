@@ -1,4 +1,4 @@
-//===- EmitC.td - EmitC dialect ----------------------------*- tablegen -*-===//
+//===- EmitC.td - EmitC operations--------------------------*- tablegen -*-===//
 //
 // Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
 // See https://llvm.org/LICENSE.txt for license information.
@@ -6,113 +6,18 @@
 //
 //===----------------------------------------------------------------------===//
 //
-// Defines the MLIR EmitC dialect, its attribute, type and operations.
+// Defines the MLIR EmitC operations.
 //
 //===----------------------------------------------------------------------===//
 
 #ifndef EMITC_DIALECT_EMITC_IR_EMITC
 #define EMITC_DIALECT_EMITC_IR_EMITC
 
-include "mlir/IR/OpBase.td"
+include "emitc/Dialect/EmitC/IR/EmitCAttrDefs.td"
+include "emitc/Dialect/EmitC/IR/EmitCBase.td"
+include "emitc/Dialect/EmitC/IR/EmitCTypes.td"
+
 include "mlir/Interfaces/SideEffectInterfaces.td"
-
-//===----------------------------------------------------------------------===//
-// EmitC dialect definition
-//===----------------------------------------------------------------------===//
-
-def EmitC_Dialect : Dialect {
-  let name = "emitc";
-  let cppNamespace = "::mlir::emitc";
-  let hasConstantMaterializer = 1;
-}
-
-//===----------------------------------------------------------------------===//
-// EmitC attribute definitions
-//===----------------------------------------------------------------------===//
-
-class EmitC_Attr<string name, string attrMnemonic> : AttrDef<EmitC_Dialect, name> {
-  let mnemonic = attrMnemonic;
-}
-
-def EmitC_OpaqueAttr : EmitC_Attr<"Opaque", "opaque"> {
-  let summary = "An opaque attribute";
-
-  let description = [{
-    An opaque attribute of which the value gets emitted as is.
-
-    Examples:
-
-    ```mlir
-    #emitc.opaque<"">
-    #emitc.opaque<"NULL">
-    #emitc.opaque<"nullptr">
-    ```
-  }];
-
-  let parameters = (ins StringRefParameter<"the opaque value">:$value);
-
-  let printer = [{
-    $_printer << "opaque<\"" << getValue() << "\">";
-  }];
-
-  let parser = [{
-    if ($_parser.parseLess())
-      return Attribute();
-    StringRef value;
-    auto loc = $_parser.getCurrentLocation();
-    if ($_parser.parseOptionalString(&value)) {
-      $_parser.emitError(loc) << "expected string";
-      return Attribute();
-    }
-    if ($_parser.parseGreater())
-      return Attribute();
-    return get($_ctxt, value);
-  }];
-}
-
-//===----------------------------------------------------------------------===//
-// EmitC type definitions
-//===----------------------------------------------------------------------===//
-
-class EmitC_Type<string name, string typeMnemonic> : TypeDef<EmitC_Dialect, name> {
-  let mnemonic = typeMnemonic;
-}
-
-def EmitC_OpaqueType : EmitC_Type<"Opaque", "opaque"> {
-  let summary = "An opaque type";
-
-  let description = [{
-    An opaque data type of which the value gets emitted as is.
-
-    Examples:
-
-    ```mlir
-    !emitc.opaque<"int">
-    !emitc.opaque<"float *">
-    !emitc.opaque<"std::vector<std::string>">
-    ```
-  }];
-
-  let parameters = (ins StringRefParameter<"the opaque value">:$value);
-
-  let printer = [{
-    $_printer << "opaque<\"" << getValue() << "\">";
-  }];
-
-  let parser = [{
-    if ($_parser.parseLess())
-      return Type();
-    StringRef value;
-    auto loc = $_parser.getCurrentLocation();
-    if ($_parser.parseOptionalString(&value) || value.empty()) {
-      $_parser.emitError(loc) << "expected non empty string";
-      return Type();
-    }
-    if ($_parser.parseGreater())
-      return Type();
-    return get($_ctxt, value);
-  }];
-}
 
 //===----------------------------------------------------------------------===//
 // EmitC op definitions

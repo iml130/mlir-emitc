@@ -30,11 +30,11 @@ def EmitC_Dialect : Dialect {
 // EmitC attribute definitions
 //===----------------------------------------------------------------------===//
 
-class EmitC_Attr<string name> : AttrDef<EmitC_Dialect, name> { }
+class EmitC_Attr<string name, string attrMnemonic> : AttrDef<EmitC_Dialect, name> {
+  let mnemonic = attrMnemonic;
+}
 
-def OpaqueAttr : EmitC_Attr<"Opaque"> {
-  let mnemonic = "opaque";
-
+def EmitC_OpaqueAttr : EmitC_Attr<"Opaque", "opaque"> {
   let summary = "An opaque attribute";
 
   let description = [{
@@ -74,11 +74,11 @@ def OpaqueAttr : EmitC_Attr<"Opaque"> {
 // EmitC type definitions
 //===----------------------------------------------------------------------===//
 
-class EmitC_Type<string name> : TypeDef<EmitC_Dialect, name> { }
+class EmitC_Type<string name, string typeMnemonic> : TypeDef<EmitC_Dialect, name> {
+  let mnemonic = typeMnemonic;
+}
 
-def OpaqueType : EmitC_Type<"Opaque"> {
-  let mnemonic = "opaque";
-
+def EmitC_OpaqueType : EmitC_Type<"Opaque", "opaque"> {
   let summary = "An opaque type";
 
   let description = [{

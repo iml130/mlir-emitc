@@ -26,14 +26,12 @@ using namespace mlir;
 using namespace mlir::emitc;
 using llvm::formatv;
 
-template <typename ConstOpTy>
-static LogicalResult printConstantOp(CppEmitter &emitter,
-                                     ConstOpTy constantOp) {
+static LogicalResult printConstantOp(CppEmitter &emitter, Operation *operation,
+                                     Attribute value) {
   auto &os = emitter.ostream();
-  auto result = constantOp.getOperation()->getResult(0);
-  auto value = constantOp.value();
+  auto result = operation->getResult(0);
 
-  bool isScalar = !result.getType().template isa<TensorType>();
+  bool isScalar = !result.getType().isa<TensorType>();
 
   // Add braces only if
   //  - cpp code is emitted,
@@ -47,20 +45,20 @@ static LogicalResult printConstantOp(CppEmitter &emitter,
   // Emit an assignment if variables are forward declared.
   if (emitter.forwardDeclaredVariables()) {
     // Special case for emitc.const.
-    if (auto oAttr = value.template dyn_cast<emitc::OpaqueAttr>()) {
+    if (auto oAttr = value.dyn_cast<emitc::OpaqueAttr>()) {
       if (oAttr.getValue().empty())
         return success();
     }
 
     if (failed(emitter.emitVariableAssignment(result)))
       return failure();
-    if (failed(emitter.emitAttribute(*constantOp.getOperation(), value)))
+    if (failed(emitter.emitAttribute(*operation, value)))
       return failure();
     return success();
   }
 
   // Special case for emitc.const.
-  if (auto oAttr = value.template dyn_cast<emitc::OpaqueAttr>()) {
+  if (auto oAttr = value.dyn_cast<emitc::OpaqueAttr>()) {
     if (oAttr.getValue().empty()) {
       // The semicolon gets printed by the emitOperation function.
       if (failed(emitter.emitVariableDeclaration(result,
@@ -73,10 +71,10 @@ static LogicalResult printConstantOp(CppEmitter &emitter,
   // We have to emit a variable declaration.
   if (!braceInitialization) {
     // If brace initialization is not used, we have to emit an assignment.
-    if (failed(emitter.emitAssignPrefix(*constantOp.getOperation()))) {
+    if (failed(emitter.emitAssignPrefix(*operation))) {
       return failure();
     }
-    if (failed(emitter.emitAttribute(*constantOp.getOperation(), value)))
+    if (failed(emitter.emitAttribute(*operation, value)))
       return failure();
     return success();
   }
@@ -87,12 +85,27 @@ static LogicalResult printConstantOp(CppEmitter &emitter,
 
   if (emitBraces)
     os << "{";
-  if (failed(emitter.emitAttribute(*constantOp.getOperation(), value)))
+  if (failed(emitter.emitAttribute(*operation, value)))
     return failure();
   if (emitBraces)
     os << "}";
 
   return success();
+}
+
+static LogicalResult printConstantOp(CppEmitter &emitter, ConstOp constantOp) {
+  auto operation = constantOp.getOperation();
+  auto value = constantOp.value();
+
+  return printConstantOp(emitter, operation, value);
+}
+
+static LogicalResult printConstantOp(CppEmitter &emitter,
+                                     ConstantOp constantOp) {
+  auto operation = constantOp.getOperation();
+  auto value = constantOp.value();
+
+  return printConstantOp(emitter, operation, value);
 }
 
 static LogicalResult printBranchOp(CppEmitter &emitter,

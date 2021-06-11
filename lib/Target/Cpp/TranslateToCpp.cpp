@@ -573,7 +573,7 @@ StringRef CppEmitter::getOrCreateName(Block &block) {
   return *blockMapper.begin(&block);
 }
 
-bool CppEmitter::mapToSigned(IntegerType::SignednessSemantics val) {
+bool CppEmitter::shouldMapToSigned(IntegerType::SignednessSemantics val) {
   switch (val) {
   case IntegerType::Signless:
     return true;
@@ -646,7 +646,7 @@ LogicalResult CppEmitter::emitAttribute(Operation &op, Attribute attr) {
   // Print int attributes.
   if (auto iAttr = attr.dyn_cast<IntegerAttr>()) {
     if (auto iType = iAttr.getType().dyn_cast<IntegerType>()) {
-      printInt(iAttr.getValue(), mapToSigned(iType.getSignedness()));
+      printInt(iAttr.getValue(), shouldMapToSigned(iType.getSignedness()));
       return success();
     }
     if (auto iType = iAttr.getType().dyn_cast<IndexType>()) {
@@ -664,7 +664,7 @@ LogicalResult CppEmitter::emitAttribute(Operation &op, Attribute attr) {
                          .dyn_cast<IntegerType>()) {
       os << '{';
       interleaveComma(dense, os, [&](APInt val) {
-        printInt(val, mapToSigned(iType.getSignedness()));
+        printInt(val, shouldMapToSigned(iType.getSignedness()));
       });
       os << '}';
       return success();
@@ -851,7 +851,7 @@ LogicalResult CppEmitter::emitType(Operation &op, Type type) {
     case 16:
     case 32:
     case 64:
-      if (mapToSigned(iType.getSignedness())) {
+      if (shouldMapToSigned(iType.getSignedness())) {
         return (os << "int" << iType.getWidth() << "_t"), success();
       } else {
         return (os << "uint" << iType.getWidth() << "_t"), success();
@@ -925,14 +925,14 @@ LogicalResult CppEmitter::emitTupleType(Operation &op, ArrayRef<Type> types) {
   return success();
 }
 
-LogicalResult emitc::TranslateToCpp(Operation &op, raw_ostream &os,
+LogicalResult emitc::translateToCpp(Operation &op, raw_ostream &os,
                                     bool forwardDeclareVariables,
                                     bool trailingSemicolon) {
   CppEmitter emitter(os, /*restrictToC=*/false, forwardDeclareVariables);
   return emitter.emitOperation(op, trailingSemicolon);
 }
 
-LogicalResult emitc::TranslateToC(Operation &op, raw_ostream &os,
+LogicalResult emitc::translateToC(Operation &op, raw_ostream &os,
                                   bool forwardDeclareVariables,
                                   bool trailingSemicolon) {
   CppEmitter emitter(os, /*restrictToC=*/true, forwardDeclareVariables);

@@ -41,15 +41,15 @@ SmallVector<Attribute, 2> indexSequence(int64_t n, MLIRContext *ctx) {
       }));
 }
 
-/// Convert `mhlo.constant` into an `emitc.const` operation.
+/// Convert `mhlo.constant` into an `emitc.constant` operation.
 class ConstOpConversion : public OpRewritePattern<mhlo::ConstOp> {
 public:
   using OpRewritePattern<mhlo::ConstOp>::OpRewritePattern;
 
   LogicalResult matchAndRewrite(mhlo::ConstOp constOp,
                                 PatternRewriter &rewriter) const final {
-    rewriter.replaceOpWithNewOp<emitc::ConstOp>(constOp, constOp.getType(),
-                                                constOp.value());
+    rewriter.replaceOpWithNewOp<emitc::ConstantOp>(constOp, constOp.getType(),
+                                                   constOp.value());
     return success();
   }
 };

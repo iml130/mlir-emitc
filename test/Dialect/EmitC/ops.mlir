@@ -14,7 +14,7 @@ func @f(%arg0: i32, %f: !custom<"int32_t">) -> i1 {
 }
 
 func @c(%arg0: i32) {
-  %1 = "emitc.const"(){value = 42 : i32} : () -> i32
+  %1 = "emitc.constant"(){value = 42 : i32} : () -> i32
   return
 }
 

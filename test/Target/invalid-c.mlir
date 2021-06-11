@@ -10,7 +10,7 @@ func @func_template() {
 
 func @func_tuple() {
   // expected-error @+1 {{cannot emit tuple type if emitting C}}
-  %cst = "emitc.const"(){value = tuple<ui64, ui32>} : () -> i32
+  %cst = "emitc.constant"(){value = tuple<ui64, ui32>} : () -> i32
   return
 }
 
@@ -18,7 +18,7 @@ func @func_tuple() {
 
 func @func_tensor() {
   // expected-error @+1 {{cannot emit tensor type if emitting C}}
-  %cst = "emitc.const"(){value = dense<1> : tensor<24xi32>} : () -> tensor<24xi32>
+  %cst = "emitc.constant"(){value = dense<1> : tensor<24xi32>} : () -> tensor<24xi32>
   return
 }
 

@@ -93,7 +93,8 @@ static LogicalResult printConstantOp(CppEmitter &emitter, Operation *operation,
   return success();
 }
 
-static LogicalResult printConstantOp(CppEmitter &emitter, ConstOp constantOp) {
+static LogicalResult printConstantOp(CppEmitter &emitter,
+                                     emitc::ConstantOp constantOp) {
   auto operation = constantOp.getOperation();
   auto value = constantOp.value();
 
@@ -101,7 +102,7 @@ static LogicalResult printConstantOp(CppEmitter &emitter, ConstOp constantOp) {
 }
 
 static LogicalResult printConstantOp(CppEmitter &emitter,
-                                     ConstantOp constantOp) {
+                                     mlir::ConstantOp constantOp) {
   auto operation = constantOp.getOperation();
   auto value = constantOp.value();
 
@@ -801,8 +802,8 @@ static LogicalResult printOperation(CppEmitter &emitter, Operation &op) {
     return printApplyOp(emitter, applyOp);
   if (auto callOp = dyn_cast<emitc::CallOp>(op))
     return printCallOp(emitter, callOp);
-  if (auto constOp = dyn_cast<emitc::ConstOp>(op))
-    return printConstantOp(emitter, constOp);
+  if (auto constantOp = dyn_cast<emitc::ConstantOp>(op))
+    return printConstantOp(emitter, constantOp);
   if (auto includeOp = dyn_cast<emitc::IncludeOp>(op))
     // IncludeOp were already printed via printModule.
     return success();
@@ -822,7 +823,7 @@ static LogicalResult printOperation(CppEmitter &emitter, Operation &op) {
     return printCallOp(emitter, callOp);
   if (auto branchOp = dyn_cast<CondBranchOp>(op))
     return printCondBranchOp(emitter, branchOp);
-  if (auto constantOp = dyn_cast<ConstantOp>(op))
+  if (auto constantOp = dyn_cast<mlir::ConstantOp>(op))
     return printConstantOp(emitter, constantOp);
   if (auto funcOp = dyn_cast<FuncOp>(op))
     return printFunction(emitter, funcOp);

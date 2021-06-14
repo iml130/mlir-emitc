@@ -75,22 +75,16 @@ static LogicalResult verify(emitc::CallOp op) {
   auto argsAttr = op.args();
   if (argsAttr.hasValue()) {
     for (auto &arg : argsAttr.getValue()) {
-      if (auto iArg = arg.dyn_cast<IntegerAttr>()) {
-        if (iArg.getType().isIndex()) {
-          int64_t index = iArg.getInt();
-          // Args with elements of type index must be in range
-          // [0..operands.size).
-          if ((index < 0) ||
-              (index >= static_cast<int64_t>(op.getNumOperands()))) {
-            return op.emitOpError("index argument is out of range");
-          }
-        }
+      if (arg.getType().isa<IndexType>()) {
+        int64_t index = arg.cast<IntegerAttr>().getInt();
+        // Args with elements of type index must be in range
+        // [0..operands.size).
+        if ((index < 0) || (index >= static_cast<int64_t>(op.getNumOperands())))
+          return op.emitOpError("index argument is out of range");
       }
       // Args with elements of type ArrayAttr must have a type.
-      else if (auto aArg = arg.dyn_cast<ArrayAttr>()) {
-        if (aArg.getType().isa<NoneType>()) {
-          return op.emitOpError("array argument has no type");
-        }
+      else if (arg.isa<ArrayAttr>() && arg.getType().isa<NoneType>()) {
+        return op.emitOpError("array argument has no type");
       }
     }
   }

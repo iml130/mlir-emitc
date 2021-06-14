@@ -74,7 +74,7 @@ static LogicalResult verify(emitc::CallOp op) {
 
   auto argsAttr = op.args();
   if (argsAttr.hasValue()) {
-    for (auto &arg : argsAttr.getValue()) {
+    for (const Attribute &arg : argsAttr.getValue()) {
       if (arg.getType().isa<IndexType>()) {
         int64_t index = arg.cast<IntegerAttr>().getInt();
         // Args with elements of type index must be in range
@@ -91,7 +91,7 @@ static LogicalResult verify(emitc::CallOp op) {
 
   auto templateArgsAttr = op.template_args();
   if (templateArgsAttr.hasValue()) {
-    for (auto &tArg : templateArgsAttr.getValue()) {
+    for (const Attribute &tArg : templateArgsAttr.getValue()) {
       // C++ forbids float literals as template arguments.
       if (auto iArg = tArg.dyn_cast<FloatAttr>())
         return op.emitOpError("float literal as template argument is invalid");

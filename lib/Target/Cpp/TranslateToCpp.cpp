@@ -28,8 +28,8 @@ using llvm::formatv;
 
 static LogicalResult printConstantOp(CppEmitter &emitter, Operation *operation,
                                      Attribute value) {
-  auto &os = emitter.ostream();
-  auto result = operation->getResult(0);
+  raw_ostream &os = emitter.ostream();
+  OpResult result = operation->getResult(0);
 
   bool isScalar = !result.getType().isa<TensorType>();
 
@@ -95,23 +95,23 @@ static LogicalResult printConstantOp(CppEmitter &emitter, Operation *operation,
 
 static LogicalResult printConstantOp(CppEmitter &emitter,
                                      emitc::ConstantOp constantOp) {
-  auto operation = constantOp.getOperation();
-  auto value = constantOp.value();
+  Operation *operation = constantOp.getOperation();
+  Attribute value = constantOp.value();
 
   return printConstantOp(emitter, operation, value);
 }
 
 static LogicalResult printConstantOp(CppEmitter &emitter,
                                      mlir::ConstantOp constantOp) {
-  auto operation = constantOp.getOperation();
-  auto value = constantOp.value();
+  Operation *operation = constantOp.getOperation();
+  Attribute value = constantOp.value();
 
   return printConstantOp(emitter, operation, value);
 }
 
 static LogicalResult printBranchOp(CppEmitter &emitter,
                                    mlir::BranchOp branchOp) {
-  auto &os = emitter.ostream();
+  raw_ostream &os = emitter.ostream();
   Block &successor = *branchOp.getSuccessor();
 
   for (auto pair :
@@ -132,7 +132,7 @@ static LogicalResult printBranchOp(CppEmitter &emitter,
 
 static LogicalResult printCondBranchOp(CppEmitter &emitter,
                                        mlir::CondBranchOp condBranchOp) {
-  auto &os = emitter.ostream();
+  raw_ostream &os = emitter.ostream();
   Block &trueSuccessor = *condBranchOp.getTrueDest();
   Block &falseSuccessor = *condBranchOp.getFalseDest();
 
@@ -178,7 +178,7 @@ static LogicalResult printCallOp(CppEmitter &emitter, mlir::CallOp callOp) {
   if (failed(emitter.emitAssignPrefix(*callOp.getOperation())))
     return failure();
 
-  auto &os = emitter.ostream();
+  raw_ostream &os = emitter.ostream();
   os << callOp.getCallee() << "(";
   if (failed(emitter.emitOperands(*callOp.getOperation())))
     return failure();
@@ -187,8 +187,8 @@ static LogicalResult printCallOp(CppEmitter &emitter, mlir::CallOp callOp) {
 }
 
 static LogicalResult printCallOp(CppEmitter &emitter, emitc::CallOp callOp) {
-  auto &os = emitter.ostream();
-  auto &op = *callOp.getOperation();
+  raw_ostream &os = emitter.ostream();
+  Operation &op = *callOp.getOperation();
 
   if (failed(emitter.emitAssignPrefix(op)))
     return failure();
@@ -198,7 +198,7 @@ static LogicalResult printCallOp(CppEmitter &emitter, emitc::CallOp callOp) {
     if (auto t = attr.dyn_cast<IntegerAttr>()) {
       // Index attributes are treated specially as operand index.
       if (t.getType().isIndex()) {
-        auto idx = t.getInt();
+        int64_t idx = t.getInt();
         if ((idx < 0) || (idx >= op.getNumOperands()))
           return op.emitOpError() << "invalid operand index";
         if (!emitter.hasValueInScope(op.getOperand(idx)))
@@ -227,7 +227,7 @@ static LogicalResult printCallOp(CppEmitter &emitter, emitc::CallOp callOp) {
 
   os << "(";
 
-  auto emittedArgs =
+  LogicalResult emittedArgs =
       callOp.args() ? interleaveCommaWithError(*callOp.args(), os, emitArgs)
                     : emitter.emitOperands(op);
   if (failed(emittedArgs))
@@ -237,8 +237,8 @@ static LogicalResult printCallOp(CppEmitter &emitter, emitc::CallOp callOp) {
 }
 
 static LogicalResult printApplyOp(CppEmitter &emitter, emitc::ApplyOp applyOp) {
-  auto &os = emitter.ostream();
-  auto &op = *applyOp.getOperation();
+  raw_ostream &os = emitter.ostream();
+  Operation &op = *applyOp.getOperation();
 
   if (failed(emitter.emitAssignPrefix(op)))
     return failure();
@@ -250,7 +250,7 @@ static LogicalResult printApplyOp(CppEmitter &emitter, emitc::ApplyOp applyOp) {
 
 static LogicalResult printForOp(CppEmitter &emitter, scf::ForOp forOp) {
 
-  auto &os = emitter.ostream();
+  raw_ostream &os = emitter.ostream();
 
   auto operands = forOp.getIterOperands();
   auto iterArgs = forOp.getRegionIterArgs();
@@ -299,7 +299,7 @@ static LogicalResult printForOp(CppEmitter &emitter, scf::ForOp forOp) {
   os << emitter.getOrCreateName(forOp.step());
   os << ") {\n";
 
-  auto &forRegion = forOp.region();
+  Region &forRegion = forOp.region();
   auto regionOps = forRegion.getOps();
 
   // We skip the trailing yield op because this updates the result variables
@@ -311,7 +311,7 @@ static LogicalResult printForOp(CppEmitter &emitter, scf::ForOp forOp) {
       return failure();
   }
 
-  auto yieldOp = forRegion.getBlocks().front().getTerminator();
+  Operation *yieldOp = forRegion.getBlocks().front().getTerminator();
   // Copy yield operands into iterArgs at the end of a loop iteration.
   for (auto pair : llvm::zip(iterArgs, yieldOp->getOperands())) {
     auto iterArg = std::get<0>(pair);
@@ -334,10 +334,10 @@ static LogicalResult printForOp(CppEmitter &emitter, scf::ForOp forOp) {
 }
 
 static LogicalResult printIfOp(CppEmitter &emitter, scf::IfOp ifOp) {
-  auto &os = emitter.ostream();
+  raw_ostream &os = emitter.ostream();
 
   if (!emitter.forwardDeclaredVariables()) {
-    for (auto result : ifOp.getResults()) {
+    for (OpResult result : ifOp.getResults()) {
       if (failed(emitter.emitVariableDeclaration(result,
                                                  /*trailingSemicolon=*/true)))
         return failure();
@@ -349,8 +349,8 @@ static LogicalResult printIfOp(CppEmitter &emitter, scf::IfOp ifOp) {
     return failure();
   os << ") {\n";
 
-  auto &thenRegion = ifOp.thenRegion();
-  for (auto &op : thenRegion.getOps()) {
+  Region &thenRegion = ifOp.thenRegion();
+  for (Operation &op : thenRegion.getOps()) {
     // Note: This prints a superfluous semicolon if the terminating yield op has
     // zero results.
     if (failed(emitter.emitOperation(op, /*trailingSemicolon=*/true)))
@@ -359,11 +359,11 @@ static LogicalResult printIfOp(CppEmitter &emitter, scf::IfOp ifOp) {
 
   os << "}\n";
 
-  auto &elseRegion = ifOp.elseRegion();
+  Region &elseRegion = ifOp.elseRegion();
   if (!elseRegion.empty()) {
     os << "else {\n";
 
-    for (auto &op : elseRegion.getOps()) {
+    for (Operation &op : elseRegion.getOps()) {
       // Note: This prints a superfluous semicolon if the terminating yield op
       // has zero results.
       if (failed(emitter.emitOperation(op, /*trailingSemicolon=*/true)))
@@ -377,8 +377,8 @@ static LogicalResult printIfOp(CppEmitter &emitter, scf::IfOp ifOp) {
 }
 
 static LogicalResult printYieldOp(CppEmitter &emitter, scf::YieldOp yieldOp) {
-  auto &os = emitter.ostream();
-  auto &parentOp = *yieldOp.getOperation()->getParentOp();
+  raw_ostream &os = emitter.ostream();
+  Operation &parentOp = *yieldOp.getOperation()->getParentOp();
 
   if (yieldOp.getNumOperands() != parentOp.getNumResults()) {
     return yieldOp.emitError("number of operands does not to match the number "
@@ -404,7 +404,7 @@ static LogicalResult printYieldOp(CppEmitter &emitter, scf::YieldOp yieldOp) {
 }
 
 static LogicalResult printReturnOp(CppEmitter &emitter, ReturnOp returnOp) {
-  auto &os = emitter.ostream();
+  raw_ostream &os = emitter.ostream();
   os << "return";
   switch (returnOp.getNumOperands()) {
   case 0:
@@ -423,7 +423,7 @@ static LogicalResult printReturnOp(CppEmitter &emitter, ReturnOp returnOp) {
 
 static LogicalResult printModule(CppEmitter &emitter, ModuleOp moduleOp) {
   CppEmitter::Scope scope(emitter);
-  auto &os = emitter.ostream();
+  raw_ostream &os = emitter.ostream();
 
   if (emitter.restrictedToC()) {
     os << "#include <stdbool.h>\n";
@@ -474,7 +474,7 @@ static LogicalResult printFunction(CppEmitter &emitter, FuncOp functionOp) {
   }
 
   CppEmitter::Scope scope(emitter);
-  auto &os = emitter.ostream();
+  raw_ostream &os = emitter.ostream();
   if (failed(emitter.emitTypes(*functionOp.getOperation(),
                                functionOp.getType().getResults())))
     return failure();
@@ -496,9 +496,9 @@ static LogicalResult printFunction(CppEmitter &emitter, FuncOp functionOp) {
   if (emitter.forwardDeclaredVariables()) {
     // We forward declare all result variables including results from ops
     // inside of regions.
-    auto result =
+    WalkResult result =
         functionOp.walk<WalkOrder::PreOrder>([&](Operation *op) -> WalkResult {
-          for (auto result : op->getResults()) {
+          for (OpResult result : op->getResults()) {
             if (failed(emitter.emitVariableDeclaration(
                     result, /*trailingSemicolon=*/true))) {
               return WalkResult(
@@ -513,14 +513,14 @@ static LogicalResult printFunction(CppEmitter &emitter, FuncOp functionOp) {
 
   auto &blocks = functionOp.getBlocks();
   // Create label names for basic blocks.
-  for (auto &block : blocks) {
+  for (Block &block : blocks) {
     emitter.getOrCreateName(block);
   }
 
   // Emit variables for basic block arguments.
   for (auto it = std::next(blocks.begin()); it != blocks.end(); ++it) {
     Block &block = *it;
-    for (auto &arg : block.getArguments()) {
+    for (BlockArgument &arg : block.getArguments()) {
       if (emitter.hasValueInScope(arg))
         return functionOp.emitOpError(" block argument #")
                << arg.getArgNumber() << " is out of scope";
@@ -531,7 +531,7 @@ static LogicalResult printFunction(CppEmitter &emitter, FuncOp functionOp) {
     }
   }
 
-  for (auto &block : blocks) {
+  for (Block &block : blocks) {
     // Only print a label if there is more than one block.
     if (blocks.size() > 1) {
       if (failed(emitter.emitLabel(block))) {
@@ -632,7 +632,8 @@ LogicalResult CppEmitter::emitAttribute(Operation &op, Attribute attr) {
     printFloat(fAttr.getValue());
     return success();
   }
-  auto denseErrorMessage = "dense attributes are not supported if emitting C";
+  StringRef denseErrorMessage =
+      "dense attributes are not supported if emitting C";
   if (auto dense = attr.dyn_cast<mlir::DenseFPElementsAttr>()) {
     // Dense attributes are not supported if emitting C.
     if (restrictedToC())
@@ -713,7 +714,7 @@ CppEmitter::emitOperandsAndAttributes(Operation &op,
     return failure();
   // Insert comma in between operands and non-filtered attributes if needed.
   if (op.getNumOperands() > 0) {
-    for (auto attr : op.getAttrs()) {
+    for (NamedAttribute attr : op.getAttrs()) {
       if (!llvm::is_contained(exclude, attr.first.strref())) {
         os << ", ";
         break;
@@ -762,7 +763,7 @@ LogicalResult CppEmitter::emitAssignPrefix(Operation &op) {
   case 0:
     break;
   case 1: {
-    auto result = op.getResult(0);
+    OpResult result = op.getResult(0);
     if (forwardDeclaredVariables()) {
       if (failed(emitVariableAssignment(result)))
         return failure();
@@ -775,7 +776,7 @@ LogicalResult CppEmitter::emitAssignPrefix(Operation &op) {
   }
   default:
     if (!forwardDeclaredVariables()) {
-      for (auto result : op.getResults()) {
+      for (OpResult result : op.getResults()) {
         if (failed(emitVariableDeclaration(result, /*trailingSemicolon=*/true)))
           return failure();
       }

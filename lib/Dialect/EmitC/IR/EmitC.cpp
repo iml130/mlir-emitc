@@ -172,6 +172,10 @@ void EmitCDialect::printAttribute(Attribute attr, DialectAsmPrinter &os) const {
     llvm_unreachable("unexpected 'EmitC' attribute kind");
 }
 
+void emitc::OpaqueAttr::print(DialectAsmPrinter &printer) const {
+  printer << "opaque<\"" << getValue() << "\">";
+}
+
 //===----------------------------------------------------------------------===//
 // EmitC Types
 //===----------------------------------------------------------------------===//
@@ -210,4 +214,8 @@ Type EmitCDialect::parseType(DialectAsmParser &parser) const {
 void EmitCDialect::printType(Type type, DialectAsmPrinter &os) const {
   if (failed(generatedTypePrinter(type, os)))
     llvm_unreachable("unexpected 'EmitC' type kind");
+}
+
+void emitc::OpaqueType::print(DialectAsmPrinter &printer) const {
+  printer << "opaque<\"" << getValue() << "\">";
 }

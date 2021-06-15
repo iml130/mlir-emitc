@@ -40,10 +40,6 @@ def EmitC_OpaqueType : EmitC_Type<"Opaque", "opaque"> {
   }];
 
   let parameters = (ins StringRefParameter<"the opaque value">:$value);
-
-  let printer = [{
-    $_printer << "opaque<\"" << getValue() << "\">";
-  }];
 }
 
 #endif // EMITC_DIALECT_EMITC_IR_EMITCTYPES

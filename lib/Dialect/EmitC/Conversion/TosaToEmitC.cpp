@@ -1,4 +1,4 @@
-//===- TosaToEmitC.cpp - TOSA to EmitC conversion ---------------*- C++ -*-===//
+//===- TosaToEmitC.cpp - TOSA to EmitC conversion -------------------------===//
 //
 // This file is licensed under the Apache License v2.0 with LLVM Exceptions.
 // See https://llvm.org/LICENSE.txt for license information.

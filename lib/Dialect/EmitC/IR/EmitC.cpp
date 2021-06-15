@@ -1,4 +1,4 @@
-//===- EmitC.cpp - EmitC Dialect --------------------------------*- C++ -*-===//
+//===- EmitC.cpp - EmitC Dialect ------------------------------------------===//
 //
 // Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
 // See https://llvm.org/LICENSE.txt for license information.
@@ -12,7 +12,7 @@
 #include "llvm/ADT/TypeSwitch.h"
 
 using namespace mlir;
-using namespace emitc;
+using namespace mlir::emitc;
 
 //===----------------------------------------------------------------------===//
 // EmitCDialect
@@ -53,7 +53,7 @@ static LogicalResult verify(ApplyOp op) {
     return op.emitOpError("applicable operator must not be empty");
 
   // Only `*` and `&` are supported.
-  if (!applicableOperator.equals("&") && !applicableOperator.equals("*"))
+  if (applicableOperator != "&" && applicableOperator != "*")
     return op.emitOpError("applicable operator is illegal");
 
   return success();
@@ -68,9 +68,8 @@ static LogicalResult verify(emitc::CallOp op) {
   if (op.callee().empty())
     return op.emitOpError("callee must not be empty");
 
-  auto argsAttr = op.args();
-  if (argsAttr.hasValue()) {
-    for (const Attribute &arg : argsAttr.getValue()) {
+  if (Optional<ArrayAttr> argsAttr = op.args()) {
+    for (const Attribute arg : argsAttr.getValue()) {
       if (arg.getType().isa<IndexType>()) {
         int64_t index = arg.cast<IntegerAttr>().getInt();
         // Args with elements of type index must be in range
@@ -85,18 +84,17 @@ static LogicalResult verify(emitc::CallOp op) {
     }
   }
 
-  auto templateArgsAttr = op.template_args();
-  if (templateArgsAttr.hasValue()) {
-    for (const Attribute &tArg : templateArgsAttr.getValue()) {
+  if (Optional<ArrayAttr> templateArgsAttr = op.template_args()) {
+    for (const Attribute tArg : templateArgsAttr.getValue()) {
       // C++ forbids float literals as template arguments.
-      if (auto iArg = tArg.dyn_cast<FloatAttr>())
+      if (tArg.isa<FloatAttr>())
         return op.emitOpError("float literal as template argument is invalid");
       // Template args with elements of type ArrayAttr are not allowed.
-      if (auto aArg = tArg.dyn_cast<ArrayAttr>())
+      if (tArg.isa<ArrayAttr>())
         return op.emitOpError("array as template arguments is invalid");
       // Template args with elements of type DenseElementsAttr are not
       // allowed.
-      if (auto dArg = tArg.dyn_cast<DenseElementsAttr>())
+      if (tArg.isa<DenseElementsAttr>())
         return op.emitOpError("dense elements as template "
                               "argument are invalid");
     }
@@ -110,7 +108,7 @@ static LogicalResult verify(emitc::CallOp op) {
 
 /// The constant op requires that the attribute's type matches the return type.
 static LogicalResult verify(emitc::ConstantOp &op) {
-  auto value = op.value();
+  Attribute value = op.value();
   Type type = op.getType();
   if (!value.getType().isa<NoneType>() && type != value.getType())
     return op.emitOpError() << "requires attribute's type (" << value.getType()
@@ -142,7 +140,7 @@ Attribute emitc::OpaqueAttr::parse(MLIRContext *context,
   if (parser.parseLess())
     return Attribute();
   StringRef value;
-  auto loc = parser.getCurrentLocation();
+  llvm::SMLoc loc = parser.getCurrentLocation();
   if (parser.parseOptionalString(&value)) {
     parser.emitError(loc) << "expected string";
     return Attribute();
@@ -159,7 +157,7 @@ Attribute EmitCDialect::parseAttribute(DialectAsmParser &parser,
   if (parser.parseKeyword(&mnemonic))
     return Attribute();
   Attribute genAttr;
-  auto parseResult =
+  OptionalParseResult parseResult =
       generatedAttributeParser(getContext(), parser, mnemonic, type, genAttr);
   if (parseResult.hasValue())
     return genAttr;
@@ -187,7 +185,7 @@ Type emitc::OpaqueType::parse(MLIRContext *context, DialectAsmParser &parser) {
   if (parser.parseLess())
     return Type();
   StringRef value;
-  auto loc = parser.getCurrentLocation();
+  llvm::SMLoc loc = parser.getCurrentLocation();
   if (parser.parseOptionalString(&value) || value.empty()) {
     parser.emitError(loc) << "expected non empty string";
     return Type();
@@ -203,7 +201,7 @@ Type EmitCDialect::parseType(DialectAsmParser &parser) const {
   if (parser.parseKeyword(&mnemonic))
     return Type();
   Type genType;
-  auto parseResult =
+  OptionalParseResult parseResult =
       generatedTypeParser(getContext(), parser, mnemonic, genType);
   if (parseResult.hasValue())
     return genType;

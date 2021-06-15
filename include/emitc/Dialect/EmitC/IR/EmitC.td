@@ -25,7 +25,7 @@ include "mlir/Interfaces/SideEffectInterfaces.td"
 // Base class for EmitC dialect ops.
 class EmitC_Op<string mnemonic, list<OpTrait> traits = []> :
     Op<EmitC_Dialect, mnemonic, traits> {
-  let verifier = [{ return ::verify(*this); }];
+  let verifier = "return ::verify(*this);";
 }
 
 def EmitC_ApplyOp : EmitC_Op<"apply", []> {
@@ -36,7 +36,8 @@ def EmitC_ApplyOp : EmitC_Op<"apply", []> {
   }];
   let arguments = (ins
     Arg<StrAttr, "the operator to apply">:$applicableOperator,
-    AnyType:$operand);
+    AnyType:$operand
+  );
   let results = (outs AnyType:$result);
   let assemblyFormat = [{
     $applicableOperator `(` $operand `)` attr-dict `:` functional-type($operand, results)
@@ -54,9 +55,10 @@ def EmitC_CallOp : EmitC_Op<"call", []> {
   }];
   let arguments = (ins
     Arg<StrAttr, "the C++ function to call">:$callee,
-    Arg<OptionalAttr<ArrayAttr>, "the order of operands and attributes">:$args,
+    Arg<OptionalAttr<ArrayAttr>, "the order of operands and further attributes">:$args,
     Arg<OptionalAttr<ArrayAttr>, "template arguments">:$template_args,
-    Variadic<AnyType>:$operands);
+    Variadic<AnyType>:$operands
+  );
   let results = (outs Variadic<AnyType>);
   let assemblyFormat = [{
     $callee `(` $operands `)` attr-dict `:` functional-type($operands, results)

@@ -7,12 +7,8 @@
 //===----------------------------------------------------------------------===//
 
 #include "emitc/Dialect/EmitC/IR/EmitC.h"
-#include "mlir/Dialect/StandardOps/IR/Ops.h"
 #include "mlir/IR/Builders.h"
 #include "mlir/IR/DialectImplementation.h"
-#include "mlir/IR/OpImplementation.h"
-#include "mlir/IR/TypeUtilities.h"
-#include "mlir/IR/Types.h"
 #include "llvm/ADT/TypeSwitch.h"
 
 using namespace mlir;

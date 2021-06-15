@@ -14,7 +14,6 @@
 #define EMITC_DIALECT_EMITC_IR_EMITC
 
 include "emitc/Dialect/EmitC/IR/EmitCAttributes.td"
-include "emitc/Dialect/EmitC/IR/EmitCBase.td"
 include "emitc/Dialect/EmitC/IR/EmitCTypes.td"
 
 include "mlir/Interfaces/SideEffectInterfaces.td"

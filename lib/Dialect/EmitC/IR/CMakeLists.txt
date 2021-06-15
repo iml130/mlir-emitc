@@ -6,7 +6,7 @@ add_mlir_dialect_library(MLIREmitC
 
   DEPENDS
   MLIREmitCIncGen
-  MLIREmitCAttrDefsIncGen
+  MLIREmitCAttributesIncGen
 
   LINK_LIBS PUBLIC
   MLIRIR

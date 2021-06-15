@@ -21,7 +21,7 @@
 #include "emitc/Dialect/EmitC/IR/EmitCDialect.h.inc"
 
 #define GET_ATTRDEF_CLASSES
-#include "emitc/Dialect/EmitC/IR/EmitCAttrDefs.h.inc"
+#include "emitc/Dialect/EmitC/IR/EmitCAttributes.h.inc"
 
 #define GET_TYPEDEF_CLASSES
 #include "emitc/Dialect/EmitC/IR/EmitCTypes.h.inc"

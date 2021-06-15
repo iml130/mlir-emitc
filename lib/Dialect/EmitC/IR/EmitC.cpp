@@ -33,7 +33,7 @@ void EmitCDialect::initialize() {
       >();
   addAttributes<
 #define GET_ATTRDEF_LIST
-#include "emitc/Dialect/EmitC/IR/EmitCAttrDefs.cpp.inc"
+#include "emitc/Dialect/EmitC/IR/EmitCAttributes.cpp.inc"
       >();
 }
 
@@ -139,7 +139,7 @@ OpFoldResult emitc::ConstantOp::fold(ArrayRef<Attribute> operands) {
 //===----------------------------------------------------------------------===//
 
 #define GET_ATTRDEF_CLASSES
-#include "emitc/Dialect/EmitC/IR/EmitCAttrDefs.cpp.inc"
+#include "emitc/Dialect/EmitC/IR/EmitCAttributes.cpp.inc"
 
 Attribute emitc::OpaqueAttr::parse(MLIRContext *context,
                                    DialectAsmParser &parser, Type type) {

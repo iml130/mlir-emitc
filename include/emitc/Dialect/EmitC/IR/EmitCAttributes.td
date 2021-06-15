@@ -1,4 +1,4 @@
-//===- EmitCAttrDefs.td - EmitC attributes -----------------*- tablegen -*-===//
+//===- EmitCAttributes.td - EmitC attributes ---------------*- tablegen -*-===//
 //
 // Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
 // See https://llvm.org/LICENSE.txt for license information.
@@ -10,9 +10,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-
-#ifndef EMITC_DIALECT_EMITC_IR_EMITCATTRDEFS
-#define EMITC_DIALECT_EMITC_IR_EMITCATTRDEFS
+#ifndef EMITC_DIALECT_EMITC_IR_EMITCATTRIBUTES
+#define EMITC_DIALECT_EMITC_IR_EMITCATTRIBUTES
 
 include "emitc/Dialect/EmitC/IR/EmitCBase.td"
 
@@ -46,4 +45,4 @@ def EmitC_OpaqueAttr : EmitC_Attr<"Opaque", "opaque"> {
   }];
 }
 
-#endif // EMITC_DIALECT_EMITC_IR_EMITCATTRDEFS
+#endif // EMITC_DIALECT_EMITC_IR_EMITCATTRIBUTES

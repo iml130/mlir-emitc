@@ -63,13 +63,14 @@ def EmitC_CallOp : EmitC_Op<"call", []> {
   }];
 }
 
-def EmitC_ConstantOp : EmitC_Op<"constant", [ConstantLike, NoSideEffect]> {
+def EmitC_ConstantOp : EmitC_Op<"constant", [ConstantLike]> {
   let summary = "Constant operation";
   let description = [{
     The `constant` operation produces an SSA value equal to some constant
-    specified by an attribute, similar to `std.constant`.
-    The `emitc.constant` operation supports opaque attributes and EmitC's
-    opaque type.
+    specified by an attribute. This can be used to form simple integer and
+    floating point constants, as well as more exotic things like tensor
+    constants. The `constant` operation also supports the EmitC opaque
+    attribute and the EmitC opaque type.
   }];
 
   let arguments = (ins AnyAttr:$value);

@@ -57,8 +57,8 @@ private:
 } // namespace
 
 void populateTensorToEmitcPatterns(MLIRContext *ctx,
-                                   OwningRewritePatternList &patterns) {
-  patterns.insert<ExtractOpConversion>(ctx);
+                                   RewritePatternSet &patterns) {
+  patterns.add<ExtractOpConversion>(ctx);
 }
 
 namespace {
@@ -73,7 +73,7 @@ struct ConvertTensorToEmitCPass
     target.addLegalDialect<emitc::EmitCDialect>();
     target.addIllegalOp<mlir::tensor::ExtractOp>();
 
-    OwningRewritePatternList patterns(&getContext());
+    RewritePatternSet patterns(&getContext());
     populateTensorToEmitcPatterns(&getContext(), patterns);
 
     if (failed(

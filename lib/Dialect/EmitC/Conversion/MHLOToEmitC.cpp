@@ -492,82 +492,80 @@ private:
 } // namespace
 
 void populateMhloToEmitcPatterns(MLIRContext *ctx,
-                                 OwningRewritePatternList &patterns) {
+                                 RewritePatternSet &patterns) {
   // Insert patterns for MHLO nullary ops.
-  patterns.insert<ConstOpConversion>(ctx);
+  patterns.add<ConstOpConversion>(ctx);
 
   // Insert patterns for MHLO unary elementwise ops.
-  patterns.insert<CallOpConversion<mhlo::AbsOp>>(ctx, "emitc::mhlo::abs");
-  patterns.insert<CallOpConversion<mhlo::CeilOp>>(ctx, "emitc::mhlo::ceil");
-  patterns.insert<CallOpConversion<mhlo::ConvertOp>>(
-      ctx, "emitc::mhlo::convert", /*explicitResultType=*/true);
-  patterns.insert<CallOpConversion<mhlo::CosOp>>(ctx, "emitc::mhlo::cos");
-  patterns.insert<CallOpConversion<mhlo::ExpOp>>(ctx,
-                                                 "emitc::mhlo::exponential");
-  patterns.insert<CallOpConversion<mhlo::Expm1Op>>(
+  patterns.add<CallOpConversion<mhlo::AbsOp>>(ctx, "emitc::mhlo::abs");
+  patterns.add<CallOpConversion<mhlo::CeilOp>>(ctx, "emitc::mhlo::ceil");
+  patterns.add<CallOpConversion<mhlo::ConvertOp>>(ctx, "emitc::mhlo::convert",
+                                                  /*explicitResultType=*/true);
+  patterns.add<CallOpConversion<mhlo::CosOp>>(ctx, "emitc::mhlo::cos");
+  patterns.add<CallOpConversion<mhlo::ExpOp>>(ctx, "emitc::mhlo::exponential");
+  patterns.add<CallOpConversion<mhlo::Expm1Op>>(
       ctx, "emitc::mhlo::exponential_minus_one");
-  patterns.insert<CallOpConversion<mhlo::FloorOp>>(ctx, "emitc::mhlo::floor");
-  patterns.insert<CallOpConversion<mhlo::IsFiniteOp>>(ctx,
-                                                      "emitc::mhlo::is_finite");
-  patterns.insert<CallOpConversion<mhlo::LogOp>>(ctx, "emitc::mhlo::log");
-  patterns.insert<CallOpConversion<mhlo::Log1pOp>>(ctx,
-                                                   "emitc::mhlo::log_plus_one");
-  patterns.insert<CallOpConversion<mhlo::NegOp>>(ctx, "emitc::mhlo::negate");
-  patterns.insert<CallOpConversion<mhlo::RoundOp>>(ctx, "emitc::mhlo::round");
-  patterns.insert<CallOpConversion<mhlo::SinOp>>(ctx, "emitc::mhlo::sin");
-  patterns.insert<CallOpConversion<mhlo::SqrtOp>>(ctx, "emitc::mhlo::sqrt");
-  patterns.insert<CallOpConversion<mhlo::TanhOp>>(ctx, "emitc::mhlo::tanh");
+  patterns.add<CallOpConversion<mhlo::FloorOp>>(ctx, "emitc::mhlo::floor");
+  patterns.add<CallOpConversion<mhlo::IsFiniteOp>>(ctx,
+                                                   "emitc::mhlo::is_finite");
+  patterns.add<CallOpConversion<mhlo::LogOp>>(ctx, "emitc::mhlo::log");
+  patterns.add<CallOpConversion<mhlo::Log1pOp>>(ctx,
+                                                "emitc::mhlo::log_plus_one");
+  patterns.add<CallOpConversion<mhlo::NegOp>>(ctx, "emitc::mhlo::negate");
+  patterns.add<CallOpConversion<mhlo::RoundOp>>(ctx, "emitc::mhlo::round");
+  patterns.add<CallOpConversion<mhlo::SinOp>>(ctx, "emitc::mhlo::sin");
+  patterns.add<CallOpConversion<mhlo::SqrtOp>>(ctx, "emitc::mhlo::sqrt");
+  patterns.add<CallOpConversion<mhlo::TanhOp>>(ctx, "emitc::mhlo::tanh");
 
   // Insert patterns for MHLO binary elementwise ops.
-  patterns.insert<CallOpConversion<mhlo::AddOp>>(ctx, "emitc::mhlo::add");
-  patterns.insert<CallOpConversion<mhlo::Atan2Op>>(ctx, "emitc::mhlo::atan2");
-  patterns.insert<CallOpConversion<mhlo::DivOp>>(ctx, "emitc::mhlo::div");
-  patterns.insert<CallOpConversion<mhlo::MaxOp>>(ctx, "emitc::mhlo::max");
-  patterns.insert<CallOpConversion<mhlo::MinOp>>(ctx, "emitc::mhlo::min");
-  patterns.insert<CallOpConversion<mhlo::MulOp>>(ctx, "emitc::mhlo::mul");
-  patterns.insert<CallOpConversion<mhlo::PowOp>>(ctx, "emitc::mhlo::pow");
-  patterns.insert<CallOpConversion<mhlo::ShiftLeftOp>>(
-      ctx, "emitc::mhlo::shift_left");
-  patterns.insert<CallOpConversion<mhlo::ShiftRightLogicalOp>>(
+  patterns.add<CallOpConversion<mhlo::AddOp>>(ctx, "emitc::mhlo::add");
+  patterns.add<CallOpConversion<mhlo::Atan2Op>>(ctx, "emitc::mhlo::atan2");
+  patterns.add<CallOpConversion<mhlo::DivOp>>(ctx, "emitc::mhlo::div");
+  patterns.add<CallOpConversion<mhlo::MaxOp>>(ctx, "emitc::mhlo::max");
+  patterns.add<CallOpConversion<mhlo::MinOp>>(ctx, "emitc::mhlo::min");
+  patterns.add<CallOpConversion<mhlo::MulOp>>(ctx, "emitc::mhlo::mul");
+  patterns.add<CallOpConversion<mhlo::PowOp>>(ctx, "emitc::mhlo::pow");
+  patterns.add<CallOpConversion<mhlo::ShiftLeftOp>>(ctx,
+                                                    "emitc::mhlo::shift_left");
+  patterns.add<CallOpConversion<mhlo::ShiftRightLogicalOp>>(
       ctx, "emitc::mhlo::shift_right_logical");
-  patterns.insert<CallOpConversion<mhlo::SubOp>>(ctx, "emitc::mhlo::sub");
+  patterns.add<CallOpConversion<mhlo::SubOp>>(ctx, "emitc::mhlo::sub");
 
   // Insert patterns for MHLO binary logical elementwise ops.
-  patterns.insert<CallOpConversion<mhlo::OrOp>>(ctx, "emitc::mhlo::logical_or");
-  patterns.insert<CallOpConversion<mhlo::XorOp>>(ctx,
-                                                 "emitc::mhlo::logical_xor");
+  patterns.add<CallOpConversion<mhlo::OrOp>>(ctx, "emitc::mhlo::logical_or");
+  patterns.add<CallOpConversion<mhlo::XorOp>>(ctx, "emitc::mhlo::logical_xor");
 
   // Insert patterns for MHLO tuple ops.
-  patterns.insert<CompareOpConversion>(ctx);
-  patterns.insert<CallOpConversion<mhlo::TupleOp>>(ctx, "std::make_tuple");
-  patterns.insert<GetTupleElementOpConversion>(ctx);
+  patterns.add<CompareOpConversion>(ctx);
+  patterns.add<CallOpConversion<mhlo::TupleOp>>(ctx, "std::make_tuple");
+  patterns.add<GetTupleElementOpConversion>(ctx);
 
   // Insert patterns for MHLO slice ops.
-  patterns.insert<SliceOpConversion>(ctx);
-  patterns.insert<DynamicSliceOpConversion>(ctx);
-  patterns.insert<DynamicUpdateSliceOpConversion>(ctx);
+  patterns.add<SliceOpConversion>(ctx);
+  patterns.add<DynamicSliceOpConversion>(ctx);
+  patterns.add<DynamicUpdateSliceOpConversion>(ctx);
 
   // Insert patterns for other MHLO ops.
-  patterns.insert<BatchNormInferenceOpConversion>(ctx);
-  patterns.insert<CallOpConversion<mhlo::BitcastConvertOp>>(
+  patterns.add<BatchNormInferenceOpConversion>(ctx);
+  patterns.add<CallOpConversion<mhlo::BitcastConvertOp>>(
       ctx, "emitc::mhlo::bitcast_convert", /*explicitResultType=*/true);
-  patterns.insert<BroadcastInDimOpConversion>(ctx);
-  patterns.insert<CallOpConversion<mhlo::ClampOp>>(
-      ctx, "emitc::mhlo::clamp", /*explicitResultType=*/false,
-      /*explicitOperandTypes=*/true);
-  patterns.insert<ConcatenateOpConversion>(ctx);
-  patterns.insert<ConvOpConversion>(ctx);
-  patterns.insert<CallOpConversion<mhlo::DotOp>>(ctx, "emitc::mhlo::dot",
-                                                 /*explicitResultType=*/true);
-  patterns.insert<PadOpConversion>(ctx);
-  patterns.insert<CallOpConversion<mhlo::ReshapeOp>>(
-      ctx, "emitc::mhlo::reshape", /*explicitResultType=*/true);
-  patterns.insert<CallOpConversion<mhlo::SelectOp>>(ctx, "emitc::mhlo::select");
+  patterns.add<BroadcastInDimOpConversion>(ctx);
+  patterns.add<CallOpConversion<mhlo::ClampOp>>(ctx, "emitc::mhlo::clamp",
+                                                /*explicitResultType=*/false,
+                                                /*explicitOperandTypes=*/true);
+  patterns.add<ConcatenateOpConversion>(ctx);
+  patterns.add<ConvOpConversion>(ctx);
+  patterns.add<CallOpConversion<mhlo::DotOp>>(ctx, "emitc::mhlo::dot",
+                                              /*explicitResultType=*/true);
+  patterns.add<PadOpConversion>(ctx);
+  patterns.add<CallOpConversion<mhlo::ReshapeOp>>(ctx, "emitc::mhlo::reshape",
+                                                  /*explicitResultType=*/true);
+  patterns.add<CallOpConversion<mhlo::SelectOp>>(ctx, "emitc::mhlo::select");
 
   // Insert patterns for MHLO RNG ops.
-  patterns.insert<CallOpConversion<mhlo::RngUniformOp>>(
+  patterns.add<CallOpConversion<mhlo::RngUniformOp>>(
       ctx, "emitc::mhlo::rng_uniform", /*explicitResultType=*/true);
-  patterns.insert<RngBitGeneratorOpConversion>(ctx);
+  patterns.add<RngBitGeneratorOpConversion>(ctx);
 }
 
 namespace {
@@ -650,7 +648,7 @@ struct ConvertMhloToEmitCPass
                         mhlo::RngBitGeneratorOp>();
     // clang-format on
 
-    OwningRewritePatternList patterns(&getContext());
+    RewritePatternSet patterns(&getContext());
     populateMhloToEmitcPatterns(&getContext(), patterns);
 
     if (failed(

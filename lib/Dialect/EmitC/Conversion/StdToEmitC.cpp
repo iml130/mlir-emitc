@@ -75,10 +75,9 @@ private:
 };
 } // namespace
 
-void populateStdToEmitcPatterns(MLIRContext *ctx,
-                                OwningRewritePatternList &patterns) {
-  patterns.insert<IndexCastOpConversion>(ctx);
-  patterns.insert<SplatOpConversion>(ctx);
+void populateStdToEmitcPatterns(MLIRContext *ctx, RewritePatternSet &patterns) {
+  patterns.add<IndexCastOpConversion>(ctx);
+  patterns.add<SplatOpConversion>(ctx);
 }
 
 namespace {
@@ -95,7 +94,7 @@ struct ConvertStdToEmitCPass
     target.addIllegalOp<IndexCastOp>();
     target.addIllegalOp<SplatOp>();
 
-    OwningRewritePatternList patterns(&getContext());
+    RewritePatternSet patterns(&getContext());
     populateStdToEmitcPatterns(&getContext(), patterns);
 
     if (failed(

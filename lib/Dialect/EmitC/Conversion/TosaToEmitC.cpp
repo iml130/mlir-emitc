@@ -684,64 +684,63 @@ private:
 } // namespace
 
 void populateTosaToEmitcPatterns(MLIRContext *ctx,
-                                 OwningRewritePatternList &patterns) {
+                                 RewritePatternSet &patterns) {
   // Insert patterns for TOSA data node ops.
-  patterns.insert<ConstOpConversion>(ctx);
+  patterns.add<ConstOpConversion>(ctx);
 
   // Insert patterns for TOSA unary elementwise ops.
-  patterns.insert<CallOpConversion<tosa::AbsOp>>(ctx, "emitc::tosa::abs");
-  patterns.insert<CallOpConversion<tosa::CastOp>>(ctx, "emitc::tosa::cast",
-                                                  /*explicitResultType=*/true);
-  patterns.insert<CallOpConversion<tosa::CeilOp>>(ctx, "emitc::tosa::ceil");
-  patterns.insert<ClampOpConversion>(ctx);
-  patterns.insert<CallOpConversion<tosa::ExpOp>>(ctx, "emitc::tosa::exp");
-  patterns.insert<CallOpConversion<tosa::FloorOp>>(ctx, "emitc::tosa::floor");
-  patterns.insert<CallOpConversion<tosa::LogOp>>(ctx, "emitc::tosa::log");
-  patterns.insert<NegateOpConversion>(ctx);
-  patterns.insert<CallOpConversion<tosa::ReciprocalOp>>(
-      ctx, "emitc::tosa::reciprocal");
-  patterns.insert<ReluNOpConversion>(ctx);
-  patterns.insert<RsqrtOpConversion>(ctx);
-  patterns.insert<CallOpConversion<tosa::TanhOp>>(ctx, "emitc::tosa::tanh");
+  patterns.add<CallOpConversion<tosa::AbsOp>>(ctx, "emitc::tosa::abs");
+  patterns.add<CallOpConversion<tosa::CastOp>>(ctx, "emitc::tosa::cast",
+                                               /*explicitResultType=*/true);
+  patterns.add<CallOpConversion<tosa::CeilOp>>(ctx, "emitc::tosa::ceil");
+  patterns.add<ClampOpConversion>(ctx);
+  patterns.add<CallOpConversion<tosa::ExpOp>>(ctx, "emitc::tosa::exp");
+  patterns.add<CallOpConversion<tosa::FloorOp>>(ctx, "emitc::tosa::floor");
+  patterns.add<CallOpConversion<tosa::LogOp>>(ctx, "emitc::tosa::log");
+  patterns.add<NegateOpConversion>(ctx);
+  patterns.add<CallOpConversion<tosa::ReciprocalOp>>(ctx,
+                                                     "emitc::tosa::reciprocal");
+  patterns.add<ReluNOpConversion>(ctx);
+  patterns.add<RsqrtOpConversion>(ctx);
+  patterns.add<CallOpConversion<tosa::TanhOp>>(ctx, "emitc::tosa::tanh");
 
   // Insert patterns for TOSA binary elementwise ops.
-  patterns.insert<CallOpBroadcastableConversion<tosa::AddOp>>(
-      ctx, "emitc::tosa::add");
-  patterns.insert<CallOpBroadcastableConversion<tosa::MaximumOp>>(
+  patterns.add<CallOpBroadcastableConversion<tosa::AddOp>>(ctx,
+                                                           "emitc::tosa::add");
+  patterns.add<CallOpBroadcastableConversion<tosa::MaximumOp>>(
       ctx, "emitc::tosa::maximum");
-  patterns.insert<CallOpBroadcastableConversion<tosa::MinimumOp>>(
+  patterns.add<CallOpBroadcastableConversion<tosa::MinimumOp>>(
       ctx, "emitc::tosa::minimum");
-  patterns.insert<MulOpConversion>(ctx, "emitc::tosa::mul");
-  patterns.insert<CallOpBroadcastableConversion<tosa::PowOp>>(
-      ctx, "emitc::tosa::pow");
-  patterns.insert<CallOpBroadcastableConversion<tosa::SubOp>>(
-      ctx, "emitc::tosa::sub");
+  patterns.add<MulOpConversion>(ctx, "emitc::tosa::mul");
+  patterns.add<CallOpBroadcastableConversion<tosa::PowOp>>(ctx,
+                                                           "emitc::tosa::pow");
+  patterns.add<CallOpBroadcastableConversion<tosa::SubOp>>(ctx,
+                                                           "emitc::tosa::sub");
 
   // Insert patterns for other TOSA ops.
-  patterns.insert<GenericConvOpConversion<tosa::Conv2DOp>>(
-      ctx, "emitc::tosa::conv2d");
-  patterns.insert<GenericConvOpConversion<tosa::DepthwiseConv2DOp>>(
+  patterns.add<GenericConvOpConversion<tosa::Conv2DOp>>(ctx,
+                                                        "emitc::tosa::conv2d");
+  patterns.add<GenericConvOpConversion<tosa::DepthwiseConv2DOp>>(
       ctx, "emitc::tosa::depthwise_conv2d");
-  patterns.insert<FullyConnectedOpConversion>(ctx,
-                                              "emitc::tosa::fully_connected");
-  patterns.insert<MatMulOpConversion>(ctx);
-  patterns.insert<ReduceOpConversion<tosa::ReduceAllOp>>(
+  patterns.add<FullyConnectedOpConversion>(ctx, "emitc::tosa::fully_connected");
+  patterns.add<MatMulOpConversion>(ctx);
+  patterns.add<ReduceOpConversion<tosa::ReduceAllOp>>(
       ctx, "emitc::tosa::reduce_all");
-  patterns.insert<ReduceOpConversion<tosa::ReduceAnyOp>>(
+  patterns.add<ReduceOpConversion<tosa::ReduceAnyOp>>(
       ctx, "emitc::tosa::reduce_any");
-  patterns.insert<ReduceOpConversion<tosa::ReduceMaxOp>>(
+  patterns.add<ReduceOpConversion<tosa::ReduceMaxOp>>(
       ctx, "emitc::tosa::reduce_max");
-  patterns.insert<ReduceOpConversion<tosa::ReduceMinOp>>(
+  patterns.add<ReduceOpConversion<tosa::ReduceMinOp>>(
       ctx, "emitc::tosa::reduce_min");
-  patterns.insert<ReduceOpConversion<tosa::ReduceProdOp>>(
+  patterns.add<ReduceOpConversion<tosa::ReduceProdOp>>(
       ctx, "emitc::tosa::reduce_prod");
-  patterns.insert<ReduceOpConversion<tosa::ReduceSumOp>>(
+  patterns.add<ReduceOpConversion<tosa::ReduceSumOp>>(
       ctx, "emitc::tosa::reduce_sum");
-  patterns.insert<CallOpConversion<tosa::ReshapeOp>>(
-      ctx, "emitc::tosa::reshape", /*explicitResultType=*/true);
-  patterns.insert<SliceOpConversion>(ctx);
-  patterns.insert<PadOpConversion>(ctx);
-  patterns.insert<CallOpConversion<tosa::TransposeOp>>(
+  patterns.add<CallOpConversion<tosa::ReshapeOp>>(ctx, "emitc::tosa::reshape",
+                                                  /*explicitResultType=*/true);
+  patterns.add<SliceOpConversion>(ctx);
+  patterns.add<PadOpConversion>(ctx);
+  patterns.add<CallOpConversion<tosa::TransposeOp>>(
       ctx, "emitc::tosa::transpose", /*explicitResultType=*/true);
 }
 
@@ -800,7 +799,7 @@ struct ConvertTosaToEmitCPass
                         tosa::TransposeOp>();
     // clang-format on
 
-    OwningRewritePatternList patterns(&getContext());
+    RewritePatternSet patterns(&getContext());
     populateTosaToEmitcPatterns(&getContext(), patterns);
 
     if (failed(

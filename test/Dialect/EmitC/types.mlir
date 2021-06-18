@@ -1,6 +1,6 @@
-// RUN: emitc-opt -allow-unregistered-dialect -verify-diagnostics %s | FileCheck %s
+// RUN: emitc-opt -verify-diagnostics %s | FileCheck %s
 // check parser
-// RUN: emitc-opt -allow-unregistered-dialect -verify-diagnostics %s | emitc-opt -allow-unregistered-dialect -verify-diagnostics | FileCheck %s
+// RUN: emitc-opt -verify-diagnostics %s | emitc-opt -verify-diagnostics | FileCheck %s
 
 // CHECK-LABEL: func @opaque_types() {
 func @opaque_types() {

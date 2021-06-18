@@ -1,16 +1,15 @@
-// RUN: emitc-opt -allow-unregistered-dialect -verify-diagnostics %s | FileCheck %s
+// RUN: emitc-opt -verify-diagnostics %s | FileCheck %s
 
 "emitc.include" (){include = "test.h", is_standard_include} : () -> ()
 emitc.include "test.h" is_standard_include
 
-// CHECK-LABEL: func @f(%{{.*}}: i32, %{{.*}}: !custom.int32_t) -> i1 {
-func @f(%arg0: i32, %f: !custom<"int32_t">) -> i1 {
+// CHECK-LABEL: func @f(%{{.*}}: i32, %{{.*}}: !emitc.opaque<"int32_t">) {
+func @f(%arg0: i32, %f: !emitc.opaque<"int32_t">) {
   %1 = "emitc.call"() {callee = "blah"} : () -> i64
   emitc.call "foo" (%1) {args = [
     0 : index, dense<[0, 1]> : tensor<2xi32>, 0 : index
   ]} : (i64) -> ()
-  %2:3 = "bar"(%1) : (i64) -> (i1,i1,i1)
-  return %2#1 : i1
+  return
 }
 
 func @c(%arg0: i32) {

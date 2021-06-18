@@ -19,7 +19,8 @@ include "emitc/Dialect/EmitC/IR/EmitCBase.td"
 // EmitC attribute definitions
 //===----------------------------------------------------------------------===//
 
-class EmitC_Attr<string name, string attrMnemonic> : AttrDef<EmitC_Dialect, name> {
+class EmitC_Attr<string name, string attrMnemonic>
+    : AttrDef<EmitC_Dialect, name> {
   let mnemonic = attrMnemonic;
 }
 
@@ -29,7 +30,7 @@ def EmitC_OpaqueAttr : EmitC_Attr<"Opaque", "opaque"> {
   let description = [{
     An opaque attribute of which the value gets emitted as is.
 
-    Examples:
+    Example:
 
     ```mlir
     #emitc.opaque<"">

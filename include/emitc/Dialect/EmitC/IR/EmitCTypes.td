@@ -20,7 +20,8 @@ include "emitc/Dialect/EmitC/IR/EmitCBase.td"
 // EmitC type definitions
 //===----------------------------------------------------------------------===//
 
-class EmitC_Type<string name, string typeMnemonic> : TypeDef<EmitC_Dialect, name> {
+class EmitC_Type<string name, string typeMnemonic>
+    : TypeDef<EmitC_Dialect, name> {
   let mnemonic = typeMnemonic;
 }
 
@@ -30,7 +31,7 @@ def EmitC_OpaqueType : EmitC_Type<"Opaque", "opaque"> {
   let description = [{
     An opaque data type of which the value gets emitted as is.
 
-    Examples:
+    Example:
 
     ```mlir
     !emitc.opaque<"int">

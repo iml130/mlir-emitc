@@ -69,36 +69,29 @@ static LogicalResult verify(emitc::CallOp op) {
     return op.emitOpError("callee must not be empty");
 
   if (Optional<ArrayAttr> argsAttr = op.args()) {
-    for (const Attribute arg : argsAttr.getValue()) {
+    for (Attribute arg : argsAttr.getValue()) {
       if (arg.getType().isa<IndexType>()) {
         int64_t index = arg.cast<IntegerAttr>().getInt();
         // Args with elements of type index must be in range
         // [0..operands.size).
         if ((index < 0) || (index >= static_cast<int64_t>(op.getNumOperands())))
           return op.emitOpError("index argument is out of range");
-      }
-      // Args with elements of type ArrayAttr must have a type.
-      else if (arg.isa<ArrayAttr>() && arg.getType().isa<NoneType>()) {
+
+        // Args with elements of type ArrayAttr must have a type.
+      } else if (arg.isa<ArrayAttr>() && arg.getType().isa<NoneType>()) {
         return op.emitOpError("array argument has no type");
       }
     }
   }
 
   if (Optional<ArrayAttr> templateArgsAttr = op.template_args()) {
-    for (const Attribute tArg : templateArgsAttr.getValue()) {
-      // C++ forbids float literals as template arguments.
-      if (tArg.isa<FloatAttr>())
-        return op.emitOpError("float literal as template argument is invalid");
-      // Template args with elements of type ArrayAttr are not allowed.
-      if (tArg.isa<ArrayAttr>())
-        return op.emitOpError("array as template arguments is invalid");
-      // Template args with elements of type DenseElementsAttr are not
-      // allowed.
-      if (tArg.isa<DenseElementsAttr>())
-        return op.emitOpError("dense elements as template "
-                              "argument are invalid");
+    for (Attribute tArg : templateArgsAttr.getValue()) {
+      if (!tArg.isa<TypeAttr>() && !tArg.isa<IntegerAttr>() &&
+          !tArg.isa<FloatAttr>() && !tArg.isa<emitc::OpaqueAttr>())
+        return op.emitOpError("template argument has invalid type");
     }
   }
+
   return success();
 }
 

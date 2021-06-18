@@ -33,6 +33,18 @@ def EmitC_ApplyOp : EmitC_Op<"apply", []> {
   let description = [{
     With the `apply` operation the operators & (address of) and * (contents of)
     can be applied to a single operand.
+
+    Example:
+
+    ```mlir
+    // Custom form of applying the & operator.
+    %0 = emitc.apply "&"(%arg0) : (i32) -> !emitc.opaque<"int32_t*">
+
+    // Generic form of the same operation.
+    %0 = "emitc.apply"(%arg0) {applicableOperator = "&"}
+        : (i32) -> !emitc.opaque<"int32_t*">
+
+    ```
   }];
   let arguments = (ins
     Arg<StrAttr, "the operator to apply">:$applicableOperator,
@@ -52,6 +64,16 @@ def EmitC_CallOp : EmitC_Op<"call", []> {
 
     - integer value of index type refers to an operand;
     - attribute which will get lowered to constant value in call;
+
+    Example:
+
+    ```mlir
+    // Custom form defining a call to `foo()`.
+    %0 = emitc.call "foo" () : () -> i32
+
+    // Generic form of the same operation.
+    %0 = "emitc.call"() {callee = "foo"} : () -> i32
+    ```
   }];
   let arguments = (ins
     Arg<StrAttr, "the C++ function to call">:$callee,
@@ -73,6 +95,18 @@ def EmitC_ConstantOp : EmitC_Op<"constant", [ConstantLike]> {
     floating point constants, as well as more exotic things like tensor
     constants. The `constant` operation also supports the EmitC opaque
     attribute and the EmitC opaque type.
+
+    Example:
+
+    ```mlir
+    // Integer constant
+    %0 = "emitc.constant"(){value = 42 : i32} : () -> i32
+
+    // Constant emitted as `int32_t* = NULL;`
+    %1 = "emitc.constant"()
+        {value = #emitc.opaque<"NULL"> : !emitc.opaque<"int32_t*">}
+        : () -> !emitc.opaque<"int32_t*">
+    ```
   }];
 
   let arguments = (ins AnyAttr:$value);
@@ -86,6 +120,19 @@ def EmitC_IncludeOp : EmitC_Op<"include", [NoSideEffect, HasParent<"ModuleOp">]>
   let description = [{
     The `include` operation allows to define a source file inclusion via the
     `#include` directive.
+
+    Example:
+
+    ```mlir
+    // Custom form defining the inclusion of `<myheader>`.
+    emitc.include "myheader.h" is_standard_include
+
+    // Generic form of the same operation.
+    "emitc.include" (){include = "myheader.h", is_standard_include} : () -> ()
+
+    // Generic form defining the inclusion of `"myheader"`.
+    "emitc.include" (){include = "myheader.h"} : () -> ()
+    ```
   }];
   let arguments = (ins
     Arg<StrAttr, "source file to include">:$include,

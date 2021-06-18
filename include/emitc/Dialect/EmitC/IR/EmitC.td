@@ -23,8 +23,8 @@ include "mlir/Interfaces/SideEffectInterfaces.td"
 //===----------------------------------------------------------------------===//
 
 // Base class for EmitC dialect ops.
-class EmitC_Op<string mnemonic, list<OpTrait> traits = []> :
-    Op<EmitC_Dialect, mnemonic, traits> {
+class EmitC_Op<string mnemonic, list<OpTrait> traits = []>
+    : Op<EmitC_Dialect, mnemonic, traits> {
   let verifier = "return ::verify(*this);";
 }
 
@@ -115,7 +115,8 @@ def EmitC_ConstantOp : EmitC_Op<"constant", [ConstantLike]> {
   let hasFolder = 1;
 }
 
-def EmitC_IncludeOp : EmitC_Op<"include", [NoSideEffect, HasParent<"ModuleOp">]> {
+def EmitC_IncludeOp
+    : EmitC_Op<"include", [NoSideEffect, HasParent<"ModuleOp">]> {
   let summary = "Include operation";
   let description = [{
     The `include` operation allows to define a source file inclusion via the
@@ -136,7 +137,8 @@ def EmitC_IncludeOp : EmitC_Op<"include", [NoSideEffect, HasParent<"ModuleOp">]>
   }];
   let arguments = (ins
     Arg<StrAttr, "source file to include">:$include,
-    UnitAttr:$is_standard_include);
+    UnitAttr:$is_standard_include
+  );
   let assemblyFormat = [{
     $include attr-dict (`is_standard_include` $is_standard_include^)?
   }];

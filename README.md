@@ -4,9 +4,11 @@
 
 EmitC is a MLIR dialect to emit C++ code. The initial checked in code is forked from https://reviews.llvm.org/D76571.
 
+**EmitC is currently moved into MLIR core! This repository does no longer contain the EmitC dialect itself.**
+
 **DISCLAIMER:** This is a research project and not intended for everyday use. The code is made available without any support. However, we welcome any kind of feedback via the issue tracker.
 
-EmitC enables to convert operations from other MLIR dialects to [EmitC ops](docs/EmitC.md) and to translate those to C++.
+EmitC enables to convert operations from other MLIR dialects to [EmitC ops](https://mlir.llvm.org/docs/Dialects/EmitC/) and to translate those to C++.
 
 
 ## Getting Started

@@ -14,7 +14,7 @@
 #ifndef EMITC_INITDIALECT_H
 #define EMITC_INITDIALECT_H
 
-#include "emitc/Dialect/EmitC/IR/EmitC.h"
+#include "mlir/Dialect/EmitC/IR/EmitC.h"
 #include "mlir/IR/Dialect.h"
 
 namespace mlir {

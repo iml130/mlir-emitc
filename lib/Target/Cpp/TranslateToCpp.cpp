@@ -6,8 +6,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "emitc/Dialect/EmitC/IR/EmitC.h"
 #include "emitc/Target/Cpp/Cpp.h"
+#include "mlir/Dialect/EmitC/IR/EmitC.h"
 #include "mlir/Dialect/SCF/SCF.h"
 #include "mlir/Dialect/StandardOps/IR/Ops.h"
 #include "mlir/IR/BuiltinOps.h"

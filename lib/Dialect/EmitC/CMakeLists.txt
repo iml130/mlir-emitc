@@ -1,12 +1,11 @@
 add_subdirectory(Conversion)
-add_subdirectory(IR)
 add_subdirectory(Transforms)
 
 add_mlir_library(MLIREmitCPipelines
   Pipelines.cpp
 
   DEPENDS
-  MLIREmitCIncGen
+  MLIREmitC
   MLIREmitCPassIncGen
   MLIREmitCConversionPassIncGen
 

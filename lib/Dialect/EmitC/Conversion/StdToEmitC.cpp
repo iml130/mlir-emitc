@@ -12,7 +12,7 @@
 
 #include "PassDetail.h"
 #include "emitc/Dialect/EmitC/Conversion/Passes.h"
-#include "emitc/Dialect/EmitC/IR/EmitC.h"
+#include "mlir/Dialect/EmitC/IR/EmitC.h"
 #include "mlir/Dialect/StandardOps/IR/Ops.h"
 #include "mlir/IR/BuiltinOps.h"
 #include "mlir/IR/PatternMatch.h"

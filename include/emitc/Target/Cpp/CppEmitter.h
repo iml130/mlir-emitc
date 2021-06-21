@@ -1,4 +1,4 @@
-//===- Cpp.h - Helpers to create C++ emitter --------------------*- C++ -*-===//
+//===- CppEmitter.h - Helpers to create C++ emitter -------------*- C++ -*-===//
 //
 // Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
 // See https://llvm.org/LICENSE.txt for license information.
@@ -10,8 +10,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef EMITC_TARGET_CPP_CPP_H
-#define EMITC_TARGET_CPP_CPP_H
+#ifndef EMITC_TARGET_CPP_CPPEMITTER_H
+#define EMITC_TARGET_CPP_CPPEMITTER_H
 
 #include "mlir/IR/BuiltinTypes.h"
 #include "mlir/IR/Value.h"
@@ -193,4 +193,4 @@ LogicalResult translateToC(Operation &op, raw_ostream &os,
 } // namespace emitc
 } // namespace mlir
 
-#endif // EMITC_TARGET_CPP_CPP_H
+#endif // EMITC_TARGET_CPP_CPPEMITTER_H

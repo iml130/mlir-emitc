@@ -109,15 +109,14 @@ static LogicalResult printConstantOp(CppEmitter &emitter,
   return printConstantOp(emitter, operation, value);
 }
 
-static LogicalResult printBranchOp(CppEmitter &emitter,
-                                   mlir::BranchOp branchOp) {
+static LogicalResult printBranchOp(CppEmitter &emitter, BranchOp branchOp) {
   raw_ostream &os = emitter.ostream();
   Block &successor = *branchOp.getSuccessor();
 
   for (auto pair :
        llvm::zip(branchOp.getOperands(), successor.getArguments())) {
-    auto &operand = std::get<0>(pair);
-    auto &argument = std::get<1>(pair);
+    Value &operand = std::get<0>(pair);
+    BlockArgument &argument = std::get<1>(pair);
     os << emitter.getOrCreateName(argument) << " = "
        << emitter.getOrCreateName(operand) << ";\n";
   }
@@ -131,7 +130,7 @@ static LogicalResult printBranchOp(CppEmitter &emitter,
 }
 
 static LogicalResult printCondBranchOp(CppEmitter &emitter,
-                                       mlir::CondBranchOp condBranchOp) {
+                                       CondBranchOp condBranchOp) {
   raw_ostream &os = emitter.ostream();
   Block &trueSuccessor = *condBranchOp.getTrueDest();
   Block &falseSuccessor = *condBranchOp.getFalseDest();
@@ -142,8 +141,8 @@ static LogicalResult printCondBranchOp(CppEmitter &emitter,
   // If condition is true.
   for (auto pair : llvm::zip(condBranchOp.getTrueOperands(),
                              trueSuccessor.getArguments())) {
-    auto &operand = std::get<0>(pair);
-    auto &argument = std::get<1>(pair);
+    Value &operand = std::get<0>(pair);
+    BlockArgument &argument = std::get<1>(pair);
     os << emitter.getOrCreateName(argument) << " = "
        << emitter.getOrCreateName(operand) << ";\n";
   }
@@ -158,8 +157,8 @@ static LogicalResult printCondBranchOp(CppEmitter &emitter,
   // If condition is false.
   for (auto pair : llvm::zip(condBranchOp.getFalseOperands(),
                              falseSuccessor.getArguments())) {
-    auto &operand = std::get<0>(pair);
-    auto &argument = std::get<1>(pair);
+    Value &operand = std::get<0>(pair);
+    BlockArgument &argument = std::get<1>(pair);
     os << emitter.getOrCreateName(argument) << " = "
        << emitter.getOrCreateName(operand) << ";\n";
   }
@@ -252,12 +251,12 @@ static LogicalResult printForOp(CppEmitter &emitter, scf::ForOp forOp) {
 
   raw_ostream &os = emitter.ostream();
 
-  auto operands = forOp.getIterOperands();
-  auto iterArgs = forOp.getRegionIterArgs();
-  auto results = forOp.getResults();
+  OperandRange operands = forOp.getIterOperands();
+  Block::BlockArgListType iterArgs = forOp.getRegionIterArgs();
+  Operation::result_range results = forOp.getResults();
 
   if (!emitter.forwardDeclaredVariables()) {
-    for (auto result : forOp.getResults()) {
+    for (OpResult result : results) {
       if (failed(emitter.emitVariableDeclaration(result,
                                                  /*trailingSemicolon=*/true)))
         return failure();
@@ -314,8 +313,8 @@ static LogicalResult printForOp(CppEmitter &emitter, scf::ForOp forOp) {
   Operation *yieldOp = forRegion.getBlocks().front().getTerminator();
   // Copy yield operands into iterArgs at the end of a loop iteration.
   for (auto pair : llvm::zip(iterArgs, yieldOp->getOperands())) {
-    auto iterArg = std::get<0>(pair);
-    auto operand = std::get<1>(pair);
+    BlockArgument iterArg = std::get<0>(pair);
+    Value operand = std::get<1>(pair);
     os << emitter.getOrCreateName(iterArg) << " = "
        << emitter.getOrCreateName(operand) << ";\n";
   }
@@ -324,8 +323,8 @@ static LogicalResult printForOp(CppEmitter &emitter, scf::ForOp forOp) {
 
   // Copy iterArgs into results after the for loop.
   for (auto pair : llvm::zip(results, iterArgs)) {
-    auto result = std::get<0>(pair);
-    auto iterArg = std::get<1>(pair);
+    OpResult result = std::get<0>(pair);
+    BlockArgument iterArg = std::get<1>(pair);
     os << emitter.getOrCreateName(result) << " = "
        << emitter.getOrCreateName(iterArg) << ";\n";
   }
@@ -433,7 +432,7 @@ static LogicalResult printModule(CppEmitter &emitter, ModuleOp moduleOp) {
     os << "#include <cmath>\n\n";
   }
 
-  for (emitc::IncludeOp includeOp : moduleOp.getOps<emitc::IncludeOp>()) {
+  for (IncludeOp includeOp : moduleOp.getOps<IncludeOp>()) {
     os << "#include ";
     if (includeOp.is_standard_include()) {
       os << "<" << includeOp.include() << ">\n";
@@ -511,7 +510,7 @@ static LogicalResult printFunction(CppEmitter &emitter, FuncOp functionOp) {
       return failure();
   }
 
-  auto &blocks = functionOp.getBlocks();
+  Region::BlockListType &blocks = functionOp.getBlocks();
   // Create label names for basic blocks.
   for (Block &block : blocks) {
     emitter.getOrCreateName(block);
@@ -566,7 +565,7 @@ StringRef CppEmitter::getOrCreateName(Value val) {
   return *valMapper.begin(val);
 }
 
-/// Return the existing or a new name for a Block.
+/// Return the existing or a new label for a Block.
 StringRef CppEmitter::getOrCreateName(Block &block) {
   if (!blockMapper.count(&block))
     blockMapper.insert(&block, formatv("label{0}", ++labelInScopeCount.top()));
@@ -634,7 +633,7 @@ LogicalResult CppEmitter::emitAttribute(Operation &op, Attribute attr) {
   }
   StringRef denseErrorMessage =
       "dense attributes are not supported if emitting C";
-  if (auto dense = attr.dyn_cast<mlir::DenseFPElementsAttr>()) {
+  if (auto dense = attr.dyn_cast<DenseFPElementsAttr>()) {
     // Dense attributes are not supported if emitting C.
     if (restrictedToC())
       return op.emitError(denseErrorMessage);
@@ -644,7 +643,7 @@ LogicalResult CppEmitter::emitAttribute(Operation &op, Attribute attr) {
     return success();
   }
 
-  // Print int attributes.
+  // Print integer attributes.
   if (auto iAttr = attr.dyn_cast<IntegerAttr>()) {
     if (auto iType = iAttr.getType().dyn_cast<IntegerType>()) {
       printInt(iAttr.getValue(), shouldMapToSigned(iType.getSignedness()));
@@ -680,10 +679,14 @@ LogicalResult CppEmitter::emitAttribute(Operation &op, Attribute attr) {
       return success();
     }
   }
+
+  // Print opaque attributes.
   if (auto oAttr = attr.dyn_cast<emitc::OpaqueAttr>()) {
     os << oAttr.getValue();
     return success();
   }
+
+  // Print symbolic reference attributes.
   if (auto sAttr = attr.dyn_cast<SymbolRefAttr>()) {
     if (sAttr.getNestedReferences().size() > 1) {
       return op.emitError(" attribute has more than 1 nested reference");
@@ -691,9 +694,12 @@ LogicalResult CppEmitter::emitAttribute(Operation &op, Attribute attr) {
     os << sAttr.getRootReference();
     return success();
   }
+
+  // Print type attributes.
   if (auto type = attr.dyn_cast<TypeAttr>()) {
     return emitType(op, type.getValue());
   }
+
   return op.emitError("cannot emit attribute of type ") << attr.getType();
 }
 

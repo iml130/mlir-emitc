@@ -119,7 +119,7 @@ private:
     }
 
     Block &block = blocks.front();
-    auto terminator = block.getTerminator();
+    auto *terminator = block.getTerminator();
     auto returnOp = dyn_cast_or_null<mhlo::ReturnOp>(terminator);
     if (!returnOp) {
       return None;
@@ -151,7 +151,7 @@ private:
     }
 
     OpBuilder builder(op);
-    auto ctx = op.getContext();
+    auto *ctx = op.getContext();
 
     auto operands = op.getOperands();
 
@@ -186,7 +186,7 @@ private:
 
   LogicalResult convertToCall(mhlo::ReduceWindowOp &op, FuncOp &funcOp) {
     OpBuilder builder(op);
-    auto ctx = op.getContext();
+    auto *ctx = op.getContext();
 
     auto operands = op.getOperands();
 

@@ -33,15 +33,15 @@ template <typename ForwardIterator, typename UnaryFunctor,
           typename NullaryFunctor>
 inline LogicalResult
 interleaveWithError(ForwardIterator begin, ForwardIterator end,
-                    UnaryFunctor each_fn, NullaryFunctor between_fn) {
+                    UnaryFunctor eachFn, NullaryFunctor betweenFn) {
   if (begin == end)
     return success();
-  if (failed(each_fn(*begin)))
+  if (failed(eachFn(*begin)))
     return failure();
   ++begin;
   for (; begin != end; ++begin) {
-    between_fn();
-    if (failed(each_fn(*begin)))
+    betweenFn();
+    if (failed(eachFn(*begin)))
       return failure();
   }
   return success();
@@ -49,17 +49,16 @@ interleaveWithError(ForwardIterator begin, ForwardIterator end,
 
 template <typename Container, typename UnaryFunctor, typename NullaryFunctor>
 inline LogicalResult interleaveWithError(const Container &c,
-                                         UnaryFunctor each_fn,
-                                         NullaryFunctor between_fn) {
-  return interleaveWithError(c.begin(), c.end(), each_fn, between_fn);
+                                         UnaryFunctor eachFn,
+                                         NullaryFunctor betweenFn) {
+  return interleaveWithError(c.begin(), c.end(), eachFn, betweenFn);
 }
 
 template <typename Container, typename UnaryFunctor>
 inline LogicalResult interleaveCommaWithError(const Container &c,
                                               raw_ostream &os,
-                                              UnaryFunctor each_fn) {
-  return interleaveWithError(c.begin(), c.end(), each_fn,
-                             [&]() { os << ", "; });
+                                              UnaryFunctor eachFn) {
+  return interleaveWithError(c.begin(), c.end(), eachFn, [&]() { os << ", "; });
 }
 
 /// Emitter that uses dialect specific emitters to emit C++ code.

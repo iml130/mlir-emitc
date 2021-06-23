@@ -162,7 +162,7 @@ private:
   matchAndRewrite(mhlo::ConvOp convOp, ArrayRef<Value> operands,
                   ConversionPatternRewriter &rewriter) const override {
     typename mhlo::ConvOp::Adaptor adaptor(operands);
-    auto ctx = convOp.getContext();
+    auto *ctx = convOp.getContext();
 
     StringRef funcName = "emitc::mhlo::convolution";
     StringAttr callee = rewriter.getStringAttr(funcName);
@@ -268,7 +268,7 @@ private:
   LogicalResult
   matchAndRewrite(mhlo::CompareOp compareOp, ArrayRef<Value> operands,
                   ConversionPatternRewriter &rewriter) const override {
-    auto ctx = compareOp.getContext();
+    auto *ctx = compareOp.getContext();
 
     StringAttr callee = rewriter.getStringAttr("emitc::mhlo::compare");
 

@@ -19,8 +19,8 @@
 #include "mlir/Pass/Pass.h"
 #include "mlir/Transforms/DialectConversion.h"
 
-namespace mlir {
-namespace emitc {
+using namespace mlir;
+using namespace mlir::emitc;
 
 namespace {
 
@@ -263,14 +263,14 @@ private:
       // Change the {min,max}_int type to the element type of the operand.
       auto minInt = clampOp.min_int();
       auto maxInt = clampOp.max_int();
-      args_.push_back(mlir::IntegerAttr::get(elementType, minInt));
-      args_.push_back(mlir::IntegerAttr::get(elementType, maxInt));
+      args_.push_back(IntegerAttr::get(elementType, minInt));
+      args_.push_back(IntegerAttr::get(elementType, maxInt));
     } else if (elementType.isa<FloatType>()) {
       // Change the {min,max}_fp type to the element type of the operand.
       auto minFp = clampOp.min_fpAttr().getValueAsDouble();
       auto maxFp = clampOp.max_fpAttr().getValueAsDouble();
-      args_.push_back(mlir::FloatAttr::get(elementType, minFp));
-      args_.push_back(mlir::FloatAttr::get(elementType, maxFp));
+      args_.push_back(FloatAttr::get(elementType, minFp));
+      args_.push_back(FloatAttr::get(elementType, maxFp));
     } else {
       return clampOp.emitError(
           "Operand of tosa.clamp has to be tensor of integer or float values.");
@@ -342,11 +342,11 @@ private:
     if (elementType.isa<IntegerType>()) {
       // Change the max_int type to the element type of the operand.
       auto maxInt = reluNOp.max_int();
-      args_.push_back(mlir::IntegerAttr::get(elementType, maxInt));
+      args_.push_back(IntegerAttr::get(elementType, maxInt));
     } else if (elementType.isa<FloatType>()) {
       // Change the max_fp type to the element type of the operand.
       auto maxFp = reluNOp.max_fpAttr().getValueAsDouble();
-      args_.push_back(mlir::FloatAttr::get(elementType, maxFp));
+      args_.push_back(FloatAttr::get(elementType, maxFp));
     } else {
       return reluNOp.emitError(
           "Operand of tosa.reluN has to be tensor of integer or float values.");
@@ -429,7 +429,7 @@ createBroadcastOpIfNeeded(SrcOp &srcOp, ArrayRef<Value> operands,
       auto numBroadcastDims = opOutputRank - operandRank;
       for (int64_t d = numBroadcastDims; d < opOutputRank; ++d) {
         broadcastIndices.push_back(
-            mlir::IntegerAttr::get(rewriter.getIntegerType(64), d));
+            IntegerAttr::get(rewriter.getIntegerType(64), d));
       }
 
       RankedTensorType tensorType =
@@ -498,7 +498,7 @@ private:
 
     rewriter.replaceOpWithNewOp<emitc::CallOp>(
         srcOp, srcOp.getType(), callee, args, templateArgs,
-        mlir::ValueRange({broadcastedOperands[0], broadcastedOperands[1]}));
+        ValueRange({broadcastedOperands[0], broadcastedOperands[1]}));
 
     return success();
   }
@@ -544,7 +544,7 @@ private:
 
     rewriter.replaceOpWithNewOp<emitc::CallOp>(
         mulOp, mulOp.getType(), callee, args, templateArgs,
-        mlir::ValueRange({broadcastedOperands[0], broadcastedOperands[1]}));
+        ValueRange({broadcastedOperands[0], broadcastedOperands[1]}));
 
     return success();
   }
@@ -810,9 +810,6 @@ struct ConvertTosaToEmitCPass
 
 } // namespace
 
-std::unique_ptr<FunctionPass> createConvertTosaToEmitCPass() {
+std::unique_ptr<FunctionPass> mlir::emitc::createConvertTosaToEmitCPass() {
   return std::make_unique<ConvertTosaToEmitCPass>();
 }
-
-} // namespace emitc
-} // namespace mlir

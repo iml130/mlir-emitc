@@ -19,23 +19,22 @@
 #include "mlir/Pass/Pass.h"
 #include "mlir/Transforms/DialectConversion.h"
 
-namespace mlir {
-namespace emitc {
+using namespace mlir;
+using namespace mlir::emitc;
 
 namespace {
 
 /// Convert `tensor.extract` into an `emitc.call` operation.
-class ExtractOpConversion
-    : public OpConversionPattern<mlir::tensor::ExtractOp> {
-  using OpConversionPattern<mlir::tensor::ExtractOp>::OpConversionPattern;
+class ExtractOpConversion : public OpConversionPattern<tensor::ExtractOp> {
+  using OpConversionPattern<tensor::ExtractOp>::OpConversionPattern;
 
 public:
   ExtractOpConversion(MLIRContext *ctx)
-      : OpConversionPattern<mlir::tensor::ExtractOp>(ctx) {}
+      : OpConversionPattern<tensor::ExtractOp>(ctx) {}
 
 private:
   LogicalResult
-  matchAndRewrite(mlir::tensor::ExtractOp indexCastOp, ArrayRef<Value> operands,
+  matchAndRewrite(tensor::ExtractOp indexCastOp, ArrayRef<Value> operands,
                   ConversionPatternRewriter &rewriter) const override {
     StringAttr callee = rewriter.getStringAttr("emitc::tensor::extract");
 
@@ -71,7 +70,7 @@ struct ConvertTensorToEmitCPass
     ConversionTarget target(getContext());
 
     target.addLegalDialect<emitc::EmitCDialect>();
-    target.addIllegalOp<mlir::tensor::ExtractOp>();
+    target.addIllegalOp<tensor::ExtractOp>();
 
     RewritePatternSet patterns(&getContext());
     populateTensorToEmitcPatterns(&getContext(), patterns);
@@ -84,9 +83,6 @@ struct ConvertTensorToEmitCPass
 
 } // namespace
 
-std::unique_ptr<FunctionPass> createConvertTensorToEmitCPass() {
+std::unique_ptr<FunctionPass> mlir::emitc::createConvertTensorToEmitCPass() {
   return std::make_unique<ConvertTensorToEmitCPass>();
 }
-
-} // namespace emitc
-} // namespace mlir

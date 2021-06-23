@@ -19,8 +19,8 @@
 #include "mlir/Pass/Pass.h"
 #include "mlir/Transforms/DialectConversion.h"
 
-namespace mlir {
-namespace emitc {
+using namespace mlir;
+using namespace mlir::emitc;
 
 namespace {
 
@@ -659,9 +659,6 @@ struct ConvertMhloToEmitCPass
 
 } // namespace
 
-std::unique_ptr<FunctionPass> createConvertMhloToEmitCPass() {
+std::unique_ptr<FunctionPass> mlir::emitc::createConvertMhloToEmitCPass() {
   return std::make_unique<ConvertMhloToEmitCPass>();
 }
-
-} // namespace emitc
-} // namespace mlir

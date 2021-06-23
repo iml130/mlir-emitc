@@ -19,8 +19,8 @@
 #include "mlir/IR/BuiltinOps.h"
 #include "mlir/Pass/Pass.h"
 
-namespace mlir {
-namespace emitc {
+using namespace mlir;
+using namespace mlir::emitc;
 
 namespace {
 
@@ -221,10 +221,7 @@ private:
 
 } // namespace
 
-std::unique_ptr<OperationPass<mlir::ModuleOp>>
-createConvertMhloRegionOpsToEmitCPass() {
+std::unique_ptr<OperationPass<ModuleOp>>
+mlir::emitc::createConvertMhloRegionOpsToEmitCPass() {
   return std::make_unique<ConvertMhloRegionOpsToEmitCPass>();
 }
-
-} // namespace emitc
-} // namespace mlir

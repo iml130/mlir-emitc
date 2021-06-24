@@ -556,9 +556,9 @@ CppEmitter::CppEmitter(raw_ostream &os, bool restrictToC,
 
 /// Return the existing or a new name for a Value.
 StringRef CppEmitter::getOrCreateName(Value val) {
-  if (!valMapper.count(val))
-    valMapper.insert(val, formatv("v{0}", ++valueInScopeCount.top()));
-  return *valMapper.begin(val);
+  if (!valueMapper.count(val))
+    valueMapper.insert(val, formatv("v{0}", ++valueInScopeCount.top()));
+  return *valueMapper.begin(val);
 }
 
 /// Return the existing or a new label for a Block.
@@ -579,7 +579,7 @@ bool CppEmitter::shouldMapToSigned(IntegerType::SignednessSemantics val) {
   }
 }
 
-bool CppEmitter::hasValueInScope(Value val) { return valMapper.count(val); }
+bool CppEmitter::hasValueInScope(Value val) { return valueMapper.count(val); }
 
 bool CppEmitter::hasBlockLabel(Block &block) {
   return blockMapper.count(&block);

@@ -22,10 +22,6 @@
 namespace mlir {
 namespace emitc {
 
-struct TargetOptions {
-  bool forwardDeclareVariables;
-};
-
 /// Convenience functions to produce interleaved output with functions returning
 /// a LogicalResult. This is different than those in STL as functions used on
 /// each element doesn't return a string.
@@ -123,7 +119,7 @@ struct CppEmitter {
   /// RAII helper function to manage entering/exiting C++ scopes.
   struct Scope {
     Scope(CppEmitter &emitter)
-        : valMapperScope(emitter.valMapper),
+        : valueMapperScope(emitter.valueMapper),
           blockMapperScope(emitter.blockMapper), emitter(emitter) {
       emitter.valueInScopeCount.push(emitter.valueInScopeCount.top());
       emitter.labelInScopeCount.push(emitter.labelInScopeCount.top());
@@ -134,7 +130,7 @@ struct CppEmitter {
     }
 
   private:
-    llvm::ScopedHashTableScope<Value, std::string> valMapperScope;
+    llvm::ScopedHashTableScope<Value, std::string> valueMapperScope;
     llvm::ScopedHashTableScope<Block *, std::string> blockMapperScope;
     CppEmitter &emitter;
   };
@@ -155,7 +151,7 @@ struct CppEmitter {
   bool forwardDeclaredVariables() { return forwardDeclareVariables; };
 
 private:
-  using ValMapper = llvm::ScopedHashTable<Value, std::string>;
+  using ValueMapper = llvm::ScopedHashTable<Value, std::string>;
   using BlockMapper = llvm::ScopedHashTable<Block *, std::string>;
 
   /// Output stream to emit to.
@@ -168,7 +164,7 @@ private:
   bool forwardDeclareVariables;
 
   /// Map from value to name of C++ variable that contain the name.
-  ValMapper valMapper;
+  ValueMapper valueMapper;
 
   /// Map from block to name of C++ label.
   BlockMapper blockMapper;

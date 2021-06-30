@@ -17,6 +17,7 @@
 #include "llvm/ADT/DenseMap.h"
 #include "llvm/ADT/StringExtras.h"
 #include "llvm/ADT/StringMap.h"
+#include "llvm/ADT/TypeSwitch.h"
 #include "llvm/Support/Debug.h"
 #include "llvm/Support/FormatVariadic.h"
 
@@ -92,23 +93,23 @@ static LogicalResult printConstantOp(CppEmitter &emitter, Operation *operation,
   return success();
 }
 
-static LogicalResult printConstantOp(CppEmitter &emitter,
-                                     emitc::ConstantOp constantOp) {
+static LogicalResult printOperation(CppEmitter &emitter,
+                                    emitc::ConstantOp constantOp) {
   Operation *operation = constantOp.getOperation();
   Attribute value = constantOp.value();
 
   return printConstantOp(emitter, operation, value);
 }
 
-static LogicalResult printConstantOp(CppEmitter &emitter,
-                                     mlir::ConstantOp constantOp) {
+static LogicalResult printOperation(CppEmitter &emitter,
+                                    mlir::ConstantOp constantOp) {
   Operation *operation = constantOp.getOperation();
   Attribute value = constantOp.value();
 
   return printConstantOp(emitter, operation, value);
 }
 
-static LogicalResult printBranchOp(CppEmitter &emitter, BranchOp branchOp) {
+static LogicalResult printOperation(CppEmitter &emitter, BranchOp branchOp) {
   raw_ostream &os = emitter.ostream();
   Block &successor = *branchOp.getSuccessor();
 
@@ -127,8 +128,8 @@ static LogicalResult printBranchOp(CppEmitter &emitter, BranchOp branchOp) {
   return success();
 }
 
-static LogicalResult printCondBranchOp(CppEmitter &emitter,
-                                       CondBranchOp condBranchOp) {
+static LogicalResult printOperation(CppEmitter &emitter,
+                                    CondBranchOp condBranchOp) {
   raw_ostream &os = emitter.ostream();
   Block &trueSuccessor = *condBranchOp.getTrueDest();
   Block &falseSuccessor = *condBranchOp.getFalseDest();
@@ -171,7 +172,7 @@ static LogicalResult printCondBranchOp(CppEmitter &emitter,
   return success();
 }
 
-static LogicalResult printCallOp(CppEmitter &emitter, mlir::CallOp callOp) {
+static LogicalResult printOperation(CppEmitter &emitter, mlir::CallOp callOp) {
   if (failed(emitter.emitAssignPrefix(*callOp.getOperation())))
     return failure();
 
@@ -183,7 +184,7 @@ static LogicalResult printCallOp(CppEmitter &emitter, mlir::CallOp callOp) {
   return success();
 }
 
-static LogicalResult printCallOp(CppEmitter &emitter, emitc::CallOp callOp) {
+static LogicalResult printOperation(CppEmitter &emitter, emitc::CallOp callOp) {
   raw_ostream &os = emitter.ostream();
   Operation &op = *callOp.getOperation();
 
@@ -233,7 +234,8 @@ static LogicalResult printCallOp(CppEmitter &emitter, emitc::CallOp callOp) {
   return success();
 }
 
-static LogicalResult printApplyOp(CppEmitter &emitter, emitc::ApplyOp applyOp) {
+static LogicalResult printOperation(CppEmitter &emitter,
+                                    emitc::ApplyOp applyOp) {
   raw_ostream &os = emitter.ostream();
   Operation &op = *applyOp.getOperation();
 
@@ -245,7 +247,7 @@ static LogicalResult printApplyOp(CppEmitter &emitter, emitc::ApplyOp applyOp) {
   return success();
 }
 
-static LogicalResult printForOp(CppEmitter &emitter, scf::ForOp forOp) {
+static LogicalResult printOperation(CppEmitter &emitter, scf::ForOp forOp) {
 
   raw_ostream &os = emitter.ostream();
 
@@ -330,7 +332,7 @@ static LogicalResult printForOp(CppEmitter &emitter, scf::ForOp forOp) {
   return success();
 }
 
-static LogicalResult printIfOp(CppEmitter &emitter, scf::IfOp ifOp) {
+static LogicalResult printOperation(CppEmitter &emitter, scf::IfOp ifOp) {
   raw_ostream &os = emitter.ostream();
 
   if (!emitter.forwardDeclaredVariables()) {
@@ -373,7 +375,7 @@ static LogicalResult printIfOp(CppEmitter &emitter, scf::IfOp ifOp) {
   return success();
 }
 
-static LogicalResult printYieldOp(CppEmitter &emitter, scf::YieldOp yieldOp) {
+static LogicalResult printOperation(CppEmitter &emitter, scf::YieldOp yieldOp) {
   raw_ostream &os = emitter.ostream();
   Operation &parentOp = *yieldOp.getOperation()->getParentOp();
 
@@ -400,7 +402,7 @@ static LogicalResult printYieldOp(CppEmitter &emitter, scf::YieldOp yieldOp) {
   return success();
 }
 
-static LogicalResult printReturnOp(CppEmitter &emitter, ReturnOp returnOp) {
+static LogicalResult printOperation(CppEmitter &emitter, ReturnOp returnOp) {
   raw_ostream &os = emitter.ostream();
   os << "return";
   switch (returnOp.getNumOperands()) {
@@ -418,7 +420,7 @@ static LogicalResult printReturnOp(CppEmitter &emitter, ReturnOp returnOp) {
   }
 }
 
-static LogicalResult printModule(CppEmitter &emitter, ModuleOp moduleOp) {
+static LogicalResult printOperation(CppEmitter &emitter, ModuleOp moduleOp) {
   CppEmitter::Scope scope(emitter);
   raw_ostream &os = emitter.ostream();
 
@@ -461,7 +463,7 @@ static LogicalResult printModule(CppEmitter &emitter, ModuleOp moduleOp) {
   return success();
 }
 
-static LogicalResult printFunction(CppEmitter &emitter, FuncOp functionOp) {
+static LogicalResult printOperation(CppEmitter &emitter, FuncOp functionOp) {
   // We need to forward-declare variables if the function has multiple blocks.
   if (!emitter.forwardDeclaredVariables() &&
       functionOp.getBlocks().size() > 1) {
@@ -794,47 +796,26 @@ LogicalResult CppEmitter::emitLabel(Block &block) {
   return success();
 }
 
-static LogicalResult printOperation(CppEmitter &emitter, Operation &op) {
-  // EmitC ops.
-  if (auto applyOp = dyn_cast<emitc::ApplyOp>(op))
-    return printApplyOp(emitter, applyOp);
-  if (auto callOp = dyn_cast<emitc::CallOp>(op))
-    return printCallOp(emitter, callOp);
-  if (auto constantOp = dyn_cast<emitc::ConstantOp>(op))
-    return printConstantOp(emitter, constantOp);
-  if (auto includeOp = dyn_cast<emitc::IncludeOp>(op))
-    // IncludeOp were already printed via printModule.
-    return success();
-
-  // SCF ops.
-  if (auto forOp = dyn_cast<scf::ForOp>(op))
-    return printForOp(emitter, forOp);
-  if (auto ifOp = dyn_cast<scf::IfOp>(op))
-    return printIfOp(emitter, ifOp);
-  if (auto yieldOp = dyn_cast<scf::YieldOp>(op))
-    return printYieldOp(emitter, yieldOp);
-
-  // Standard ops.
-  if (auto branchOp = dyn_cast<BranchOp>(op))
-    return printBranchOp(emitter, branchOp);
-  if (auto callOp = dyn_cast<mlir::CallOp>(op))
-    return printCallOp(emitter, callOp);
-  if (auto branchOp = dyn_cast<CondBranchOp>(op))
-    return printCondBranchOp(emitter, branchOp);
-  if (auto constantOp = dyn_cast<mlir::ConstantOp>(op))
-    return printConstantOp(emitter, constantOp);
-  if (auto funcOp = dyn_cast<FuncOp>(op))
-    return printFunction(emitter, funcOp);
-  if (auto moduleOp = dyn_cast<ModuleOp>(op))
-    return printModule(emitter, moduleOp);
-  if (auto returnOp = dyn_cast<ReturnOp>(op))
-    return printReturnOp(emitter, returnOp);
-
-  return op.emitOpError() << "unable to find printer for op";
-}
-
 LogicalResult CppEmitter::emitOperation(Operation &op, bool trailingSemicolon) {
-  if (failed(printOperation(*this, op)))
+  LogicalResult status =
+      llvm::TypeSwitch<Operation *, LogicalResult>(&op)
+          // EmitC ops.
+          .Case<emitc::ApplyOp, emitc::CallOp, emitc::ConstantOp>(
+              [&](auto op) { return printOperation(*this, op); })
+          // IncludeOp was already printed via printModule.
+          .Case<emitc::IncludeOp>([&](auto op) { return success(); })
+          // SCF ops.
+          .Case<scf::ForOp, scf::IfOp, scf::YieldOp>(
+              [&](auto op) { return printOperation(*this, op); })
+          // Standard ops.
+          .Case<BranchOp, mlir::CallOp, CondBranchOp, mlir::ConstantOp, FuncOp,
+                ModuleOp, ReturnOp>(
+              [&](auto op) { return printOperation(*this, op); })
+          .Default([&](Operation *) {
+            return op.emitOpError() << "unable to find printer for op";
+          });
+
+  if (failed(status))
     return failure();
   os << (trailingSemicolon ? ";\n" : "\n");
   return success();

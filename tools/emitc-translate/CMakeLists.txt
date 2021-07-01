@@ -14,7 +14,6 @@ if(${IREE_ENABLE_EMITC})
     MLIRQuant
     MLIRSCF
     MLIRSCFTransforms
-    MLIRSDBM
     MLIRSPIRV
     MLIRSPIRVTransforms
     MLIRStandard

@@ -357,9 +357,9 @@ Dest fully_connected(Src input, Weights weights, Bias bias) {
 }
 
 // MatMulOp
-template <typename T, size_t M, size_t K, size_t N>
-Tensor2D<T, M, N> matmul(Tensor2D<T, M, K> a, Tensor2D<T, K, N> b) {
-  return emitc::dot<Tensor2D<T, M, N>>(a, b);
+template <typename T, size_t B, size_t M, size_t K, size_t N>
+Tensor3D<T, B, M, N> matmul(Tensor3D<T, B, M, K> a, Tensor3D<T, B, K, N> b) {
+  return emitc::batch_matmul<Tensor3D<T, B, M, N>>(a, b);
 }
 
 namespace {

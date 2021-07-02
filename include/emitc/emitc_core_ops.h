@@ -306,6 +306,33 @@ Dest dot(Lhs lhs, Rhs rhs) {
   return output;
 }
 
+// BatchMatmulOp
+template <typename Dest, typename Lhs, typename Rhs>
+Dest batch_matmul(Lhs lhs, Rhs rhs) {
+  static_assert(is_tensor_of_dim<3, Lhs>::value, "Expected 3 dimensional lhs");
+  static_assert(is_tensor_of_dim<3, Rhs>::value, "Expected 3 dimensional rhs");
+  static_assert(Lhs::dim(0) == Rhs::dim(0) && Lhs::dim(0) == Dest::dim(0),
+                "Expected batch dimension to match");
+  static_assert(Lhs::dim(2) == Rhs::dim(1),
+                "Expected contracting dimension to match");
+  static_assert(Dest::dim(1) == Lhs::dim(1), "Expected row dimension to match");
+  static_assert(Dest::dim(2) == Rhs::dim(2),
+                "Expected column dimension to match");
+  Dest output;
+
+  for (size_t b = 0; b < lhs.dim(0); b++) {
+    for (size_t m = 0; m < lhs.dim(1); m++) {
+      for (size_t n = 0; n < lhs.dim(2); n++) {
+        for (size_t k = 0; k < rhs.dim(2); k++) {
+          output(b, m, k) += lhs(b, m, n) * rhs(b, n, k);
+        }
+      }
+    }
+  }
+
+  return output;
+}
+
 // ReshapeOp
 template <typename Dest, typename Src>
 inline Dest reshape(Src x) {

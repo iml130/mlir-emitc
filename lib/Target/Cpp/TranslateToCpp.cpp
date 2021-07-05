@@ -40,7 +40,7 @@ static LogicalResult printConstantOp(CppEmitter &emitter, Operation *operation,
   //  - and the emitted type is a scalar (to prevent double brace
   //  initialization).
   bool braceInitialization =
-      !emitter.restrictedToC() && !emitter.forwardDeclaredVariables();
+      !emitter.isRestrictedToC() && !emitter.forwardDeclaredVariables();
   bool emitBraces = braceInitialization && isScalar;
 
   // Emit an assignment if variables are forward declared.
@@ -213,7 +213,7 @@ static LogicalResult printOperation(CppEmitter &emitter, emitc::CallOp callOp) {
   };
 
   if (callOp.template_args()) {
-    if (emitter.restrictedToC()) {
+    if (emitter.isRestrictedToC()) {
       return op.emitOpError()
              << "template arguments are not supported if emitting C";
     }
@@ -279,7 +279,7 @@ static LogicalResult printOperation(CppEmitter &emitter, scf::ForOp forOp) {
   os << " ";
   os << emitter.getOrCreateName(forOp.getInductionVar());
 
-  if (emitter.restrictedToC()) {
+  if (emitter.isRestrictedToC()) {
     os << " = ";
     os << emitter.getOrCreateName(forOp.lowerBound());
   } else {
@@ -412,6 +412,10 @@ static LogicalResult printOperation(CppEmitter &emitter, ReturnOp returnOp) {
     os << " " << emitter.getOrCreateName(returnOp.getOperand(0));
     return success(emitter.hasValueInScope(returnOp.getOperand(0)));
   default:
+    if (emitter.isRestrictedToC()) {
+      return returnOp.emitOpError()
+             << "cannot emit `std::make_tuple` if emitting C";
+    }
     os << " std::make_tuple(";
     if (failed(emitter.emitOperandsAndAttributes(*returnOp.getOperation())))
       return failure();
@@ -424,7 +428,7 @@ static LogicalResult printOperation(CppEmitter &emitter, ModuleOp moduleOp) {
   CppEmitter::Scope scope(emitter);
   raw_ostream &os = emitter.ostream();
 
-  if (emitter.restrictedToC()) {
+  if (emitter.isRestrictedToC()) {
     os << "#include <stdbool.h>\n";
     os << "#include <stddef.h>\n";
     os << "#include <stdint.h>\n\n";
@@ -633,7 +637,7 @@ LogicalResult CppEmitter::emitAttribute(Operation &op, Attribute attr) {
       "dense attributes are not supported if emitting C";
   if (auto dense = attr.dyn_cast<DenseFPElementsAttr>()) {
     // Dense attributes are not supported if emitting C.
-    if (restrictedToC())
+    if (isRestrictedToC())
       return op.emitError(denseErrorMessage);
     os << '{';
     interleaveComma(dense, os, [&](APFloat val) { printFloat(val); });
@@ -654,7 +658,7 @@ LogicalResult CppEmitter::emitAttribute(Operation &op, Attribute attr) {
   }
   if (auto dense = attr.dyn_cast<DenseIntElementsAttr>()) {
     // Dense attributes are not supported if emitting C.
-    if (restrictedToC())
+    if (isRestrictedToC())
       return op.emitError(denseErrorMessage);
     if (auto iType = dense.getType()
                          .cast<TensorType>()
@@ -781,6 +785,8 @@ LogicalResult CppEmitter::emitAssignPrefix(Operation &op) {
           return failure();
       }
     }
+    if (isRestrictedToC())
+      return op.emitOpError() << "cannot return `std::tie` if emitting C";
     os << "std::tie(";
     interleaveComma(op.getResults(), os,
                     [&](Value result) { os << getOrCreateName(result); });
@@ -852,7 +858,7 @@ LogicalResult CppEmitter::emitType(Operation &op, Type type) {
     return (os << "size_t"), success();
   if (auto tType = type.dyn_cast<TensorType>()) {
     // TensorType is not supported if emitting C.
-    if (restrictedToC())
+    if (isRestrictedToC())
       return op.emitError("cannot emit tensor type if emitting C");
     if (!tType.hasRank())
       return op.emitError("cannot emit unranked tensor type");
@@ -891,7 +897,7 @@ LogicalResult CppEmitter::emitTypes(Operation &op, ArrayRef<Type> types) {
 }
 
 LogicalResult CppEmitter::emitTupleType(Operation &op, ArrayRef<Type> types) {
-  if (restrictedToC())
+  if (isRestrictedToC())
     return op.emitError("cannot emit tuple type if emitting C");
   os << "std::tuple<";
   if (failed(interleaveCommaWithError(

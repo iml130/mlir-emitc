@@ -145,7 +145,7 @@ struct CppEmitter {
   raw_ostream &ostream() { return os; };
 
   /// Returns if to emitc C.
-  bool restrictedToC() { return restrictToC; };
+  bool isRestrictedToC() { return restrictToC; };
 
   /// Returns if all variables need to be forward declared.
   bool forwardDeclaredVariables() { return forwardDeclareVariables; };

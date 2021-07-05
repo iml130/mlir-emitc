@@ -48,8 +48,8 @@ struct ConvertMhloRegionOpsToEmitCPass
     // Convert region ops
     SymbolTable symbolTable(getOperation());
     for (auto func : getOperation().getOps<FuncOp>()) {
-      // Insert just after the function.
-      Block::iterator insertPt(func.getOperation()->getNextNode());
+      // Insert just before the function.
+      Block::iterator insertPt(func.getOperation());
 
       int count = 0;
       // ReduceOp

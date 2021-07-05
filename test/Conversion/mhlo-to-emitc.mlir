@@ -353,6 +353,10 @@ func @mhlo_pad(%arg0: tensor<2x3xf32>, %arg1: tensor<f32>) -> tensor<4x7xf32> {
 }
 
 func @mhlo_reduce(%arg0 : tensor<2x1000xf32>, %arg1 : tensor<f32>, %arg2 : tensor<2x1000xi32>, %arg3 : tensor<i32>) -> tensor<2xi32>{
+  // CHECK: func @mhlo_reduce_lambda_0(%arg0: tensor<f32>, %arg1: tensor<f32>)
+  // CHECK: "emitc::mhlo::add"(%arg0, %arg1) : (tensor<f32>, tensor<f32>) -> tensor<f32>
+  // CHECK: func @mhlo_reduce_lambda_1(%arg0: tensor<i32>, %arg1: tensor<i32>)
+  // CHECK: "emitc::mhlo::max"(%arg0, %arg1) : (tensor<i32>, tensor<i32>) -> tensor<i32>
   // CHECK: emitc.call "emitc::mhlo::reduce"(%arg0, %arg1) {args = [0 : index, 1 : index, dense<1> : tensor<1xi64>, @mhlo_reduce_lambda_0], template_args = [tensor<2xf32>, 1]} : (tensor<2x1000xf32>, tensor<f32>) -> tensor<2xf32>
   %0 = "mhlo.reduce"(%arg0, %arg1) ({
     ^bb0(%arg4: tensor<f32>, %arg5: tensor<f32>):
@@ -367,13 +371,11 @@ func @mhlo_reduce(%arg0 : tensor<2x1000xf32>, %arg1 : tensor<f32>, %arg2 : tenso
       "mhlo.return"(%2) : (tensor<i32>) -> ()
     }) {dimensions = dense<1> : tensor<1xi64>} : (tensor<2x1000xi32>, tensor<i32>) -> tensor<2xi32>
   return %1 : tensor<2xi32>
-  // CHECK: func @mhlo_reduce_lambda_0(%arg0: tensor<f32>, %arg1: tensor<f32>)
-  // CHECK: "emitc::mhlo::add"(%arg0, %arg1) : (tensor<f32>, tensor<f32>) -> tensor<f32>
-  // CHECK: func @mhlo_reduce_lambda_1(%arg0: tensor<i32>, %arg1: tensor<i32>)
-  // CHECK: "emitc::mhlo::max"(%arg0, %arg1) : (tensor<i32>, tensor<i32>) -> tensor<i32>
 }
 
 func @mhlo_reduce_window(%arg0 : tensor<2x114x114x64xf32>, %arg1 : tensor<f32>) -> tensor<2x56x56x64xf32> {
+  // CHECK: func @mhlo_reduce_window_lambda_0(%arg0: tensor<f32>, %arg1: tensor<f32>)
+  // CHECK: "emitc::mhlo::max"
   // CHECK: emitc.call "emitc::mhlo::reduce_window"(%arg0, %arg1) {args = [0 : index, 1 : index, dense<[1, 3, 3, 1]> : tensor<4xi64>, dense<[1, 2, 2, 1]> : tensor<4xi64>, dense<1> : tensor<4xi64>, dense<1> : tensor<4xi64>, dense<0> : tensor<8xi64>, @mhlo_reduce_window_lambda_0], template_args = [tensor<2x56x56x64xf32>]}
   %0 = "mhlo.reduce_window"(%arg0, %arg1) ( {
     ^bb0(%arg2: tensor<f32>, %arg3: tensor<f32>):  // no predecessors
@@ -382,8 +384,6 @@ func @mhlo_reduce_window(%arg0 : tensor<2x114x114x64xf32>, %arg1 : tensor<f32>) 
     }) {window_dimensions = dense<[1, 3, 3, 1]> : tensor<4xi64>, window_strides = dense<[1, 2, 2, 1]> : tensor<4xi64>} : (tensor<2x114x114x64xf32>, tensor<f32>) -> tensor<2x56x56x64xf32>
   
   return %0 : tensor<2x56x56x64xf32>
-  // CHECK: func @mhlo_reduce_window_lambda_0(%arg0: tensor<f32>, %arg1: tensor<f32>)
-  // CHECK: "emitc::mhlo::max"
 }
 
 func @mhlo_reshape(%arg0: tensor<12xf32>) -> tensor<2x3x2xf32> {

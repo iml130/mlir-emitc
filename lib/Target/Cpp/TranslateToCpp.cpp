@@ -445,21 +445,6 @@ static LogicalResult printOperation(CppEmitter &emitter, ModuleOp moduleOp) {
   }
   os << "\n";
 
-  os << "// Forward declare functions.\n";
-  for (FuncOp funcOp : moduleOp.getOps<FuncOp>()) {
-    if (failed(emitter.emitTypes(*funcOp.getOperation(),
-                                 funcOp.getType().getResults())))
-      return failure();
-    os << " " << funcOp.getName() << "(";
-    if (failed(interleaveCommaWithError(
-            funcOp.getArguments(), os, [&](BlockArgument arg) {
-              return emitter.emitType(*funcOp.getOperation(), arg.getType());
-            })))
-      return failure();
-    os << ");\n";
-  }
-  os << "\n";
-
   for (Operation &op : moduleOp) {
     if (failed(emitter.emitOperation(op, /*trailingSemicolon=*/false)))
       return failure();

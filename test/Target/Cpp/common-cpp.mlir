@@ -3,7 +3,7 @@
 // CHECK: #include "myheader.h"
 emitc.include "myheader.h"
 // CHECK: #include <myheader.h>
-emitc.include "myheader.h" is_standard_include
+emitc.include <"myheader.h">
 
 // CHECK: void test_foo_print() {
 func @test_foo_print() {

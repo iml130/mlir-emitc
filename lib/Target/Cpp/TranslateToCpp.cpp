@@ -247,6 +247,19 @@ static LogicalResult printOperation(CppEmitter &emitter,
   return success();
 }
 
+static LogicalResult printOperation(CppEmitter &emitter,
+                                    emitc::IncludeOp includeOp) {
+  raw_ostream &os = emitter.ostream();
+
+  os << "#include ";
+  if (includeOp.is_standard_include())
+    os << "<" << includeOp.include() << ">";
+  else
+    os << "\"" << includeOp.include() << "\"";
+
+  return success();
+}
+
 static LogicalResult printOperation(CppEmitter &emitter, scf::ForOp forOp) {
 
   raw_ostream &os = emitter.ostream();
@@ -426,24 +439,6 @@ static LogicalResult printOperation(CppEmitter &emitter, ReturnOp returnOp) {
 
 static LogicalResult printOperation(CppEmitter &emitter, ModuleOp moduleOp) {
   CppEmitter::Scope scope(emitter);
-  raw_ostream &os = emitter.ostream();
-
-  if (emitter.isRestrictedToC()) {
-    os << "#include <stdbool.h>\n";
-    os << "#include <stddef.h>\n";
-    os << "#include <stdint.h>\n\n";
-  } else {
-    os << "#include <cmath>\n\n";
-  }
-
-  for (IncludeOp includeOp : moduleOp.getOps<IncludeOp>()) {
-    os << "#include ";
-    if (includeOp.is_standard_include())
-      os << "<" << includeOp.include() << ">\n";
-    else
-      os << "\"" << includeOp.include() << "\"\n";
-  }
-  os << "\n";
 
   for (Operation &op : moduleOp) {
     if (failed(emitter.emitOperation(op, /*trailingSemicolon=*/false)))
@@ -791,10 +786,9 @@ LogicalResult CppEmitter::emitOperation(Operation &op, bool trailingSemicolon) {
   LogicalResult status =
       llvm::TypeSwitch<Operation *, LogicalResult>(&op)
           // EmitC ops.
-          .Case<emitc::ApplyOp, emitc::CallOp, emitc::ConstantOp>(
+          .Case<emitc::ApplyOp, emitc::CallOp, emitc::ConstantOp,
+                emitc::IncludeOp>(
               [&](auto op) { return printOperation(*this, op); })
-          // IncludeOp was already printed via printModule.
-          .Case<emitc::IncludeOp>([&](auto op) { return success(); })
           // SCF ops.
           .Case<scf::ForOp, scf::IfOp, scf::YieldOp>(
               [&](auto op) { return printOperation(*this, op); })

@@ -281,16 +281,8 @@ static LogicalResult printOperation(CppEmitter &emitter, scf::ForOp forOp) {
     return failure();
   os << " ";
   os << emitter.getOrCreateName(forOp.getInductionVar());
-
-  if (emitter.isRestrictedToC()) {
-    os << " = ";
-    os << emitter.getOrCreateName(forOp.lowerBound());
-  } else {
-    os << "{";
-    os << emitter.getOrCreateName(forOp.lowerBound());
-    os << "}";
-  }
-
+  os << " = ";
+  os << emitter.getOrCreateName(forOp.lowerBound());
   os << "; ";
   os << emitter.getOrCreateName(forOp.getInductionVar());
   os << " < ";

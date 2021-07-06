@@ -1,7 +1,7 @@
 // This file contains tests for std ops which are only supported if cpp code is emitted.
 
 // RUN: emitc-translate -mlir-to-cpp %s | FileCheck %s -check-prefix=CPP-DEFAULT
-// RUN: emitc-translate -mlir-to-cpp-forward-declared %s | FileCheck %s -check-prefix=CPP-FWDDECL
+// RUN: emitc-translate -mlir-to-cpp-with-variable-declarations-at-top %s | FileCheck %s -check-prefix=CPP-FWDDECL
 
 func @std_constant() {
   %c0 = constant dense<0> : tensor<i32>

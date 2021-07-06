@@ -27,7 +27,7 @@ void registerToCppTranslation() {
       "mlir-to-cpp",
       [](ModuleOp module, raw_ostream &output) {
         return emitc::translateToCpp(*module.getOperation(), output,
-                                     /*forwardDeclareVariables=*/false,
+                                     /*declareVariablesAtTop=*/false,
                                      /*trailingSemiColon=*/false);
       },
       [](DialectRegistry &registry) {
@@ -39,10 +39,10 @@ void registerToCppTranslation() {
       });
 
   TranslateFromMLIRRegistration regForwardDeclared(
-      "mlir-to-cpp-forward-declared",
+      "mlir-to-cpp-with-variable-declarations-at-top",
       [](ModuleOp module, raw_ostream &output) {
         return emitc::translateToCpp(*module.getOperation(), output,
-                                     /*forwardDeclareVariables=*/true,
+                                     /*declareVariablesAtTop=*/true,
                                      /*trailingSemiColon=*/false);
       },
       [](DialectRegistry &registry) {
@@ -63,7 +63,7 @@ void registerToCTranslation() {
       "mlir-to-c",
       [](ModuleOp module, raw_ostream &output) {
         return emitc::translateToC(*module.getOperation(), output,
-                                   /*forwardDeclareVariables=*/false,
+                                   /*declareVariablesAtTop=*/false,
                                    /*trailingSemiColon=*/false);
       },
       [](DialectRegistry &registry) {
@@ -75,10 +75,10 @@ void registerToCTranslation() {
       });
 
   TranslateFromMLIRRegistration regForwardDeclared(
-      "mlir-to-c-forward-declared",
+      "mlir-to-c-with-variable-declarations-at-top",
       [](ModuleOp module, raw_ostream &output) {
         return emitc::translateToC(*module.getOperation(), output,
-                                   /*forwardDeclareVariables=*/true,
+                                   /*declareVariablesAtTop=*/true,
                                    /*trailingSemiColon=*/false);
       },
       [](DialectRegistry &registry) {

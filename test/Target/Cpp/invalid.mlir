@@ -1,7 +1,7 @@
 // RUN: emitc-translate -split-input-file -mlir-to-cpp -verify-diagnostics %s
 // RUN: emitc-translate -split-input-file -mlir-to-c -verify-diagnostics %s
 
-// expected-error@+1 {{'func' op with multiple blocks needs forward declared variables}}
+// expected-error@+1 {{'func' op with multiple blocks needs variables declared at top}}
 func @multiple_blocks() {
 ^bb1:
     br ^bb2

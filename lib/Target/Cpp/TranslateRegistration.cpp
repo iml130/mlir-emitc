@@ -54,40 +54,4 @@ void registerToCppTranslation() {
       });
 }
 
-//===----------------------------------------------------------------------===//
-// C registration
-//===----------------------------------------------------------------------===//
-
-void registerToCTranslation() {
-  TranslateFromMLIRRegistration reg(
-      "mlir-to-c",
-      [](ModuleOp module, raw_ostream &output) {
-        return emitc::translateToC(*module.getOperation(), output,
-                                   /*declareVariablesAtTop=*/false,
-                                   /*trailingSemiColon=*/false);
-      },
-      [](DialectRegistry &registry) {
-        // clang-format off
-        registry.insert<emitc::EmitCDialect,
-                        StandardOpsDialect,
-                        scf::SCFDialect>();
-        // clang-format on
-      });
-
-  TranslateFromMLIRRegistration regForwardDeclared(
-      "mlir-to-c-with-variable-declarations-at-top",
-      [](ModuleOp module, raw_ostream &output) {
-        return emitc::translateToC(*module.getOperation(), output,
-                                   /*declareVariablesAtTop=*/true,
-                                   /*trailingSemiColon=*/false);
-      },
-      [](DialectRegistry &registry) {
-        // clang-format off
-        registry.insert<emitc::EmitCDialect,
-                        StandardOpsDialect,
-                        scf::SCFDialect>();
-        // clang-format on
-      });
-}
-
 } // namespace mlir

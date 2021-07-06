@@ -60,5 +60,4 @@ The currently supported MHLO ops are listed in the [docs/mhlo-op-coverage.md](do
 Supported TOSA ops are listed in the [docs/tosa-op-coverage.md](docs/tosa-op-coverage.md) document.
 
 After converting to EmitC dialect, C++ code can be emitted using `emitc-translate --mlir-to-cpp`.
-For a restricted set of operations C code can be emitted using `emitc-translate --mlir-to-c`.
 Furthermore, `emitc-translate` has specific support for the option `--forward-declare-variables`.

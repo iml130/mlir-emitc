@@ -59,8 +59,7 @@ inline LogicalResult interleaveCommaWithError(const Container &c,
 
 /// Emitter that uses dialect specific emitters to emit C++ code.
 struct CppEmitter {
-  explicit CppEmitter(raw_ostream &os, bool restrictToC,
-                      bool declareVariablesAtTop);
+  explicit CppEmitter(raw_ostream &os, bool declareVariablesAtTop);
 
   /// Emits attribute or returns failure.
   LogicalResult emitAttribute(Operation &op, Attribute attr);
@@ -144,9 +143,6 @@ struct CppEmitter {
   /// Returns the output stream.
   raw_ostream &ostream() { return os; };
 
-  /// Returns if to emitc C.
-  bool isRestrictedToC() { return restrictToC; };
-
   /// Returns if all variables for op results and basic block arguments need to
   /// be declared at the beginning of a function.
   bool shouldDeclareVariablesAtTop() { return declareVariablesAtTop; };
@@ -157,9 +153,6 @@ private:
 
   /// Output stream to emit to.
   raw_ostream &os;
-
-  /// Boolean that restricts the emitter to C.
-  bool restrictToC;
 
   /// Boolean to enforce that all variables for op results and block
   /// arguments are declared at the beginning of the function. This also

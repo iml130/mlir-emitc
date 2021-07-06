@@ -482,10 +482,8 @@ static LogicalResult printOperation(CppEmitter &emitter, FuncOp functionOp) {
   return success();
 }
 
-CppEmitter::CppEmitter(raw_ostream &os, bool restrictToC,
-                       bool declareVariablesAtTop)
-    : os(os), restrictToC(restrictToC),
-      declareVariablesAtTop(declareVariablesAtTop) {
+CppEmitter::CppEmitter(raw_ostream &os, bool declareVariablesAtTop)
+    : os(os), declareVariablesAtTop(declareVariablesAtTop) {
   valueInScopeCount.push(0);
   labelInScopeCount.push(0);
 }
@@ -824,13 +822,6 @@ LogicalResult CppEmitter::emitTupleType(Operation &op, ArrayRef<Type> types) {
 LogicalResult emitc::translateToCpp(Operation &op, raw_ostream &os,
                                     bool declareVariablesAtTop,
                                     bool trailingSemicolon) {
-  CppEmitter emitter(os, /*restrictToC=*/false, declareVariablesAtTop);
-  return emitter.emitOperation(op, trailingSemicolon);
-}
-
-LogicalResult emitc::translateToC(Operation &op, raw_ostream &os,
-                                  bool declareVariablesAtTop,
-                                  bool trailingSemicolon) {
-  CppEmitter emitter(os, /*restrictToC=*/true, declareVariablesAtTop);
+  CppEmitter emitter(os, declareVariablesAtTop);
   return emitter.emitOperation(op, trailingSemicolon);
 }

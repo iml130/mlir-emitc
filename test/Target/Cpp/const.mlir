@@ -19,9 +19,9 @@ func @emitc_constant() {
 
 // CPP-DEFAULT: void emitc_constant() {
 // CPP-DEFAULT-NEXT: int32_t [[V0:[^ ]*]];
-// CPP-DEFAULT-NEXT: int32_t [[V1:[^ ]*]]{42};
+// CPP-DEFAULT-NEXT: int32_t [[V1:[^ ]*]] = 42;
 // CPP-DEFAULT-NEXT: int32_t* [[V2:[^ ]*]];
-// CPP-DEFAULT-NEXT: int32_t* [[V3:[^ ]*]]{NULL};
+// CPP-DEFAULT-NEXT: int32_t* [[V3:[^ ]*]] = NULL;
 
 // C-FWDDECL: void emitc_constant() {
 // C-FWDDECL-NEXT: int32_t [[V0:[^ ]*]];

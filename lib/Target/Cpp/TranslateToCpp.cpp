@@ -29,19 +29,7 @@ using llvm::formatv;
 
 static LogicalResult printConstantOp(CppEmitter &emitter, Operation *operation,
                                      Attribute value) {
-  raw_ostream &os = emitter.ostream();
   OpResult result = operation->getResult(0);
-
-  bool isScalar = !result.getType().isa<TensorType>();
-
-  // Add braces only if
-  //  - cpp code is emitted,
-  //  - variables should not be declared at top
-  //  - and the emitted type is a scalar (to prevent double brace
-  //  initialization).
-  bool braceInitialization =
-      !emitter.isRestrictedToC() && !emitter.shouldDeclareVariablesAtTop();
-  bool emitBraces = braceInitialization && isScalar;
 
   // Only emit an assignment as the variable was already declared when printing
   // the FuncOp.
@@ -66,25 +54,9 @@ static LogicalResult printConstantOp(CppEmitter &emitter, Operation *operation,
   }
 
   // Emit a variable declaration.
-  if (!braceInitialization) {
-    // If brace initialization is not used, we have to emit an assignment.
-    if (failed(emitter.emitAssignPrefix(*operation)))
-      return failure();
-    return emitter.emitAttribute(*operation, value);
-  }
-
-  if (failed(emitter.emitVariableDeclaration(result,
-                                             /*trailingSemicolon=*/false)))
+  if (failed(emitter.emitAssignPrefix(*operation)))
     return failure();
-
-  if (emitBraces)
-    os << "{";
-  if (failed(emitter.emitAttribute(*operation, value)))
-    return failure();
-  if (emitBraces)
-    os << "}";
-
-  return success();
+  return emitter.emitAttribute(*operation, value);
 }
 
 static LogicalResult printOperation(CppEmitter &emitter,

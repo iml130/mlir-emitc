@@ -9,7 +9,7 @@ func @emitc_call() {
   return
 }
 // CPP-DEFAULT: void emitc_call() {
-// CPP-DEFAULT-NEXT: size_t [[V1:[^ ]*]]{0};
+// CPP-DEFAULT-NEXT: size_t [[V1:[^ ]*]] = 0;
 // CPP-DEFAULT-NEXT: int32_t [[V2:[^ ]*]];
 // CPP-DEFAULT-NEXT: int32_t [[V3:[^ ]*]];
 // CPP-DEFAULT-NEXT: std::tie([[V2]], [[V3]]) = two_results();

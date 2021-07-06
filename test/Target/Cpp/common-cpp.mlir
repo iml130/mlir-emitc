@@ -94,11 +94,11 @@ func @apply(%arg0: i32) -> !emitc.opaque<"int32_t*"> {
 func @emitc_constant() {
   // CHECK: int32_t [[V0:[^ ]*]];
   %c0 = "emitc.constant"(){value = #emitc.opaque<""> : i32} : () -> i32
-  // CHECK: int32_t [[V1:[^ ]*]]{42};
+  // CHECK: int32_t [[V1:[^ ]*]] = 42;
   %c1 = "emitc.constant"(){value = 42 : i32} : () -> i32
   // CHECK: int32_t* [[V2:[^ ]*]];
   %c2 = "emitc.constant"(){value = #emitc.opaque<""> : !emitc.opaque<"int32_t*">} : () -> !emitc.opaque<"int32_t*">
-  // CHECK: int32_t* [[V3:[^ ]*]]{nullptr};
+  // CHECK: int32_t* [[V3:[^ ]*]] = nullptr;
   %c3 = "emitc.constant"(){value = #emitc.opaque<"nullptr"> : !emitc.opaque<"int32_t*">} : () -> !emitc.opaque<"int32_t*">
   return
 }

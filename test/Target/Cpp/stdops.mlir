@@ -15,9 +15,9 @@ func @std_constant() {
 // C-DEFAULT-NEXT: float [[V2:[^ ]*]] = (float)2.000000000e+00;
 
 // CPP-DEFAULT: void std_constant() {
-// CPP-DEFAULT-NEXT: int32_t [[V0:[^ ]*]]{0};
-// CPP-DEFAULT-NEXT: size_t [[V1:[^ ]*]]{2};
-// CPP-DEFAULT-NEXT: float [[V2:[^ ]*]]{(float)2.000000000e+00};
+// CPP-DEFAULT-NEXT: int32_t [[V0:[^ ]*]] = 0;
+// CPP-DEFAULT-NEXT: size_t [[V1:[^ ]*]] = 2;
+// CPP-DEFAULT-NEXT: float [[V2:[^ ]*]] = (float)2.000000000e+00;
 
 // C-FWDDECL: void std_constant() {
 // C-FWDDECL-NEXT: int32_t [[V0:[^ ]*]];
@@ -70,7 +70,7 @@ func @one_result() -> i32 {
 // C-DEFAULT-NEXT: return [[V0]];
 
 // CPP-DEFAULT: int32_t one_result() {
-// CPP-DEFAULT-NEXT: int32_t [[V0:[^ ]*]]{0};
+// CPP-DEFAULT-NEXT: int32_t [[V0:[^ ]*]] = 0;
 // CPP-DEFAULT-NEXT: return [[V0]];
 
 // C-FWDDECL: int32_t one_result() {

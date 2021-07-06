@@ -21,8 +21,8 @@ func @std_extract_element(%arg0: tensor<i32>, %arg1: tensor<2xi32>) -> () {
 //  CHECK-NEXT: emitc.call "emitc::tensor::extract"(%arg1, %c1) : (tensor<2xi32>, index) -> i32
 
 // CPP-LABEL: void std_extract_element(Tensor<int32_t> v1, Tensor<int32_t, 2> v2)
-//  CPP-NEXT: size_t v3{0};
-//  CPP-NEXT: size_t v4{1};
+//  CPP-NEXT: size_t v3 = 0;
+//  CPP-NEXT: size_t v4 = 1;
 //  CPP-NEXT: emitc::tensor::extract(v1)
 //  CPP-NEXT: emitc::tensor::extract(v2, v3)
 //  CPP-NEXT: emitc::tensor::extract(v2, v4)

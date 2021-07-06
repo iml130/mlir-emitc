@@ -118,27 +118,8 @@ func @test_if_yield(%arg0: i1, %arg1: f32) {
   }
   return
 }
-// C-DEFAULT: void test_if_yield(bool [[V0:[^ ]*]], float [[V1:[^ ]*]]) {
-// C-DEFAULT-NEXT: int8_t [[V2:[^ ]*]] = 0;
-// C-DEFAULT-NEXT: int32_t [[V3:[^ ]*]];
-// C-DEFAULT-NEXT: double [[V4:[^ ]*]];
-// C-DEFAULT-NEXT: if ([[V0]]) {
-// C-DEFAULT-NEXT: int32_t [[V5:[^ ]*]] = func_true_1([[V1]]);
-// C-DEFAULT-NEXT: double [[V6:[^ ]*]] = func_true_2([[V1]]);
-// C-DEFAULT-NEXT: [[V3]] = [[V5]];
-// C-DEFAULT-NEXT: [[V4]] = [[V6]];
-// C-DEFAULT-NEXT: }
-// C-DEFAULT-NEXT: else {
-// C-DEFAULT-NEXT: int32_t [[V7:[^ ]*]] = func_false_1([[V1]]);
-// C-DEFAULT-NEXT: double [[V8:[^ ]*]] = func_false_2([[V1]]);
-// C-DEFAULT-NEXT: [[V3]] = [[V7]];
-// C-DEFAULT-NEXT: [[V4]] = [[V8]];
-// C-DEFAULT-NEXT: }
-// C-DEFAULT-EMPTY:
-// C-DEFAULT-NEXT: return;
-
 // CPP-DEFAULT: void test_if_yield(bool [[V0:[^ ]*]], float [[V1:[^ ]*]]) {
-// CPP-DEFAULT-NEXT: int8_t [[V2:[^ ]*]]{0};
+// CPP-DEFAULT-NEXT: int8_t [[V2:[^ ]*]] = 0;
 // CPP-DEFAULT-NEXT: int32_t [[V3:[^ ]*]];
 // CPP-DEFAULT-NEXT: double [[V4:[^ ]*]];
 // CPP-DEFAULT-NEXT: if ([[V0]]) {

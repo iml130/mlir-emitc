@@ -1,7 +1,7 @@
 // This file contains tests for emitc call ops which are only supported if cpp code is emitted.
 
 // RUN: emitc-translate -mlir-to-cpp %s | FileCheck %s -check-prefix=CPP-DEFAULT
-// RUN: emitc-translate -mlir-to-cpp-forward-declared %s | FileCheck %s -check-prefix=CPP-FWDDECL
+// RUN: emitc-translate -mlir-to-cpp-with-variable-declarations-at-top %s | FileCheck %s -check-prefix=CPP-FWDDECL
 
 func @emitc_call() {
   %0 = constant 0 : index

@@ -60,7 +60,7 @@ inline LogicalResult interleaveCommaWithError(const Container &c,
 /// Emitter that uses dialect specific emitters to emit C++ code.
 struct CppEmitter {
   explicit CppEmitter(raw_ostream &os, bool restrictToC,
-                      bool forwardDeclareVariables);
+                      bool declareVariablesAtTop);
 
   /// Emits attribute or returns failure.
   LogicalResult emitAttribute(Operation &op, Attribute attr);
@@ -147,8 +147,9 @@ struct CppEmitter {
   /// Returns if to emitc C.
   bool isRestrictedToC() { return restrictToC; };
 
-  /// Returns if all variables need to be forward declared.
-  bool forwardDeclaredVariables() { return forwardDeclareVariables; };
+  /// Returns if all variables for op results and basic block arguments need to
+  /// be declared at the beginning of a function.
+  bool shouldDeclareVariablesAtTop() { return declareVariablesAtTop; };
 
 private:
   using ValueMapper = llvm::ScopedHashTable<Value, std::string>;
@@ -160,8 +161,10 @@ private:
   /// Boolean that restricts the emitter to C.
   bool restrictToC;
 
-  /// Boolean to enforce a forward declaration of all variables.
-  bool forwardDeclareVariables;
+  /// Boolean to enforce that all variables for op results and block
+  /// arguments are declared at the beginning of the function. This also
+  /// includes results from ops located in nested regions.
+  bool declareVariablesAtTop;
 
   /// Map from value to name of C++ variable that contain the name.
   ValueMapper valueMapper;
@@ -178,12 +181,12 @@ private:
 /// Translates the given operation to C++ code. The operation or operations in
 /// the region of 'op' need almost all be in EmitC dialect.
 LogicalResult translateToCpp(Operation &op, raw_ostream &os,
-                             bool forwardDeclareVariables = false,
+                             bool declareVariablesAtTop = false,
                              bool trailingSemicolon = false);
 
 /// Similar to `translateToCpp`, but translates the given operation to C code.
 LogicalResult translateToC(Operation &op, raw_ostream &os,
-                           bool forwardDeclareVariables = false,
+                           bool declareVariablesAtTop = false,
                            bool trailingSemicolon = false);
 } // namespace emitc
 } // namespace mlir

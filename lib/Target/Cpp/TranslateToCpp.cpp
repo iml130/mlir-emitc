@@ -36,16 +36,17 @@ static LogicalResult printConstantOp(CppEmitter &emitter, Operation *operation,
 
   // Add braces only if
   //  - cpp code is emitted,
-  //  - variables are not forward declared
+  //  - variables should not be declared at top
   //  - and the emitted type is a scalar (to prevent double brace
   //  initialization).
   bool braceInitialization =
-      !emitter.isRestrictedToC() && !emitter.forwardDeclaredVariables();
+      !emitter.isRestrictedToC() && !emitter.shouldDeclareVariablesAtTop();
   bool emitBraces = braceInitialization && isScalar;
 
-  // Emit an assignment if variables are forward declared.
-  if (emitter.forwardDeclaredVariables()) {
-    // Special case for emitc.const.
+  // Only emit an assignment as the variable was already declared when printing
+  // the FuncOp.
+  if (emitter.shouldDeclareVariablesAtTop()) {
+    // Skip the assignment if the emitc.const has no value.
     if (auto oAttr = value.dyn_cast<emitc::OpaqueAttr>()) {
       if (oAttr.getValue().empty())
         return success();
@@ -53,30 +54,23 @@ static LogicalResult printConstantOp(CppEmitter &emitter, Operation *operation,
 
     if (failed(emitter.emitVariableAssignment(result)))
       return failure();
-    if (failed(emitter.emitAttribute(*operation, value)))
-      return failure();
-    return success();
+    return emitter.emitAttribute(*operation, value);
   }
 
-  // Special case for emitc.const.
+  // Emit a variable declaration for an emitc.const op without value.
   if (auto oAttr = value.dyn_cast<emitc::OpaqueAttr>()) {
-    if (oAttr.getValue().empty()) {
+    if (oAttr.getValue().empty())
       // The semicolon gets printed by the emitOperation function.
-      if (failed(emitter.emitVariableDeclaration(result,
-                                                 /*trailingSemicolon=*/false)))
-        return failure();
-      return success();
-    }
+      return emitter.emitVariableDeclaration(result,
+                                             /*trailingSemicolon=*/false);
   }
 
-  // We have to emit a variable declaration.
+  // Emit a variable declaration.
   if (!braceInitialization) {
     // If brace initialization is not used, we have to emit an assignment.
     if (failed(emitter.emitAssignPrefix(*operation)))
       return failure();
-    if (failed(emitter.emitAttribute(*operation, value)))
-      return failure();
-    return success();
+    return emitter.emitAttribute(*operation, value);
   }
 
   if (failed(emitter.emitVariableDeclaration(result,
@@ -268,7 +262,7 @@ static LogicalResult printOperation(CppEmitter &emitter, scf::ForOp forOp) {
   Block::BlockArgListType iterArgs = forOp.getRegionIterArgs();
   Operation::result_range results = forOp.getResults();
 
-  if (!emitter.forwardDeclaredVariables()) {
+  if (!emitter.shouldDeclareVariablesAtTop()) {
     for (OpResult result : results) {
       if (failed(emitter.emitVariableDeclaration(result,
                                                  /*trailingSemicolon=*/true)))
@@ -348,7 +342,7 @@ static LogicalResult printOperation(CppEmitter &emitter, scf::ForOp forOp) {
 static LogicalResult printOperation(CppEmitter &emitter, scf::IfOp ifOp) {
   raw_ostream &os = emitter.ostream();
 
-  if (!emitter.forwardDeclaredVariables()) {
+  if (!emitter.shouldDeclareVariablesAtTop()) {
     for (OpResult result : ifOp.getResults()) {
       if (failed(emitter.emitVariableDeclaration(result,
                                                  /*trailingSemicolon=*/true)))
@@ -448,11 +442,11 @@ static LogicalResult printOperation(CppEmitter &emitter, ModuleOp moduleOp) {
 }
 
 static LogicalResult printOperation(CppEmitter &emitter, FuncOp functionOp) {
-  // We need to forward-declare variables if the function has multiple blocks.
-  if (!emitter.forwardDeclaredVariables() &&
+  // We need to declare variables at top if the function has multiple blocks.
+  if (!emitter.shouldDeclareVariablesAtTop() &&
       functionOp.getBlocks().size() > 1) {
     return functionOp.emitOpError()
-           << "with multiple blocks needs forward declared variables";
+           << "with multiple blocks needs variables declared at top";
   }
 
   CppEmitter::Scope scope(emitter);
@@ -475,9 +469,9 @@ static LogicalResult printOperation(CppEmitter &emitter, FuncOp functionOp) {
     return failure();
   os << ") {\n";
 
-  if (emitter.forwardDeclaredVariables()) {
-    // We forward declare all result variables including results from ops
-    // inside of regions.
+  if (emitter.shouldDeclareVariablesAtTop()) {
+    // Declare all variables that hold op results including those from nested
+    // regions.
     WalkResult result =
         functionOp.walk<WalkOrder::PreOrder>([&](Operation *op) -> WalkResult {
           for (OpResult result : op->getResults()) {
@@ -499,7 +493,7 @@ static LogicalResult printOperation(CppEmitter &emitter, FuncOp functionOp) {
     emitter.getOrCreateName(block);
   }
 
-  // Emit variables for basic block arguments.
+  // Declare variables for basic block arguments.
   for (auto it = std::next(blocks.begin()); it != blocks.end(); ++it) {
     Block &block = *it;
     for (BlockArgument &arg : block.getArguments()) {
@@ -533,9 +527,9 @@ static LogicalResult printOperation(CppEmitter &emitter, FuncOp functionOp) {
 }
 
 CppEmitter::CppEmitter(raw_ostream &os, bool restrictToC,
-                       bool forwardDeclareVariables)
+                       bool declareVariablesAtTop)
     : os(os), restrictToC(restrictToC),
-      forwardDeclareVariables(forwardDeclareVariables) {
+      declareVariablesAtTop(declareVariablesAtTop) {
   valueInScopeCount.push(0);
   labelInScopeCount.push(0);
 }
@@ -748,7 +742,7 @@ LogicalResult CppEmitter::emitAssignPrefix(Operation &op) {
     break;
   case 1: {
     OpResult result = op.getResult(0);
-    if (forwardDeclaredVariables()) {
+    if (shouldDeclareVariablesAtTop()) {
       if (failed(emitVariableAssignment(result)))
         return failure();
     } else {
@@ -759,7 +753,7 @@ LogicalResult CppEmitter::emitAssignPrefix(Operation &op) {
     break;
   }
   default:
-    if (!forwardDeclaredVariables()) {
+    if (!shouldDeclareVariablesAtTop()) {
       for (OpResult result : op.getResults()) {
         if (failed(emitVariableDeclaration(result, /*trailingSemicolon=*/true)))
           return failure();
@@ -887,15 +881,15 @@ LogicalResult CppEmitter::emitTupleType(Operation &op, ArrayRef<Type> types) {
 }
 
 LogicalResult emitc::translateToCpp(Operation &op, raw_ostream &os,
-                                    bool forwardDeclareVariables,
+                                    bool declareVariablesAtTop,
                                     bool trailingSemicolon) {
-  CppEmitter emitter(os, /*restrictToC=*/false, forwardDeclareVariables);
+  CppEmitter emitter(os, /*restrictToC=*/false, declareVariablesAtTop);
   return emitter.emitOperation(op, trailingSemicolon);
 }
 
 LogicalResult emitc::translateToC(Operation &op, raw_ostream &os,
-                                  bool forwardDeclareVariables,
+                                  bool declareVariablesAtTop,
                                   bool trailingSemicolon) {
-  CppEmitter emitter(os, /*restrictToC=*/true, forwardDeclareVariables);
+  CppEmitter emitter(os, /*restrictToC=*/true, declareVariablesAtTop);
   return emitter.emitOperation(op, trailingSemicolon);
 }

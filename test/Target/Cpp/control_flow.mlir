@@ -1,4 +1,3 @@
-// RUN: emitc-translate -mlir-to-c-with-variable-declarations-at-top %s | FileCheck %s -check-prefix=C-FWDDECL
 // RUN: emitc-translate -mlir-to-cpp-with-variable-declarations-at-top %s | FileCheck %s -check-prefix=CPP-FWDDECL
 
 // simple(10, true)  -> 20
@@ -17,33 +16,6 @@ func @simple(i64, i1) -> i64 {
   %0 = emitc.call "add"(%d, %e) : (i64, i64) -> i64
   return %0 : i64
 }
-// C-FWDDECL: int64_t simple(int64_t [[A:[^ ]*]], bool [[COND:[^ ]*]]) {
-  // C-FWDDECL-NEXT: int64_t [[B:[^ ]*]];
-  // C-FWDDECL-NEXT: int64_t [[V0:[^ ]*]];
-  // C-FWDDECL-NEXT: int64_t [[C:[^ ]*]];
-  // C-FWDDECL-NEXT: int64_t [[D:[^ ]*]];
-  // C-FWDDECL-NEXT: int64_t [[E:[^ ]*]];
-  // C-FWDDECL-NEXT: [[BB0:[^ ]*]]:
-  // C-FWDDECL-NEXT: if ([[COND]]) {
-  // C-FWDDECL-NEXT: goto [[BB1:[^ ]*]];
-  // C-FWDDECL-NEXT: } else {
-  // C-FWDDECL-NEXT: goto [[BB2:[^ ]*]];
-  // C-FWDDECL-NEXT: }
-  // C-FWDDECL-NEXT: [[BB1]]:
-  // C-FWDDECL-NEXT: [[C]] = [[A]];
-  // C-FWDDECL-NEXT: goto [[BB3:[^ ]*]];
-  // C-FWDDECL-NEXT: [[BB2]]:
-  // C-FWDDECL-NEXT: [[B]] = add([[A]], [[A]]);
-  // C-FWDDECL-NEXT: [[C]] = [[B]];
-  // C-FWDDECL-NEXT: goto [[BB3]];
-  // C-FWDDECL-NEXT: [[BB3]]:
-  // C-FWDDECL-NEXT: [[D]] = [[C]];
-  // C-FWDDECL-NEXT: [[E]] = [[A]];
-  // C-FWDDECL-NEXT: goto [[BB4:[^ ]*]];
-  // C-FWDDECL-NEXT: [[BB4]]:
-  // C-FWDDECL-NEXT: [[V0]] = add([[D]], [[E]]);
-  // C-FWDDECL-NEXT: return [[V0]];
-
   // CPP-FWDDECL: int64_t simple(int64_t [[A:[^ ]*]], bool [[COND:[^ ]*]]) {
     // CPP-FWDDECL-NEXT: int64_t [[B:[^ ]*]];
     // CPP-FWDDECL-NEXT: int64_t [[V0:[^ ]*]];
@@ -78,13 +50,6 @@ func @block_labels0() {
 ^bb2:
     return
 }
-// C-FWDDECL: void block_labels0() {
-  // C-FWDDECL-NEXT: label1:
-  // C-FWDDECL-NEXT: goto label2;
-  // C-FWDDECL-NEXT: label2:
-  // C-FWDDECL-NEXT: return;
-  // C-FWDDECL-NEXT: }
-
 // CPP-FWDDECL: void block_labels0() {
   // CPP-FWDDECL-NEXT: label1:
   // CPP-FWDDECL-NEXT: goto label2;
@@ -100,13 +65,6 @@ func @block_labels1() {
 ^bb2:
     return
 }
-// C-FWDDECL: void block_labels1() {
-  // C-FWDDECL-NEXT: label1:
-  // C-FWDDECL-NEXT: goto label2;
-  // C-FWDDECL-NEXT: label2:
-  // C-FWDDECL-NEXT: return;
-  // C-FWDDECL-NEXT: }
-
 // CPP-FWDDECL: void block_labels1() {
   // CPP-FWDDECL-NEXT: label1:
   // CPP-FWDDECL-NEXT: goto label2;

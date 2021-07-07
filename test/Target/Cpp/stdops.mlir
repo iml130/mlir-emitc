@@ -5,20 +5,32 @@ func @std_constant() {
   %c0 = constant 0 : i32
   %c1 = constant 2 : index
   %c2 = constant 2.0 : f32
+  %c3 = constant dense<0> : tensor<i32>
+  %c4 = constant dense<[0, 1]> : tensor<2xindex>
+  %c5 = constant dense<[[0.0, 1.0], [2.0, 3.0]]> : tensor<2x2xf32>
   return
 }
 // CPP-DEFAULT: void std_constant() {
 // CPP-DEFAULT-NEXT: int32_t [[V0:[^ ]*]] = 0;
 // CPP-DEFAULT-NEXT: size_t [[V1:[^ ]*]] = 2;
 // CPP-DEFAULT-NEXT: float [[V2:[^ ]*]] = (float)2.000000000e+00;
+// CPP-DEFAULT-NEXT: Tensor<int32_t> [[V3:[^ ]*]] = {0};
+// CPP-DEFAULT-NEXT: Tensor<size_t, 2> [[V4:[^ ]*]] = {0, 1};
+// CPP-DEFAULT-NEXT: Tensor<float, 2, 2> [[V5:[^ ]*]] = {(float)0.0e+00, (float)1.000000000e+00, (float)2.000000000e+00, (float)3.000000000e+00};
 
 // CPP-FWDDECL: void std_constant() {
 // CPP-FWDDECL-NEXT: int32_t [[V0:[^ ]*]];
 // CPP-FWDDECL-NEXT: size_t [[V1:[^ ]*]];
 // CPP-FWDDECL-NEXT: float [[V2:[^ ]*]];
+// CPP-FWDDECL-NEXT: Tensor<int32_t> [[V3:[^ ]*]];
+// CPP-FWDDECL-NEXT: Tensor<size_t, 2> [[V4:[^ ]*]];
+// CPP-FWDDECL-NEXT: Tensor<float, 2, 2> [[V5:[^ ]*]];
 // CPP-FWDDECL-NEXT: [[V0]] = 0;
 // CPP-FWDDECL-NEXT: [[V1]] = 2;
 // CPP-FWDDECL-NEXT: [[V2]] = (float)2.000000000e+00;
+// CPP-FWDDECL-NEXT: [[V3]] = {0};
+// CPP-FWDDECL-NEXT: [[V4]] = {0, 1};
+// CPP-FWDDECL-NEXT: [[V5]] = {(float)0.0e+00, (float)1.000000000e+00, (float)2.000000000e+00, (float)3.000000000e+00};
 
 func @std_call() {
   %0 = call @one_result () : () -> i32
@@ -36,6 +48,32 @@ func @std_call() {
 // CPP-FWDDECL-NEXT: [[V1]] = one_result();
 
 
+func @std_call_two_results() {
+  %c = constant 0 : i8
+  %0:2 = call @two_results () : () -> (i32, f32)
+  %1:2 = call @two_results () : () -> (i32, f32)
+  return
+}
+// CPP-DEFAULT: void std_call_two_results() {
+// CPP-DEFAULT-NEXT: int8_t  [[V0:[^ ]*]] = 0;
+// CPP-DEFAULT-NEXT: int32_t [[V1:[^ ]*]];
+// CPP-DEFAULT-NEXT: float [[V2:[^ ]*]];
+// CPP-DEFAULT-NEXT: std::tie([[V1]], [[V2]]) = two_results();
+// CPP-DEFAULT-NEXT: int32_t [[V3:[^ ]*]];
+// CPP-DEFAULT-NEXT: float [[V4:[^ ]*]];
+// CPP-DEFAULT-NEXT: std::tie([[V3]], [[V4]]) = two_results();
+
+// CPP-FWDDECL: void std_call_two_results() {
+// CPP-FWDDECL-NEXT: int8_t [[V0:[^ ]*]];
+// CPP-FWDDECL-NEXT: int32_t [[V1:[^ ]*]];
+// CPP-FWDDECL-NEXT: float [[V2:[^ ]*]];
+// CPP-FWDDECL-NEXT: int32_t [[V3:[^ ]*]];
+// CPP-FWDDECL-NEXT: float [[V4:[^ ]*]];
+// CPP-FWDDECL-NEXT: [[V0]] = 0;
+// CPP-FWDDECL-NEXT: std::tie([[V1]], [[V2]]) = two_results();
+// CPP-FWDDECL-NEXT: std::tie([[V3]], [[V4]]) = two_results();
+
+
 func @one_result() -> i32 {
   %0 = constant 0 : i32
   return %0 : i32
@@ -48,6 +86,24 @@ func @one_result() -> i32 {
 // CPP-FWDDECL-NEXT: int32_t [[V0:[^ ]*]];
 // CPP-FWDDECL-NEXT: [[V0]] = 0;
 // CPP-FWDDECL-NEXT: return [[V0]];
+
+
+func @two_results() -> (i32, f32) {
+  %0 = constant 0 : i32
+  %1 = constant 1.0 : f32
+  return %0, %1 : i32, f32
+}
+// CPP-DEFAULT: std::tuple<int32_t, float> two_results() {
+// CPP-DEFAULT: int32_t [[V0:[^ ]*]] = 0;
+// CPP-DEFAULT: float [[V1:[^ ]*]] = (float)1.000000000e+00;
+// CPP-DEFAULT: return std::make_tuple([[V0]], [[V1]]);
+
+// CPP-FWDDECL: std::tuple<int32_t, float> two_results() {
+// CPP-FWDDECL: int32_t [[V0:[^ ]*]];
+// CPP-FWDDECL: float [[V1:[^ ]*]];
+// CPP-FWDDECL: [[V0]] = 0;
+// CPP-FWDDECL: [[V1]] = (float)1.000000000e+00;
+// CPP-FWDDECL: return std::make_tuple([[V0]], [[V1]]);
 
 
 func @single_return_statement(%arg0 : i32) -> i32 {

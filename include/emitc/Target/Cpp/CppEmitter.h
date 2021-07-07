@@ -176,11 +176,6 @@ private:
 LogicalResult translateToCpp(Operation &op, raw_ostream &os,
                              bool declareVariablesAtTop = false,
                              bool trailingSemicolon = false);
-
-/// Similar to `translateToCpp`, but translates the given operation to C code.
-LogicalResult translateToC(Operation &op, raw_ostream &os,
-                           bool declareVariablesAtTop = false,
-                           bool trailingSemicolon = false);
 } // namespace emitc
 } // namespace mlir
 

@@ -174,8 +174,7 @@ private:
 /// Translates the given operation to C++ code. The operation or operations in
 /// the region of 'op' need almost all be in EmitC dialect.
 LogicalResult translateToCpp(Operation &op, raw_ostream &os,
-                             bool declareVariablesAtTop = false,
-                             bool trailingSemicolon = false);
+                             bool declareVariablesAtTop = false);
 } // namespace emitc
 } // namespace mlir
 

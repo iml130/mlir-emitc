@@ -27,8 +27,7 @@ void registerToCppTranslation() {
       "mlir-to-cpp",
       [](ModuleOp module, raw_ostream &output) {
         return emitc::translateToCpp(*module.getOperation(), output,
-                                     /*declareVariablesAtTop=*/false,
-                                     /*trailingSemiColon=*/false);
+                                     /*declareVariablesAtTop=*/false);
       },
       [](DialectRegistry &registry) {
         // clang-format off
@@ -42,8 +41,7 @@ void registerToCppTranslation() {
       "mlir-to-cpp-with-variable-declarations-at-top",
       [](ModuleOp module, raw_ostream &output) {
         return emitc::translateToCpp(*module.getOperation(), output,
-                                     /*declareVariablesAtTop=*/true,
-                                     /*trailingSemiColon=*/false);
+                                     /*declareVariablesAtTop=*/true);
       },
       [](DialectRegistry &registry) {
         // clang-format off

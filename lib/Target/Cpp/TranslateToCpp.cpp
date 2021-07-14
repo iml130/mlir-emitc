@@ -58,7 +58,7 @@ inline LogicalResult interleaveWithError(const Container &c,
 template <typename Container, typename UnaryFunctor>
 inline LogicalResult interleaveCommaWithError(const Container &c,
                                               raw_ostream &os,
-                                              UnaryFunctor eachFn {
+                                              UnaryFunctor eachFn) {
   return interleaveWithError(c.begin(), c.end(), eachFn, [&]() { os << ", "; });
 }
 

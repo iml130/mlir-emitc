@@ -58,7 +58,7 @@ inline LogicalResult interleaveWithError(const Container &c,
 template <typename Container, typename UnaryFunctor>
 inline LogicalResult interleaveCommaWithError(const Container &c,
                                               raw_ostream &os,
-                                              UnaryFunctor eachFn) {
+                                              UnaryFunctor eachFn {
   return interleaveWithError(c.begin(), c.end(), eachFn, [&]() { os << ", "; });
 }
 
@@ -185,7 +185,7 @@ static LogicalResult printConstantOp(CppEmitter &emitter, Operation *operation,
   // Only emit an assignment as the variable was already declared when printing
   // the FuncOp.
   if (emitter.shouldDeclareVariablesAtTop()) {
-    // Skip the assignment if the emitc.const has no value.
+    // Skip the assignment if the emitc.constant has no value.
     if (auto oAttr = value.dyn_cast<emitc::OpaqueAttr>()) {
       if (oAttr.getValue().empty())
         return success();
@@ -196,7 +196,7 @@ static LogicalResult printConstantOp(CppEmitter &emitter, Operation *operation,
     return emitter.emitAttribute(*operation, value);
   }
 
-  // Emit a variable declaration for an emitc.const op without value.
+  // Emit a variable declaration for an emitc.constant op without value.
   if (auto oAttr = value.dyn_cast<emitc::OpaqueAttr>()) {
     if (oAttr.getValue().empty())
       // The semicolon gets printed by the emitOperation function.

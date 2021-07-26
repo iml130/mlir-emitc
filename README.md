@@ -44,9 +44,9 @@ cmake --build . --target MLIREmitCAllTests
 
 ## Supported Conversions and Translations
 
-Conversions are supported for [MLIR-HLO](https://github.com/tensorflow/mlir-hlo) ops and some ops of the standard and SCF dialect.
+Conversions are supported for [MLIR-HLO](https://github.com/tensorflow/mlir-hlo) ops and some ops of the standard and Tensor dialect.
 In addition, support for converting Tensor Operator Set Architecture [(TOSA)](https://mlir.llvm.org/docs/Dialects/TOSA/) dialect to EmitC is emerging.
-The `emitc-opt` tool enables conversions via the following options:
+The `emitc-opt` tool supports the following options:
 
 | option                                   |                                                                          |
 | :--------------------------------------- |:------------------------------------------------------------------------ |
@@ -55,9 +55,17 @@ The `emitc-opt` tool enables conversions via the following options:
 | `--convert-std-to-emitc `                | Convert std dialect to EmitC dialect, replacing IndexCastOp and SplatOp. |
 | `--convert-tensor-to-emitc `             | Convert tensor dialect to EmitC dialect, replacing ExtractOp.            |
 | `--convert-tosa-to-emitc `               | Convert TOSA dialect to EmitC dialect.                                   |
+| `--insert-emitc-mhlo-include`            | Insert an EmitC include for the MHLO dialect.                            |
+| `--insert-emitc-std-include`             | Insert an EmitC include for the std dialect.                             |
+| `--insert-emitc-tensor-include`          | Insert an EmitC include for the tensor dialect.                          |
+| `--insert-emitc-tosa-include`            | Insert an EmitC include for the TOSA dialect.                            |
+| `--mhlo-to-emitc-pipeline`               | Run the MHLO to EmitC pipeline.                                          |
+| `--std-to-emitc-pipeline`                | Run the Std to EmitC pipeline.                                           |
+| `--tensor-to-emitc-pipeline`             | Run the Tensor to EmitC pipeline.                                        |
+| `--tosa-to-emitc-pipeline`               | Run the TOSA to EmitC pipeline.                                          |
 
 The currently supported MHLO ops are listed in the [docs/mhlo-op-coverage.md](docs/mhlo-op-coverage.md) document.
 Supported TOSA ops are listed in the [docs/tosa-op-coverage.md](docs/tosa-op-coverage.md) document.
 
 After converting to EmitC dialect, C++ code can be emitted using `emitc-translate --mlir-to-cpp`.
-Furthermore, `emitc-translate` has specific support for the option `--forward-declare-variables`.
+Furthermore, `emitc-translate` has specific support to emit code with variables declared at top using `--mlir-to-cpp-with-variable-declarations-at-top`.

@@ -5,8 +5,8 @@
 // CHECK: std.constant
 // CHECK-NOT: mhlo.
 
-"module"() ( {
-  "func"() ( {
+"builtin.module"() ( {
+  "builtin.func"() ( {
   ^bb0(%arg0: tensor<4xf32>, %arg1: tensor<f32>, %arg2: tensor<f32>, %arg3: tensor<4xf32>, %arg4: tensor<f32>, %arg5: tensor<f32>, %arg6: tensor<f32>, %arg7: tensor<f32>, %arg8: tensor<i32>):  // no predecessors
     %cst = "std.constant"() {value = dense<-2147483648> : tensor<i32>} : () -> tensor<i32>
     %cst_0 = "std.constant"() {value = dense<2147483647> : tensor<i32>} : () -> tensor<i32>

@@ -1,7 +1,7 @@
 // RUN: emitc-opt
 
-"module"() ( {
-  "func"() ( {
+"builtin.module"() ( {
+  "builtin.func"() ( {
   ^bb0(%arg0: tuple<tensor<i32>, tensor<i32>, tensor<i32>, tensor<4xf32>, tensor<4xf32>, tensor<4xf32>, tensor<4xf32>, tensor<i32>, tensor<4xf32>, tensor<f32>, tensor<f32>>):  // no predecessors
     %0 = "mhlo.get_tuple_element"(%arg0) {index = 2 : i32, name = "get-tuple-element.600"} : (tuple<tensor<i32>, tensor<i32>, tensor<i32>, tensor<4xf32>, tensor<4xf32>, tensor<4xf32>, tensor<4xf32>, tensor<i32>, tensor<4xf32>, tensor<f32>, tensor<f32>>) -> tensor<i32>
     %1 = "mhlo.get_tuple_element"(%arg0) {index = 7 : i32, name = "get-tuple-element.605"} : (tuple<tensor<i32>, tensor<i32>, tensor<i32>, tensor<4xf32>, tensor<4xf32>, tensor<4xf32>, tensor<4xf32>, tensor<i32>, tensor<4xf32>, tensor<f32>, tensor<f32>>) -> tensor<i32>
@@ -9,7 +9,7 @@
     %3 = "mhlo.tuple"(%2) {name = "tuple.610"} : (tensor<i1>) -> tuple<tensor<i1>>
     "std.return"(%3) : (tuple<tensor<i1>>) -> ()
   }) {sym_name = "mcmc_sample_chain_trace_scan_while_smart_for_loop_while_dual_averaging_step_size_adaptation___init____one_step_transformed_kernel_one_step_mh_one_step_hmc_kernel_one_step_leapfrog_integrate_while_cond_514__.596", sym_visibility = "private", type = (tuple<tensor<i32>, tensor<i32>, tensor<i32>, tensor<4xf32>, tensor<4xf32>, tensor<4xf32>, tensor<4xf32>, tensor<i32>, tensor<4xf32>, tensor<f32>, tensor<f32>>) -> tuple<tensor<i1>>} : () -> ()
-  "func"() ( {
+  "builtin.func"() ( {
   ^bb0(%arg0: tuple<tensor<i32>, tensor<i32>, tensor<i32>, tensor<2xi32>, tensor<4xf32>, tensor<4xf32>, tensor<4xf32>, tensor<4xf32>, tensor<4xf32>, tensor<4xf32>, tensor<4xf32>, tensor<4xf32>, tensor<i32>, tensor<4xi1>, tensor<4xf32>, tensor<4xf32>, tensor<4xf32>, tensor<4xf32>, tensor<4xf32>, tensor<4xf32>, tensor<4xf32>, tensor<4xf32>, tensor<i32>, tensor<2xi32>, tensor<2xi32>, tensor<f32>, tensor<4xf32>, tensor<f32>, tensor<f32>, tensor<f32>, tensor<4xf32>, tensor<4xf32>, tensor<i32>, tensor<4xf32>, tensor<i32>, tensor<f32>, tensor<f32>, tensor<i32>>):  // no predecessors
     %0 = "mhlo.get_tuple_element"(%arg0) {index = 2 : i32, name = "get-tuple-element.2298"} : (tuple<tensor<i32>, tensor<i32>, tensor<i32>, tensor<2xi32>, tensor<4xf32>, tensor<4xf32>, tensor<4xf32>, tensor<4xf32>, tensor<4xf32>, tensor<4xf32>, tensor<4xf32>, tensor<4xf32>, tensor<i32>, tensor<4xi1>, tensor<4xf32>, tensor<4xf32>, tensor<4xf32>, tensor<4xf32>, tensor<4xf32>, tensor<4xf32>, tensor<4xf32>, tensor<4xf32>, tensor<i32>, tensor<2xi32>, tensor<2xi32>, tensor<f32>, tensor<4xf32>, tensor<f32>, tensor<f32>, tensor<f32>, tensor<4xf32>, tensor<4xf32>, tensor<i32>, tensor<4xf32>, tensor<i32>, tensor<f32>, tensor<f32>, tensor<i32>>) -> tensor<i32>
     %1 = "mhlo.get_tuple_element"(%arg0) {index = 34 : i32, name = "get-tuple-element.2330"} : (tuple<tensor<i32>, tensor<i32>, tensor<i32>, tensor<2xi32>, tensor<4xf32>, tensor<4xf32>, tensor<4xf32>, tensor<4xf32>, tensor<4xf32>, tensor<4xf32>, tensor<4xf32>, tensor<4xf32>, tensor<i32>, tensor<4xi1>, tensor<4xf32>, tensor<4xf32>, tensor<4xf32>, tensor<4xf32>, tensor<4xf32>, tensor<4xf32>, tensor<4xf32>, tensor<4xf32>, tensor<i32>, tensor<2xi32>, tensor<2xi32>, tensor<f32>, tensor<4xf32>, tensor<f32>, tensor<f32>, tensor<f32>, tensor<4xf32>, tensor<4xf32>, tensor<i32>, tensor<4xf32>, tensor<i32>, tensor<f32>, tensor<f32>, tensor<i32>>) -> tensor<i32>
@@ -17,7 +17,7 @@
     %3 = "mhlo.tuple"(%2) {name = "tuple.2335"} : (tensor<i1>) -> tuple<tensor<i1>>
     "std.return"(%3) : (tuple<tensor<i1>>) -> ()
   }) {sym_name = "mcmc_sample_chain_trace_scan_while_smart_for_loop_while_cond_412__.2294", sym_visibility = "private", type = (tuple<tensor<i32>, tensor<i32>, tensor<i32>, tensor<2xi32>, tensor<4xf32>, tensor<4xf32>, tensor<4xf32>, tensor<4xf32>, tensor<4xf32>, tensor<4xf32>, tensor<4xf32>, tensor<4xf32>, tensor<i32>, tensor<4xi1>, tensor<4xf32>, tensor<4xf32>, tensor<4xf32>, tensor<4xf32>, tensor<4xf32>, tensor<4xf32>, tensor<4xf32>, tensor<4xf32>, tensor<i32>, tensor<2xi32>, tensor<2xi32>, tensor<f32>, tensor<4xf32>, tensor<f32>, tensor<f32>, tensor<f32>, tensor<4xf32>, tensor<4xf32>, tensor<i32>, tensor<4xf32>, tensor<i32>, tensor<f32>, tensor<f32>, tensor<i32>>) -> tuple<tensor<i1>>} : () -> ()
-  "func"() ( {
+  "builtin.func"() ( {
   ^bb0(%arg0: tuple<tensor<i32>, tensor<i32>, tensor<i32>, tensor<2xi32>, tensor<4xf32>, tensor<4xf32>, tensor<4xf32>, tensor<4xf32>, tensor<4xf32>, tensor<4xf32>, tensor<4xf32>, tensor<4xf32>, tensor<i32>, tensor<4xi1>, tensor<4xf32>, tensor<4xf32>, tensor<4xf32>, tensor<4xf32>, tensor<4xf32>, tensor<4xf32>, tensor<4xf32>, tensor<4xf32>, tensor<i32>, tensor<2xi32>, tensor<2xi32>, tensor<f32>, tensor<4xf32>, tensor<f32>, tensor<f32>, tensor<f32>, tensor<4xf32>, tensor<4xf32>, tensor<i32>, tensor<4xf32>, tensor<i32>, tuple<tensor<1000x4xf32>, tensor<i32>>, tuple<tensor<1000x4xi1>, tensor<i32>>, tuple<tensor<1000xi32>, tensor<i32>>, tensor<f32>, tensor<f32>, tensor<i32>>):  // no predecessors
     %cst = "std.constant"() {value = dense<1000> : tensor<i32>} : () -> tensor<i32>
     %0 = "mhlo.get_tuple_element"(%arg0) {index = 2 : i32, name = "get-tuple-element.2495"} : (tuple<tensor<i32>, tensor<i32>, tensor<i32>, tensor<2xi32>, tensor<4xf32>, tensor<4xf32>, tensor<4xf32>, tensor<4xf32>, tensor<4xf32>, tensor<4xf32>, tensor<4xf32>, tensor<4xf32>, tensor<i32>, tensor<4xi1>, tensor<4xf32>, tensor<4xf32>, tensor<4xf32>, tensor<4xf32>, tensor<4xf32>, tensor<4xf32>, tensor<4xf32>, tensor<4xf32>, tensor<i32>, tensor<2xi32>, tensor<2xi32>, tensor<f32>, tensor<4xf32>, tensor<f32>, tensor<f32>, tensor<f32>, tensor<4xf32>, tensor<4xf32>, tensor<i32>, tensor<4xf32>, tensor<i32>, tuple<tensor<1000x4xf32>, tensor<i32>>, tuple<tensor<1000x4xi1>, tensor<i32>>, tuple<tensor<1000xi32>, tensor<i32>>, tensor<f32>, tensor<f32>, tensor<i32>>) -> tensor<i32>
@@ -25,7 +25,7 @@
     %2 = "mhlo.tuple"(%1) {name = "tuple.2536"} : (tensor<i1>) -> tuple<tensor<i1>>
     "std.return"(%2) : (tuple<tensor<i1>>) -> ()
   }) {sym_name = "mcmc_sample_chain_trace_scan_while_cond_325__.2491", sym_visibility = "private", type = (tuple<tensor<i32>, tensor<i32>, tensor<i32>, tensor<2xi32>, tensor<4xf32>, tensor<4xf32>, tensor<4xf32>, tensor<4xf32>, tensor<4xf32>, tensor<4xf32>, tensor<4xf32>, tensor<4xf32>, tensor<i32>, tensor<4xi1>, tensor<4xf32>, tensor<4xf32>, tensor<4xf32>, tensor<4xf32>, tensor<4xf32>, tensor<4xf32>, tensor<4xf32>, tensor<4xf32>, tensor<i32>, tensor<2xi32>, tensor<2xi32>, tensor<f32>, tensor<4xf32>, tensor<f32>, tensor<f32>, tensor<f32>, tensor<4xf32>, tensor<4xf32>, tensor<i32>, tensor<4xf32>, tensor<i32>, tuple<tensor<1000x4xf32>, tensor<i32>>, tuple<tensor<1000x4xi1>, tensor<i32>>, tuple<tensor<1000xi32>, tensor<i32>>, tensor<f32>, tensor<f32>, tensor<i32>>) -> tuple<tensor<i1>>} : () -> ()
-  "func"() ( {
+  "builtin.func"() ( {
   ^bb0(%arg0: tensor<4xf32>, %arg1: tensor<f32>, %arg2: tensor<f32>, %arg3: tensor<4xf32>, %arg4: tensor<f32>, %arg5: tensor<f32>, %arg6: tensor<f32>, %arg7: tensor<f32>, %arg8: tensor<i32>):  // no predecessors
     %cst = "std.constant"() {value = dense<-2147483648> : tensor<i32>} : () -> tensor<i32>
     %cst_0 = "std.constant"() {value = dense<2147483647> : tensor<i32>} : () -> tensor<i32>

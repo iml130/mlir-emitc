@@ -439,14 +439,15 @@ static LogicalResult printOperation(CppEmitter &emitter, scf::ForOp forOp) {
        << emitter.getOrCreateName(operand) << ";\n";
   }
 
-  os.unindent() << "}\n";
+  os.unindent() << "}";
 
   // Copy iterArgs into results after the for loop.
   for (auto pair : llvm::zip(results, iterArgs)) {
     OpResult result = std::get<0>(pair);
     BlockArgument iterArg = std::get<1>(pair);
-    os << emitter.getOrCreateName(result) << " = "
-       << emitter.getOrCreateName(iterArg) << ";\n";
+    os << "\n"
+       << emitter.getOrCreateName(result) << " = "
+       << emitter.getOrCreateName(iterArg) << ";";
   }
 
   return success();
@@ -477,11 +478,11 @@ static LogicalResult printOperation(CppEmitter &emitter, scf::IfOp ifOp) {
       return failure();
   }
 
-  os.unindent() << "}\n";
+  os.unindent() << "}";
 
   Region &elseRegion = ifOp.elseRegion();
   if (!elseRegion.empty()) {
-    os << "else {\n";
+    os << " else {\n";
     os.indent();
 
     for (Operation &op : elseRegion.getOps()) {
@@ -491,7 +492,7 @@ static LogicalResult printOperation(CppEmitter &emitter, scf::IfOp ifOp) {
         return failure();
     }
 
-    os.unindent() << "}\n";
+    os.unindent() << "}";
   }
 
   return success();

@@ -11,7 +11,6 @@ func @test_for(%arg0 : index, %arg1 : index, %arg2 : index) {
 // CPP-DEFAULT-NEXT: for (size_t [[ITER:[^ ]*]] = [[START]]; [[ITER]] < [[STOP]]; [[ITER]] += [[STEP]]) {
 // CPP-DEFAULT-NEXT: int32_t [[V4:[^ ]*]] = f();
 // CPP-DEFAULT-NEXT: }
-// CPP-DEFAULT-EMPTY:
 // CPP-DEFAULT-NEXT: return;
 
 // CPP-DECLTOP: void test_for(size_t [[START:[^ ]*]], size_t [[STOP:[^ ]*]], size_t [[STEP:[^ ]*]]) {
@@ -19,7 +18,6 @@ func @test_for(%arg0 : index, %arg1 : index, %arg2 : index) {
 // CPP-DECLTOP-NEXT: for (size_t [[ITER:[^ ]*]] = [[START]]; [[ITER]] < [[STOP]]; [[ITER]] += [[STEP]]) {
 // CPP-DECLTOP-NEXT: [[V4]] = f();
 // CPP-DECLTOP-NEXT: }
-// CPP-DECLTOP-EMPTY:
 // CPP-DECLTOP-NEXT: return;
 
 func @test_for_yield() {
@@ -56,7 +54,6 @@ func @test_for_yield() {
 // CPP-DEFAULT-NEXT: }
 // CPP-DEFAULT-NEXT: [[SE]] = [[SI]];
 // CPP-DEFAULT-NEXT: [[PE]] = [[PI]];
-// CPP-DEFAULT-EMPTY:
 // CPP-DEFAULT-NEXT: return;
 
 // CPP-DECLTOP: void test_for_yield() {
@@ -84,5 +81,4 @@ func @test_for_yield() {
 // CPP-DECLTOP-NEXT: }
 // CPP-DECLTOP-NEXT: [[SE]] = [[SI]];
 // CPP-DECLTOP-NEXT: [[PE]] = [[PI]];
-// CPP-DECLTOP-EMPTY:
 // CPP-DECLTOP-NEXT: return;

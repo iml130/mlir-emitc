@@ -628,8 +628,8 @@ static LogicalResult printOperation(CppEmitter &emitter, FuncOp functionOp) {
     for (Operation &op : block.getOperations()) {
       // When generating code for an scf.if or std.cond_br op no semicolon needs
       // to be printed after the closing brace.
-      // When generating code for an scf.for op, printing a trailing semicolon is
-      // handled within the printOperation function.
+      // When generating code for an scf.for op, printing a trailing semicolon
+      // is handled within the printOperation function.
       bool trailingSemicolon = !isa<scf::IfOp, scf::ForOp, CondBranchOp>(op);
 
       if (failed(emitter.emitOperation(

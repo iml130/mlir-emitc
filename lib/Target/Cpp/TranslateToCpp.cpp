@@ -970,8 +970,8 @@ LogicalResult CppEmitter::emitTupleType(Operation &op, ArrayRef<Type> types) {
   return success();
 }
 
-LogicalResult emitc::translateToCpp(Operation &op, raw_ostream &os,
+LogicalResult emitc::translateToCpp(Operation *op, raw_ostream &os,
                                     bool declareVariablesAtTop) {
   CppEmitter emitter(os, declareVariablesAtTop);
-  return emitter.emitOperation(op, /*trailingSemicolon=*/false);
+  return emitter.emitOperation(*op, /*trailingSemicolon=*/false);
 }

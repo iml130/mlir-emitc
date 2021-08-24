@@ -26,7 +26,7 @@ void registerToCppTranslation() {
   TranslateFromMLIRRegistration reg(
       "mlir-to-cpp",
       [](ModuleOp module, raw_ostream &output) {
-        return emitc::translateToCpp(*module.getOperation(), output,
+        return emitc::translateToCpp(module, output,
                                      /*declareVariablesAtTop=*/false);
       },
       [](DialectRegistry &registry) {
@@ -40,7 +40,7 @@ void registerToCppTranslation() {
   TranslateFromMLIRRegistration regForwardDeclared(
       "mlir-to-cpp-with-variable-declarations-at-top",
       [](ModuleOp module, raw_ostream &output) {
-        return emitc::translateToCpp(*module.getOperation(), output,
+        return emitc::translateToCpp(module, output,
                                      /*declareVariablesAtTop=*/true);
       },
       [](DialectRegistry &registry) {

@@ -241,7 +241,7 @@ static LogicalResult printOperation(CppEmitter &emitter, BranchOp branchOp) {
 
   os << "goto ";
   if (!(emitter.hasBlockLabel(successor)))
-    return branchOp.emitOpError() << "Unable to find label for successor block";
+    return branchOp.emitOpError() << "unable to find label for successor block";
   os << emitter.getOrCreateName(successor);
   return success();
 }
@@ -267,7 +267,7 @@ static LogicalResult printOperation(CppEmitter &emitter,
   os << "goto ";
   if (!(emitter.hasBlockLabel(trueSuccessor))) {
     return condBranchOp.emitOpError()
-           << "Unable to find label for successor block";
+           << "unable to find label for successor block";
   }
   os << emitter.getOrCreateName(trueSuccessor) << ";\n";
   os << "} else {\n";
@@ -283,7 +283,7 @@ static LogicalResult printOperation(CppEmitter &emitter,
   os << "goto ";
   if (!(emitter.hasBlockLabel(falseSuccessor))) {
     return condBranchOp.emitOpError()
-           << "Unable to find label for successor block";
+           << "unable to find label for successor block";
   }
   os << emitter.getOrCreateName(falseSuccessor) << ";\n";
   os << "}";
@@ -590,7 +590,7 @@ static LogicalResult printOperation(CppEmitter &emitter, FuncOp functionOp) {
             if (failed(emitter.emitVariableDeclaration(
                     result, /*trailingSemicolon=*/true))) {
               return WalkResult(
-                  op->emitError("Unable to declare result variable for op"));
+                  op->emitError("unable to declare result variable for op"));
             }
           }
           return WalkResult::advance();
@@ -821,7 +821,7 @@ CppEmitter::emitOperandsAndAttributes(Operation &op,
 LogicalResult CppEmitter::emitVariableAssignment(OpResult result) {
   if (!hasValueInScope(result)) {
     return result.getDefiningOp()->emitOpError(
-        "result variable for the operation has not been declared.");
+        "result variable for the operation has not been declared");
   }
   os << getOrCreateName(result) << " = ";
   return success();
@@ -831,7 +831,7 @@ LogicalResult CppEmitter::emitVariableDeclaration(OpResult result,
                                                   bool trailingSemicolon) {
   if (hasValueInScope(result)) {
     return result.getDefiningOp()->emitError(
-        "result variable for the operation already declared.");
+        "result variable for the operation already declared");
   }
   if (failed(emitType(*result.getOwner(), result.getType())))
     return failure();
@@ -874,7 +874,7 @@ LogicalResult CppEmitter::emitAssignPrefix(Operation &op) {
 
 LogicalResult CppEmitter::emitLabel(Block &block) {
   if (!hasBlockLabel(block))
-    return block.getParentOp()->emitError("Label for block not found.");
+    return block.getParentOp()->emitError("label for block not found");
   os << getOrCreateName(block) << ":\n";
   return success();
 }

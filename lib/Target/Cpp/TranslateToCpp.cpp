@@ -626,10 +626,10 @@ static LogicalResult printOperation(CppEmitter &emitter, FuncOp functionOp) {
         return failure();
     }
     for (Operation &op : block.getOperations()) {
-      // The code for the scf.if op and cond_br op end in an if statement, so we
-      // don't print a semicolon after the closing bracket.
-      // For the scf.for op the emission of a semicolon is op dependent and
-      // handled in the printOperation function.
+      // When generating code for an scf.if or std.cond_br op no semicolon needs
+      // to be printed after the closing brace.
+      // When generating code for an scf.for op, printing a trailing semicolon is
+      // handled within the printOperation function.
       bool trailingSemicolon = !isa<scf::IfOp, scf::ForOp, CondBranchOp>(op);
 
       if (failed(emitter.emitOperation(

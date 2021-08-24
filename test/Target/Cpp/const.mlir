@@ -1,5 +1,5 @@
 // RUN: emitc-translate -mlir-to-cpp %s | FileCheck %s -check-prefix=CPP-DEFAULT
-// RUN: emitc-translate -mlir-to-cpp-with-variable-declarations-at-top %s | FileCheck %s -check-prefix=CPP-FWDDECL
+// RUN: emitc-translate -mlir-to-cpp-with-variable-declarations-at-top %s | FileCheck %s -check-prefix=CPP-DECLTOP
 
 
 func @emitc_constant() {
@@ -15,12 +15,12 @@ func @emitc_constant() {
 // CPP-DEFAULT-NEXT: int32_t* [[V2:[^ ]*]];
 // CPP-DEFAULT-NEXT: int32_t* [[V3:[^ ]*]] = NULL;
 
-// CPP-FWDDECL: void emitc_constant() {
-// CPP-FWDDECL-NEXT: int32_t [[V0:[^ ]*]];
-// CPP-FWDDECL-NEXT: int32_t [[V1:[^ ]*]];
-// CPP-FWDDECL-NEXT: int32_t* [[V2:[^ ]*]];
-// CPP-FWDDECL-NEXT: int32_t* [[V3:[^ ]*]];
-// CPP-FWDDECL-NEXT: ;
-// CPP-FWDDECL-NEXT: [[V1]] = 42;
-// CPP-FWDDECL-NEXT: ;
-// CPP-FWDDECL-NEXT: [[V3]] = NULL;
+// CPP-DECLTOP: void emitc_constant() {
+// CPP-DECLTOP-NEXT: int32_t [[V0:[^ ]*]];
+// CPP-DECLTOP-NEXT: int32_t [[V1:[^ ]*]];
+// CPP-DECLTOP-NEXT: int32_t* [[V2:[^ ]*]];
+// CPP-DECLTOP-NEXT: int32_t* [[V3:[^ ]*]];
+// CPP-DECLTOP-NEXT: ;
+// CPP-DECLTOP-NEXT: [[V1]] = 42;
+// CPP-DECLTOP-NEXT: ;
+// CPP-DECLTOP-NEXT: [[V3]] = NULL;

@@ -1,5 +1,5 @@
 // RUN: emitc-translate -mlir-to-cpp %s | FileCheck %s -check-prefix=CPP-DEFAULT
-// RUN: emitc-translate -mlir-to-cpp-with-variable-declarations-at-top %s | FileCheck %s -check-prefix=CPP-FWDDECL
+// RUN: emitc-translate -mlir-to-cpp-with-variable-declarations-at-top %s | FileCheck %s -check-prefix=CPP-DECLTOP
 
 func @test_for(%arg0 : index, %arg1 : index, %arg2 : index) {
   scf.for %i0 = %arg0 to %arg1 step %arg2 {
@@ -14,13 +14,13 @@ func @test_for(%arg0 : index, %arg1 : index, %arg2 : index) {
 // CPP-DEFAULT-EMPTY:
 // CPP-DEFAULT-NEXT: return;
 
-// CPP-FWDDECL: void test_for(size_t [[START:[^ ]*]], size_t [[STOP:[^ ]*]], size_t [[STEP:[^ ]*]]) {
-// CPP-FWDDECL-NEXT: int32_t [[V4:[^ ]*]];
-// CPP-FWDDECL-NEXT: for (size_t [[ITER:[^ ]*]] = [[START]]; [[ITER]] < [[STOP]]; [[ITER]] += [[STEP]]) {
-// CPP-FWDDECL-NEXT: [[V4]] = f();
-// CPP-FWDDECL-NEXT: }
-// CPP-FWDDECL-EMPTY:
-// CPP-FWDDECL-NEXT: return;
+// CPP-DECLTOP: void test_for(size_t [[START:[^ ]*]], size_t [[STOP:[^ ]*]], size_t [[STEP:[^ ]*]]) {
+// CPP-DECLTOP-NEXT: int32_t [[V4:[^ ]*]];
+// CPP-DECLTOP-NEXT: for (size_t [[ITER:[^ ]*]] = [[START]]; [[ITER]] < [[STOP]]; [[ITER]] += [[STEP]]) {
+// CPP-DECLTOP-NEXT: [[V4]] = f();
+// CPP-DECLTOP-NEXT: }
+// CPP-DECLTOP-EMPTY:
+// CPP-DECLTOP-NEXT: return;
 
 func @test_for_yield() {
   %start = constant 0 : index
@@ -59,30 +59,30 @@ func @test_for_yield() {
 // CPP-DEFAULT-EMPTY:
 // CPP-DEFAULT-NEXT: return;
 
-// CPP-FWDDECL: void test_for_yield() {
-// CPP-FWDDECL-NEXT: size_t [[START:[^ ]*]];
-// CPP-FWDDECL-NEXT: size_t [[STOP:[^ ]*]];
-// CPP-FWDDECL-NEXT: size_t [[STEP:[^ ]*]];
-// CPP-FWDDECL-NEXT: int32_t [[S0:[^ ]*]];
-// CPP-FWDDECL-NEXT: float [[P0:[^ ]*]];
-// CPP-FWDDECL-NEXT: int32_t [[SE:[^ ]*]];
-// CPP-FWDDECL-NEXT: float [[PE:[^ ]*]];
-// CPP-FWDDECL-NEXT: int32_t [[SN:[^ ]*]];
-// CPP-FWDDECL-NEXT: float [[PN:[^ ]*]];
-// CPP-FWDDECL-NEXT: [[START]] = 0;
-// CPP-FWDDECL-NEXT: [[STOP]] = 10;
-// CPP-FWDDECL-NEXT: [[STEP]] = 1;
-// CPP-FWDDECL-NEXT: [[S0]] = 0;
-// CPP-FWDDECL-NEXT: [[P0]] = (float)1.000000000e+00;
-// CPP-FWDDECL-NEXT: int32_t [[SI:[^ ]*]] = [[S0]];
-// CPP-FWDDECL-NEXT: float [[PI:[^ ]*]] = [[P0]];
-// CPP-FWDDECL-NEXT: for (size_t [[ITER:[^ ]*]] = [[START]]; [[ITER]] < [[STOP]]; [[ITER]] += [[STEP]]) {
-// CPP-FWDDECL-NEXT: [[SN]] = add([[SI]], [[ITER]]);
-// CPP-FWDDECL-NEXT: [[PN]] = mul([[PI]], [[ITER]]);
-// CPP-FWDDECL-NEXT: [[SI]] = [[SN]];
-// CPP-FWDDECL-NEXT: [[PI]] = [[PN]];
-// CPP-FWDDECL-NEXT: }
-// CPP-FWDDECL-NEXT: [[SE]] = [[SI]];
-// CPP-FWDDECL-NEXT: [[PE]] = [[PI]];
-// CPP-FWDDECL-EMPTY:
-// CPP-FWDDECL-NEXT: return;
+// CPP-DECLTOP: void test_for_yield() {
+// CPP-DECLTOP-NEXT: size_t [[START:[^ ]*]];
+// CPP-DECLTOP-NEXT: size_t [[STOP:[^ ]*]];
+// CPP-DECLTOP-NEXT: size_t [[STEP:[^ ]*]];
+// CPP-DECLTOP-NEXT: int32_t [[S0:[^ ]*]];
+// CPP-DECLTOP-NEXT: float [[P0:[^ ]*]];
+// CPP-DECLTOP-NEXT: int32_t [[SE:[^ ]*]];
+// CPP-DECLTOP-NEXT: float [[PE:[^ ]*]];
+// CPP-DECLTOP-NEXT: int32_t [[SN:[^ ]*]];
+// CPP-DECLTOP-NEXT: float [[PN:[^ ]*]];
+// CPP-DECLTOP-NEXT: [[START]] = 0;
+// CPP-DECLTOP-NEXT: [[STOP]] = 10;
+// CPP-DECLTOP-NEXT: [[STEP]] = 1;
+// CPP-DECLTOP-NEXT: [[S0]] = 0;
+// CPP-DECLTOP-NEXT: [[P0]] = (float)1.000000000e+00;
+// CPP-DECLTOP-NEXT: int32_t [[SI:[^ ]*]] = [[S0]];
+// CPP-DECLTOP-NEXT: float [[PI:[^ ]*]] = [[P0]];
+// CPP-DECLTOP-NEXT: for (size_t [[ITER:[^ ]*]] = [[START]]; [[ITER]] < [[STOP]]; [[ITER]] += [[STEP]]) {
+// CPP-DECLTOP-NEXT: [[SN]] = add([[SI]], [[ITER]]);
+// CPP-DECLTOP-NEXT: [[PN]] = mul([[PI]], [[ITER]]);
+// CPP-DECLTOP-NEXT: [[SI]] = [[SN]];
+// CPP-DECLTOP-NEXT: [[PI]] = [[PN]];
+// CPP-DECLTOP-NEXT: }
+// CPP-DECLTOP-NEXT: [[SE]] = [[SI]];
+// CPP-DECLTOP-NEXT: [[PE]] = [[PI]];
+// CPP-DECLTOP-EMPTY:
+// CPP-DECLTOP-NEXT: return;

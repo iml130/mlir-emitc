@@ -10,5 +10,5 @@ add_mlir_translation_library(MLIRTargetCpp
   MLIRIR
   MLIRSCF
   MLIRStandard
-  MLIRSupportIndentedOstream
+  MLIRSupport
   )

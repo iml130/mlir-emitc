@@ -14,6 +14,7 @@
 #include "mlir/IR/BuiltinTypes.h"
 #include "mlir/IR/Dialect.h"
 #include "mlir/IR/Operation.h"
+#include "mlir/Support/IndentedOstream.h"
 #include "llvm/ADT/DenseMap.h"
 #include "llvm/ADT/StringExtras.h"
 #include "llvm/ADT/StringMap.h"
@@ -147,7 +148,7 @@ struct CppEmitter {
   bool hasBlockLabel(Block &block);
 
   /// Returns the output stream.
-  raw_ostream &ostream() { return os; };
+  raw_indented_ostream &ostream() { return os; };
 
   /// Returns if all variables for op results and basic block arguments need to
   /// be declared at the beginning of a function.
@@ -158,7 +159,7 @@ private:
   using BlockMapper = llvm::ScopedHashTable<Block *, std::string>;
 
   /// Output stream to emit to.
-  raw_ostream &os;
+  raw_indented_ostream os;
 
   /// Boolean to enforce that all variables for op results and block
   /// arguments are declared at the beginning of the function. This also
@@ -375,7 +376,7 @@ static LogicalResult printOperation(CppEmitter &emitter,
 
 static LogicalResult printOperation(CppEmitter &emitter, scf::ForOp forOp) {
 
-  raw_ostream &os = emitter.ostream();
+  raw_indented_ostream &os = emitter.ostream();
 
   OperandRange operands = forOp.getIterOperands();
   Block::BlockArgListType iterArgs = forOp.getRegionIterArgs();
@@ -415,6 +416,7 @@ static LogicalResult printOperation(CppEmitter &emitter, scf::ForOp forOp) {
   os << " += ";
   os << emitter.getOrCreateName(forOp.step());
   os << ") {\n";
+  os.indent();
 
   Region &forRegion = forOp.region();
   auto regionOps = forRegion.getOps();
@@ -437,7 +439,7 @@ static LogicalResult printOperation(CppEmitter &emitter, scf::ForOp forOp) {
        << emitter.getOrCreateName(operand) << ";\n";
   }
 
-  os << "}\n";
+  os.unindent() << "}\n";
 
   // Copy iterArgs into results after the for loop.
   for (auto pair : llvm::zip(results, iterArgs)) {
@@ -451,7 +453,7 @@ static LogicalResult printOperation(CppEmitter &emitter, scf::ForOp forOp) {
 }
 
 static LogicalResult printOperation(CppEmitter &emitter, scf::IfOp ifOp) {
-  raw_ostream &os = emitter.ostream();
+  raw_indented_ostream &os = emitter.ostream();
 
   if (!emitter.shouldDeclareVariablesAtTop()) {
     for (OpResult result : ifOp.getResults()) {
@@ -465,6 +467,7 @@ static LogicalResult printOperation(CppEmitter &emitter, scf::IfOp ifOp) {
   if (failed(emitter.emitOperands(*ifOp.getOperation())))
     return failure();
   os << ") {\n";
+  os.indent();
 
   Region &thenRegion = ifOp.thenRegion();
   for (Operation &op : thenRegion.getOps()) {
@@ -474,11 +477,12 @@ static LogicalResult printOperation(CppEmitter &emitter, scf::IfOp ifOp) {
       return failure();
   }
 
-  os << "}\n";
+  os.unindent() << "}\n";
 
   Region &elseRegion = ifOp.elseRegion();
   if (!elseRegion.empty()) {
     os << "else {\n";
+    os.indent();
 
     for (Operation &op : elseRegion.getOps()) {
       // Note: This prints a superfluous semicolon if the terminating yield op
@@ -487,7 +491,7 @@ static LogicalResult printOperation(CppEmitter &emitter, scf::IfOp ifOp) {
         return failure();
     }
 
-    os << "}\n";
+    os.unindent() << "}\n";
   }
 
   return success();
@@ -557,7 +561,7 @@ static LogicalResult printOperation(CppEmitter &emitter, FuncOp functionOp) {
   }
 
   CppEmitter::Scope scope(emitter);
-  raw_ostream &os = emitter.ostream();
+  raw_indented_ostream &os = emitter.ostream();
   if (failed(emitter.emitTypes(*functionOp.getOperation(),
                                functionOp.getType().getResults())))
     return failure();
@@ -575,7 +579,7 @@ static LogicalResult printOperation(CppEmitter &emitter, FuncOp functionOp) {
           })))
     return failure();
   os << ") {\n";
-
+  os.indent();
   if (emitter.shouldDeclareVariablesAtTop()) {
     // Declare all variables that hold op results including those from nested
     // regions.
@@ -629,7 +633,7 @@ static LogicalResult printOperation(CppEmitter &emitter, FuncOp functionOp) {
         return failure();
     }
   }
-  os << "}\n";
+  os.unindent() << "}\n";
   return success();
 }
 

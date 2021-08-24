@@ -12,7 +12,6 @@ func @test_if(%arg0: i1, %arg1: f32) {
 // CPP-DEFAULT-NEXT: int32_t [[V2:[^ ]*]] = func_const([[V1]]);
 // CPP-DEFAULT-NEXT: ;
 // CPP-DEFAULT-NEXT: }
-// CPP-DEFAULT-EMPTY:
 // CPP-DEFAULT-NEXT: return;
 
 // CPP-DECLTOP: void test_if(bool [[V0:[^ ]*]], float [[V1:[^ ]*]]) {
@@ -21,7 +20,6 @@ func @test_if(%arg0: i1, %arg1: f32) {
 // CPP-DECLTOP-NEXT: [[V2]] = func_const([[V1]]);
 // CPP-DECLTOP-NEXT: ;
 // CPP-DECLTOP-NEXT: }
-// CPP-DECLTOP-EMPTY:
 // CPP-DECLTOP-NEXT: return;
 
 
@@ -37,12 +35,10 @@ func @test_if_else(%arg0: i1, %arg1: f32) {
 // CPP-DEFAULT-NEXT: if ([[V0]]) {
 // CPP-DEFAULT-NEXT: int32_t [[V2:[^ ]*]] = func_true([[V1]]);
 // CPP-DEFAULT-NEXT: ;
-// CPP-DEFAULT-NEXT: }
-// CPP-DEFAULT-NEXT: else {
+// CPP-DEFAULT-NEXT: } else {
 // CPP-DEFAULT-NEXT: int32_t [[V3:[^ ]*]] = func_false([[V1]]);
 // CPP-DEFAULT-NEXT: ;
 // CPP-DEFAULT-NEXT: }
-// CPP-DEFAULT-EMPTY:
 // CPP-DEFAULT-NEXT: return;
 
 // CPP-DECLTOP: void test_if_else(bool [[V0:[^ ]*]], float [[V1:[^ ]*]]) {
@@ -51,12 +47,10 @@ func @test_if_else(%arg0: i1, %arg1: f32) {
 // CPP-DECLTOP-NEXT: if ([[V0]]) {
 // CPP-DECLTOP-NEXT: [[V2]] = func_true([[V1]]);
 // CPP-DECLTOP-NEXT: ;
-// CPP-DECLTOP-NEXT: }
-// CPP-DECLTOP-NEXT: else {
+// CPP-DECLTOP-NEXT: } else {
 // CPP-DECLTOP-NEXT: [[V3]] = func_false([[V1]]);
 // CPP-DECLTOP-NEXT: ;
 // CPP-DECLTOP-NEXT: }
-// CPP-DECLTOP-EMPTY:
 // CPP-DECLTOP-NEXT: return;
 
 
@@ -82,14 +76,12 @@ func @test_if_yield(%arg0: i1, %arg1: f32) {
 // CPP-DEFAULT-NEXT: double [[V6:[^ ]*]] = func_true_2([[V1]]);
 // CPP-DEFAULT-NEXT: [[V3]] = [[V5]];
 // CPP-DEFAULT-NEXT: [[V4]] = [[V6]];
-// CPP-DEFAULT-NEXT: }
-// CPP-DEFAULT-NEXT: else {
+// CPP-DEFAULT-NEXT: } else {
 // CPP-DEFAULT-NEXT: int32_t [[V7:[^ ]*]] = func_false_1([[V1]]);
 // CPP-DEFAULT-NEXT: double [[V8:[^ ]*]] = func_false_2([[V1]]);
 // CPP-DEFAULT-NEXT: [[V3]] = [[V7]];
 // CPP-DEFAULT-NEXT: [[V4]] = [[V8]];
 // CPP-DEFAULT-NEXT: }
-// CPP-DEFAULT-EMPTY:
 // CPP-DEFAULT-NEXT: return;
 
 // CPP-DECLTOP: void test_if_yield(bool [[V0:[^ ]*]], float [[V1:[^ ]*]]) {
@@ -106,12 +98,10 @@ func @test_if_yield(%arg0: i1, %arg1: f32) {
 // CPP-DECLTOP-NEXT: [[V6]] = func_true_2([[V1]]);
 // CPP-DECLTOP-NEXT: [[V3]] = [[V5]];
 // CPP-DECLTOP-NEXT: [[V4]] = [[V6]];
-// CPP-DECLTOP-NEXT: }
-// CPP-DECLTOP-NEXT: else {
+// CPP-DECLTOP-NEXT: } else {
 // CPP-DECLTOP-NEXT: [[V7]] = func_false_1([[V1]]);
 // CPP-DECLTOP-NEXT: [[V8]] = func_false_2([[V1]]);
 // CPP-DECLTOP-NEXT: [[V3]] = [[V7]];
 // CPP-DECLTOP-NEXT: [[V4]] = [[V8]];
 // CPP-DECLTOP-NEXT: }
-// CPP-DECLTOP-EMPTY:
 // CPP-DECLTOP-NEXT: return;

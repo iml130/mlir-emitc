@@ -29,8 +29,8 @@ using namespace mlir::emitc;
 using llvm::formatv;
 
 /// Convenience functions to produce interleaved output with functions returning
-/// a LogicalResult. This is different than those in STL as functions used on
-/// each element doesn't return a string.
+/// a LogicalResult. This is different than those in STLExtras as functions used
+/// on each element doesn't return a string.
 template <typename ForwardIterator, typename UnaryFunctor,
           typename NullaryFunctor>
 inline LogicalResult

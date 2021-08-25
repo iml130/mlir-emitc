@@ -241,7 +241,7 @@ static LogicalResult printOperation(CppEmitter &emitter, BranchOp branchOp) {
 
   os << "goto ";
   if (!(emitter.hasBlockLabel(successor)))
-    return branchOp.emitOpError() << "unable to find label for successor block";
+    return branchOp.emitOpError("unable to find label for successor block");
   os << emitter.getOrCreateName(successor);
   return success();
 }
@@ -266,8 +266,7 @@ static LogicalResult printOperation(CppEmitter &emitter,
 
   os << "goto ";
   if (!(emitter.hasBlockLabel(trueSuccessor))) {
-    return condBranchOp.emitOpError()
-           << "unable to find label for successor block";
+    return condBranchOp.emitOpError("unable to find label for successor block");
   }
   os << emitter.getOrCreateName(trueSuccessor) << ";\n";
   os << "} else {\n";
@@ -316,10 +315,10 @@ static LogicalResult printOperation(CppEmitter &emitter, emitc::CallOp callOp) {
       if (t.getType().isIndex()) {
         int64_t idx = t.getInt();
         if ((idx < 0) || (idx >= op.getNumOperands()))
-          return op.emitOpError() << "invalid operand index";
+          return op.emitOpError("invalid operand index");
         if (!emitter.hasValueInScope(op.getOperand(idx)))
-          return op.emitOpError()
-                 << "operand " << idx << "'s value not defined in scope";
+          return op.emitOpError("operand ")
+                 << idx << "'s value not defined in scope";
         os << emitter.getOrCreateName(op.getOperand(idx));
         return success();
       }
@@ -514,7 +513,7 @@ static LogicalResult printOperation(CppEmitter &emitter, scf::YieldOp yieldOp) {
             os << emitter.getOrCreateName(result) << " = ";
 
             if (!emitter.hasValueInScope(operand))
-              return yieldOp.emitError() << "operand value not in scope";
+              return yieldOp.emitError("operand value not in scope");
             os << emitter.getOrCreateName(operand);
             return success();
           },
@@ -556,8 +555,8 @@ static LogicalResult printOperation(CppEmitter &emitter, FuncOp functionOp) {
   // We need to declare variables at top if the function has multiple blocks.
   if (!emitter.shouldDeclareVariablesAtTop() &&
       functionOp.getBlocks().size() > 1) {
-    return functionOp.emitOpError()
-           << "with multiple blocks needs variables declared at top";
+    return functionOp.emitOpError(
+        "with multiple blocks needs variables declared at top");
   }
 
   CppEmitter::Scope scope(emitter);
@@ -769,7 +768,7 @@ LogicalResult CppEmitter::emitAttribute(Location loc, Attribute attr) {
   // Print symbolic reference attributes.
   if (auto sAttr = attr.dyn_cast<SymbolRefAttr>()) {
     if (sAttr.getNestedReferences().size() > 1)
-      return emitError(loc, " attribute has more than 1 nested reference");
+      return emitError(loc, "attribute has more than 1 nested reference");
     os << sAttr.getRootReference();
     return success();
   }
@@ -893,7 +892,7 @@ LogicalResult CppEmitter::emitOperation(Operation &op, bool trailingSemicolon) {
                 ModuleOp, ReturnOp>(
               [&](auto op) { return printOperation(*this, op); })
           .Default([&](Operation *) {
-            return op.emitOpError() << "unable to find printer for op";
+            return op.emitOpError("unable to find printer for op");
           });
 
   if (failed(status))

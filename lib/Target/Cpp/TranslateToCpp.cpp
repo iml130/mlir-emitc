@@ -119,8 +119,8 @@ struct CppEmitter {
   /// Return the existing or a new label of a Block.
   StringRef getOrCreateName(Block &block);
 
-  /// Whether to map an mlir integer to a signed integer in C++.
-  bool shouldMapToSigned(IntegerType::SignednessSemantics val);
+  /// Whether to map an mlir integer to a unsigned integer in C++.
+  bool shouldMapToUnsigned(IntegerType::SignednessSemantics val);
 
   /// RAII helper function to manage entering/exiting C++ scopes.
   struct Scope {
@@ -659,14 +659,14 @@ StringRef CppEmitter::getOrCreateName(Block &block) {
   return *blockMapper.begin(&block);
 }
 
-bool CppEmitter::shouldMapToSigned(IntegerType::SignednessSemantics val) {
+bool CppEmitter::shouldMapToUnsigned(IntegerType::SignednessSemantics val) {
   switch (val) {
   case IntegerType::Signless:
-    return true;
-  case IntegerType::Signed:
-    return true;
-  case IntegerType::Unsigned:
     return false;
+  case IntegerType::Signed:
+    return false;
+  case IntegerType::Unsigned:
+    return true;
   }
 }
 
@@ -728,7 +728,7 @@ LogicalResult CppEmitter::emitAttribute(Location loc, Attribute attr) {
   // Print integer attributes.
   if (auto iAttr = attr.dyn_cast<IntegerAttr>()) {
     if (auto iType = iAttr.getType().dyn_cast<IntegerType>()) {
-      printInt(iAttr.getValue(), shouldMapToSigned(iType.getSignedness()));
+      printInt(iAttr.getValue(), shouldMapToUnsigned(iType.getSignedness()));
       return success();
     }
     if (auto iType = iAttr.getType().dyn_cast<IndexType>()) {
@@ -743,7 +743,7 @@ LogicalResult CppEmitter::emitAttribute(Location loc, Attribute attr) {
                          .dyn_cast<IntegerType>()) {
       os << '{';
       interleaveComma(dense, os, [&](APInt val) {
-        printInt(val, shouldMapToSigned(iType.getSignedness()));
+        printInt(val, shouldMapToUnsigned(iType.getSignedness()));
       });
       os << '}';
       return success();
@@ -910,10 +910,10 @@ LogicalResult CppEmitter::emitType(Location loc, Type type) {
     case 16:
     case 32:
     case 64:
-      if (shouldMapToSigned(iType.getSignedness()))
-        return (os << "int" << iType.getWidth() << "_t"), success();
-      else
+      if (shouldMapToUnsigned(iType.getSignedness()))
         return (os << "uint" << iType.getWidth() << "_t"), success();
+      else
+        return (os << "int" << iType.getWidth() << "_t"), success();
     default:
       return emitError(loc, "cannot emit integer type ") << type;
     }

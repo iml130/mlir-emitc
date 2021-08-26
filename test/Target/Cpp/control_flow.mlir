@@ -1,4 +1,4 @@
-// RUN: emitc-translate -mlir-to-cpp-with-variable-declarations-at-top %s | FileCheck %s -check-prefix=CPP-DECLTOP
+// RUN: emitc-translate -mlir-to-cpp -declare-variables-at-top %s | FileCheck %s -check-prefix=CPP-DECLTOP
 
 // simple(10, true)  -> 20
 // simple(10, false) -> 30

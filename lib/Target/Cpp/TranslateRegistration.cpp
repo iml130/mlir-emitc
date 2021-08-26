@@ -13,6 +13,7 @@
 #include "mlir/IR/BuiltinOps.h"
 #include "mlir/IR/Dialect.h"
 #include "mlir/Translation.h"
+#include "llvm/Support/CommandLine.h"
 
 using namespace mlir;
 
@@ -23,25 +24,17 @@ namespace mlir {
 //===----------------------------------------------------------------------===//
 
 void registerToCppTranslation() {
+  static llvm::cl::opt<bool> declareVariablesAtTop(
+      "declare-variables-at-top",
+      llvm::cl::desc("Declare variables at top when emitting C/C++"),
+      llvm::cl::init(false));
+
   TranslateFromMLIRRegistration reg(
       "mlir-to-cpp",
       [](ModuleOp module, raw_ostream &output) {
-        return emitc::translateToCpp(module, output,
-                                     /*declareVariablesAtTop=*/false);
-      },
-      [](DialectRegistry &registry) {
-        // clang-format off
-        registry.insert<emitc::EmitCDialect,
-                        StandardOpsDialect,
-                        scf::SCFDialect>();
-        // clang-format on
-      });
-
-  TranslateFromMLIRRegistration regForwardDeclared(
-      "mlir-to-cpp-with-variable-declarations-at-top",
-      [](ModuleOp module, raw_ostream &output) {
-        return emitc::translateToCpp(module, output,
-                                     /*declareVariablesAtTop=*/true);
+        return emitc::translateToCpp(
+            module, output,
+            /*declareVariablesAtTop=*/declareVariablesAtTop);
       },
       [](DialectRegistry &registry) {
         // clang-format off

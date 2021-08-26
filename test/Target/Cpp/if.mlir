@@ -1,5 +1,5 @@
 // RUN: emitc-translate -mlir-to-cpp %s | FileCheck %s -check-prefix=CPP-DEFAULT
-// RUN: emitc-translate -mlir-to-cpp-with-variable-declarations-at-top %s | FileCheck %s -check-prefix=CPP-DECLTOP
+// RUN: emitc-translate -mlir-to-cpp -declare-variables-at-top %s | FileCheck %s -check-prefix=CPP-DECLTOP
 
 func @test_if(%arg0: i1, %arg1: f32) {
   scf.if %arg0 {

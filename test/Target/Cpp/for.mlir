@@ -1,5 +1,5 @@
 // RUN: emitc-translate -mlir-to-cpp %s | FileCheck %s -check-prefix=CPP-DEFAULT
-// RUN: emitc-translate -mlir-to-cpp-with-variable-declarations-at-top %s | FileCheck %s -check-prefix=CPP-DECLTOP
+// RUN: emitc-translate -mlir-to-cpp -declare-variables-at-top %s | FileCheck %s -check-prefix=CPP-DECLTOP
 
 func @test_for(%arg0 : index, %arg1 : index, %arg2 : index) {
   scf.for %i0 = %arg0 to %arg1 step %arg2 {

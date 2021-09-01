@@ -1,37 +1,5 @@
-if(${IREE_ENABLE_EMITC})
-  # Dialects from iree::tools::init_mlir_passes_and_dialects
-  set(dialect_libs
-    MLIRAffine
-    MLIRAffineTransforms
-    MLIRGPU
-    MLIRIR
-    MLIRLLVMIR
-    MLIRLinalg
-    MLIRLinalgTransforms
-    MLIRQuant
-    MLIRSCF
-    MLIRSCFTransforms
-    MLIRSPIRV
-    MLIRSPIRVTransforms
-    MLIRShape
-    MLIRStandard
-    MLIRTosa
-    MLIRTosaTransforms
-    MLIRTransforms
-    MLIRVector
-    )
-  # Passes from iree::tools::init_mlir_passes_and_dialects
-  set(conversion_libs
-    MLIRGPUToSPIRV
-    MLIRLinalgToLLVM
-    MLIRLinalgToSPIRV
-    MLIRSCFToGPU
-    MLIRStandardToSPIRV
-    )
-else()
-  get_property(dialect_libs GLOBAL PROPERTY MLIR_DIALECT_LIBS)
-  get_property(conversion_libs GLOBAL PROPERTY MLIR_CONVERSION_LIBS)
-endif()
+get_property(dialect_libs GLOBAL PROPERTY MLIR_DIALECT_LIBS)
+get_property(conversion_libs GLOBAL PROPERTY MLIR_CONVERSION_LIBS)
 
 if(${EMITC_ENABLE_HLO})
   set(HLO_LIBS

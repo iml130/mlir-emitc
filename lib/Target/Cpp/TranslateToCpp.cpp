@@ -769,7 +769,7 @@ LogicalResult CppEmitter::emitAttribute(Location loc, Attribute attr) {
   if (auto sAttr = attr.dyn_cast<SymbolRefAttr>()) {
     if (sAttr.getNestedReferences().size() > 1)
       return emitError(loc, "attribute has more than 1 nested reference");
-    os << sAttr.getRootReference();
+    os << sAttr.getRootReference().getValue();
     return success();
   }
 

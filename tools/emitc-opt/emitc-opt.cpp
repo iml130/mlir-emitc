@@ -12,10 +12,6 @@
 
 #include "emitc/InitDialect.h"
 #include "emitc/InitPasses.h"
-#ifdef IREE_BUILD_EMITC
-#include "iree/tools/init_mlir_dialects.h"
-#include "iree/tools/init_mlir_passes.h"
-#endif
 #ifdef EMITC_BUILD_HLO
 #include "mlir-hlo/Dialect/mhlo/IR/chlo_ops.h"
 #include "mlir-hlo/Dialect/mhlo/IR/hlo_ops.h"
@@ -25,10 +21,8 @@
 #include "mlir/IR/AsmState.h"
 #include "mlir/IR/Dialect.h"
 #include "mlir/IR/MLIRContext.h"
-#ifndef IREE_BUILD_EMITC
 #include "mlir/InitAllDialects.h"
 #include "mlir/InitAllPasses.h"
-#endif
 #include "mlir/Pass/Pass.h"
 #include "mlir/Pass/PassManager.h"
 #include "mlir/Support/FileUtilities.h"
@@ -43,13 +37,8 @@ using namespace mlir;
 
 int main(int argc, char **argv) {
   mlir::DialectRegistry registry;
-#ifdef IREE_BUILD_EMITC
-  registerMlirDialects(registry);
-  registerMlirPasses();
-#else
   registerAllDialects(registry);
   registerAllPasses();
-#endif // IREE_BUILD_EMITC
   registerEmitCDialect(registry);
   emitc::registerAllEmitCPasses();
 #ifdef EMITC_BUILD_HLO

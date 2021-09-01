@@ -21,11 +21,6 @@ if(EMITC_ENABLE_HLO)
   add_definitions(-DEMITC_BUILD_HLO)
 endif()
 
-if(IREE_ENABLE_EMITC)
-  message(STATUS "Building EmitC (with reduced deps) for use within IREE")
-  add_definitions(-DIREE_BUILD_EMITC)
-endif()
-
 #-------------------------------------------------------------------------------
 # MLIR/LLVM configuration
 #-------------------------------------------------------------------------------
@@ -68,14 +63,6 @@ add_definitions(${LLVM_DEFINITIONS})
 #-------------------------------------------------------------------------------
 # Dependent projects and dependencies
 #-------------------------------------------------------------------------------
-
-# If building as part of IREE, add IREE specific includes.
-if(IREE_ENABLE_EMITC AND IREE_MLIR_DEP_MODE STREQUAL "BUNDLED")
-  include_directories(${IREE_COMMON_INCLUDE_DIRS})
-elseif(IREE_ENABLE_EMITC AND IREE_MLIR_DEP_MODE STREQUAL "INSTALLED")
-  include_directories(${iree_SOURCE_DIR})
-  include_directories(${iree_BINARY_DIR})
-endif()
 
 # Configure MHLO if we are building standalone. If building as part of
 # another, let it handle the submodule and includes.

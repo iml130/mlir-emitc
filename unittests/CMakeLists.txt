@@ -9,7 +9,7 @@ set(LLVM_LINK_COMPONENTS
   Support
   )
 
-add_mlir_unittest(MLIREmitCAllTests emitc_mhlo.cpp emitc_std.cpp emitc_tensor.cpp emitc_tosa.cpp emitc_types.cpp)
+add_mlir_unittest(MLIREmitCAllTests emitc_mhlo.cpp emitc_arith.cpp emitc_std.cpp emitc_tensor.cpp emitc_tosa.cpp emitc_types.cpp)
 
 target_include_directories(MLIREmitCAllTests
   PRIVATE ${gtest_SOURCE_DIR}/include

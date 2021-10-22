@@ -24,32 +24,6 @@ using namespace mlir::emitc;
 
 namespace {
 
-/// Convert `std.index_cast` into an `emitc.call` operation.
-class IndexCastOpConversion : public OpConversionPattern<IndexCastOp> {
-  using OpConversionPattern<IndexCastOp>::OpConversionPattern;
-
-public:
-  IndexCastOpConversion(MLIRContext *ctx)
-      : OpConversionPattern<IndexCastOp>(ctx) {}
-
-private:
-  LogicalResult
-  matchAndRewrite(IndexCastOp indexCastOp, ArrayRef<Value> operands,
-                  ConversionPatternRewriter &rewriter) const override {
-    StringAttr callee = rewriter.getStringAttr("emitc::standard::index_cast");
-
-    ArrayAttr args;
-    Type resultType = indexCastOp.getResult().getType();
-    ArrayAttr templateArgs = rewriter.getArrayAttr({TypeAttr::get(resultType)});
-
-    rewriter.replaceOpWithNewOp<emitc::CallOp>(indexCastOp,
-                                               indexCastOp.getType(), callee,
-                                               args, templateArgs, operands);
-
-    return success();
-  }
-};
-
 /// Convert `std.splat` into an `emitc.call` operation.
 class SplatOpConversion : public OpConversionPattern<SplatOp> {
   using OpConversionPattern<SplatOp>::OpConversionPattern;
@@ -76,7 +50,6 @@ private:
 } // namespace
 
 void populateStdToEmitcPatterns(MLIRContext *ctx, RewritePatternSet &patterns) {
-  patterns.add<IndexCastOpConversion>(ctx);
   patterns.add<SplatOpConversion>(ctx);
 }
 
@@ -91,7 +64,6 @@ struct ConvertStdToEmitCPass
 
     target.addLegalDialect<emitc::EmitCDialect>();
     target.addLegalDialect<StandardOpsDialect>();
-    target.addIllegalOp<IndexCastOp>();
     target.addIllegalOp<SplatOp>();
 
     RewritePatternSet patterns(&getContext());

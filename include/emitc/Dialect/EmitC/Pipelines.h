@@ -21,6 +21,7 @@ namespace emitc {
 #ifdef EMITC_BUILD_HLO
 void registerMHLOToEmitCPipeline();
 #endif // EMITC_BUILD_HLO
+void registerArithToEmitCPipeline();
 void registerStdToEmitCPipeline();
 void registerTensorToEmitCPipeline();
 void registerTosaToEmitCPipeline();

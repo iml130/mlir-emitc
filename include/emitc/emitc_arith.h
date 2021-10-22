@@ -12,27 +12,26 @@
 
 // This file defines functions used by EmitC.
 
-#ifndef EMITC_EMITC_STD_H
-#define EMITC_EMITC_STD_H
-
-#include <algorithm>
+#ifndef EMITC_EMITC_ARITH_H
+#define EMITC_EMITC_ARITH_H
 
 #include "emitc_types.h"
 
 namespace emitc {
-namespace standard {
+namespace arith {
 
-// SplatOp
-template <typename Dest, typename Src, IsScalar<Src> = true>
-inline Dest splat(Src x) {
-  Dest z;
+// IndexCastOp
+template <typename Dest, typename Src>
+inline Dest index_cast(Src x) {
+  using ET_Dest = typename get_element_type<Dest>::type;
+  using ET_Src = typename get_element_type<Src>::type;
 
-  std::fill(z.begin(), z.end(), x);
+  auto cast = [](ET_Src value) { return static_cast<ET_Dest>(value); };
 
-  return z;
+  return unary<Dest, Src, UnaryFuncType<ET_Dest, ET_Src>>(x, cast);
 }
 
-} // namespace standard
+} // namespace arith
 } // namespace emitc
 
-#endif // EMITC_EMITC_STD_H
+#endif // EMITC_EMITC_ARITH_H

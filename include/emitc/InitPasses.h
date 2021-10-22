@@ -40,12 +40,15 @@ inline void registerAllEmitCPasses() {
   registerInsertEmitCMHLOIncludePass();
   registerMHLOToEmitCPipeline();
 #endif // EMITC_BUILD_HLO
+  registerConvertArithToEmitCPass();
   registerConvertStdToEmitCPass();
   registerConvertTensorToEmitCPass();
   registerConvertTosaToEmitCPass();
+  registerInsertEmitCArithIncludePass();
   registerInsertEmitCStdIncludePass();
   registerInsertEmitCTensorIncludePass();
   registerInsertEmitCTosaIncludePass();
+  registerArithToEmitCPipeline();
   registerStdToEmitCPipeline();
   registerTensorToEmitCPipeline();
   registerTosaToEmitCPipeline();

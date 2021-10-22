@@ -19,6 +19,7 @@
 #include <array>
 #include <cassert>
 #include <cstddef>
+#include <functional>
 #include <numeric>
 #include <vector>
 

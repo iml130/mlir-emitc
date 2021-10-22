@@ -171,17 +171,24 @@ private:
         indexSequence(operands.size(), convOp.getContext());
 
     args_.push_back(convOp.batch_group_countAttr());
-    args_.push_back(convOp.dimension_numbers().input_batch_dimension());
-    args_.push_back(convOp.dimension_numbers().input_feature_dimension());
-    args_.push_back(convOp.dimension_numbers().input_spatial_dimensions());
-    args_.push_back(
-        convOp.dimension_numbers().kernel_input_feature_dimension());
-    args_.push_back(
-        convOp.dimension_numbers().kernel_output_feature_dimension());
-    args_.push_back(convOp.dimension_numbers().kernel_spatial_dimensions());
-    args_.push_back(convOp.dimension_numbers().output_batch_dimension());
-    args_.push_back(convOp.dimension_numbers().output_feature_dimension());
-    args_.push_back(convOp.dimension_numbers().output_spatial_dimensions());
+    args_.push_back(rewriter.getI64IntegerAttr(
+        convOp.dimension_numbers().getInputBatchDimension()));
+    args_.push_back(rewriter.getI64IntegerAttr(
+        convOp.dimension_numbers().getInputFeatureDimension()));
+    args_.push_back(rewriter.getI64TensorAttr(
+        convOp.dimension_numbers().getInputSpatialDimensions()));
+    args_.push_back(rewriter.getI64IntegerAttr(
+        convOp.dimension_numbers().getKernelInputFeatureDimension()));
+    args_.push_back(rewriter.getI64IntegerAttr(
+        convOp.dimension_numbers().getKernelOutputFeatureDimension()));
+    args_.push_back(rewriter.getI64TensorAttr(
+        convOp.dimension_numbers().getKernelSpatialDimensions()));
+    args_.push_back(rewriter.getI64IntegerAttr(
+        convOp.dimension_numbers().getOutputBatchDimension()));
+    args_.push_back(rewriter.getI64IntegerAttr(
+        convOp.dimension_numbers().getOutputFeatureDimension()));
+    args_.push_back(rewriter.getI64TensorAttr(
+        convOp.dimension_numbers().getOutputSpatialDimensions()));
     args_.push_back(convOp.feature_group_countAttr());
 
     args_.push_back(convOp.padding().getValueOr(i64ElementsAttr(0, 2, ctx)));

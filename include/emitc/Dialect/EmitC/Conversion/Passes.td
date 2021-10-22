@@ -23,8 +23,14 @@ def ConvertMHLOToEmitC : FunctionPass<"convert-mhlo-to-emitc"> {
   let dependentDialects = ["EmitCDialect"];
 }
 
+def ConvertArithToEmitC : FunctionPass<"convert-arith-to-emitc"> {
+  let summary = "Convert arith dialect to EmitC dialect, replacing IndexCastOp.";
+  let constructor = "createConvertArithToEmitCPass()";
+  let dependentDialects = ["EmitCDialect"];
+}
+
 def ConvertStdToEmitC : FunctionPass<"convert-std-to-emitc"> {
-  let summary = "Convert std dialect to EmitC dialect, replacing IndexCastOp and SplatOp.";
+  let summary = "Convert std dialect to EmitC dialect, replacing SplatOp.";
   let constructor = "createConvertStdToEmitCPass()";
   let dependentDialects = ["EmitCDialect"];
 }

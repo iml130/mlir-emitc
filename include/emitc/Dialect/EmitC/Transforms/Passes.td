@@ -17,6 +17,12 @@ def InsertEmitCMHLOInclude : Pass<"insert-emitc-mhlo-include", "ModuleOp"> {
   let dependentDialects = ["EmitCDialect"];
 }
 
+def InsertEmitCArithInclude : Pass<"insert-emitc-arith-include", "ModuleOp"> {
+  let summary = "Insert an EmitC include for the arith dialect.";
+  let constructor = "createInsertEmitCArithIncludePass()";
+  let dependentDialects = ["EmitCDialect"];
+}
+
 def InsertEmitCStdInclude : Pass<"insert-emitc-std-include", "ModuleOp"> {
   let summary = "Insert an EmitC include for the std dialect.";
   let constructor = "createInsertEmitCStdIncludePass()";

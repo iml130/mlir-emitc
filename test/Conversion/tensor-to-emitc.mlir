@@ -5,9 +5,9 @@
 
 // CHECK-INCLUDE: emitc.include "emitc_tensor.h"
 
-func @std_extract_element(%arg0: tensor<i32>, %arg1: tensor<2xi32>) -> () {
-  %0 = constant 0 : index
-  %1 = constant 1 : index
+func @std_extract_element(%arg0: tensor<i32>, %arg1: tensor<2xi32> ) -> () {
+  %0 = arith.constant 0 : index
+  %1 = arith.constant 1 : index
   %2 = tensor.extract %arg0[] : tensor<i32>
   %3 = tensor.extract %arg1[%0] : tensor<2xi32>
   %4 = tensor.extract %arg1[%1] : tensor<2xi32>

@@ -38,6 +38,14 @@ struct InsertEmitCMHLOIncludePass
   }
 };
 
+struct InsertEmitCArithIncludePass
+    : public InsertEmitCArithIncludeBase<InsertEmitCArithIncludePass> {
+  void runOnOperation() override {
+    auto op = getOperation();
+    insertIncludeOp(op, "emitc_arith.h");
+  }
+};
+
 struct InsertEmitCStdIncludePass
     : public InsertEmitCStdIncludeBase<InsertEmitCStdIncludePass> {
   void runOnOperation() override {
@@ -67,6 +75,11 @@ struct InsertEmitCTosaIncludePass
 std::unique_ptr<OperationPass<mlir::ModuleOp>>
 createInsertEmitCMHLOIncludePass() {
   return std::make_unique<InsertEmitCMHLOIncludePass>();
+}
+
+std::unique_ptr<OperationPass<mlir::ModuleOp>>
+createInsertEmitCArithIncludePass() {
+  return std::make_unique<InsertEmitCArithIncludePass>();
 }
 
 std::unique_ptr<OperationPass<mlir::ModuleOp>>

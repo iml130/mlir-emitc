@@ -250,8 +250,8 @@ func @mhlo_slice(%arg0: tensor<12xi32>, %arg1: tensor<8x7xi32>) -> tensor<4x3xi3
 }
 
 func @mhlo_dynamic_slice(%arg0: tensor<12xi32>, %arg1: tensor<8x7xi32>) -> () {
-  %cst = "std.constant"() {value = dense<1> : tensor<i64>} : () -> tensor<i64>
-  %cst_0 = "std.constant"() {value = dense<3> : tensor<i64>} : () -> tensor<i64>
+  %cst = "arith.constant"() {value = dense<1> : tensor<i64>} : () -> tensor<i64>
+  %cst_0 = "arith.constant"() {value = dense<3> : tensor<i64>} : () -> tensor<i64>
   // CHECK: emitc.call "emitc::mhlo::dynamic_slice"(%arg0, %cst) {args = [0 : index, 1 : index, dense<4> : tensor<1xi64>], template_args = [tensor<4xi32>]} : (tensor<12xi32>, tensor<i64>) -> tensor<4xi32>
   %0 = "mhlo.dynamic-slice"(%arg0, %cst) {slice_sizes = dense<4> : tensor<1xi64>} : (tensor<12xi32>, tensor<i64>) -> tensor<4xi32>
   // CHECK: emitc.call "emitc::mhlo::dynamic_slice"(%arg1, %cst, %cst_0) {args = [0 : index, 1 : index, 2 : index, dense<[4, 2]> : tensor<2xi64>], template_args = [tensor<4x2xi32>]} : (tensor<8x7xi32>, tensor<i64>, tensor<i64>) -> tensor<4x2xi32>
@@ -260,10 +260,10 @@ func @mhlo_dynamic_slice(%arg0: tensor<12xi32>, %arg1: tensor<8x7xi32>) -> () {
 }
 
 func @mhlo_dynamic_update_slice(%arg0: tensor<12xi32>, %arg1: tensor<8x7xi32>) -> () {
-  %cst = "std.constant"() {value = dense<1> : tensor<i64>} : () -> tensor<i64>
-  %cst_0 = "std.constant"() {value = dense<3> : tensor<i64>} : () -> tensor<i64>
-  %cst_1 = "std.constant"() {value = dense<1> : tensor<4xi32>} : () -> tensor<4xi32>
-  %cst_2 = "std.constant"() {value = dense<1> : tensor<2x4xi32>} : () -> tensor<2x4xi32>
+  %cst = "arith.constant"() {value = dense<1> : tensor<i64>} : () -> tensor<i64>
+  %cst_0 = "arith.constant"() {value = dense<3> : tensor<i64>} : () -> tensor<i64>
+  %cst_1 = "arith.constant"() {value = dense<1> : tensor<4xi32>} : () -> tensor<4xi32>
+  %cst_2 = "arith.constant"() {value = dense<1> : tensor<2x4xi32>} : () -> tensor<2x4xi32>
   // CHECK: emitc.call "emitc::mhlo::dynamic_update_slice"(%arg0, %cst_1, %cst) {template_args = [tensor<4xi32>]}
   %0 = "mhlo.dynamic-update-slice"(%arg0, %cst_1, %cst) : (tensor<12xi32>, tensor<4xi32>, tensor<i64>) -> tensor<12xi32>
   // CHECK: emitc.call "emitc::mhlo::dynamic_update_slice"(%arg1, %cst_2, %cst, %cst_0) {template_args = [tensor<2x4xi32>]}
@@ -313,7 +313,7 @@ func @mhlo_concaternate(%arg0: tensor<1xf32>, %arg1: tensor<2xf32>) -> tensor<3x
 // Initially taken over from
 // https://github.com/tensorflow/mlir-hlo/blob/31c1c3aa1ffa12b1fb2d9988ad8cc0b2de9cd581/tests/hlo-legalize-to-lhlo.mlir#L552-L580
 func @mhlo_conv(%arg0: tensor<3x5x5x3xf32>, %arg1 : tensor<2x2x3x4xf32>) -> tensor<3x5x5x4xf32> {
-  %c0 = constant 0 : index
+  %c0 = arith.constant 0 : index
   // CHECK: emitc.call "emitc::mhlo::convolution"(%arg1, %arg0)
   %out = "mhlo.convolution"(%arg1, %arg0) {
     batch_group_count = 1 : i64,
@@ -402,16 +402,16 @@ func @mhlo_select(%arg0: tensor<2xf32>, %arg1: tensor<2xf32>, %arg2: tensor<2xi1
 // RNG ops
 
 func @mhlo_rng_uniform() -> () {
-  %cst = "std.constant"() {value = dense<-100> : tensor<i32>} : () -> tensor<i32>
-  %cst_0 = "std.constant"() {value = dense<100> : tensor<i32>} : () -> tensor<i32>
-  %cst_1 = "std.constant"() {value = dense<2> : tensor<1xi64>} : () -> tensor<1xi64>
+  %cst = "arith.constant"() {value = dense<-100> : tensor<i32>} : () -> tensor<i32>
+  %cst_0 = "arith.constant"() {value = dense<100> : tensor<i32>} : () -> tensor<i32>
+  %cst_1 = "arith.constant"() {value = dense<2> : tensor<1xi64>} : () -> tensor<1xi64>
 
   // CHECK: emitc.call "emitc::mhlo::rng_uniform"(%cst, %cst_0, %cst_1) {template_args = [tensor<2xi32>]} : (tensor<i32>, tensor<i32>, tensor<1xi64>) -> tensor<2xi32>
   %0 = "mhlo.rng_uniform"(%cst, %cst_0, %cst_1) : (tensor<i32>, tensor<i32>, tensor<1xi64>) -> tensor<2xi32>
   
-  %cst_2 = "std.constant"() {value = dense<-100.0> : tensor<f32>} : () -> tensor<f32>
-  %cst_3 = "std.constant"() {value = dense<100.0> : tensor<f32>} : () -> tensor<f32>
-  %cst_4 = "std.constant"() {value = dense<17> : tensor<1xi64>} : () -> tensor<1xi64>
+  %cst_2 = "arith.constant"() {value = dense<-100.0> : tensor<f32>} : () -> tensor<f32>
+  %cst_3 = "arith.constant"() {value = dense<100.0> : tensor<f32>} : () -> tensor<f32>
+  %cst_4 = "arith.constant"() {value = dense<17> : tensor<1xi64>} : () -> tensor<1xi64>
 
   // CHECK: emitc.call "emitc::mhlo::rng_uniform"(%cst_2, %cst_3, %cst_4) {template_args = [tensor<17xf32>]} : (tensor<f32>, tensor<f32>, tensor<1xi64>) -> tensor<17xf32>
   %1 = "mhlo.rng_uniform"(%cst_2, %cst_3, %cst_4) : (tensor<f32>, tensor<f32>, tensor<1xi64>) -> tensor<17xf32>
@@ -419,7 +419,7 @@ func @mhlo_rng_uniform() -> () {
 }
 
 func @mhlo_rng_bit_generator() -> () {
-  %cst = "std.constant"() {value = dense<2> : tensor<3xui64>} : () -> tensor<3xui64>
+  %cst = "arith.constant"() {value = dense<2> : tensor<3xui64>} : () -> tensor<3xui64>
 
   // CHECK: emitc.call "emitc::mhlo::rng_bit_generator"(%cst) {template_args = [tuple<tensor<3xui64>, tensor<2x2xui32>>, 2 : i32]} : (tensor<3xui64>) -> tuple<tensor<3xui64>, tensor<2x2xui32>>
   %0 = "mhlo.rng_bit_generator"(%cst) {rng_algorithm = 2 : i32} : (tensor<3xui64>) -> tuple<tensor<3xui64>, tensor<2x2xui32>>

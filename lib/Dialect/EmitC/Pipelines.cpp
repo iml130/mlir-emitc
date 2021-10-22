@@ -24,6 +24,11 @@ void buildMHLOToEmitCPipeline(OpPassManager &pm) {
 }
 #endif // EMITC_BUILD_HLO
 
+void buildArithToEmitCPipeline(OpPassManager &pm) {
+  pm.addPass(createInsertEmitCArithIncludePass());
+  pm.addPass(createConvertArithToEmitCPass());
+}
+
 void buildStdToEmitCPipeline(OpPassManager &pm) {
   pm.addPass(createInsertEmitCStdIncludePass());
   pm.addPass(createConvertStdToEmitCPass());
@@ -48,6 +53,12 @@ void registerMHLOToEmitCPipeline() {
                              buildMHLOToEmitCPipeline);
 }
 #endif // EMITC_BUILD_HLO
+
+void registerArithToEmitCPipeline() {
+  PassPipelineRegistration<>("arith-to-emitc-pipeline",
+                             "Run the Arithmetic to EmitC pipeline.",
+                             buildArithToEmitCPipeline);
+}
 
 void registerStdToEmitCPipeline() {
   PassPipelineRegistration<>("std-to-emitc-pipeline",

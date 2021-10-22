@@ -15,7 +15,7 @@
 #ifndef EMITC_EMITC_STD_H
 #define EMITC_EMITC_STD_H
 
-#include <vector>
+#include <algorithm>
 
 #include "emitc_types.h"
 

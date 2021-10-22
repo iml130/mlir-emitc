@@ -1,3 +1,4 @@
+#include "emitc_std.h"
 #include "model_generated.h"
 #include <iostream>
 

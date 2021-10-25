@@ -64,15 +64,14 @@ public:
 private:
   LogicalResult
   matchAndRewrite(mhlo::BatchNormInferenceOp batchNormInferenceOp,
-                  ArrayRef<Value> operands,
+                  OpAdaptor adaptor,
                   ConversionPatternRewriter &rewriter) const override {
-    typename mhlo::BatchNormInferenceOp::Adaptor adaptor(operands);
 
     StringRef funcName = "emitc::mhlo::batch_norm_inference";
     StringAttr callee = rewriter.getStringAttr(funcName);
 
-    SmallVector<Attribute, 2> args_ =
-        indexSequence(operands.size(), batchNormInferenceOp.getContext());
+    SmallVector<Attribute, 2> args_ = indexSequence(
+        adaptor.getOperands().size(), batchNormInferenceOp.getContext());
 
     args_.push_back(batchNormInferenceOp.epsilonAttr());
     args_.push_back(batchNormInferenceOp.feature_indexAttr());
@@ -84,7 +83,7 @@ private:
 
     rewriter.replaceOpWithNewOp<emitc::CallOp>(
         batchNormInferenceOp, batchNormInferenceOp.getType(), callee, args,
-        templateArgs, operands);
+        templateArgs, adaptor.getOperands());
 
     return success();
   }
@@ -99,14 +98,13 @@ public:
 
 private:
   LogicalResult
-  matchAndRewrite(mhlo::BroadcastInDimOp broadcastInDimOp,
-                  ArrayRef<Value> operands,
+  matchAndRewrite(mhlo::BroadcastInDimOp broadcastInDimOp, OpAdaptor adaptor,
                   ConversionPatternRewriter &rewriter) const override {
     StringRef funcName = "emitc::mhlo::broadcast_in_dim";
     StringAttr callee = rewriter.getStringAttr(funcName);
 
-    SmallVector<Attribute, 2> args_ =
-        indexSequence(operands.size(), broadcastInDimOp.getContext());
+    SmallVector<Attribute, 2> args_ = indexSequence(
+        adaptor.getOperands().size(), broadcastInDimOp.getContext());
 
     args_.push_back(broadcastInDimOp.broadcast_dimensions());
 
@@ -117,7 +115,7 @@ private:
 
     rewriter.replaceOpWithNewOp<emitc::CallOp>(
         broadcastInDimOp, broadcastInDimOp.getType(), callee, args,
-        templateArgs, operands);
+        templateArgs, adaptor.getOperands());
 
     return success();
   }
@@ -132,7 +130,7 @@ public:
 
 private:
   LogicalResult
-  matchAndRewrite(mhlo::ConcatenateOp concatenateOp, ArrayRef<Value> operands,
+  matchAndRewrite(mhlo::ConcatenateOp concatenateOp, OpAdaptor adaptor,
                   ConversionPatternRewriter &rewriter) const override {
 
     StringRef funcName = "emitc::mhlo::concatenate";
@@ -143,9 +141,9 @@ private:
         {rewriter.getI64IntegerAttr(concatenateOp.dimension()),
          TypeAttr::get(concatenateOp.getResult().getType())});
 
-    rewriter.replaceOpWithNewOp<emitc::CallOp>(concatenateOp,
-                                               concatenateOp.getType(), callee,
-                                               args, templateArgs, operands);
+    rewriter.replaceOpWithNewOp<emitc::CallOp>(
+        concatenateOp, concatenateOp.getType(), callee, args, templateArgs,
+        adaptor.getOperands());
 
     return success();
   }
@@ -159,16 +157,15 @@ public:
 
 private:
   LogicalResult
-  matchAndRewrite(mhlo::ConvOp convOp, ArrayRef<Value> operands,
+  matchAndRewrite(mhlo::ConvOp convOp, OpAdaptor adaptor,
                   ConversionPatternRewriter &rewriter) const override {
-    typename mhlo::ConvOp::Adaptor adaptor(operands);
     auto *ctx = convOp.getContext();
 
     StringRef funcName = "emitc::mhlo::convolution";
     StringAttr callee = rewriter.getStringAttr(funcName);
 
     SmallVector<Attribute, 2> args_ =
-        indexSequence(operands.size(), convOp.getContext());
+        indexSequence(adaptor.getOperands().size(), convOp.getContext());
 
     args_.push_back(convOp.batch_group_countAttr());
     args_.push_back(rewriter.getI64IntegerAttr(
@@ -206,14 +203,15 @@ private:
                                TypeAttr::get(adaptor.rhs().getType())});
 
     rewriter.replaceOpWithNewOp<emitc::CallOp>(convOp, convOp.getType(), callee,
-                                               args, templateArgs, operands);
+                                               args, templateArgs,
+                                               adaptor.getOperands());
 
     return success();
   }
 };
 
 /// Convert a common `mhlo` operation into an `emitc.call` operation.
-template <typename SrcOp>
+template <typename SrcOp, typename Adaptor = typename SrcOp::Adaptor>
 class CallOpConversion : public OpConversionPattern<SrcOp> {
   using OpConversionPattern<SrcOp>::OpConversionPattern;
 
@@ -227,7 +225,7 @@ public:
 
 private:
   LogicalResult
-  matchAndRewrite(SrcOp srcOp, ArrayRef<Value> operands,
+  matchAndRewrite(SrcOp srcOp, Adaptor adaptor,
                   ConversionPatternRewriter &rewriter) const override {
     StringAttr callee = rewriter.getStringAttr(funcName);
     ArrayAttr args;
@@ -240,7 +238,7 @@ private:
     }
 
     if (explicitOperandTypes) {
-      for (auto &operand : operands) {
+      for (auto operand : adaptor.getOperands()) {
         Type type = operand.getType();
         templateArgs_.push_back(TypeAttr::get(type));
       }
@@ -251,7 +249,8 @@ private:
     }
 
     rewriter.replaceOpWithNewOp<emitc::CallOp>(srcOp, srcOp.getType(), callee,
-                                               args, templateArgs, operands);
+                                               args, templateArgs,
+                                               adaptor.getOperands());
 
     return success();
   }
@@ -273,7 +272,7 @@ public:
 
 private:
   LogicalResult
-  matchAndRewrite(mhlo::CompareOp compareOp, ArrayRef<Value> operands,
+  matchAndRewrite(mhlo::CompareOp compareOp, OpAdaptor adaptor,
                   ConversionPatternRewriter &rewriter) const override {
     auto *ctx = compareOp.getContext();
 
@@ -299,8 +298,9 @@ private:
         {TypeAttr::get(elementType),
          emitc::OpaqueAttr::get(ctx, functionName.getValue())});
 
-    rewriter.replaceOpWithNewOp<emitc::CallOp>(
-        compareOp, compareOp.getType(), callee, args, templateArgs, operands);
+    rewriter.replaceOpWithNewOp<emitc::CallOp>(compareOp, compareOp.getType(),
+                                               callee, args, templateArgs,
+                                               adaptor.getOperands());
 
     return success();
   }
@@ -317,8 +317,7 @@ public:
 
 private:
   LogicalResult
-  matchAndRewrite(mhlo::GetTupleElementOp getTupleElementOp,
-                  ArrayRef<Value> operands,
+  matchAndRewrite(mhlo::GetTupleElementOp getTupleElementOp, OpAdaptor adaptor,
                   ConversionPatternRewriter &rewriter) const override {
     auto index = getTupleElementOp.index();
 
@@ -330,7 +329,7 @@ private:
 
     rewriter.replaceOpWithNewOp<emitc::CallOp>(
         getTupleElementOp, getTupleElementOp.getType(), callee, args,
-        templateArgs, operands);
+        templateArgs, adaptor.getOperands());
 
     return success();
   }
@@ -346,13 +345,13 @@ public:
 
 private:
   LogicalResult
-  matchAndRewrite(mhlo::SliceOp sliceOp, ArrayRef<Value> operands,
+  matchAndRewrite(mhlo::SliceOp sliceOp, OpAdaptor adaptor,
                   ConversionPatternRewriter &rewriter) const override {
     StringRef funcName = "emitc::mhlo::slice";
     StringAttr callee = rewriter.getStringAttr(funcName);
 
     SmallVector<Attribute, 2> args_ =
-        indexSequence(operands.size(), sliceOp.getContext());
+        indexSequence(adaptor.getOperands().size(), sliceOp.getContext());
 
     args_.push_back(sliceOp.start_indices());
     args_.push_back(sliceOp.limit_indices());
@@ -362,8 +361,9 @@ private:
     ArrayAttr templateArgs =
         rewriter.getArrayAttr({TypeAttr::get(sliceOp.getResult().getType())});
 
-    rewriter.replaceOpWithNewOp<emitc::CallOp>(
-        sliceOp, sliceOp.getType(), callee, args, templateArgs, operands);
+    rewriter.replaceOpWithNewOp<emitc::CallOp>(sliceOp, sliceOp.getType(),
+                                               callee, args, templateArgs,
+                                               adaptor.getOperands());
 
     return success();
   }
@@ -380,13 +380,13 @@ public:
 
 private:
   LogicalResult
-  matchAndRewrite(mhlo::DynamicSliceOp dynamicSliceOp, ArrayRef<Value> operands,
+  matchAndRewrite(mhlo::DynamicSliceOp dynamicSliceOp, OpAdaptor adaptor,
                   ConversionPatternRewriter &rewriter) const override {
     StringRef funcName = "emitc::mhlo::dynamic_slice";
     StringAttr callee = rewriter.getStringAttr(funcName);
 
-    SmallVector<Attribute, 2> args_ =
-        indexSequence(operands.size(), dynamicSliceOp.getContext());
+    SmallVector<Attribute, 2> args_ = indexSequence(
+        adaptor.getOperands().size(), dynamicSliceOp.getContext());
 
     args_.push_back(dynamicSliceOp.slice_sizes());
 
@@ -395,9 +395,9 @@ private:
     ArrayAttr templateArgs = rewriter.getArrayAttr(
         {TypeAttr::get(dynamicSliceOp.getResult().getType())});
 
-    rewriter.replaceOpWithNewOp<emitc::CallOp>(dynamicSliceOp,
-                                               dynamicSliceOp.getType(), callee,
-                                               args, templateArgs, operands);
+    rewriter.replaceOpWithNewOp<emitc::CallOp>(
+        dynamicSliceOp, dynamicSliceOp.getType(), callee, args, templateArgs,
+        adaptor.getOperands());
 
     return success();
   }
@@ -415,9 +415,8 @@ public:
 private:
   LogicalResult
   matchAndRewrite(mhlo::DynamicUpdateSliceOp dynamicUpdateSliceOp,
-                  ArrayRef<Value> operands,
+                  OpAdaptor adaptor,
                   ConversionPatternRewriter &rewriter) const override {
-    typename mhlo::DynamicUpdateSliceOp::Adaptor adaptor(operands);
 
     StringRef funcName = "emitc::mhlo::dynamic_update_slice";
     StringAttr callee = rewriter.getStringAttr(funcName);
@@ -428,7 +427,7 @@ private:
 
     rewriter.replaceOpWithNewOp<emitc::CallOp>(
         dynamicUpdateSliceOp, dynamicUpdateSliceOp.getType(), callee, args,
-        templateArgs, operands);
+        templateArgs, adaptor.getOperands());
 
     return success();
   }
@@ -443,12 +442,12 @@ public:
 
 private:
   LogicalResult
-  matchAndRewrite(mhlo::PadOp padOp, ArrayRef<Value> operands,
+  matchAndRewrite(mhlo::PadOp padOp, OpAdaptor adaptor,
                   ConversionPatternRewriter &rewriter) const override {
     StringAttr callee = rewriter.getStringAttr("emitc::mhlo::pad");
 
     SmallVector<Attribute, 2> args_ =
-        indexSequence(operands.size(), padOp.getContext());
+        indexSequence(adaptor.getOperands().size(), padOp.getContext());
 
     args_.push_back(padOp.edge_padding_low());
     args_.push_back(padOp.edge_padding_high());
@@ -460,7 +459,8 @@ private:
     ArrayAttr templateArgs = rewriter.getArrayAttr({TypeAttr::get(resultType)});
 
     rewriter.replaceOpWithNewOp<emitc::CallOp>(padOp, padOp.getType(), callee,
-                                               args, templateArgs, operands);
+                                               args, templateArgs,
+                                               adaptor.getOperands());
 
     return success();
   }
@@ -477,8 +477,7 @@ public:
 
 private:
   LogicalResult
-  matchAndRewrite(mhlo::RngBitGeneratorOp rngBitGeneratorOp,
-                  ArrayRef<Value> operands,
+  matchAndRewrite(mhlo::RngBitGeneratorOp rngBitGeneratorOp, OpAdaptor adaptor,
                   ConversionPatternRewriter &rewriter) const override {
     StringRef funcName = "emitc::mhlo::rng_bit_generator";
     StringAttr callee = rewriter.getStringAttr(funcName);
@@ -490,7 +489,7 @@ private:
 
     rewriter.replaceOpWithNewOp<emitc::CallOp>(
         rngBitGeneratorOp, rngBitGeneratorOp.getType(), callee, args,
-        templateArgs, operands);
+        templateArgs, adaptor.getOperands());
 
     return success();
   }

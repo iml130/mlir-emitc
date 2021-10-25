@@ -34,7 +34,7 @@ public:
 
 private:
   LogicalResult
-  matchAndRewrite(tensor::ExtractOp indexCastOp, ArrayRef<Value> operands,
+  matchAndRewrite(tensor::ExtractOp indexCastOp, OpAdaptor adaptor,
                   ConversionPatternRewriter &rewriter) const override {
     StringAttr callee = rewriter.getStringAttr("emitc::tensor::extract");
 
@@ -46,9 +46,9 @@ private:
     ArrayAttr args;
     ArrayAttr templateArgs;
 
-    rewriter.replaceOpWithNewOp<emitc::CallOp>(indexCastOp,
-                                               indexCastOp.getType(), callee,
-                                               args, templateArgs, operands);
+    rewriter.replaceOpWithNewOp<emitc::CallOp>(
+        indexCastOp, indexCastOp.getType(), callee, args, templateArgs,
+        adaptor.getOperands());
 
     return success();
   }

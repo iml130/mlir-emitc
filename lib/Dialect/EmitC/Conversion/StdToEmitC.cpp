@@ -33,7 +33,7 @@ public:
 
 private:
   LogicalResult
-  matchAndRewrite(SplatOp splatOp, ArrayRef<Value> operands,
+  matchAndRewrite(SplatOp splatOp, OpAdaptor adaptor,
                   ConversionPatternRewriter &rewriter) const override {
     StringAttr callee = rewriter.getStringAttr("emitc::standard::splat");
 
@@ -41,8 +41,9 @@ private:
     Type resultType = splatOp.getResult().getType();
     ArrayAttr templateArgs = rewriter.getArrayAttr({TypeAttr::get(resultType)});
 
-    rewriter.replaceOpWithNewOp<emitc::CallOp>(
-        splatOp, splatOp.getType(), callee, args, templateArgs, operands);
+    rewriter.replaceOpWithNewOp<emitc::CallOp>(splatOp, splatOp.getType(),
+                                               callee, args, templateArgs,
+                                               adaptor.getOperands());
 
     return success();
   }

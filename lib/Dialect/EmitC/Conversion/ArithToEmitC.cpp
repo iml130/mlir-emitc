@@ -47,7 +47,7 @@ public:
 
 private:
   LogicalResult
-  matchAndRewrite(arith::IndexCastOp indexCastOp, ArrayRef<Value> operands,
+  matchAndRewrite(arith::IndexCastOp indexCastOp, OpAdaptor adaptor,
                   ConversionPatternRewriter &rewriter) const override {
     StringAttr callee = rewriter.getStringAttr("emitc::arith::index_cast");
 
@@ -55,9 +55,9 @@ private:
     Type resultType = indexCastOp.getResult().getType();
     ArrayAttr templateArgs = rewriter.getArrayAttr({TypeAttr::get(resultType)});
 
-    rewriter.replaceOpWithNewOp<emitc::CallOp>(indexCastOp,
-                                               indexCastOp.getType(), callee,
-                                               args, templateArgs, operands);
+    rewriter.replaceOpWithNewOp<emitc::CallOp>(
+        indexCastOp, indexCastOp.getType(), callee, args, templateArgs,
+        adaptor.getOperands());
 
     return success();
   }

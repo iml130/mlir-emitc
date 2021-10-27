@@ -491,7 +491,7 @@ private:
     }
 
     if (explicitOperandTypes) {
-      for (auto &&operand : adaptor.getOperands()) {
+      for (auto operand : adaptor.getOperands()) {
         Type type = operand.getType();
         templateArgs_.push_back(TypeAttr::get(type));
       }

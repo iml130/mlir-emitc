@@ -147,9 +147,9 @@ private:
     ArrayAttr args = rewriter.getArrayAttr({
       rewriter.getIndexAttr(0),
       rewriter.getIndexAttr(1),
-      getI64ElementsAttr(adaptor.pad(), convOp.getContext()),
-      getI64ElementsAttr(adaptor.stride(), convOp.getContext()),
-      getI64ElementsAttr(adaptor.dilation(), convOp.getContext()),
+      getI64ElementsAttr(convOp.pad(), convOp.getContext()),
+      getI64ElementsAttr(convOp.stride(), convOp.getContext()),
+      getI64ElementsAttr(convOp.dilation(), convOp.getContext()),
     });
     // clang-format on
 

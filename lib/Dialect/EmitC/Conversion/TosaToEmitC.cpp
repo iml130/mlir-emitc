@@ -49,7 +49,7 @@ SmallVector<Attribute, 2> indexSequence(int64_t n, MLIRContext *ctx) {
 }
 
 /// Convert a common `tosa` operation into an `emitc.call` operation.
-template <typename SrcOp>
+template <typename SrcOp, typename Adaptor = typename SrcOp::Adaptor>
 class CallOpConversion : public OpConversionPattern<SrcOp> {
   using OpConversionPattern<SrcOp>::OpConversionPattern;
 
@@ -63,7 +63,7 @@ public:
 
 private:
   LogicalResult
-  matchAndRewrite(SrcOp srcOp, ArrayRef<Value> operands,
+  matchAndRewrite(SrcOp srcOp, Adaptor adaptor,
                   ConversionPatternRewriter &rewriter) const override {
     StringAttr callee = rewriter.getStringAttr(funcName);
     ArrayAttr args;
@@ -76,7 +76,7 @@ private:
     }
 
     if (explicitOperandTypes) {
-      for (auto &operand : operands) {
+      for (auto operand : adaptor.getOperands()) {
         Type type = operand.getType();
         templateArgs_.push_back(TypeAttr::get(type));
       }
@@ -88,7 +88,8 @@ private:
     }
 
     rewriter.replaceOpWithNewOp<emitc::CallOp>(srcOp, srcOp.getType(), callee,
-                                               args, templateArgs, operands);
+                                               args, templateArgs,
+                                               adaptor.getOperands());
 
     return success();
   }
@@ -115,7 +116,7 @@ public:
 
 /// Convert a common `tosa` convolution operation into an `emitc.call`
 /// operation.
-template <typename SrcOp>
+template <typename SrcOp, typename Adaptor = typename SrcOp::Adaptor>
 class GenericConvOpConversion : public OpConversionPattern<SrcOp> {
   using OpConversionPattern<SrcOp>::OpConversionPattern;
 
@@ -125,7 +126,7 @@ public:
 
 private:
   LogicalResult
-  matchAndRewrite(SrcOp convOp, ArrayRef<Value> operands,
+  matchAndRewrite(SrcOp convOp, Adaptor adaptor,
                   ConversionPatternRewriter &rewriter) const override {
     // Fail if quantization is requested.
     if (convOp.quantization_info().hasValue()) {
@@ -137,6 +138,7 @@ private:
     // will split the convolution with bias into two operations: the convolution
     // (as an emitc call op) and the addition of the bias (as an tosa.add op).
     // Therefore we remove bias from the operands of the convolution.
+    auto operands = adaptor.getOperands();
     operands = operands.drop_back();
 
     StringAttr callee = rewriter.getStringAttr(funcName);
@@ -182,8 +184,7 @@ public:
 
 private:
   LogicalResult
-  matchAndRewrite(tosa::FullyConnectedOp fullyConnectedOp,
-                  ArrayRef<Value> operands,
+  matchAndRewrite(tosa::FullyConnectedOp fullyConnectedOp, OpAdaptor adaptor,
                   ConversionPatternRewriter &rewriter) const override {
     if (fullyConnectedOp.quantization_info().hasValue()) {
       return fullyConnectedOp.emitError(
@@ -200,7 +201,8 @@ private:
         ArrayAttr::get(fullyConnectedOp.getContext(), {TypeAttr::get(type)});
 
     rewriter.replaceOpWithNewOp<emitc::CallOp>(fullyConnectedOp, type, callee,
-                                               args, templateArgs, operands);
+                                               args, templateArgs,
+                                               adaptor.getOperands());
     return success();
   }
 };
@@ -215,7 +217,7 @@ public:
 
 private:
   LogicalResult
-  matchAndRewrite(tosa::MatMulOp matMulOp, ArrayRef<Value> operands,
+  matchAndRewrite(tosa::MatMulOp matMulOp, OpAdaptor adaptor,
                   ConversionPatternRewriter &rewriter) const override {
     if (matMulOp.quantization_info().hasValue()) {
       return matMulOp.emitError(
@@ -228,8 +230,9 @@ private:
     ArrayAttr args;
     ArrayAttr templateArgs;
 
-    rewriter.replaceOpWithNewOp<emitc::CallOp>(
-        matMulOp, matMulOp.getType(), callee, args, templateArgs, operands);
+    rewriter.replaceOpWithNewOp<emitc::CallOp>(matMulOp, matMulOp.getType(),
+                                               callee, args, templateArgs,
+                                               adaptor.getOperands());
     return success();
   }
 };
@@ -295,7 +298,7 @@ public:
 
 private:
   LogicalResult
-  matchAndRewrite(tosa::NegateOp negateOp, ArrayRef<Value> operands,
+  matchAndRewrite(tosa::NegateOp negateOp, OpAdaptor adaptor,
                   ConversionPatternRewriter &rewriter) const override {
     if (negateOp.quantization_info().hasValue()) {
       return negateOp.emitError(
@@ -308,8 +311,9 @@ private:
     ArrayAttr args;
     ArrayAttr templateArgs;
 
-    rewriter.replaceOpWithNewOp<emitc::CallOp>(
-        negateOp, negateOp.getType(), callee, args, templateArgs, operands);
+    rewriter.replaceOpWithNewOp<emitc::CallOp>(negateOp, negateOp.getType(),
+                                               callee, args, templateArgs,
+                                               adaptor.getOperands());
     return success();
   }
 };
@@ -371,7 +375,7 @@ public:
 
 private:
   LogicalResult
-  matchAndRewrite(tosa::RsqrtOp rsqrtOp, ArrayRef<Value> operands,
+  matchAndRewrite(tosa::RsqrtOp rsqrtOp, OpAdaptor adaptor,
                   ConversionPatternRewriter &rewriter) const override {
     ArrayAttr args;
     ArrayAttr templateArgs;
@@ -382,7 +386,7 @@ private:
 
     auto sqrtEmitCOp = rewriter.create<emitc::CallOp>(
         rsqrtOp.getLoc(), rsqrtOp.getType(), sqrtCallee, args, templateArgs,
-        operands);
+        adaptor.getOperands());
 
     // Create reciprocal op.
     StringRef reciprocalFuncName = "emitc::tosa::reciprocal";
@@ -551,7 +555,7 @@ private:
 };
 
 /// Convert `tosa.reduce_*` into an `emitc.call` operation.
-template <typename SrcOp>
+template <typename SrcOp, typename Adaptor = typename SrcOp::Adaptor>
 class ReduceOpConversion : public OpConversionPattern<SrcOp> {
   using OpConversionPattern<SrcOp>::OpConversionPattern;
 
@@ -561,12 +565,12 @@ public:
 
 private:
   LogicalResult
-  matchAndRewrite(SrcOp reduceOp, ArrayRef<Value> operands,
+  matchAndRewrite(SrcOp reduceOp, Adaptor adaptor,
                   ConversionPatternRewriter &rewriter) const override {
     StringAttr callee = rewriter.getStringAttr(funcName);
 
     SmallVector<Attribute> args_ =
-        indexSequence(operands.size(), reduceOp.getContext());
+        indexSequence(adaptor.getOperands().size(), reduceOp.getContext());
     args_.push_back(reduceOp.axisAttr());
 
     ArrayAttr args = rewriter.getArrayAttr(args_);
@@ -596,7 +600,8 @@ private:
                                TypeAttr::get(reduceOp.input().getType())});
 
     auto emitcReduceOp = rewriter.create<emitc::CallOp>(
-        reduceOp.getLoc(), newOutputType, callee, args, templateArgs, operands);
+        reduceOp.getLoc(), newOutputType, callee, args, templateArgs,
+        adaptor.getOperands());
 
     // Create tosa.reshape op.
     SmallVector<Attribute> newShapeAttr_;
@@ -626,7 +631,7 @@ public:
 
 private:
   LogicalResult
-  matchAndRewrite(tosa::PadOp padOp, ArrayRef<Value> operands,
+  matchAndRewrite(tosa::PadOp padOp, OpAdaptor adaptor,
                   ConversionPatternRewriter &rewriter) const override {
     if (padOp.quantization_info().hasValue()) {
       return padOp.emitError(
@@ -643,7 +648,8 @@ private:
     ArrayAttr templateArgs = rewriter.getArrayAttr({TypeAttr::get(resultType)});
 
     rewriter.replaceOpWithNewOp<emitc::CallOp>(padOp, padOp.getType(), callee,
-                                               args, templateArgs, operands);
+                                               args, templateArgs,
+                                               adaptor.getOperands());
 
     return success();
   }
@@ -659,7 +665,7 @@ public:
 
 private:
   LogicalResult
-  matchAndRewrite(tosa::SliceOp sliceOp, ArrayRef<Value> operands,
+  matchAndRewrite(tosa::SliceOp sliceOp, OpAdaptor adaptor,
                   ConversionPatternRewriter &rewriter) const override {
     StringAttr callee = rewriter.getStringAttr("emitc::tosa::slice");
 
@@ -674,8 +680,9 @@ private:
     Type resultType = sliceOp.output().getType();
     ArrayAttr templateArgs = rewriter.getArrayAttr({TypeAttr::get(resultType)});
 
-    rewriter.replaceOpWithNewOp<emitc::CallOp>(
-        sliceOp, sliceOp.getType(), callee, args, templateArgs, operands);
+    rewriter.replaceOpWithNewOp<emitc::CallOp>(sliceOp, sliceOp.getType(),
+                                               callee, args, templateArgs,
+                                               adaptor.getOperands());
 
     return success();
   }

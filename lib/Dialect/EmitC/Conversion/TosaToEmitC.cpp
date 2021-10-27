@@ -247,7 +247,7 @@ public:
 
 private:
   LogicalResult
-  matchAndRewrite(tosa::ClampOp clampOp, ArrayRef<Value> operands,
+  matchAndRewrite(tosa::ClampOp clampOp, OpAdaptor adaptor,
                   ConversionPatternRewriter &rewriter) const override {
 
     StringRef funcName = "emitc::tosa::clamp";
@@ -261,7 +261,7 @@ private:
     // the min/max attribute type match the operand's element type and it's bit
     // width.
     auto elementType =
-        operands[0].getType().cast<RankedTensorType>().getElementType();
+        adaptor.input().getType().cast<RankedTensorType>().getElementType();
     if (elementType.isa<IntegerType>()) {
       // Change the {min,max}_int type to the element type of the operand.
       auto minInt = clampOp.min_int();
@@ -281,8 +281,9 @@ private:
     ArrayAttr args = rewriter.getArrayAttr(args_);
     ArrayAttr templateArgs;
 
-    rewriter.replaceOpWithNewOp<emitc::CallOp>(
-        clampOp, clampOp.getType(), callee, args, templateArgs, operands);
+    rewriter.replaceOpWithNewOp<emitc::CallOp>(clampOp, clampOp.getType(),
+                                               callee, args, templateArgs,
+                                               adaptor.getOperands());
 
     return success();
   }
@@ -328,7 +329,7 @@ public:
 
 private:
   LogicalResult
-  matchAndRewrite(tosa::ReluNOp reluNOp, ArrayRef<Value> operands,
+  matchAndRewrite(tosa::ReluNOp reluNOp, OpAdaptor adaptor,
                   ConversionPatternRewriter &rewriter) const override {
 
     StringRef funcName = "emitc::tosa::reluN";
@@ -342,7 +343,7 @@ private:
     // the max attribute type match the operand's element type and it's bit
     // width.
     auto elementType =
-        operands[0].getType().cast<RankedTensorType>().getElementType();
+        adaptor.input().getType().cast<RankedTensorType>().getElementType();
     if (elementType.isa<IntegerType>()) {
       // Change the max_int type to the element type of the operand.
       auto maxInt = reluNOp.max_int();
@@ -358,8 +359,9 @@ private:
     ArrayAttr args = rewriter.getArrayAttr(args_);
     ArrayAttr templateArgs;
 
-    rewriter.replaceOpWithNewOp<emitc::CallOp>(
-        reluNOp, reluNOp.getType(), callee, args, templateArgs, operands);
+    rewriter.replaceOpWithNewOp<emitc::CallOp>(reluNOp, reluNOp.getType(),
+                                               callee, args, templateArgs,
+                                               adaptor.getOperands());
 
     return success();
   }
@@ -403,9 +405,9 @@ private:
 };
 
 /// Convert `tosa.fully_connected` into an `emitc.call` operation.
-template <typename SrcOp>
+template <typename SrcOp, typename Adaptor = typename SrcOp::Adaptor>
 SmallVector<Value, 2>
-createBroadcastOpIfNeeded(SrcOp &srcOp, ArrayRef<Value> operands,
+createBroadcastOpIfNeeded(SrcOp &srcOp, Adaptor adaptor,
                           ConversionPatternRewriter &rewriter) {
   // TOSA allows implicit broadcasting, so we need to insert broadcast_in_dim
   // ops if necessary, e.g.:
@@ -420,12 +422,12 @@ createBroadcastOpIfNeeded(SrcOp &srcOp, ArrayRef<Value> operands,
   auto opOutputShape = output.getType().cast<RankedTensorType>().getShape();
   auto opOutputRank = output.getType().cast<RankedTensorType>().getRank();
   SmallVector<Value, 2> broadcastedOperands;
-  broadcastedOperands.push_back(operands[0]);
-  broadcastedOperands.push_back(operands[1]);
-  for (size_t i = 0; i < operands.size(); ++i) {
-    auto &operand = operands[i];
-    auto operandShape = operand.getType().cast<RankedTensorType>().getShape();
-    auto operandRank = operand.getType().cast<RankedTensorType>().getRank();
+
+  for (auto operand : adaptor.getOperands()) {
+    RankedTensorType operandTensor =
+        operand.getType().template cast<RankedTensorType>();
+    auto operandShape = operandTensor.getShape();
+    auto operandRank = operandTensor.getRank();
 
     // Insert a broadcast_in_dim operation if shape of operands don't match.
     if (!operandShape.equals(opOutputShape)) {
@@ -451,7 +453,10 @@ createBroadcastOpIfNeeded(SrcOp &srcOp, ArrayRef<Value> operands,
           templateBroadcastArgs, operand);
       // Replace the original operand with the result of the broadcast_in_dim
       // operation.
-      broadcastedOperands[i] = broadcastArg.getResult(0);
+      broadcastedOperands.push_back(broadcastArg.getResult(0));
+    } else {
+      // No broadcasting needed. Store original operand.
+      broadcastedOperands.push_back(operand);
     }
   }
   return broadcastedOperands;
@@ -459,7 +464,7 @@ createBroadcastOpIfNeeded(SrcOp &srcOp, ArrayRef<Value> operands,
 
 /// Convert a common, broadcastable `tosa` operation into an `emitc.call`
 /// operation.
-template <typename SrcOp>
+template <typename SrcOp, typename Adaptor = typename SrcOp::Adaptor>
 class CallOpBroadcastableConversion : public OpConversionPattern<SrcOp> {
   using OpConversionPattern<SrcOp>::OpConversionPattern;
 
@@ -473,7 +478,7 @@ public:
 
 private:
   LogicalResult
-  matchAndRewrite(SrcOp srcOp, ArrayRef<Value> operands,
+  matchAndRewrite(SrcOp srcOp, Adaptor adaptor,
                   ConversionPatternRewriter &rewriter) const override {
     StringAttr callee = rewriter.getStringAttr(funcName);
     ArrayAttr args;
@@ -486,7 +491,7 @@ private:
     }
 
     if (explicitOperandTypes) {
-      for (auto &operand : operands) {
+      for (auto operand : adaptor.getOperands()) {
         Type type = operand.getType();
         templateArgs_.push_back(TypeAttr::get(type));
       }
@@ -498,7 +503,7 @@ private:
     }
 
     SmallVector<Value, 2> broadcastedOperands =
-        createBroadcastOpIfNeeded(srcOp, operands, rewriter);
+        createBroadcastOpIfNeeded(srcOp, adaptor, rewriter);
 
     rewriter.replaceOpWithNewOp<emitc::CallOp>(
         srcOp, srcOp.getType(), callee, args, templateArgs,
@@ -526,7 +531,7 @@ public:
 
 private:
   LogicalResult
-  matchAndRewrite(tosa::MulOp mulOp, ArrayRef<Value> operands,
+  matchAndRewrite(tosa::MulOp mulOp, OpAdaptor adaptor,
                   ConversionPatternRewriter &rewriter) const override {
     StringRef funcName = "emitc::tosa::mul";
     StringAttr callee = rewriter.getStringAttr(funcName);
@@ -544,7 +549,7 @@ private:
     ArrayAttr templateArgs;
 
     SmallVector<Value, 2> broadcastedOperands =
-        createBroadcastOpIfNeeded(mulOp, operands, rewriter);
+        createBroadcastOpIfNeeded(mulOp, adaptor, rewriter);
 
     rewriter.replaceOpWithNewOp<emitc::CallOp>(
         mulOp, mulOp.getType(), callee, args, templateArgs,

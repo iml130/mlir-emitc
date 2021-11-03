@@ -65,41 +65,41 @@ jobs:
           -DCMAKE_CXX_COMPILER=clang++
         cmake --build . --target install -- -j$(nproc)
 
-#  prepare-e2e-test:
-#    name: Prepare e2e test
-#    runs-on: ubuntu-20.04
-#    steps:
-#    - name: Checkout EmitC
-#      uses: actions/checkout@v2
-#      with:
-#        path: ${{ env.EMITC }}
-#        submodules: 'false'
-#
-#    - name: Cache e2e
-#      id: cache-e2e
-#      uses: actions/cache@v2
-#      with:
-#        path: ${{ env.E2E }}
-#        key: ${{ runner.os }}-e2e-${{ hashFiles('emitc/scripts/*.py', 'emitc/scripts/requirements.txt', 'emitc/scripts/e2e*.sh') }}
-#
-#    - name: Install TensorFlow
-#      if: steps.cache-e2e.outputs.cache-hit != 'true'
-#      run: python3 -m pip install -r ${EMITC}/scripts/requirements.txt
-#
-#    - name: Prepare model
-#      if: steps.cache-e2e.outputs.cache-hit != 'true'
-#      run: |
-#        mkdir -p ${E2E}
-#        mkdir -p tmp
-#        cd tmp
-#        python3 ../${EMITC}/scripts/get_mobilenet_v2.py
-#        python3 ../${EMITC}/scripts/model_to_savedmodel_with_predict_function.py --batch-size 2 mobilenet_v2.h5 model
-#        python3 ../${EMITC}/scripts/savedmodel_to_tf_dialect.py --exported-names predict model model_tf.mlir
-#        python3 ../${EMITC}/scripts/optimize_tf_dialect.py model_tf.mlir model_tf_opt.mlir
-#        python3 ../${EMITC}/scripts/tf_to_mhlo_dialect.py model_tf_opt.mlir model_mhlo.mlir
-#        sed "s/tf._input_shapes =.*]//" model_mhlo.mlir > ../${E2E}/model_mhlo_noattr.mlir
-#        sed -i "s/, }/}/" ../${E2E}/model_mhlo_noattr.mlir
-#        python3 ../${EMITC}/scripts/generate_testscases.py --file-format cpp --count 1 --batch-size 2 --seed 1234 mobilenet_v2.h5 ../${E2E}/
+  prepare-e2e-test:
+    name: Prepare e2e test
+    runs-on: ubuntu-20.04
+    steps:
+    - name: Checkout EmitC
+      uses: actions/checkout@v2
+      with:
+        path: ${{ env.EMITC }}
+        submodules: 'false'
+
+    - name: Cache e2e
+      id: cache-e2e
+      uses: actions/cache@v2
+      with:
+        path: ${{ env.E2E }}
+        key: ${{ runner.os }}-e2e-${{ hashFiles('emitc/scripts/*.py', 'emitc/scripts/requirements.txt', 'emitc/scripts/e2e*.sh') }}
+
+    - name: Install TensorFlow
+      if: steps.cache-e2e.outputs.cache-hit != 'true'
+      run: python3 -m pip install -r ${EMITC}/scripts/requirements.txt
+
+    - name: Prepare model
+      if: steps.cache-e2e.outputs.cache-hit != 'true'
+      run: |
+        mkdir -p ${E2E}
+        mkdir -p tmp
+        cd tmp
+        python3 ../${EMITC}/scripts/get_mobilenet_v2.py
+        python3 ../${EMITC}/scripts/model_to_savedmodel_with_predict_function.py --batch-size 2 mobilenet_v2.h5 model
+        python3 ../${EMITC}/scripts/savedmodel_to_tf_dialect.py --exported-names predict model model_tf.mlir
+        python3 ../${EMITC}/scripts/optimize_tf_dialect.py model_tf.mlir model_tf_opt.mlir
+        python3 ../${EMITC}/scripts/tf_to_mhlo_dialect.py model_tf_opt.mlir model_mhlo.mlir
+        sed "s/tf._input_shapes =.*]//" model_mhlo.mlir > ../${E2E}/model_mhlo_noattr.mlir
+        sed -i "s/, }/}/" ../${E2E}/model_mhlo_noattr.mlir
+        python3 ../${EMITC}/scripts/generate_testscases.py --file-format cpp --count 1 --batch-size 2 --seed 1234 mobilenet_v2.h5 ../${E2E}/
 
   build-debug:
     name: Build and test EmitC (Debug)
@@ -189,30 +189,27 @@ jobs:
         cmake --build . --target MLIREmitCAllTests -- -j$(nproc)
         ./unittests/MLIREmitCAllTests
 
-#    - name: Cache e2e
-#      uses: actions/cache@v2
-#      with:
-#        path: ${{ env.E2E }}
-#        key: ${{ runner.os }}-e2e-${{ hashFiles('emitc/scripts/*.py', 'emitc/scripts/requirements.txt', 'emitc/scripts/e2e*.sh') }}
-#
-#    - name: Run MHLO e2e test
-#      run: |
-#        ./${EMITC}/build_release/bin/emitc-opt --canonicalize --inline --symbol-dce ${E2E}/model_mhlo_noattr.mlir > ${E2E}/model_canon.mlir
-#        FUNCTION_NAME=$(grep -oe "@[^(]*" "${E2E}"/model_canon.mlir)
-#        FUNCTION_NAME="${FUNCTION_NAME:1}"
-#        sed "s/$FUNCTION_NAME/predict/g" "${E2E}"/model_canon.mlir > "${E2E}"/model_fix_name.mlir
-#        ./${EMITC}/build_release/bin/emitc-opt \
-#          --mhlo-control-flow-to-scf \
-#          --insert-emitc-mhlo-include \
-#          --convert-mhlo-region-ops-to-emitc \
-#          --convert-mhlo-to-emitc \
-#          --insert-emitc-std-include \
-#          --convert-std-to-emitc \
-#          "${E2E}"/model_fix_name.mlir > "${E2E}"/model_emitc.mlir
-#        ./${EMITC}/build_release/bin/emitc-translate --mlir-to-cpp "${E2E}"/model_emitc.mlir > "${E2E}"/model_generated.h
-#        cd ${E2E}
-#        clang++ test.cpp -O3 -I `pwd`/../emitc/include/emitc -I `pwd` -o test
-#        ./test
+    - name: Cache e2e
+      uses: actions/cache@v2
+      with:
+        path: ${{ env.E2E }}
+        key: ${{ runner.os }}-e2e-${{ hashFiles('emitc/scripts/*.py', 'emitc/scripts/requirements.txt', 'emitc/scripts/e2e*.sh') }}
+
+    - name: Run MHLO e2e test
+      run: |
+        ./${EMITC}/build_release/bin/emitc-opt --canonicalize --inline --symbol-dce ${E2E}/model_mhlo_noattr.mlir > ${E2E}/model_canon.mlir
+        FUNCTION_NAME=$(grep -oe "@[^(]*" "${E2E}"/model_canon.mlir)
+        FUNCTION_NAME="${FUNCTION_NAME:1}"
+        sed "s/$FUNCTION_NAME/predict/g" "${E2E}"/model_canon.mlir > "${E2E}"/model_fix_name.mlir
+        ./${EMITC}/build_release/bin/emitc-opt \
+          --insert-emitc-mhlo-include \
+          --convert-mhlo-region-ops-to-emitc \
+          --convert-mhlo-to-emitc \
+          "${E2E}"/model_fix_name.mlir > "${E2E}"/model_emitc.mlir
+        ./${EMITC}/build_release/bin/emitc-translate --mlir-to-cpp "${E2E}"/model_emitc.mlir > "${E2E}"/model_generated.h
+        cd ${E2E}
+        clang++ test.cpp -O3 -I `pwd`/../emitc/include/emitc -I `pwd` -o test
+        ./test
 
     - name: Run MHLO test
       run: |

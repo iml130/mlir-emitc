@@ -24,19 +24,6 @@ using namespace mlir::emitc;
 
 namespace {
 
-/// Convert `arith.constant` into an `emitc.constant` operation.
-class ConstantOpConversion : public OpRewritePattern<arith::ConstantOp> {
-public:
-  using OpRewritePattern<arith::ConstantOp>::OpRewritePattern;
-
-  LogicalResult matchAndRewrite(arith::ConstantOp constantOp,
-                                PatternRewriter &rewriter) const final {
-    rewriter.replaceOpWithNewOp<emitc::ConstantOp>(
-        constantOp, constantOp.getType(), constantOp.value());
-    return success();
-  }
-};
-
 // Convert `arith.index_cast` into an `emitc.call` operation.
 class IndexCastOpConversion : public OpConversionPattern<arith::IndexCastOp> {
   using OpConversionPattern<arith::IndexCastOp>::OpConversionPattern;
@@ -66,7 +53,6 @@ private:
 
 void populateArithToEmitcPatterns(MLIRContext *ctx,
                                   RewritePatternSet &patterns) {
-  patterns.add<ConstantOpConversion>(ctx);
   patterns.add<IndexCastOpConversion>(ctx);
 }
 
@@ -81,7 +67,6 @@ struct ConvertArithToEmitCPass
 
     target.addLegalDialect<emitc::EmitCDialect>();
     target.addLegalDialect<arith::ArithmeticDialect>();
-    target.addIllegalOp<arith::ConstantOp>();
     target.addIllegalOp<arith::IndexCastOp>();
 
     RewritePatternSet patterns(&getContext());

@@ -13,9 +13,7 @@
 #include "emitc/InitDialect.h"
 #include "emitc/InitPasses.h"
 #ifdef EMITC_BUILD_HLO
-#include "mlir-hlo/Dialect/mhlo/IR/chlo_ops.h"
 #include "mlir-hlo/Dialect/mhlo/IR/hlo_ops.h"
-#include "mlir-hlo/Dialect/mhlo/IR/lhlo_ops.h"
 #include "mlir-hlo/Dialect/mhlo/transforms/register_passes.h"
 #endif
 #include "mlir/IR/AsmState.h"
@@ -42,11 +40,8 @@ int main(int argc, char **argv) {
   registerEmitCDialect(registry);
   emitc::registerAllEmitCPasses();
 #ifdef EMITC_BUILD_HLO
-  mhlo::registerAllMhloPasses();
-  lmhlo::registerAllLmhloPasses();
   registry.insert<mlir::mhlo::MhloDialect>();
-  registry.insert<mlir::chlo::HloClientDialect>();
-  registry.insert<mlir::lmhlo::LmhloDialect>();
+  mlir::mhlo::registerLegalizeControlFlowToScfPassPass();
 #endif // EMITC_BUILD_HLO
 
   return failed(MlirOptMain(argc, argv, "MLIR EmitC modular optimizer driver\n",

@@ -12,6 +12,7 @@ set(CMAKE_CXX_STANDARD 14)
 
 option(EMITC_BUILD_EMBEDDED "Build EmitC as part of another project" OFF)
 option(EMITC_ENABLE_HLO "Enables building MLIR-HLO." ON)
+option(EMITC_TOSA_ENABLE_EIGEN "Enables use of Eigen library for some TOSA Ops." OFF)
 option(EMITC_INCLUDE_TESTS "Generate build targets for the MLIR EmitC unit tests." ON)
 # TODO: Set to MLIR or LLVM default
 #       ${LLVM_INCLUDE_TESTS})
@@ -70,6 +71,17 @@ if(EMITC_ENABLE_HLO AND NOT EMITC_BUILD_EMBEDDED)
   add_subdirectory(third_party/mlir-hlo EXCLUDE_FROM_ALL)
   include_directories(${mlir-hlo_SOURCE_DIR}/include)
   include_directories(${mlir-hlo_BINARY_DIR}/include)
+endif()
+
+# Optional Eigen dependency for some TOSA Ops
+if(EMITC_TOSA_ENABLE_EIGEN)
+  find_package(Eigen3 3.3 NO_MODULE)
+  if(TARGET Eigen3::Eigen)
+    add_compile_definitions(EMITC_TOSA_ENABLE_EIGEN)
+  else()
+    message(WARNING "EMITC_TOSA_ENABLE_EIGEN is ON, but Eigen was not found.")
+    set(EMITC_TOSA_ENABLE_EIGEN OFF)
+  endif()
 endif()
 
 #-------------------------------------------------------------------------------

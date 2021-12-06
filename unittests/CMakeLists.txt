@@ -15,3 +15,9 @@ target_include_directories(MLIREmitCAllTests
   PRIVATE ${gtest_SOURCE_DIR}/include
   PRIVATE ${gmock_SOURCE_DIR}/include
 )
+
+if(EMITC_TOSA_ENABLE_EIGEN)
+  target_include_directories(MLIREmitCAllTests
+    PRIVATE ${EIGEN3_INCLUDE_DIR}
+  )
+endif()

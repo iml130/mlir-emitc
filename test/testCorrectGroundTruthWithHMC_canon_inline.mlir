@@ -1,5 +1,5 @@
-// RUN: emitc-opt %s --mhlo-control-flow-to-scf --convert-mhlo-to-emitc --convert-std-to-emitc --convert-arith-to-emitc --convert-tensor-to-emitc | emitc-translate --mlir-to-cpp
-// RUN: emitc-opt %s --mhlo-control-flow-to-scf --convert-mhlo-to-emitc --convert-std-to-emitc --convert-arith-to-emitc --convert-tensor-to-emitc --print-op-stats -o /dev/null 2>&1 | FileCheck %s
+// RUN: emitc-opt %s --mhlo-legalize-control-flow --convert-mhlo-to-emitc --convert-std-to-emitc --convert-arith-to-emitc --convert-tensor-to-emitc | emitc-translate --mlir-to-cpp --declare-variables-at-top
+// RUN: emitc-opt %s --mhlo-legalize-control-flow --convert-mhlo-to-emitc --convert-std-to-emitc --convert-arith-to-emitc --convert-tensor-to-emitc --print-op-stats -o /dev/null 2>&1 | FileCheck %s
 
 // CHECK: emitc.call
 // CHECK: emitc.constant

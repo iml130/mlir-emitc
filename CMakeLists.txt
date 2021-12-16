@@ -75,7 +75,7 @@ endif()
 
 # Optional Eigen dependency for some TOSA Ops
 if(EMITC_TOSA_TEST_EIGEN)
-  find_package(Eigen3 3.3 NO_MODULE)
+  find_package(Eigen3 3.3.1 NO_MODULE)
   if(NOT TARGET Eigen3::Eigen)
     message(WARNING "Should test with Eigen, but Eigen was not found.")
     set(EMITC_TOSA_TEST_EIGEN OFF)

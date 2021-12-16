@@ -34,6 +34,7 @@ if(EMITC_TOSA_TEST_EIGEN)
   target_include_directories(MLIREmitCEigenTests
     PRIVATE ${gtest_SOURCE_DIR}/include
     PRIVATE ${gmock_SOURCE_DIR}/include
-    PRIVATE ${EIGEN3_INCLUDE_DIR}
   )
+
+  target_link_libraries(MLIREmitCEigenTests PRIVATE Eigen3::Eigen)
 endif()

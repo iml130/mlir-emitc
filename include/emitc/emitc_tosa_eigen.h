@@ -24,8 +24,7 @@ namespace {
 // A view on an emitc tensor as Eigen tensor in row-major order
 template <typename T, size_t... Shape>
 inline auto as_eigen(Tensor<T, Shape...> &t) {
-  return Eigen::TensorMap<
-      Eigen::TensorFixedSize<T, Eigen::Sizes<Shape...>, Eigen::RowMajor>>(
+  return Eigen::TensorMap<Eigen::Tensor<T, sizeof...(Shape), Eigen::RowMajor>>(
       &*t.begin(), Shape...);
 }
 
@@ -46,16 +45,16 @@ Dest conv2d(Src input, Weights weights, Tensor1D<int64_t, 4> padding,
   static_assert(is_tensor_of_dim<4, Weights>::value,
                 "Expected 4 dimensional weights");
 
-  constexpr int N = Src::dim(0);
-  constexpr int IC = Src::dim(3);
-  constexpr int KF = Weights::dim(0);
-  constexpr int KH = Weights::dim(1);
-  constexpr int KW = Weights::dim(2);
-  constexpr int KC = Weights::dim(3);
-  constexpr int ON = Dest::dim(0);
-  constexpr int H = Dest::dim(1);
-  constexpr int W = Dest::dim(2);
-  constexpr int OC = Dest::dim(3);
+  constexpr Eigen::Index N = Src::dim(0);
+  constexpr Eigen::Index IC = Src::dim(3);
+  constexpr Eigen::Index KF = Weights::dim(0);
+  constexpr Eigen::Index KH = Weights::dim(1);
+  constexpr Eigen::Index KW = Weights::dim(2);
+  constexpr Eigen::Index KC = Weights::dim(3);
+  constexpr Eigen::Index ON = Dest::dim(0);
+  constexpr Eigen::Index H = Dest::dim(1);
+  constexpr Eigen::Index W = Dest::dim(2);
+  constexpr Eigen::Index OC = Dest::dim(3);
 
   static_assert(N == ON, "Expected input batch size to match output");
   static_assert(IC == KC, "Expected input channels to match weights");
@@ -73,9 +72,16 @@ Dest conv2d(Src input, Weights weights, Tensor1D<int64_t, 4> padding,
   Dest output;
   // [N,IH,IW,IC]
   auto e_input = as_eigen(input);
+
   // [KH,KW,IC,OC]
+#if EIGEN_VERSION_AT_LEAST(3, 4, 0)
   auto e_weight =
       as_eigen(weights).shuffle(Eigen::array<Eigen::Index, 4>({1, 2, 3, 0}));
+#else
+  Eigen::Tensor<typename Weights::value_type, 4, Eigen::RowMajor> e_weight =
+      as_eigen(weights).shuffle(Eigen::array<Eigen::Index, 4>({1, 2, 3, 0}));
+#endif
+
   // [N,H,W,OC]
   auto e_output = as_eigen(output);
 
@@ -90,18 +96,19 @@ Dest conv2d(Src input, Weights weights, Tensor1D<int64_t, 4> padding,
 
   // create 2d tensor from patches [N*H*W,KH*KW*IC]
   auto patches_m =
-      patches.reshape(Eigen::DSizes<int64_t, 2>{N * H * W, KH * KW * IC});
+      patches.reshape(Eigen::DSizes<Eigen::Index, 2>{N * H * W, KH * KW * IC});
 
   // create 2d tensor from weights [KH*KW*IC,OC]
-  auto weight_m = e_weight.reshape(Eigen::DSizes<int64_t, 2>{KH * KW * IC, OC});
+  auto weight_m =
+      e_weight.reshape(Eigen::DSizes<Eigen::Index, 2>{KH * KW * IC, OC});
 
   // multiply [N*H*W,OC]
-  auto contr =
-      patches_m.contract(weight_m, Eigen::array<Eigen::IndexPair<int64_t>, 1>{
-                                       Eigen::IndexPair<int64_t>(1, 0)});
+  auto contr = patches_m.contract(
+      weight_m, Eigen::array<Eigen::IndexPair<Eigen::Index>, 1>{
+                    Eigen::IndexPair<Eigen::Index>(1, 0)});
 
   // reshape result to output [N,H,W,OC]
-  e_output = contr.reshape(Eigen::DSizes<int64_t, 4>{N, H, W, OC});
+  e_output = contr.reshape(Eigen::DSizes<Eigen::Index, 4>{N, H, W, OC});
 
   return output;
 }

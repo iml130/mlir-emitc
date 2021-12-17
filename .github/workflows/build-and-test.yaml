@@ -147,7 +147,7 @@ jobs:
 
   build-release:
     name: Build and test EmitC (Release)
-    needs: [build-llvm] #, prepare-e2e-test]
+    needs: [build-llvm, prepare-e2e-test]
     runs-on: ubuntu-20.04
     steps:
     - name: Configure environment

@@ -20,6 +20,10 @@
 #include "emitc_core_ops.h"
 #include "emitc_std.h"
 
+#ifdef EMITC_TOSA_USE_EIGEN
+#include "emitc_tosa_eigen.h"
+#endif
+
 namespace emitc {
 namespace tosa {
 
@@ -155,6 +159,8 @@ inline Src sub(Src x, Src y) {
 }
 
 /// Functions for other TOSA ops.
+// Disable Conv2DOp if Eigen implementation is used
+#ifndef EMITC_TOSA_USE_EIGEN
 // Conv2DOp
 template <typename Dest, typename Src, typename Weights>
 Dest conv2d(Src input, Weights weights, Tensor1D<int64_t, 4> padding,
@@ -226,6 +232,7 @@ Dest conv2d(Src input, Weights weights, Tensor1D<int64_t, 4> padding,
 
   return output;
 }
+#endif
 
 // DepthwiseConv2DOp
 template <typename Dest, typename Src, typename Weights>

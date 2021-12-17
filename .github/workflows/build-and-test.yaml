@@ -109,6 +109,9 @@ jobs:
     - name: Configure environment
       run: echo "$GITHUB_WORKSPACE/${LLVM}/install/bin" >> $GITHUB_PATH
 
+    - name: Install dependencies
+      run: sudo apt-get install -y libeigen3-dev
+
     - name: Checkout EmitC
       uses: actions/checkout@v2
       with:
@@ -143,7 +146,9 @@ jobs:
           -DLLVM_EXTERNAL_LIT=`pwd`/../../${LLVM}/build/bin/llvm-lit
         cmake --build . --target check-emitc -- -j$(nproc)
         cmake --build . --target MLIREmitCAllTests -- -j$(nproc)
+        cmake --build . --target MLIREmitCEigenTests -- -j$(nproc)
         ./unittests/MLIREmitCAllTests
+        ./unittests/MLIREmitCEigenTests
 
   build-release:
     name: Build and test EmitC (Release)
@@ -152,6 +157,9 @@ jobs:
     steps:
     - name: Configure environment
       run: echo "$GITHUB_WORKSPACE/${LLVM}/install/bin" >> $GITHUB_PATH
+
+    - name: Install dependencies
+      run: sudo apt-get install -y libeigen3-dev
 
     - name: Checkout EmitC
       uses: actions/checkout@v2
@@ -187,7 +195,9 @@ jobs:
           -DLLVM_EXTERNAL_LIT=`pwd`/../../${LLVM}/build/bin/llvm-lit
         cmake --build . --target check-emitc -- -j$(nproc)
         cmake --build . --target MLIREmitCAllTests -- -j$(nproc)
+        cmake --build . --target MLIREmitCEigenTests -- -j$(nproc)
         ./unittests/MLIREmitCAllTests
+        ./unittests/MLIREmitCEigenTests
 
     - name: Cache e2e
       uses: actions/cache@v2

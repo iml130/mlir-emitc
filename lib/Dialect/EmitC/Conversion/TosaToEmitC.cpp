@@ -559,6 +559,47 @@ private:
   }
 };
 
+/// Convert `tosa.arithmetic_right_shift` into an `emitc.call` operation.
+class ArithmeticRightShiftOpConversion
+    : public OpConversionPattern<tosa::ArithmeticRightShiftOp> {
+  using OpConversionPattern<tosa::ArithmeticRightShiftOp>::OpConversionPattern;
+
+public:
+  ArithmeticRightShiftOpConversion(MLIRContext *ctx, StringRef funcName,
+                                   bool explicitResultType = false,
+                                   bool explicitOperandTypes = false)
+      : OpConversionPattern<tosa::ArithmeticRightShiftOp>(ctx) {}
+
+private:
+  LogicalResult
+  matchAndRewrite(tosa::ArithmeticRightShiftOp arithmeticRightShiftOp,
+                  OpAdaptor adaptor,
+                  ConversionPatternRewriter &rewriter) const override {
+    StringRef funcName = "emitc::tosa::arithmetic_right_shift";
+    StringAttr callee = rewriter.getStringAttr(funcName);
+
+    auto roundAttr = arithmeticRightShiftOp.roundAttr();
+    ArrayAttr args;
+    SmallVector<Attribute, 1> args_;
+    args_.push_back(rewriter.getIndexAttr(0));
+    args_.push_back(rewriter.getIndexAttr(1));
+    args_.push_back(roundAttr);
+    args = rewriter.getArrayAttr(args_);
+
+    ArrayAttr templateArgs;
+
+    SmallVector<Value, 2> broadcastedOperands =
+        createBroadcastOpIfNeeded(arithmeticRightShiftOp, adaptor, rewriter);
+
+    rewriter.replaceOpWithNewOp<emitc::CallOp>(
+        arithmeticRightShiftOp, arithmeticRightShiftOp.getType(), callee, args,
+        templateArgs,
+        ValueRange({broadcastedOperands[0], broadcastedOperands[1]}));
+
+    return success();
+  }
+};
+
 /// Convert `tosa.reduce_*` into an `emitc.call` operation.
 template <typename SrcOp, typename Adaptor = typename SrcOp::Adaptor>
 class ReduceOpConversion : public OpConversionPattern<SrcOp> {
@@ -719,6 +760,8 @@ void populateTosaToEmitcPatterns(MLIRContext *ctx,
   // Insert patterns for TOSA binary elementwise ops.
   patterns.add<CallOpBroadcastableConversion<tosa::AddOp>>(ctx,
                                                            "emitc::tosa::add");
+  patterns.add<ArithmeticRightShiftOpConversion>(
+      ctx, "emitc::tosa::arithmetic_right_shift");
   patterns.add<CallOpBroadcastableConversion<tosa::MaximumOp>>(
       ctx, "emitc::tosa::maximum");
   patterns.add<CallOpBroadcastableConversion<tosa::MinimumOp>>(
@@ -788,6 +831,7 @@ struct ConvertTosaToEmitCPass
 
     // Binary elementwise ops.
     target.addIllegalOp<tosa::AddOp,
+                        tosa::ArithmeticRightShiftOp,
                         tosa::MaximumOp,
                         tosa::MinimumOp,
                         tosa::MulOp,

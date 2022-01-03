@@ -79,6 +79,25 @@ TEST(tosa, reluN) {
 }
 
 // Binary elementwise ops
+TEST(tosa, arithmetic_right_shift) {
+  {
+    Tensor1D<int16_t, 5> in1{0b10, 0b10, -0b10, 0b1, -0b1};
+    Tensor1D<int16_t, 5> in2{0, 1, 1, 1, 1};
+    bool round = false;
+    Tensor1D<int16_t, 5> expected_result{0b10, 0b1, -0b1, 0b0, -0b1};
+    Tensor1D<int16_t, 5> result = tosa::arithmetic_right_shift(in1, in2, round);
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+  {
+    Tensor1D<int16_t, 4> in1{0b1, 0b1, 0b10, 0b110};
+    Tensor1D<int16_t, 4> in2{0, 1, 1, 2};
+    bool round = true;
+    Tensor1D<int16_t, 4> expected_result{0b1, 0b1, 0b1, 0b10};
+    Tensor1D<int16_t, 4> result = tosa::arithmetic_right_shift(in1, in2, round);
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+}
+
 TEST(tosa, mul) {
   // no shift
   Tensor2D<long, 2, 2> s0{3, 1, 4, 9};

@@ -110,6 +110,25 @@ inline Src add(Src x, Src y) {
   return emitc::add<Src>(x, y);
 }
 
+// ArithmeticRightShiftOp
+template <typename Src>
+inline Src arithmetic_right_shift(Src x, Src y, bool round) {
+  using ET_Src = typename get_element_type<Src>::type;
+  std::function<ET_Src(ET_Src, ET_Src)> f;
+  if (round) {
+    f = [](ET_Src left, ET_Src right) {
+      ET_Src result = left >> right;
+      if (right > 0 && ((left >> (right - 1)) & 1) != 0) {
+        result++;
+      }
+      return result;
+    };
+  } else {
+    f = [](ET_Src left, ET_Src right) { return left >> right; };
+  }
+  return binary<Src>(x, y, f);
+}
+
 // MulOp
 template <typename Src>
 inline Src mul(Src x, Src y) {

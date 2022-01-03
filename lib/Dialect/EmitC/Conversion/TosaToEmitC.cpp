@@ -762,6 +762,8 @@ void populateTosaToEmitcPatterns(MLIRContext *ctx,
                                                            "emitc::tosa::add");
   patterns.add<ArithmeticRightShiftOpConversion>(
       ctx, "emitc::tosa::arithmetic_right_shift");
+  patterns.add<CallOpBroadcastableConversion<tosa::LogicalLeftShiftOp>>(
+      ctx, "emitc::tosa::logical_left_shift");
   patterns.add<CallOpBroadcastableConversion<tosa::MaximumOp>>(
       ctx, "emitc::tosa::maximum");
   patterns.add<CallOpBroadcastableConversion<tosa::MinimumOp>>(
@@ -832,6 +834,7 @@ struct ConvertTosaToEmitCPass
     // Binary elementwise ops.
     target.addIllegalOp<tosa::AddOp,
                         tosa::ArithmeticRightShiftOp,
+                        tosa::LogicalLeftShiftOp,
                         tosa::MaximumOp,
                         tosa::MinimumOp,
                         tosa::MulOp,

@@ -98,6 +98,14 @@ TEST(tosa, arithmetic_right_shift) {
   }
 }
 
+TEST(tosa, logical_left_shift) {
+  Tensor1D<int16_t, 4> s0{0b1, 0b1, -0b1, 0b101};
+  Tensor1D<int16_t, 4> t0{0, 1, 1, 2};
+  Tensor1D<int16_t, 4> expected_result{0b1, 0b10, -0b10, 0b10100};
+  Tensor1D<int16_t, 4> result = tosa::logical_left_shift(s0, t0);
+  EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+}
+
 TEST(tosa, mul) {
   // no shift
   Tensor2D<long, 2, 2> s0{3, 1, 4, 9};

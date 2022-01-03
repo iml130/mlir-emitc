@@ -129,6 +129,14 @@ inline Src arithmetic_right_shift(Src x, Src y, bool round) {
   return binary<Src>(x, y, f);
 }
 
+// LogicalLeftShiftOp
+template <typename Src>
+inline Src logical_left_shift(Src x, Src y) {
+  using ET_Src = typename get_element_type<Src>::type;
+  auto f = [](ET_Src left, ET_Src right) { return left << right; };
+  return binary<Src>(x, y, f);
+}
+
 // MulOp
 template <typename Src>
 inline Src mul(Src x, Src y) {

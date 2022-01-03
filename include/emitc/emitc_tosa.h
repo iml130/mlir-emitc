@@ -55,6 +55,23 @@ inline Src clamp(Src operand, typename Src::value_type min_value,
   return emitc::clamp(min, operand, max);
 }
 
+// ClzOp
+template <typename Src>
+inline Src clz(Src x) {
+  using ET_Src = typename get_element_type<Src>::type;
+  static_assert(std::is_same<ET_Src, int32_t>::value,
+                "Expected tensor of type int32_t");
+  auto f = [](ET_Src element) {
+    ET_Src count = 32;
+    while (element != 0 && count > 0) {
+      count--;
+      element >>= 1;
+    }
+    return count;
+  };
+  return unary<Src>(x, f);
+}
+
 // ExpOp
 template <typename Src>
 inline Src exp(Src x) {

@@ -11,6 +11,7 @@ The table below shows the supported TOSA ops.
 | cast                   | :heavy_check_mark: | |
 | ceil                   | :heavy_check_mark: | |
 | clamp                  | :heavy_check_mark: | |
+| clz                    | :heavy_check_mark: | |
 | exp                    | :heavy_check_mark: | |
 | floor                  | :heavy_check_mark: | |
 | log                    | :heavy_check_mark: | |

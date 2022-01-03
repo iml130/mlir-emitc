@@ -746,6 +746,7 @@ void populateTosaToEmitcPatterns(MLIRContext *ctx,
   patterns.add<CallOpConversion<tosa::CastOp>>(ctx, "emitc::tosa::cast",
                                                /*explicitResultType=*/true);
   patterns.add<CallOpConversion<tosa::CeilOp>>(ctx, "emitc::tosa::ceil");
+  patterns.add<CallOpConversion<tosa::ClzOp>>(ctx, "emitc::tosa::clz");
   patterns.add<ClampOpConversion>(ctx);
   patterns.add<CallOpConversion<tosa::ExpOp>>(ctx, "emitc::tosa::exp");
   patterns.add<CallOpConversion<tosa::FloorOp>>(ctx, "emitc::tosa::floor");
@@ -822,6 +823,7 @@ struct ConvertTosaToEmitCPass
                         tosa::CastOp,
                         tosa::CeilOp,
                         tosa::ClampOp,
+                        tosa::ClzOp,
                         tosa::ExpOp,
                         tosa::FloorOp,
                         tosa::LogOp,

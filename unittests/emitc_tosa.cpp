@@ -49,6 +49,13 @@ TEST(tosa, clamp) {
   EXPECT_THAT(s2, Pointwise(Eq(), expected_result2));
 }
 
+TEST(tosa, clz) {
+  Tensor<int32_t, 5> t0{0, 1, 0xC000, -1, -0x7FFFFFFF};
+  Tensor<int32_t, 5> expected{32, 31, 16, 0, 0};
+  Tensor<int32_t, 5> result = tosa::clz(t0);
+  EXPECT_THAT(result, Pointwise(Eq(), expected));
+}
+
 TEST(tosa, reciprocal) {
   Tensor<float, 4> t0{1.0f, 2.0f, 3.0f, 4.0f};
   Tensor<float, 4> expected{1.0f, 0.5f, 0.3333f, 0.25f};

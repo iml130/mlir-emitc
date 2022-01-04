@@ -98,6 +98,21 @@ func @test_add(%arg0: tensor<13x21x1xf32>, %arg1: tensor<13x21x3xf32>) -> tensor
   return %0 : tensor<13x21x3xf32>
 }
 
+// ArithmeticRightShiftOp: no broadcast
+func @test_arithmetic_right_shift1(%arg0: tensor<13x21x3xi32>, %arg1: tensor<13x21x3xi32>) -> tensor<13x21x3xi32> {
+  // CHECK: emitc.call "emitc::tosa::arithmetic_right_shift"(%arg0, %arg1) {args = [0 : index, 1 : index, false]} : (tensor<13x21x3xi32>, tensor<13x21x3xi32>) -> tensor<13x21x3xi32>
+  %0 = "tosa.arithmetic_right_shift"(%arg0, %arg1) { round = false } : (tensor<13x21x3xi32>, tensor<13x21x3xi32>) -> tensor<13x21x3xi32>
+  return %0 : tensor<13x21x3xi32>
+}
+
+// ArithmeticRightShiftOp: First operand needs to be broadcasted
+func @test_arithmetic_right_shift2(%arg0: tensor<13x21x1xi32>, %arg1: tensor<13x21x3xi32>) -> tensor<13x21x3xi32> {
+  // CHECK: emitc.call "emitc::broadcast_in_dim"(%arg0) {args = [0 : index, dense<[0, 1, 2]> : tensor<3xi64>], template_args = [tensor<13x21x3xi32>]} : (tensor<13x21x1xi32>) -> tensor<13x21x3xi32>
+  // CHECK: emitc.call "emitc::tosa::arithmetic_right_shift"(%0, %arg1) {args = [0 : index, 1 : index, true]} : (tensor<13x21x3xi32>, tensor<13x21x3xi32>) -> tensor<13x21x3xi32>
+  %0 = "tosa.arithmetic_right_shift"(%arg0, %arg1) { round = true } : (tensor<13x21x1xi32>, tensor<13x21x3xi32>) -> tensor<13x21x3xi32>
+  return %0 : tensor<13x21x3xi32>
+}
+
 // MulOp: no broadcast
 func @test_mul10(%arg0: tensor<13x21x3xf32>, %arg1: tensor<13x21x3xf32>) -> tensor<13x21x3xf32> {
   // CHECK: emitc.call "emitc::tosa::mul"(%arg0, %arg1) : (tensor<13x21x3xf32>, tensor<13x21x3xf32>) -> tensor<13x21x3xf32>

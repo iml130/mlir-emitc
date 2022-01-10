@@ -55,6 +55,23 @@ inline Src clamp(Src operand, typename Src::value_type min_value,
   return emitc::clamp(min, operand, max);
 }
 
+// ClzOp
+template <typename Src>
+inline Src clz(Src x) {
+  using ET_Src = typename get_element_type<Src>::type;
+  static_assert(std::is_same<ET_Src, int32_t>::value,
+                "Expected tensor of type int32_t");
+  auto f = [](ET_Src element) {
+    ET_Src count = 32;
+    while (element != 0 && count > 0) {
+      count--;
+      element >>= 1;
+    }
+    return count;
+  };
+  return unary<Src>(x, f);
+}
+
 // ExpOp
 template <typename Src>
 inline Src exp(Src x) {
@@ -126,6 +143,14 @@ inline Src arithmetic_right_shift(Src x, Src y, bool round) {
   } else {
     f = [](ET_Src left, ET_Src right) { return left >> right; };
   }
+  return binary<Src>(x, y, f);
+}
+
+// LogicalLeftShiftOp
+template <typename Src>
+inline Src logical_left_shift(Src x, Src y) {
+  using ET_Src = typename get_element_type<Src>::type;
+  auto f = [](ET_Src left, ET_Src right) { return left << right; };
   return binary<Src>(x, y, f);
 }
 

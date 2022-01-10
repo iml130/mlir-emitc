@@ -746,6 +746,7 @@ void populateTosaToEmitcPatterns(MLIRContext *ctx,
   patterns.add<CallOpConversion<tosa::CastOp>>(ctx, "emitc::tosa::cast",
                                                /*explicitResultType=*/true);
   patterns.add<CallOpConversion<tosa::CeilOp>>(ctx, "emitc::tosa::ceil");
+  patterns.add<CallOpConversion<tosa::ClzOp>>(ctx, "emitc::tosa::clz");
   patterns.add<ClampOpConversion>(ctx);
   patterns.add<CallOpConversion<tosa::ExpOp>>(ctx, "emitc::tosa::exp");
   patterns.add<CallOpConversion<tosa::FloorOp>>(ctx, "emitc::tosa::floor");
@@ -762,6 +763,8 @@ void populateTosaToEmitcPatterns(MLIRContext *ctx,
                                                            "emitc::tosa::add");
   patterns.add<ArithmeticRightShiftOpConversion>(
       ctx, "emitc::tosa::arithmetic_right_shift");
+  patterns.add<CallOpBroadcastableConversion<tosa::LogicalLeftShiftOp>>(
+      ctx, "emitc::tosa::logical_left_shift");
   patterns.add<CallOpBroadcastableConversion<tosa::MaximumOp>>(
       ctx, "emitc::tosa::maximum");
   patterns.add<CallOpBroadcastableConversion<tosa::MinimumOp>>(
@@ -820,6 +823,7 @@ struct ConvertTosaToEmitCPass
                         tosa::CastOp,
                         tosa::CeilOp,
                         tosa::ClampOp,
+                        tosa::ClzOp,
                         tosa::ExpOp,
                         tosa::FloorOp,
                         tosa::LogOp,
@@ -832,6 +836,7 @@ struct ConvertTosaToEmitCPass
     // Binary elementwise ops.
     target.addIllegalOp<tosa::AddOp,
                         tosa::ArithmeticRightShiftOp,
+                        tosa::LogicalLeftShiftOp,
                         tosa::MaximumOp,
                         tosa::MinimumOp,
                         tosa::MulOp,

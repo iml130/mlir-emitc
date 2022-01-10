@@ -11,6 +11,7 @@ The table below shows the supported TOSA ops.
 | cast                   | :heavy_check_mark: | |
 | ceil                   | :heavy_check_mark: | |
 | clamp                  | :heavy_check_mark: | |
+| clz                    | :heavy_check_mark: | |
 | exp                    | :heavy_check_mark: | |
 | floor                  | :heavy_check_mark: | |
 | log                    | :heavy_check_mark: | |
@@ -22,6 +23,7 @@ The table below shows the supported TOSA ops.
 | **Binary elementwise ops**
 | add                    | :heavy_check_mark: | |
 | arithmetic_right_shift | :heavy_check_mark: | |
+| logical_left_shift     | :heavy_check_mark: | |
 | maximum                | :heavy_check_mark: | |
 | minimum                | :heavy_check_mark: | |
 | mul                    | :heavy_check_mark: | |

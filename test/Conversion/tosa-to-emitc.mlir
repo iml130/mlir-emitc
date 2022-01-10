@@ -46,6 +46,12 @@ func @test_clamp1(%arg0: tensor<13x21x3xi32>) -> tensor<13x21x3xi32> {
   return %0 : tensor<13x21x3xi32>
 }
 
+func @test_clz(%arg0: tensor<13x21x3xi32>) -> tensor<13x21x3xi32> {
+  // CHECK: emitc.call "emitc::tosa::clz"(%arg0) : (tensor<13x21x3xi32>) -> tensor<13x21x3xi32>
+  %0 = "tosa.clz"(%arg0) : (tensor<13x21x3xi32>) -> tensor<13x21x3xi32>
+  return %0 : tensor<13x21x3xi32>
+}
+
 func @test_exp(%arg0: tensor<13x21x3xf32>) -> tensor<13x21x3xf32> {
   // CHECK: emitc.call "emitc::tosa::exp"(%arg0) : (tensor<13x21x3xf32>) -> tensor<13x21x3xf32>
   %0 = "tosa.exp"(%arg0) : (tensor<13x21x3xf32>) -> tensor<13x21x3xf32>
@@ -110,6 +116,13 @@ func @test_arithmetic_right_shift2(%arg0: tensor<13x21x1xi32>, %arg1: tensor<13x
   // CHECK: emitc.call "emitc::broadcast_in_dim"(%arg0) {args = [0 : index, dense<[0, 1, 2]> : tensor<3xi64>], template_args = [tensor<13x21x3xi32>]} : (tensor<13x21x1xi32>) -> tensor<13x21x3xi32>
   // CHECK: emitc.call "emitc::tosa::arithmetic_right_shift"(%0, %arg1) {args = [0 : index, 1 : index, true]} : (tensor<13x21x3xi32>, tensor<13x21x3xi32>) -> tensor<13x21x3xi32>
   %0 = "tosa.arithmetic_right_shift"(%arg0, %arg1) { round = true } : (tensor<13x21x1xi32>, tensor<13x21x3xi32>) -> tensor<13x21x3xi32>
+  return %0 : tensor<13x21x3xi32>
+}
+
+func @test_logical_left_shift(%arg0: tensor<13x21x1xi32>, %arg1: tensor<13x21x3xi32>) -> tensor<13x21x3xi32> {
+  // CHECK: emitc.call "emitc::broadcast_in_dim"(%arg0) {args = [0 : index, dense<[0, 1, 2]> : tensor<3xi64>], template_args = [tensor<13x21x3xi32>]} : (tensor<13x21x1xi32>) -> tensor<13x21x3xi32>
+  // CHECK: emitc.call "emitc::tosa::logical_left_shift"(%0, %arg1) : (tensor<13x21x3xi32>, tensor<13x21x3xi32>) -> tensor<13x21x3xi32>
+  %0 = "tosa.logical_left_shift"(%arg0, %arg1) : (tensor<13x21x1xi32>, tensor<13x21x3xi32>) -> tensor<13x21x3xi32>
   return %0 : tensor<13x21x3xi32>
 }
 

@@ -6,12 +6,9 @@ if(${EMITC_ENABLE_HLO})
     MLIRMHLOToEmitC
     MLIRMHLORegionOpsToEmitC
     MhloRegisterDialects
-    MhloToStandard
     )
   set(HLO_LIBS_DEPS
     MLIREmitCConversionPassIncGen
-    MLIRLmhloPassIncGen
-    MLIRMhloPassIncGen
     )
 else()
   unset(HLO_LIBS)

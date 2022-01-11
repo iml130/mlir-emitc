@@ -145,9 +145,9 @@ jobs:
           -DCMAKE_CXX_COMPILER=clang++ \
           -DLLVM_EXTERNAL_LIT=`pwd`/../../${LLVM}/build/bin/llvm-lit
         cmake --build . --target check-emitc -- -j$(nproc)
-        cmake --build . --target MLIREmitCAllTests -- -j$(nproc)
+        cmake --build . --target MLIREmitCTests -- -j$(nproc)
         cmake --build . --target MLIREmitCEigenTests -- -j$(nproc)
-        ./unittests/MLIREmitCAllTests
+        ./unittests/MLIREmitCTests
         ./unittests/MLIREmitCEigenTests
 
   build-release:
@@ -194,9 +194,9 @@ jobs:
           -DCMAKE_CXX_COMPILER=clang++ \
           -DLLVM_EXTERNAL_LIT=`pwd`/../../${LLVM}/build/bin/llvm-lit
         cmake --build . --target check-emitc -- -j$(nproc)
-        cmake --build . --target MLIREmitCAllTests -- -j$(nproc)
+        cmake --build . --target MLIREmitCTests -- -j$(nproc)
         cmake --build . --target MLIREmitCEigenTests -- -j$(nproc)
-        ./unittests/MLIREmitCAllTests
+        ./unittests/MLIREmitCTests
         ./unittests/MLIREmitCEigenTests
 
     - name: Cache e2e

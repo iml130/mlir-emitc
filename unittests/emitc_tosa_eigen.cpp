@@ -12,12 +12,7 @@
 
 #include "gmock/gmock.h"
 
-#ifdef EMITC_TOSA_USE_EIGEN
-#include "emitc/emitc_tosa_eigen.h"
-#else
 #include "emitc/emitc_tosa.h"
-#endif
-
 #include "emitc/emitc_types.h"
 
 namespace {

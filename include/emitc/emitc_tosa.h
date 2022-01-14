@@ -202,6 +202,31 @@ inline Src sub(Src x, Src y) {
   return emitc::sub<Src>(x, y);
 }
 
+// TableOp int8_t
+template <size_t... Shape>
+inline Tensor<int8_t, Shape...> table(Tensor<int8_t, Shape...> x,
+                                      Tensor1D<int8_t, 256> table) {
+  auto f = [&table](int8_t element) {
+    return table(static_cast<int16_t>(element) + 128);
+  };
+  return unary<Tensor<int8_t, Shape...>>(x, f);
+}
+
+// TableOp int16_t
+template <size_t... Shape>
+inline Tensor<int32_t, Shape...> table(Tensor<int16_t, Shape...> x,
+                                       Tensor1D<int16_t, 513> table) {
+  auto f = [&table](int16_t element) {
+    int32_t integer = (element >> 7) + 0x100; // 9 bit integer part
+    int32_t fractional = element & 0x7F;      // 7 bit fractional part
+    int32_t result_integer = table(integer);  // 16 bit integer part
+    int32_t result_fractional = (table(integer + 1) - table(integer)) *
+                                fractional; // 7 bit fractional part
+    return (result_integer << 7) + result_fractional;
+  };
+  return unary<Tensor<int32_t, Shape...>>(x, f);
+}
+
 /// Functions for other TOSA ops.
 // Disable Conv2DOp if Eigen implementation is used
 #ifndef EMITC_TOSA_USE_EIGEN

@@ -22,7 +22,7 @@ target_sources(EmitCRefImpl
 )
 set_target_properties(EmitCRefImpl PROPERTIES LINKER_LANGUAGE CXX)
 
-if(EMITC_TOSA_TEST_EIGEN)
+if(EMITC_TOSA_USE_EIGEN)
     add_library(EmitCRefImpl_Eigen INTERFACE)
     target_sources(EmitCRefImpl_Eigen
     INTERFACE

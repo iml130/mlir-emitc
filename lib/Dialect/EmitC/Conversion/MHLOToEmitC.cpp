@@ -579,7 +579,7 @@ namespace {
 struct ConvertMhloToEmitCPass
     : public ConvertMHLOToEmitCBase<ConvertMhloToEmitCPass> {
   /// Perform the lowering to EmitC dialect.
-  void runOnFunction() override {
+  void runOnOperation() override {
 
     ConversionTarget target(getContext());
 
@@ -657,14 +657,15 @@ struct ConvertMhloToEmitCPass
     RewritePatternSet patterns(&getContext());
     populateMhloToEmitcPatterns(&getContext(), patterns);
 
-    if (failed(
-            applyPartialConversion(getFunction(), target, std::move(patterns))))
+    if (failed(applyPartialConversion(getOperation(), target,
+                                      std::move(patterns))))
       signalPassFailure();
   }
 };
 
 } // namespace
 
-std::unique_ptr<FunctionPass> mlir::emitc::createConvertMhloToEmitCPass() {
+std::unique_ptr<OperationPass<FuncOp>>
+mlir::emitc::createConvertMhloToEmitCPass() {
   return std::make_unique<ConvertMhloToEmitCPass>();
 }

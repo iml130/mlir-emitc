@@ -20,11 +20,11 @@ namespace emitc {
 
 std::unique_ptr<OperationPass<ModuleOp>>
 createConvertMhloRegionOpsToEmitCPass();
-std::unique_ptr<FunctionPass> createConvertMhloToEmitCPass();
-std::unique_ptr<FunctionPass> createConvertArithToEmitCPass();
-std::unique_ptr<FunctionPass> createConvertStdToEmitCPass();
-std::unique_ptr<FunctionPass> createConvertTensorToEmitCPass();
-std::unique_ptr<FunctionPass> createConvertTosaToEmitCPass();
+std::unique_ptr<OperationPass<FuncOp>> createConvertMhloToEmitCPass();
+std::unique_ptr<OperationPass<FuncOp>> createConvertArithToEmitCPass();
+std::unique_ptr<OperationPass<FuncOp>> createConvertStdToEmitCPass();
+std::unique_ptr<OperationPass<FuncOp>> createConvertTensorToEmitCPass();
+std::unique_ptr<OperationPass<FuncOp>> createConvertTosaToEmitCPass();
 
 #define GEN_PASS_REGISTRATION
 #include "emitc/Dialect/EmitC/Conversion/Passes.h.inc"

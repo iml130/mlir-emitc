@@ -59,7 +59,7 @@ namespace {
 struct ConvertStdToEmitCPass
     : public ConvertStdToEmitCBase<ConvertStdToEmitCPass> {
   /// Perform the lowering to EmitC dialect.
-  void runOnFunction() override {
+  void runOnOperation() override {
 
     ConversionTarget target(getContext());
 
@@ -70,14 +70,15 @@ struct ConvertStdToEmitCPass
     RewritePatternSet patterns(&getContext());
     populateStdToEmitcPatterns(&getContext(), patterns);
 
-    if (failed(
-            applyPartialConversion(getFunction(), target, std::move(patterns))))
+    if (failed(applyPartialConversion(getOperation(), target,
+                                      std::move(patterns))))
       signalPassFailure();
   }
 };
 
 } // namespace
 
-std::unique_ptr<FunctionPass> mlir::emitc::createConvertStdToEmitCPass() {
+std::unique_ptr<OperationPass<FuncOp>>
+mlir::emitc::createConvertStdToEmitCPass() {
   return std::make_unique<ConvertStdToEmitCPass>();
 }

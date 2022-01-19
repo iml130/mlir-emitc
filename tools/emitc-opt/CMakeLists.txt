@@ -24,7 +24,7 @@ set(LLVM_LINK_COMPONENTS
 set(LIBS
   ${dialect_libs}
   ${conversion_libs}
-  MLIRLoopAnalysis
+  MLIRAffineAnalysis
   MLIRAnalysis
   MLIRDialect
   MLIROptLib

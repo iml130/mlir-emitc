@@ -29,6 +29,7 @@ The table below shows the supported TOSA ops.
 | mul                    | :heavy_check_mark: | |
 | pow                    | :heavy_check_mark: | |
 | sub                    | :heavy_check_mark: | |
+| table                  | :heavy_check_mark: | |
 | **Other ops**
 | conv2d                 | :white_check_mark: | Quantization and dilation not supported |
 | depthwise_conv2d       | :white_check_mark: | Quantization and dilation not supported |

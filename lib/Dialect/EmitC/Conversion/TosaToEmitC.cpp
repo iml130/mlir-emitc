@@ -774,6 +774,7 @@ void populateTosaToEmitcPatterns(MLIRContext *ctx,
                                                            "emitc::tosa::pow");
   patterns.add<CallOpBroadcastableConversion<tosa::SubOp>>(ctx,
                                                            "emitc::tosa::sub");
+  patterns.add<CallOpConversion<tosa::TableOp>>(ctx, "emitc::tosa::table");
 
   // Insert patterns for other TOSA ops.
   patterns.add<GenericConvOpConversion<tosa::Conv2DOp>>(ctx,
@@ -841,7 +842,8 @@ struct ConvertTosaToEmitCPass
                         tosa::MinimumOp,
                         tosa::MulOp,
                         tosa::PowOp,
-                        tosa::SubOp>();
+                        tosa::SubOp,
+                        tosa::TableOp>();
 
     // Other ops.
     target.addIllegalOp<tosa::Conv2DOp,

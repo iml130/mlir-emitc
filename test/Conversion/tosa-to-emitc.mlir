@@ -201,6 +201,12 @@ func @test_pow(%arg0: tensor<13x21x3xf32>, %arg1: tensor<13x21x1xf32>) -> tensor
   return %0 : tensor<13x21x3xf32>
 }
 
+func @test_table(%arg0: tensor<64xi16>, %arg1: tensor<513xi16>) -> tensor<64xi32> {
+  // CHECK: emitc.call "emitc::tosa::table"(%arg0, %arg1) : (tensor<64xi16>, tensor<513xi16>) -> tensor<64xi32>
+  %0 = "tosa.table"(%arg0, %arg1) : (tensor<64xi16>, tensor<513xi16>) -> tensor<64xi32>
+  return %0 : tensor<64xi32>
+}
+
 // Other ops
 
 func @test_conv2d(%arg0: tensor<1x4x4x4xf32>, %arg1: tensor<8x1x1x4xf32>, %arg2: tensor<8xf32>) -> tensor<1x4x4x8xf32> {

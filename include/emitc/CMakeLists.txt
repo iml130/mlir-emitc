@@ -20,7 +20,6 @@ target_sources(EmitCRefImpl
   INTERFACE
     ${EMITC_REF_SRCS}
 )
-set_target_properties(EmitCRefImpl PROPERTIES LINKER_LANGUAGE CXX)
 
 if(EMITC_TOSA_USE_EIGEN)
     add_library(EmitCRefImpl_Eigen INTERFACE)
@@ -30,5 +29,4 @@ if(EMITC_TOSA_USE_EIGEN)
       emitc_tosa_eigen.h
     )
     target_compile_definitions(EmitCRefImpl_Eigen INTERFACE EMITC_TOSA_USE_EIGEN)
-    set_target_properties(EmitCRefImpl_Eigen PROPERTIES LINKER_LANGUAGE CXX)
 endif()

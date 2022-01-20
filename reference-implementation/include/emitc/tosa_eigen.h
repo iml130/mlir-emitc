@@ -11,12 +11,12 @@
 // limitations under the License.
 
 // This file defines alternative implementations for the functions in
-// emitc_tosa.h utilizing Eigen.
+// tosa.h utilizing Eigen.
 
-#ifndef EMITC_EMITC_TOSA_EIGEN_H
-#define EMITC_EMITC_TOSA_EIGEN_H
+#ifndef EMITC_TOSA_EIGEN_H
+#define EMITC_TOSA_EIGEN_H
 
-#include "emitc_std.h"
+#include "emitc/std.h"
 #include <unsupported/Eigen/CXX11/Tensor>
 
 namespace {
@@ -116,4 +116,4 @@ Dest conv2d(Src input, Weights weights, Tensor1D<int64_t, 4> padding,
 } // namespace tosa
 } // namespace emitc
 
-#endif // EMITC_EMITC_TOSA_EIGEN_H
+#endif // EMITC_TOSA_EIGEN_H

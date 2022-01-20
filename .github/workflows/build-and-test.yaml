@@ -220,7 +220,7 @@ jobs:
           "${E2E}"/model_fix_name.mlir > "${E2E}"/model_emitc.mlir
         ./${EMITC}/build_release/bin/emitc-translate --mlir-to-cpp "${E2E}"/model_emitc.mlir > "${E2E}"/model_generated.h
         cd ${E2E}
-        clang++ test.cpp -O3 -I `pwd`/../emitc/include/emitc -I `pwd` -o test
+        clang++ test.cpp -O3 -I `pwd`/../emitc/reference-implementation/include -I `pwd` -o test
         ./test
 
     - name: Run MHLO test
@@ -234,7 +234,7 @@ jobs:
         ./${EMITC}/build_release/bin/emitc-translate --mlir-to-cpp ${EMITC}/test_mhlo/model_emitc.mlir > ${EMITC}/test_mhlo/model_generated.h
         cp ${EMITC}/test/MobileNetV2_FakeWeights_test.cpp ${EMITC}/test_mhlo/test.cpp
         cd ${EMITC}/test_mhlo/
-        clang++ test.cpp -O3 -I `pwd`/../include/emitc -I `pwd` -o test
+        clang++ test.cpp -O3 -I `pwd`/../reference-implementation/include -I `pwd` -o test
         ./test
 
     - name: Run TOSA test
@@ -247,5 +247,5 @@ jobs:
         ./${EMITC}/build_release/bin/emitc-translate --mlir-to-cpp ${EMITC}/test_tosa/model_emitc.mlir > ${EMITC}/test_tosa/model_generated.h
         cp ${EMITC}/test/MobileNetV2_FakeWeights_test.cpp ${EMITC}/test_tosa/test.cpp
         cd ${EMITC}/test_tosa/
-        clang++ test.cpp -O3 -I `pwd`/../include/emitc -I `pwd` -o test
+        clang++ test.cpp -O3 -I `pwd`/../reference-implementation/include -I `pwd` -o test
         ./test

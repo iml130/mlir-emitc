@@ -3,7 +3,7 @@
 // RUN: emitc-opt -insert-emitc-std-include -convert-std-to-emitc %s | FileCheck %s --check-prefixes=CHECK,CHECK-INCLUDE
 // RUN: emitc-opt -std-to-emitc-pipeline %s | FileCheck %s --check-prefixes=CHECK,CHECK-INCLUDE
 
-// CHECK-INCLUDE: emitc.include "emitc_std.h"
+// CHECK-INCLUDE: emitc.include "emitc/std.h"
 
 func @splat_op(%s : f32) -> tensor<8xf32> {
   %t = splat %s : tensor<8xf32>

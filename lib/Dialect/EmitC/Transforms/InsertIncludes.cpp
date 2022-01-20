@@ -34,7 +34,7 @@ struct InsertEmitCMHLOIncludePass
     : public InsertEmitCMHLOIncludeBase<InsertEmitCMHLOIncludePass> {
   void runOnOperation() override {
     auto op = getOperation();
-    insertIncludeOp(op, "emitc_mhlo.h");
+    insertIncludeOp(op, "emitc/mhlo.h");
   }
 };
 
@@ -42,7 +42,7 @@ struct InsertEmitCArithIncludePass
     : public InsertEmitCArithIncludeBase<InsertEmitCArithIncludePass> {
   void runOnOperation() override {
     auto op = getOperation();
-    insertIncludeOp(op, "emitc_arith.h");
+    insertIncludeOp(op, "emitc/arith.h");
   }
 };
 
@@ -50,7 +50,7 @@ struct InsertEmitCStdIncludePass
     : public InsertEmitCStdIncludeBase<InsertEmitCStdIncludePass> {
   void runOnOperation() override {
     auto op = getOperation();
-    insertIncludeOp(op, "emitc_std.h");
+    insertIncludeOp(op, "emitc/std.h");
   }
 };
 
@@ -58,7 +58,7 @@ struct InsertEmitCTensorIncludePass
     : public InsertEmitCTensorIncludeBase<InsertEmitCTensorIncludePass> {
   void runOnOperation() override {
     auto op = getOperation();
-    insertIncludeOp(op, "emitc_tensor.h");
+    insertIncludeOp(op, "emitc/tensor.h");
   }
 };
 
@@ -66,7 +66,7 @@ struct InsertEmitCTosaIncludePass
     : public InsertEmitCTosaIncludeBase<InsertEmitCTosaIncludePass> {
   void runOnOperation() override {
     auto op = getOperation();
-    insertIncludeOp(op, "emitc_tosa.h");
+    insertIncludeOp(op, "emitc/tosa.h");
   }
 };
 

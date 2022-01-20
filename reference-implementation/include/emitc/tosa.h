@@ -12,16 +12,16 @@
 
 // This file defines functions emitted by TosaToEmitC.
 
-#ifndef EMITC_EMITC_TOSA_H
-#define EMITC_EMITC_TOSA_H
+#ifndef EMITC_TOSA_H
+#define EMITC_TOSA_H
 
 #include <limits>
 
-#include "emitc_core_ops.h"
-#include "emitc_std.h"
+#include "emitc/core_ops.h"
+#include "emitc/std.h"
 
 #ifdef EMITC_TOSA_USE_EIGEN
-#include "emitc_tosa_eigen.h"
+#include "emitc/tosa_eigen.h"
 #endif
 
 namespace emitc {
@@ -647,4 +647,4 @@ inline Dest transpose(Src input, Tensor1D<int32_t, Src::rank()> perms) {
 } // namespace tosa
 } // namespace emitc
 
-#endif // EMITC_EMITC_TOSA_H
+#endif // EMITC_TOSA_H

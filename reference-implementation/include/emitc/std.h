@@ -12,21 +12,27 @@
 
 // This file defines functions used by EmitC.
 
-#ifndef EMITC_EMITC_TENSOR_H
-#define EMITC_EMITC_TENSOR_H
+#ifndef EMITC_STD_H
+#define EMITC_STD_H
 
-#include "emitc_types.h"
+#include <algorithm>
+
+#include "emitc/types.h"
 
 namespace emitc {
-namespace tensor {
+namespace standard {
 
-// ExtractOp
-template <typename T, size_t... Shape, typename... Indices>
-inline T extract(Tensor<T, Shape...> x, Indices... indices) {
-  return x(indices...);
+// SplatOp
+template <typename Dest, typename Src, IsScalar<Src> = true>
+inline Dest splat(Src x) {
+  Dest z;
+
+  std::fill(z.begin(), z.end(), x);
+
+  return z;
 }
 
-} // namespace tensor
+} // namespace standard
 } // namespace emitc
 
-#endif // EMITC_EMITC_TENSOR_H
+#endif // EMITC_STD_H

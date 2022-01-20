@@ -12,8 +12,8 @@
 
 #include "gmock/gmock.h"
 
-#include "emitc/emitc_mhlo.h"
-#include "emitc/emitc_types.h"
+#include "emitc/mhlo.h"
+#include "emitc/types.h"
 
 namespace {
 

@@ -19,7 +19,7 @@ if [[ $# -ne 7 ]] ; then
   echo "Both a keras and a tensorflow saved model is supported."
   echo 
   echo "This script expects a python version in the PATH with a recent version of tensorflow installed."
-  echo "Tested with python 3.8.10 and tensorflow 2.5.1."
+  echo "Tested with python 3.8.10 and tensorflow nightly 2.8.0.dev20211102"
 
   exit 1
 fi
@@ -71,7 +71,6 @@ sed "s/$FUNCTION_NAME/@predict/g" "$OUTPUT_DIR"/model_canon.mlir > "$OUTPUT_DIR"
 
 echo "Converting mhlo dialect to emitc dialect"
 "$EMITC_OPT" \
-  --mhlo-control-flow-to-scf \
   --insert-emitc-mhlo-include \
   --convert-mhlo-region-ops-to-emitc \
   --convert-mhlo-to-emitc \

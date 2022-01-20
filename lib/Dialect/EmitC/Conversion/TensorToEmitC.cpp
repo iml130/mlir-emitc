@@ -65,7 +65,7 @@ namespace {
 struct ConvertTensorToEmitCPass
     : public ConvertTensorToEmitCBase<ConvertTensorToEmitCPass> {
   /// Perform the lowering to EmitC dialect.
-  void runOnFunction() override {
+  void runOnOperation() override {
 
     ConversionTarget target(getContext());
 
@@ -75,14 +75,15 @@ struct ConvertTensorToEmitCPass
     RewritePatternSet patterns(&getContext());
     populateTensorToEmitcPatterns(&getContext(), patterns);
 
-    if (failed(
-            applyPartialConversion(getFunction(), target, std::move(patterns))))
+    if (failed(applyPartialConversion(getOperation(), target,
+                                      std::move(patterns))))
       signalPassFailure();
   }
 };
 
 } // namespace
 
-std::unique_ptr<FunctionPass> mlir::emitc::createConvertTensorToEmitCPass() {
+std::unique_ptr<OperationPass<FuncOp>>
+mlir::emitc::createConvertTensorToEmitCPass() {
   return std::make_unique<ConvertTensorToEmitCPass>();
 }

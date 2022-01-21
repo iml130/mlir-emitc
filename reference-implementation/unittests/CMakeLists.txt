@@ -1,13 +1,13 @@
 add_executable(MLIREmitCTests "")
 target_sources(MLIREmitCTests
   PRIVATE
-    emitc_mhlo.cpp
-    emitc_arith.cpp
-    emitc_std.cpp
-    emitc_tensor.cpp
-    emitc_tosa_eigen.cpp
-    emitc_tosa.cpp
-    emitc_types.cpp
+    mhlo.cpp
+    arith.cpp
+    std.cpp
+    tensor.cpp
+    tosa_eigen.cpp
+    tosa.cpp
+    types.cpp
 )
 
 target_include_directories(MLIREmitCTests
@@ -21,7 +21,7 @@ if(EMITC_TOSA_TEST_EIGEN)
   add_executable(MLIREmitCEigenTests "")
   target_sources(MLIREmitCEigenTests
     PRIVATE
-      emitc_tosa_eigen.cpp
+      tosa_eigen.cpp
   )
 
   target_include_directories(MLIREmitCEigenTests

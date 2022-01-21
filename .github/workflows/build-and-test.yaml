@@ -148,8 +148,8 @@ jobs:
         cmake --build . --target check-emitc -- -j$(nproc)
         cmake --build . --target MLIREmitCTests -- -j$(nproc)
         cmake --build . --target MLIREmitCEigenTests -- -j$(nproc)
-        ./unittests/MLIREmitCTests
-        ./unittests/MLIREmitCEigenTests
+        ./reference-implementation/unittests/MLIREmitCTests
+        ./reference-implementation/unittests/MLIREmitCEigenTests
 
   build-release:
     name: Build and test EmitC (Release)
@@ -198,8 +198,8 @@ jobs:
         cmake --build . --target check-emitc -- -j$(nproc)
         cmake --build . --target MLIREmitCTests -- -j$(nproc)
         cmake --build . --target MLIREmitCEigenTests -- -j$(nproc)
-        ./unittests/MLIREmitCTests
-        ./unittests/MLIREmitCEigenTests
+        ./reference-implementation/unittests/MLIREmitCTests
+        ./reference-implementation/unittests/MLIREmitCEigenTests
 
     - name: Cache e2e
       uses: actions/cache@v2

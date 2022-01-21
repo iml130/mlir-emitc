@@ -12,8 +12,8 @@
 
 // This file defines the EmitC core ops.
 
-#ifndef EMITC_EMITC_CORE_OPS_H
-#define EMITC_EMITC_CORE_OPS_H
+#ifndef EMITC_CORE_OPS_H
+#define EMITC_CORE_OPS_H
 
 #include <algorithm>
 #include <cmath>
@@ -24,7 +24,7 @@
 #include <type_traits>
 #include <vector>
 
-#include "emitc_types.h"
+#include "emitc/types.h"
 
 namespace emitc {
 
@@ -490,4 +490,4 @@ inline Dest pad(Src operand,
 
 } // namespace emitc
 
-#endif // EMITC_EMITC_CORE_OPS_H
+#endif // EMITC_CORE_OPS_H

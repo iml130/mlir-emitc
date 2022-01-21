@@ -14,7 +14,7 @@
 set -e
 
 if [[ $# -ne 8 ]] ; then
-  echo "Usage: $0 <path/to/model> <path/to/emitc/include/files> <path/to/tf-opt> <path/to/emitc-opt> <compiler> <batch-size> <seed> <output_dir>"
+  echo "Usage: $0 <path/to/model> <path/to/emitc/reference-implementation/include/> <path/to/tf-opt> <path/to/emitc-opt> <compiler> <batch-size> <seed> <output_dir>"
   echo
   echo "Both a keras and a tensorflow saved model is supported."
   echo

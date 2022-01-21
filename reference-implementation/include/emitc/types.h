@@ -12,8 +12,8 @@
 
 // This file defines the tensor class used by EmitC.
 
-#ifndef EMITC_EMITC_TYPES_H
-#define EMITC_EMITC_TYPES_H
+#ifndef EMITC_TYPES_H
+#define EMITC_TYPES_H
 
 #include <algorithm>
 #include <array>
@@ -23,7 +23,7 @@
 #include <numeric>
 #include <vector>
 
-#include "emitc_utility.h"
+#include "emitc/utility.h"
 
 namespace detail {
 template <size_t N>
@@ -357,4 +357,4 @@ struct concat<Dim, T, Tensor4D<T, D0, D1, D2, D3>...> {
                               detail::first<sizeof...(D2)>({D2...}),
                               detail::sum<sizeof...(D3)>({D3...})>>>::type;
 };
-#endif // EMITC_EMITC_TYPES_H
+#endif // EMITC_TYPES_H

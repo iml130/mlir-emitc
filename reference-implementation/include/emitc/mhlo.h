@@ -12,8 +12,8 @@
 
 // This file defines functions emitted by MHLOToEmitC.
 
-#ifndef EMITC_EMITC_MHLO_H
-#define EMITC_EMITC_MHLO_H
+#ifndef EMITC_MHLO_H
+#define EMITC_MHLO_H
 
 #include <algorithm>
 #include <cmath>
@@ -25,7 +25,7 @@
 #include <type_traits>
 #include <vector>
 
-#include "emitc_core_ops.h"
+#include "emitc/core_ops.h"
 
 namespace emitc {
 namespace mhlo {
@@ -825,4 +825,4 @@ Dest dot(Lhs lhs, Rhs rhs) {
 } // namespace mhlo
 } // namespace emitc
 
-#endif // EMITC_EMITC_MHLO_H
+#endif // EMITC_MHLO_H

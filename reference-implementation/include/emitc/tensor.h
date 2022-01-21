@@ -12,26 +12,21 @@
 
 // This file defines functions used by EmitC.
 
-#ifndef EMITC_EMITC_ARITH_H
-#define EMITC_EMITC_ARITH_H
+#ifndef EMITC_TENSOR_H
+#define EMITC_TENSOR_H
 
-#include "emitc_types.h"
+#include "emitc/types.h"
 
 namespace emitc {
-namespace arith {
+namespace tensor {
 
-// IndexCastOp
-template <typename Dest, typename Src>
-inline Dest index_cast(Src x) {
-  using ET_Dest = typename get_element_type<Dest>::type;
-  using ET_Src = typename get_element_type<Src>::type;
-
-  auto cast = [](ET_Src value) { return static_cast<ET_Dest>(value); };
-
-  return unary<Dest, Src, UnaryFuncType<ET_Dest, ET_Src>>(x, cast);
+// ExtractOp
+template <typename T, size_t... Shape, typename... Indices>
+inline T extract(Tensor<T, Shape...> x, Indices... indices) {
+  return x(indices...);
 }
 
-} // namespace arith
+} // namespace tensor
 } // namespace emitc
 
-#endif // EMITC_EMITC_ARITH_H
+#endif // EMITC_TENSOR_H

@@ -12,8 +12,8 @@
 
 #include "gmock/gmock.h"
 
-#include "emitc/emitc_tosa.h"
-#include "emitc/emitc_types.h"
+#include "emitc/tosa.h"
+#include "emitc/types.h"
 
 namespace {
 

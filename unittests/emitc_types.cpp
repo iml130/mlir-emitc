@@ -12,7 +12,7 @@
 
 #include "gmock/gmock.h"
 
-#include "emitc/emitc_types.h"
+#include "emitc/types.h"
 
 namespace {
 

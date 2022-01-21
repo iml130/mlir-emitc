@@ -12,8 +12,8 @@
 
 #include "gmock/gmock.h"
 
-#include "emitc/emitc_tensor.h"
-#include "emitc/emitc_types.h"
+#include "emitc/tensor.h"
+#include "emitc/types.h"
 
 namespace {
 

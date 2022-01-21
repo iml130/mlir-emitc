@@ -32,3 +32,12 @@ if(EMITC_TOSA_USE_EIGEN)
     target_include_directories(EmitCRefImpl_Eigen INTERFACE ${EMITC_REF_INCLUDE_DIR})
     target_compile_definitions(EmitCRefImpl_Eigen INTERFACE EMITC_TOSA_USE_EIGEN)
 endif()
+
+
+#-------------------------------------------------------------------------------
+# Testing
+#-------------------------------------------------------------------------------
+
+if(EMITC_INCLUDE_TESTS)
+  add_subdirectory(unittests)
+endif()

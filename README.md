@@ -38,7 +38,7 @@ cmake --build . --target check-emitc
 To additionally build and execute the unittests, run
 ```shell
 cmake --build . --target MLIREmitCTests
-./unittests/MLIREmitCTests
+./reference-implementation/unittests/MLIREmitCTests
 ```
 
 

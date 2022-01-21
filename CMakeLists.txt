@@ -84,10 +84,7 @@ if(EMITC_TOSA_USE_EIGEN)
   endif()
 endif()
 
-#-------------------------------------------------------------------------------
-# Directory setup
-#-------------------------------------------------------------------------------
-
+# Dependency on GoogleTest. Used to unit test the reference implementation.
 if(EMITC_INCLUDE_TESTS)
   # With `LLVM_INSTALL_UTILS` set to `ON`, the LLVM/MLIR build dir contains a
   # gtest, added in llvm/utils/unittest/CMakeLists.txt. However, LLVM ships
@@ -99,8 +96,11 @@ if(EMITC_INCLUDE_TESTS)
       "point to an MLIR build directory.")
   endif()
   add_subdirectory(third_party/googletest EXCLUDE_FROM_ALL)
-  add_subdirectory(unittests)
 endif()
+
+#-------------------------------------------------------------------------------
+# Directory setup
+#-------------------------------------------------------------------------------
 
 add_subdirectory(include/emitc)
 add_subdirectory(lib)

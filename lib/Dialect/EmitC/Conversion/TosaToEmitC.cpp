@@ -320,6 +320,47 @@ private:
   }
 };
 
+/// Convert `tosa.rescale` into an `emitc.call` operation.
+class RescaleOpConversion : public OpConversionPattern<tosa::RescaleOp> {
+  using OpConversionPattern<tosa::RescaleOp>::OpConversionPattern;
+
+public:
+  RescaleOpConversion(MLIRContext *ctx)
+      : OpConversionPattern<tosa::RescaleOp>(ctx) {}
+
+private:
+  LogicalResult
+  matchAndRewrite(tosa::RescaleOp rescaleOp, OpAdaptor adaptor,
+                  ConversionPatternRewriter &rewriter) const override {
+    StringRef funcName = "emitc::tosa::rescale";
+    StringAttr callee = rewriter.getStringAttr(funcName);
+
+    // clang-format off
+    ArrayAttr args = rewriter.getArrayAttr({
+        rewriter.getIndexAttr(0),
+        rescaleOp.input_zpAttr(),
+        rescaleOp.output_zpAttr(),
+        getI64ElementsAttr(rescaleOp.multiplierAttr(), rescaleOp.getContext()),
+        getI64ElementsAttr(rescaleOp.shiftAttr(), rescaleOp.getContext()),
+        rescaleOp.scale32Attr(),
+        rescaleOp.double_roundAttr(),
+        rescaleOp.per_channelAttr()
+    });
+    // clang-format on
+
+    TypeAttr resultType = TypeAttr::get(rescaleOp.getResult().getType());
+    IntegerAttr arraySize =
+        rewriter.getI32IntegerAttr(rescaleOp.multiplierAttr().size());
+    ArrayAttr templateArgs = rewriter.getArrayAttr({resultType, arraySize});
+
+    rewriter.replaceOpWithNewOp<emitc::CallOp>(rescaleOp, rescaleOp.getType(),
+                                               callee, args, templateArgs,
+                                               adaptor.getOperands());
+
+    return success();
+  }
+};
+
 /// Convert `tosa.reluN` into an `emitc.call` operation.
 class ReluNOpConversion : public OpConversionPattern<tosa::ReluNOp> {
   using OpConversionPattern<tosa::ReluNOp>::OpConversionPattern;
@@ -767,6 +808,7 @@ void populateTosaToEmitcPatterns(MLIRContext *ctx,
   patterns.add<CallOpConversion<tosa::ReciprocalOp>>(ctx,
                                                      "emitc::tosa::reciprocal");
   patterns.add<ReluNOpConversion>(ctx);
+  patterns.add<RescaleOpConversion>(ctx);
   patterns.add<RsqrtOpConversion>(ctx);
   patterns.add<CallOpConversion<tosa::TanhOp>>(ctx, "emitc::tosa::tanh");
 
@@ -845,6 +887,7 @@ struct ConvertTosaToEmitCPass
                         tosa::NegateOp,
                         tosa::ReciprocalOp,
                         tosa::ReluNOp,
+                        tosa::RescaleOp,
                         tosa::RsqrtOp,
                         tosa::TanhOp>();
 

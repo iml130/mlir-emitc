@@ -18,6 +18,7 @@ The table below shows the supported TOSA ops.
 | negate                 | :heavy_check_mark: | |
 | reciprocal             | :heavy_check_mark: | |
 | reluN                  | :heavy_check_mark: | |
+| rescale                | :heavy_check_mark: | |
 | rsqrt                  | :heavy_check_mark: | |
 | tanh                   | :heavy_check_mark: | |
 | **Binary elementwise ops**

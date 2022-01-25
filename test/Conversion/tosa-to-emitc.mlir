@@ -82,6 +82,12 @@ func.func @test_reciprocal(%arg0: tensor<13x21x3xf32>) -> tensor<13x21x3xf32> {
   return %0 : tensor<13x21x3xf32>
 }
 
+func.func @test_rescale(%arg0: tensor<13x21x3xi8>) -> tensor<13x21x3xi8> {
+  // CHECK: %0 = emitc.call "emitc::tosa::rescale"(%arg0) {args = [0 : index, 127 : i32, -1 : i32, dense<1073741824> : tensor<1xi64>, dense<30> : tensor<1xi64>, true, false, false], template_args = [tensor<13x21x3xi8>, 1 : i32]} : (tensor<13x21x3xi8>) -> tensor<13x21x3xi8>
+  %0 = "tosa.rescale"(%arg0) {double_round = false, input_zp = 127 : i32, multiplier = [1073741824 : i32], output_zp = -1 : i32, per_channel = false, scale32 = true, shift = [30 : i32]} : (tensor<13x21x3xi8>) -> tensor<13x21x3xi8>
+  return %0 : tensor<13x21x3xi8>
+}
+
 func.func @test_rsqrt(%arg0: tensor<13x21x3xf32>) -> tensor<13x21x3xf32> {
   // CHECK: %0 = emitc.call "emitc::sqrt"(%arg0) : (tensor<13x21x3xf32>) -> tensor<13x21x3xf32>
   // CHECK: %1 = emitc.call "emitc::tosa::reciprocal"(%0) : (tensor<13x21x3xf32>) -> tensor<13x21x3xf32>

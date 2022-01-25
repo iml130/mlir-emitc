@@ -643,52 +643,130 @@ TEST(tosa, slice) {
 
 TEST(tosa, pad) {
   // clang-format off
-  Tensor<int32_t, 2, 3> operand0{1, 2, 3,
-                                 4, 5, 6};
-  Tensor<int32_t, 2, 2, 3> operand1{1, 2, 3,  4,  5,  6,
-                                    7, 8, 9, 10, 11, 12};
-
-  Tensor<int32_t, 2, 2> padding0{0, 1,
-                                 1, 2};
-  Tensor<int32_t, 3, 2> padding1_0{0, 0,
-                                   0, 0,
-                                   0, 0};
-  Tensor<int32_t, 3, 2> padding1_1{1, 1,
-                                   1, 1,
-                                   1, 1};
-  Tensor<int32_t, 3, 2> padding1_2{1, 0,
-                                   0, 1,
-                                   1, 0};
-
-  Tensor<int32_t, 3, 6> expected_result0{0, 1, 2, 3, 0, 0,
-                                         0, 4, 5, 6, 0, 0,
-                                         0, 0, 0, 0, 0, 0};
-  Tensor<int32_t, 2, 2, 3> expected_result1_0{1, 2, 3,  4,  5,  6,
-                                              7, 8, 9, 10, 11, 12};
-  Tensor<int32_t, 4, 4, 5> expected_result1_1{
-      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0,  0,  0,  0, 0, 0, 0, 0, 0,
-      0, 0, 0, 0, 0, 0, 1, 2, 3, 0, 0,  4,  5,  6,  0, 0, 0, 0, 0, 0,
-      0, 0, 0, 0, 0, 0, 7, 8, 9, 0, 0, 10, 11, 12,  0, 0, 0, 0, 0, 0,
-      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0,  0,  0,  0, 0, 0, 0, 0, 0};
-  Tensor<int32_t, 3, 3, 4> expected_result1_2{
-      0, 0, 0, 0, 0,  0,  0,  0, 0, 0, 0, 0,
-      0, 1, 2, 3, 0,  4,  5,  6, 0, 0, 0, 0,
-      0, 7, 8, 9, 0, 10, 11, 12, 0, 0, 0, 0};
-
+  Tensor2D<int32_t, 2, 3> operand0{1, 2, 3,
+                                   4, 5, 6};
+  Tensor3D<int32_t, 2, 2, 3> operand1{1, 2, 3,  4,  5,  6,
+                                      7, 8, 9, 10, 11, 12};
   // clang-format on
-  Tensor<int32_t, 3, 6> result0 =
-      tosa::pad<Tensor<int32_t, 3, 6>>(operand0, padding0);
-  Tensor<int32_t, 2, 2, 3> result1_0 =
-      tosa::pad<Tensor<int32_t, 2, 2, 3>>(operand1, padding1_0);
-  Tensor<int32_t, 4, 4, 5> result1_1 =
-      tosa::pad<Tensor<int32_t, 4, 4, 5>>(operand1, padding1_1);
-  Tensor<int32_t, 3, 3, 4> result1_2 =
-      tosa::pad<Tensor<int32_t, 3, 3, 4>>(operand1, padding1_2);
 
-  EXPECT_THAT(result0, Pointwise(Eq(), expected_result0));
-  EXPECT_THAT(result1_0, Pointwise(Eq(), expected_result1_0));
-  EXPECT_THAT(result1_1, Pointwise(Eq(), expected_result1_1));
-  EXPECT_THAT(result1_2, Pointwise(Eq(), expected_result1_2));
+  {
+    // clang-format off
+    Tensor2D<int32_t, 2, 2> padding{0, 1,
+                                    1, 2};
+    Tensor2D<int32_t, 3, 6> expected_result{0, 1, 2, 3, 0, 0,
+                                            0, 4, 5, 6, 0, 0,
+                                            0, 0, 0, 0, 0, 0};
+    // clang-format on
+    Tensor2D<int32_t, 3, 6> result =
+        tosa::pad<Tensor2D<int32_t, 3, 6>>(operand0, padding);
+
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+  { // explicit value
+    // clang-format off
+    Tensor2D<int32_t, 2, 2> padding{0, 1,
+                                    1, 2};
+    Tensor0D<int32_t> pad_const{1};
+    Tensor2D<int32_t, 3, 6> expected_result{1, 1, 2, 3, 1, 1,
+                                            1, 4, 5, 6, 1, 1,
+                                            1, 1, 1, 1, 1, 1};
+    // clang-format on
+    Tensor2D<int32_t, 3, 6> result =
+        tosa::pad<Tensor2D<int32_t, 3, 6>>(operand0, padding, pad_const);
+
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+  {
+    // clang-format off
+    Tensor2D<int32_t, 3, 2> padding{0, 0,
+                                    0, 0,
+                                    0, 0};
+    Tensor3D<int32_t, 2, 2, 3> expected_result{1, 2, 3,  4,  5,  6,
+                                               7, 8, 9, 10, 11, 12};
+    // clang-format on
+    Tensor3D<int32_t, 2, 2, 3> result =
+        tosa::pad<Tensor3D<int32_t, 2, 2, 3>>(operand1, padding);
+
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+  { // explicit value
+    // clang-format off
+    Tensor2D<int32_t, 3, 2> padding{0, 0,
+                                    0, 0,
+                                    0, 0};
+    Tensor0D<int32_t> pad_const{1};
+    Tensor3D<int32_t, 2, 2, 3> expected_result{1, 2, 3,  4,  5,  6,
+                                               7, 8, 9, 10, 11, 12};
+    // clang-format on
+    Tensor3D<int32_t, 2, 2, 3> result =
+        tosa::pad<Tensor3D<int32_t, 2, 2, 3>>(operand1, padding, pad_const);
+
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+  {
+    // clang-format off
+    Tensor2D<int32_t, 3, 2> padding{1, 1,
+                                    1, 1,
+                                    1, 1};
+    Tensor3D<int32_t, 4, 4, 5> expected_result{
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0,  0,  0,  0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 1, 2, 3, 0, 0,  4,  5,  6,  0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 7, 8, 9, 0, 0, 10, 11, 12,  0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0,  0,  0,  0, 0, 0, 0, 0, 0};
+    // clang-format on
+    Tensor3D<int32_t, 4, 4, 5> result =
+        tosa::pad<Tensor3D<int32_t, 4, 4, 5>>(operand1, padding);
+
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+  { // explicit value
+    // clang-format off
+    Tensor2D<int32_t, 3, 2> padding{1, 1,
+                                    1, 1,
+                                    1, 1};
+    Tensor0D<int32_t> pad_const{-1};
+    Tensor3D<int32_t, 4, 4, 5> expected_result{
+        -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,  -1,  -1,  -1,  -1, -1, -1, -1, -1, -1,
+        -1, -1, -1, -1, -1, -1,  1,  2,  3, -1, -1,   4,   5,   6,  -1, -1, -1, -1, -1, -1,
+        -1, -1, -1, -1, -1, -1,  7,  8,  9, -1, -1,  10,  11,  12,  -1, -1, -1, -1, -1, -1,
+        -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,  -1,  -1,  -1,  -1, -1, -1, -1, -1, -1};
+    // clang-format on
+    Tensor3D<int32_t, 4, 4, 5> result =
+        tosa::pad<Tensor3D<int32_t, 4, 4, 5>>(operand1, padding, pad_const);
+
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+  {
+    // clang-format off
+    Tensor2D<int32_t, 3, 2> padding{1, 0,
+                                    0, 1,
+                                    1, 0};
+    Tensor3D<int32_t, 3, 3, 4> expected_result{
+        0, 0, 0, 0, 0,  0,  0,  0, 0, 0, 0, 0,
+        0, 1, 2, 3, 0,  4,  5,  6, 0, 0, 0, 0,
+        0, 7, 8, 9, 0, 10, 11, 12, 0, 0, 0, 0};
+    // clang-format on
+    Tensor3D<int32_t, 3, 3, 4> result =
+        tosa::pad<Tensor3D<int32_t, 3, 3, 4>>(operand1, padding);
+
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+  { // explicit value
+    // clang-format off
+    Tensor2D<int32_t, 3, 2> padding{1, 0,
+                                    0, 1,
+                                    1, 0};
+    Tensor0D<int32_t> pad_const{3};
+    Tensor3D<int32_t, 3, 3, 4> expected_result{
+        3, 3, 3, 3, 3,  3,  3,  3, 3, 3, 3, 3,
+        3, 1, 2, 3, 3,  4,  5,  6, 3, 3, 3, 3,
+        3, 7, 8, 9, 3, 10, 11, 12, 3, 3, 3, 3};
+    // clang-format on
+    Tensor3D<int32_t, 3, 3, 4> result =
+        tosa::pad<Tensor3D<int32_t, 3, 3, 4>>(operand1, padding, pad_const);
+
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
 }
 
 TEST(tosa, transpose) {

@@ -99,6 +99,9 @@ jobs:
         python3 ../${EMITC}/scripts/tf_to_mhlo_dialect.py model_tf_opt.mlir model_mhlo.mlir
         sed "s/tf._input_shapes =.*]//" model_mhlo.mlir > ../${E2E}/model_mhlo_noattr.mlir
         sed -i "s/, }/}/" ../${E2E}/model_mhlo_noattr.mlir
+        python3 ../${EMITC}/scripts/tf_to_tosa_dialect.py model_tf_opt.mlir model_tosa.mlir
+        sed "s/tf._input_shapes =.*]//" model_tosa.mlir > ../${E2E}/model_tosa_noattr.mlir
+        sed -i "s/, }/}/" ../${E2E}/model_tosa_noattr.mlir
         python3 ../${EMITC}/scripts/generate_testscases.py --file-format cpp --count 1 --batch-size 2 --seed 1234 mobilenet_v2.h5 ../${E2E}/
 
   build-debug:
@@ -209,18 +212,35 @@ jobs:
 
     - name: Run MHLO e2e test
       run: |
-        ./${EMITC}/build_release/bin/emitc-opt --canonicalize --inline --symbol-dce ${E2E}/model_mhlo_noattr.mlir > ${E2E}/model_canon.mlir
-        FUNCTION_NAME=$(grep -oe "@[^(]*" "${E2E}"/model_canon.mlir)
+        mkdir tmp-mhlo
+        cd tmp-mhlo
+        ../${EMITC}/build_release/bin/emitc-opt --canonicalize --inline --symbol-dce ../${E2E}/model_mhlo_noattr.mlir > model_canon.mlir
+        FUNCTION_NAME=$(grep -oe "@[^(]*" model_canon.mlir)
         FUNCTION_NAME="${FUNCTION_NAME:1}"
-        sed "s/$FUNCTION_NAME/predict/g" "${E2E}"/model_canon.mlir > "${E2E}"/model_fix_name.mlir
-        ./${EMITC}/build_release/bin/emitc-opt \
+        sed "s/$FUNCTION_NAME/predict/g" model_canon.mlir > model_fix_name.mlir
+        ../${EMITC}/build_release/bin/emitc-opt \
           --insert-emitc-mhlo-include \
           --convert-mhlo-region-ops-to-emitc \
           --convert-mhlo-to-emitc \
-          "${E2E}"/model_fix_name.mlir > "${E2E}"/model_emitc.mlir
-        ./${EMITC}/build_release/bin/emitc-translate --mlir-to-cpp "${E2E}"/model_emitc.mlir > "${E2E}"/model_generated.h
-        cd ${E2E}
-        clang++ test.cpp -O3 -I `pwd`/../emitc/reference-implementation/include -I `pwd` -o test
+          model_fix_name.mlir > model_emitc.mlir
+        ../${EMITC}/build_release/bin/emitc-translate --mlir-to-cpp model_emitc.mlir > model_generated.h
+        clang++ ../${E2E}/test.cpp -O3 -I `pwd`/../emitc/reference-implementation/include -I `pwd` -o test
+        ./test
+
+    - name: Run TOSA e2e test
+      run: |
+        mkdir -p tmp-tosa
+        cd tmp-tosa
+        ../${EMITC}/build_release/bin/emitc-opt --canonicalize --inline --symbol-dce ../${E2E}/model_tosa_noattr.mlir > model_canon.mlir
+        FUNCTION_NAME=$(grep -m 1 -oe "@[^(]*" model_canon.mlir)
+        FUNCTION_NAME="${FUNCTION_NAME:1}"
+        sed "s/$FUNCTION_NAME/predict/g" model_canon.mlir > model_fix_name.mlir
+        ../${EMITC}/build_release/bin/emitc-opt \
+          --insert-emitc-tosa-include \
+          --convert-tosa-to-emitc \
+          model_fix_name.mlir > model_emitc.mlir
+        ../${EMITC}/build_release/bin/emitc-translate --mlir-to-cpp model_emitc.mlir > model_generated.h
+        clang++ ../${E2E}/test.cpp -O3 -I `pwd`/../emitc/reference-implementation/include -I `pwd` -o test
         ./test
 
     - name: Run MHLO test

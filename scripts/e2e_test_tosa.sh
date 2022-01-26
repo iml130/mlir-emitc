@@ -14,12 +14,12 @@
 set -e
 
 if [[ $# -ne 7 ]] ; then
-  echo "Usage: $0 <path/to/model> <path/to/emitc/reference-implementation/include> <path/to/emitc-opt> <compiler> <batch-size> <seed> <output_dir>"
+  echo "Usage: $0 <path/to/model> <path/to/emitc/reference-implementation/include/> <path/to/emitc-opt> <compiler> <batch-size> <seed> <output_dir>"
   echo
   echo "Both a keras and a tensorflow saved model is supported."
   echo
   echo "This script expects a python version in the PATH with a recent version of tensorflow installed."
-  echo "Tested with python 3.8.10 and tensorflow 2.9.0-dev20220121"
+  echo "Tested with python 3.8.10 and tf-nightly 2.8.0.dev20211102"
 
   exit 1
 fi

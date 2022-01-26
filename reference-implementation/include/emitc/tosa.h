@@ -578,7 +578,9 @@ Dest slice(Src x, Tensor<int64_t, Src::rank()> start_indices,
 
 // PadOp
 template <typename Dest, typename Src, typename Padding>
-inline Dest pad(Src operand, Padding padding) {
+inline Dest pad(Src operand, Padding padding,
+                Tensor0D<typename get_element_type<Src>::type> pad_const =
+                    Tensor0D<typename get_element_type<Src>::type>{0}) {
   using ET_Padding = typename get_element_type<Padding>::type;
 
   static_assert(is_tensor<Dest>::value, "Expected tensor result");
@@ -609,8 +611,8 @@ inline Dest pad(Src operand, Padding padding) {
   Tensor<int64_t, Src::rank()> interior_padding;
   std::fill(interior_padding.begin(), interior_padding.end(), 0);
 
-  return emitc::pad<Dest>(operand, {0}, edge_padding_low, edge_padding_high,
-                          interior_padding);
+  return emitc::pad<Dest>(operand, pad_const, edge_padding_low,
+                          edge_padding_high, interior_padding);
 }
 
 // TransposeOp

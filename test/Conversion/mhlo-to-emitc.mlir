@@ -417,14 +417,3 @@ func @mhlo_rng_uniform() -> () {
   %1 = "mhlo.rng_uniform"(%cst_2, %cst_3, %cst_4) : (tensor<f32>, tensor<f32>, tensor<1xi64>) -> tensor<17xf32>
   return
 }
-
-func @mhlo_rng_bit_generator() -> () {
-  %cst = "arith.constant"() {value = dense<2> : tensor<3xui64>} : () -> tensor<3xui64>
-
-  // CHECK: emitc.call "emitc::mhlo::rng_bit_generator"(%cst) {template_args = [tuple<tensor<3xui64>, tensor<2x2xui32>>, 2 : i32]} : (tensor<3xui64>) -> tuple<tensor<3xui64>, tensor<2x2xui32>>
-  %0 = "mhlo.rng_bit_generator"(%cst) {rng_algorithm = 2 : i32} : (tensor<3xui64>) -> tuple<tensor<3xui64>, tensor<2x2xui32>>
-  
-  // CHECK: emitc.call "emitc::mhlo::rng_bit_generator"(%cst) {template_args = [tuple<tensor<3xui64>, tensor<2x7x3xf64>>, 2 : i32]} : (tensor<3xui64>) -> tuple<tensor<3xui64>, tensor<2x7x3xf64>>
-  %1 = "mhlo.rng_bit_generator"(%cst) {rng_algorithm = 2 : i32} : (tensor<3xui64>) -> tuple<tensor<3xui64>, tensor<2x7x3xf64>>
-  return
-}

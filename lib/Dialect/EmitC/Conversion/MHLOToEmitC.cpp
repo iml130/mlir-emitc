@@ -466,35 +466,6 @@ private:
   }
 };
 
-/// Convert `mhlo.rng_bit_generator` into an `emitc.call` operation.
-class RngBitGeneratorOpConversion
-    : public OpConversionPattern<mhlo::RngBitGeneratorOp> {
-  using OpConversionPattern<mhlo::RngBitGeneratorOp>::OpConversionPattern;
-
-public:
-  RngBitGeneratorOpConversion(MLIRContext *ctx)
-      : OpConversionPattern<mhlo::RngBitGeneratorOp>(ctx) {}
-
-private:
-  LogicalResult
-  matchAndRewrite(mhlo::RngBitGeneratorOp rngBitGeneratorOp, OpAdaptor adaptor,
-                  ConversionPatternRewriter &rewriter) const override {
-    StringRef funcName = "emitc::mhlo::rng_bit_generator";
-    StringAttr callee = rewriter.getStringAttr(funcName);
-
-    ArrayAttr args;
-    ArrayAttr templateArgs = rewriter.getArrayAttr(
-        {TypeAttr::get(rngBitGeneratorOp.getResult().getType()),
-         rewriter.getI32IntegerAttr(rngBitGeneratorOp.rng_algorithm())});
-
-    rewriter.replaceOpWithNewOp<emitc::CallOp>(
-        rngBitGeneratorOp, rngBitGeneratorOp.getType(), callee, args,
-        templateArgs, adaptor.getOperands());
-
-    return success();
-  }
-};
-
 } // namespace
 
 void populateMhloToEmitcPatterns(MLIRContext *ctx,
@@ -571,7 +542,6 @@ void populateMhloToEmitcPatterns(MLIRContext *ctx,
   // Insert patterns for MHLO RNG ops.
   patterns.add<CallOpConversion<mhlo::RngUniformOp>>(
       ctx, "emitc::mhlo::rng_uniform", /*explicitResultType=*/true);
-  patterns.add<RngBitGeneratorOpConversion>(ctx);
 }
 
 namespace {
@@ -650,8 +620,7 @@ struct ConvertMhloToEmitCPass
                         mhlo::SelectOp>();
 
     // MHLO RNG ops.
-    target.addIllegalOp<mhlo::RngUniformOp,
-                        mhlo::RngBitGeneratorOp>();
+    target.addIllegalOp<mhlo::RngUniformOp>();
     // clang-format on
 
     RewritePatternSet patterns(&getContext());

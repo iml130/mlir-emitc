@@ -646,36 +646,6 @@ inline Dest rng_uniform(Tensor<T> low, Tensor<T> high,
   return z;
 }
 
-// RngBitGeneratorOp
-template <typename Dest, int32_t RngAlgorithm>
-Dest rng_bit_generator(typename std::tuple_element<0, Dest>::type state) {
-  // TODO: Implement correct algorithm; starting point would be
-  // https://github.com/tensorflow/tensorflow/blob/6f59650012f8904745dffaba540afc794c6613be/tensorflow/compiler/xla/service/rng_bit_generator_expander.cc#L56
-
-  using StateType = typename std::tuple_element<0, Dest>::type;
-  using TensorType = typename std::tuple_element<1, Dest>::type;
-  using T = typename TensorType::value_type;
-
-  StateType newState(state);
-
-  T minValue = std::numeric_limits<T>::min();
-  T maxValue = std::numeric_limits<T>::max();
-
-  Tensor<T> min{minValue};
-  Tensor<T> max{maxValue};
-
-  std::array<size_t, TensorType::rank()> arrayShape = TensorType::shape();
-  Tensor<int64_t, TensorType::rank()> tensorShape;
-
-  for (size_t i = 0; i < TensorType::rank(); i++) {
-    tensorShape[i] = static_cast<int64_t>(arrayShape[i]);
-  }
-
-  TensorType data = rng_uniform<TensorType, T>(min, max, tensorShape);
-
-  return std::make_tuple(newState, data);
-}
-
 // BatchNormInferenceOp
 template <typename Src, typename Feature>
 Src batch_norm_inference(Src input, Feature scale, Feature offset, Feature mean,

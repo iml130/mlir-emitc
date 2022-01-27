@@ -12,6 +12,7 @@ env:
   EMITC: emitc
   LLVM: llvm
   E2E: emitc-e2e
+  E2E_VERSION: 1
 
 jobs:
   build-llvm:
@@ -80,7 +81,7 @@ jobs:
       uses: actions/cache@v2
       with:
         path: ${{ env.E2E }}
-        key: ${{ runner.os }}-e2e-${{ hashFiles('emitc/scripts/*.py', 'emitc/scripts/requirements.txt', 'emitc/scripts/e2e*.sh') }}
+        key: ${{ runner.os }}-e2e-${{ hashFiles('emitc/scripts/*.py', 'emitc/scripts/requirements.txt', 'emitc/scripts/e2e*.sh') }}-${{ env.E2E_VERSION }}
 
     - name: Install TensorFlow
       if: steps.cache-e2e.outputs.cache-hit != 'true'
@@ -208,7 +209,7 @@ jobs:
       uses: actions/cache@v2
       with:
         path: ${{ env.E2E }}
-        key: ${{ runner.os }}-e2e-${{ hashFiles('emitc/scripts/*.py', 'emitc/scripts/requirements.txt', 'emitc/scripts/e2e*.sh') }}
+        key: ${{ runner.os }}-e2e-${{ hashFiles('emitc/scripts/*.py', 'emitc/scripts/requirements.txt', 'emitc/scripts/e2e*.sh') }}-${{ env.E2E_VERSION }}
 
     - name: Run MHLO e2e test
       run: |

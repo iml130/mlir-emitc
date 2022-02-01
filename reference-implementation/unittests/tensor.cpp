@@ -21,17 +21,41 @@ using namespace emitc;
 using ::testing::Eq;
 
 TEST(tensor, extract) {
-  Tensor0D<float> t0{1.0};
-  Tensor1D<int32_t, 2> t1{1, 2};
-  Tensor2D<uint16_t, 1, 4> t2{10, 11, 12, 13};
-  Tensor2D<uint16_t, 2, 2> t3{10, 11, 12, 13};
-  Tensor3D<uint32_t, 2, 1, 2> t4{10, 11, 12, 13};
+  {
+    Tensor0D<float> x{1.0};
+    float expected_result = 1.0;
+    float result = tensor::extract(x);
 
-  EXPECT_EQ(1.0, tensor::extract(t0));
-  EXPECT_EQ(2, tensor::extract(t1, 1));
-  EXPECT_EQ(12, tensor::extract(t2, 0, 2));
-  EXPECT_EQ(12, tensor::extract(t3, 1, 0));
-  EXPECT_EQ(12, tensor::extract(t4, 1, 0, 0));
+    EXPECT_EQ(result, expected_result);
+  }
+  {
+    Tensor1D<int32_t, 2> x{1, 2};
+    int32_t expected_result = 2;
+    int32_t result = tensor::extract(x, 1);
+
+    EXPECT_EQ(result, expected_result);
+  }
+  {
+    Tensor2D<uint16_t, 1, 4> x{10, 11, 12, 13};
+    uint16_t expected_result = 12;
+    uint16_t result = tensor::extract(x, 0, 2);
+
+    EXPECT_EQ(result, expected_result);
+  }
+  {
+    Tensor3D<uint16_t, 2, 1, 2> x{10, 11, 12, 13};
+    uint16_t expected_result = 12;
+    uint16_t result = tensor::extract(x, 1, 0, 0);
+
+    EXPECT_EQ(result, expected_result);
+  }
+  {
+    Tensor4D<uint32_t, 1, 2, 2, 2> x{10, 11, 12, 13, 14, 15, 16, 17};
+    uint32_t expected_result = 15;
+    uint32_t result = tensor::extract(x, 0, 1, 0, 1);
+
+    EXPECT_EQ(result, expected_result);
+  }
 }
 
 } // namespace

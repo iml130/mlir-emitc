@@ -23,34 +23,45 @@ using ::testing::FloatEq;
 using ::testing::Pointwise;
 
 TEST(std, splat) {
-  EXPECT_THAT(standard::splat<Tensor0D<uint32_t>>(1), Pointwise(Eq(), {1}));
+  {
+    uint32_t x = 1;
+    Tensor0D<uint32_t> result = standard::splat<Tensor0D<uint32_t>>(x);
+    Tensor0D<uint32_t> expected_result{1};
 
-  auto lambda_1d = []() -> Tensor1D<int32_t, 3> {
-    return standard::splat<Tensor1D<int32_t, 3>>(-1);
-  };
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+  {
+    int32_t x = -1;
+    Tensor1D<int32_t, 3> result = standard::splat<Tensor1D<int32_t, 3>>(x);
+    Tensor1D<int32_t, 3> expected_result{-1, -1, -1};
 
-  EXPECT_THAT(lambda_1d(), Pointwise(Eq(), {-1, -1, -1}));
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+  {
+    float x = 1.5f;
+    Tensor2D<float, 2, 2> result = standard::splat<Tensor2D<float, 2, 2>>(x);
+    Tensor2D<float, 2, 2> expected_result{1.5f, 1.5f, 1.5f, 1.5f};
 
-  auto lambda_2d = []() -> Tensor2D<float, 2, 2> {
-    return standard::splat<Tensor2D<float, 2, 2>>(1.5f);
-  };
+    EXPECT_THAT(result, Pointwise(FloatEq(), expected_result));
+  }
+  {
+    float x = 1.2f;
+    Tensor3D<float, 2, 3, 1> result =
+        standard::splat<Tensor3D<float, 2, 3, 1>>(x);
+    Tensor3D<float, 2, 3, 1> expected_result{1.2f, 1.2f, 1.2f,
+                                             1.2f, 1.2f, 1.2f};
 
-  EXPECT_THAT(lambda_2d(), Pointwise(FloatEq(), {1.5f, 1.5f, 1.5f, 1.5f}));
+    EXPECT_THAT(result, Pointwise(FloatEq(), expected_result));
+  }
+  {
+    float x = 1.1f;
+    Tensor4D<float, 2, 3, 1, 2> result =
+        standard::splat<Tensor4D<float, 2, 3, 1, 2>>(x);
+    Tensor4D<float, 2, 3, 1, 2> expected_result{
+        1.1f, 1.1f, 1.1f, 1.1f, 1.1f, 1.1f, 1.1f, 1.1f, 1.1f, 1.1f, 1.1f, 1.1f};
 
-  auto lambda_3d = []() -> Tensor3D<float, 2, 3, 1> {
-    return standard::splat<Tensor3D<float, 2, 3, 1>>(1.2f);
-  };
-
-  EXPECT_THAT(lambda_3d(),
-              Pointwise(FloatEq(), {1.2f, 1.2f, 1.2f, 1.2f, 1.2f, 1.2f}));
-
-  auto lambda_4d = []() -> Tensor4D<float, 2, 3, 1, 2> {
-    return standard::splat<Tensor4D<float, 2, 3, 1, 2>>(1.1f);
-  };
-
-  EXPECT_THAT(lambda_4d(),
-              Pointwise(FloatEq(), {1.1f, 1.1f, 1.1f, 1.1f, 1.1f, 1.1f, 1.1f,
-                                    1.1f, 1.1f, 1.1f, 1.1f, 1.1f}));
+    EXPECT_THAT(result, Pointwise(FloatEq(), expected_result));
+  }
 }
 
 } // namespace

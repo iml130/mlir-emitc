@@ -23,43 +23,51 @@ using ::testing::FloatEq;
 using ::testing::Pointwise;
 
 TEST(arith, index_cast) {
-  uint32_t a = 1;
-  uint64_t b = 1;
-  EXPECT_EQ(b, arith::index_cast<uint64_t>(a));
+  {
+    uint32_t x = 1;
+    uint64_t expected_result = 1;
+    uint64_t result = arith::index_cast<uint64_t>(x);
 
-  Tensor0D<uint32_t> t0{1};
-  auto lambda_0d = [&t0]() -> Tensor0D<size_t> {
-    return arith::index_cast<Tensor0D<size_t>>(t0);
-  };
-  EXPECT_THAT(lambda_0d(), Pointwise(Eq(), {1}));
+    EXPECT_EQ(result, expected_result);
+  }
+  {
+    Tensor0D<uint32_t> x{1};
+    Tensor0D<size_t> expected_result{1};
+    Tensor0D<size_t> result = arith::index_cast<Tensor0D<size_t>>(x);
 
-  Tensor1D<uint16_t, 2> t1{1, 2};
-  auto lambda_1d = [&t1]() -> Tensor1D<size_t, 2> {
-    return arith::index_cast<Tensor1D<size_t, 2>>(t1);
-  };
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+  {
+    Tensor1D<uint16_t, 2> x{1, 2};
+    Tensor1D<size_t, 2> expected_result{1, 2};
+    Tensor1D<size_t, 2> result = arith::index_cast<Tensor1D<size_t, 2>>(x);
 
-  EXPECT_THAT(lambda_1d(), Pointwise(Eq(), {1, 2}));
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+  {
+    Tensor2D<size_t, 2, 2> x{1, 2, 4, 8};
+    Tensor2D<int8_t, 2, 2> expected_result{1, 2, 4, 8};
+    Tensor2D<int8_t, 2, 2> result =
+        arith::index_cast<Tensor2D<int8_t, 2, 2>>(x);
 
-  Tensor2D<size_t, 2, 2> t2{1, 2, 4, 8};
-  auto lambda_2d = [&t2]() -> Tensor2D<int8_t, 2, 2> {
-    return arith::index_cast<Tensor2D<int8_t, 2, 2>>(t2);
-  };
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+  {
+    Tensor3D<size_t, 2, 1, 2> x{1, 2, 4, 8};
+    Tensor3D<int8_t, 2, 1, 2> expected_result{1, 2, 4, 8};
+    Tensor3D<int8_t, 2, 1, 2> result =
+        arith::index_cast<Tensor3D<int8_t, 2, 1, 2>>(x);
 
-  EXPECT_THAT(lambda_2d(), Pointwise(Eq(), {1, 2, 4, 8}));
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+  {
+    Tensor4D<size_t, 2, 1, 2, 1> x{1, 2, 4, 8};
+    Tensor4D<int8_t, 2, 1, 2, 1> expected_result{1, 2, 4, 8};
+    Tensor4D<int8_t, 2, 1, 2, 1> result =
+        arith::index_cast<Tensor4D<int8_t, 2, 1, 2, 1>>(x);
 
-  Tensor3D<size_t, 2, 1, 2> t3{1, 2, 4, 8};
-  auto lambda_3d = [&t3]() -> Tensor3D<int8_t, 2, 1, 2> {
-    return arith::index_cast<Tensor3D<int8_t, 2, 1, 2>>(t3);
-  };
-
-  EXPECT_THAT(lambda_3d(), Pointwise(Eq(), {1, 2, 4, 8}));
-
-  Tensor4D<size_t, 2, 1, 2, 1> t4{1, 2, 4, 8};
-  auto lambda_4d = [&t4]() -> Tensor4D<int8_t, 2, 1, 2, 1> {
-    return arith::index_cast<Tensor4D<int8_t, 2, 1, 2, 1>>(t4);
-  };
-
-  EXPECT_THAT(lambda_4d(), Pointwise(Eq(), {1, 2, 4, 8}));
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
 }
 
 } // namespace

@@ -31,18 +31,41 @@ const float EPSILON = 5e-4;
 TEST(mhlo, abs) {
   EXPECT_EQ(1, mhlo::abs(-1));
 
-  Tensor0D<int> t0{-1};
-  Tensor1D<float, 2> t1{-1.0f, -2.0f};
-  Tensor2D<long, 2, 2> t2{-2, -1, 0, 2};
-  Tensor3D<int32_t, 2, 1, 2> t3{-2, -1, 0, 2};
-  Tensor4D<int, 2, 2, 1, 2> t4{-2, -1, 0, 0, 3, -3, -2, 1};
+  {
+    Tensor0D<int> x{-1};
+    Tensor0D<int> expected_result{1};
+    Tensor0D<int> result = mhlo::abs(x);
 
-  EXPECT_THAT(mhlo::abs(t0), Pointwise(Eq(), {1}));
-  EXPECT_THAT(mhlo::abs(t1), Pointwise(Eq(), {1.0f, 2.0f}));
-  EXPECT_THAT(mhlo::abs(t2), Pointwise(Eq(), {2, 1, 0, 2}));
-  EXPECT_THAT(mhlo::abs(t3), Pointwise(Eq(), {2, 1, 0, 2}));
-  EXPECT_THAT(mhlo::abs(t4), Pointwise(Eq(), {2, 1, 0, 0, 3, 3, 2, 1}));
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+  {
+    Tensor1D<float, 2> x{-1.0f, -2.0f};
+    Tensor1D<float, 2> expected_result{1.0f, 2.0f};
+    Tensor1D<float, 2> result = mhlo::abs(x);
 
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+  {
+    Tensor2D<long, 2, 2> x{-2, -1, 0, 2};
+    Tensor2D<long, 2, 2> expected_result{2, 1, 0, 2};
+    Tensor2D<long, 2, 2> result = mhlo::abs(x);
+
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+  {
+    Tensor3D<int32_t, 2, 1, 2> x{-2, -1, 0, 2};
+    Tensor3D<int32_t, 2, 1, 2> expected_result{2, 1, 0, 2};
+    Tensor3D<int32_t, 2, 1, 2> result = mhlo::abs(x);
+
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+  {
+    Tensor4D<int, 2, 2, 1, 2> x{-2, -1, 0, 0, 3, -3, -2, 1};
+    Tensor4D<int, 2, 2, 1, 2> expected_result{2, 1, 0, 0, 3, 3, 2, 1};
+    Tensor4D<int, 2, 2, 1, 2> result = mhlo::abs(x);
+
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
   // TODO:: Test complex to real.
 }
 

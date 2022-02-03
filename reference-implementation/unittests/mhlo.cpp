@@ -162,14 +162,41 @@ TEST(mhlo, convert) {
 TEST(mhlo, cos) {
   EXPECT_NEAR(1.0f, mhlo::cos(0.0f), EPSILON);
 
-  Tensor0D<float> t0{M_PIf32};
-  Tensor1D<float, 2> t1{M_PI_2f32, -M_PI_2f32};
-  Tensor2D<double, 2, 2> t2{2 * M_PIf32, 0.0f, -0.5f, 0.5f};
+  {
+    Tensor0D<float> x{M_PIf32};
+    Tensor0D<float> expected_result{-1.0f};
+    Tensor0D<float> result = mhlo::cos(x);
 
-  EXPECT_THAT(mhlo::cos(t0), Pointwise(FloatNear(EPSILON), {-1.0f}));
-  EXPECT_THAT(mhlo::cos(t1), Pointwise(FloatNear(EPSILON), {0.0f, 0.0f}));
-  EXPECT_THAT(mhlo::cos(t2), Pointwise(FloatNear(EPSILON),
-                                       {1.0f, 1.0f, 0.8775826f, 0.8775826f}));
+    EXPECT_THAT(result, Pointwise(FloatNear(EPSILON), expected_result));
+  }
+  {
+    Tensor1D<float, 2> x{M_PI_2f32, -M_PI_2f32};
+    Tensor1D<float, 2> expected_result{0.0f, 0.0f};
+    Tensor1D<float, 2> result = mhlo::cos(x);
+
+    EXPECT_THAT(result, Pointwise(FloatNear(EPSILON), expected_result));
+  }
+  {
+    Tensor2D<double, 2, 2> x{2 * M_PIf32, 0.0f, -0.5f, 0.5f};
+    Tensor2D<double, 2, 2> expected_result{1.0f, 1.0f, 0.8775826f, 0.8775826f};
+    Tensor2D<double, 2, 2> result = mhlo::cos(x);
+
+    EXPECT_THAT(result, Pointwise(FloatNear(EPSILON), expected_result));
+  }
+  { 
+    Tensor3D<double, 2, 2, 1> x{2 * M_PIf32, 0.0f, -0.5f, 0.5f};
+    Tensor3D<double, 2, 2, 1> expected_result{1.0f, 1.0f, 0.8775826f, 0.8775826f};
+    Tensor3D<double, 2, 2, 1> result = mhlo::cos(x);
+
+    EXPECT_THAT(result, Pointwise(FloatNear(EPSILON), expected_result));
+  }
+  {
+    Tensor4D<double, 1, 2, 1, 2> x{0.5f, 0.0f, -0.5f, 2 * M_PIf32 };
+    Tensor4D<double, 1, 2, 1, 2> expected_result{0.8775826f, 1.0f, 0.8775826f, 1.0f};
+    Tensor4D<double, 1, 2, 1, 2> result = mhlo::cos(x);
+
+    EXPECT_THAT(result, Pointwise(FloatNear(EPSILON), expected_result));
+  }
 }
 
 TEST(mhlo, exponential) {

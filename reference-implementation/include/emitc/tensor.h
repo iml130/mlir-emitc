@@ -15,6 +15,8 @@
 #ifndef EMITC_TENSOR_H
 #define EMITC_TENSOR_H
 
+#include <algorithm>
+
 #include "emitc/types.h"
 
 namespace emitc {
@@ -24,6 +26,16 @@ namespace tensor {
 template <typename T, size_t... Shape, typename... Indices>
 inline T extract(Tensor<T, Shape...> x, Indices... indices) {
   return x(indices...);
+}
+
+// SplatOp
+template <typename Dest, typename Src, IsScalar<Src> = true>
+inline Dest splat(Src x) {
+  Dest z;
+
+  std::fill(z.begin(), z.end(), x);
+
+  return z;
 }
 
 } // namespace tensor

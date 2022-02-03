@@ -3,7 +3,6 @@ target_sources(MLIREmitCTests
   PRIVATE
     mhlo.cpp
     arith.cpp
-    std.cpp
     tensor.cpp
     tosa_eigen.cpp
     tosa.cpp

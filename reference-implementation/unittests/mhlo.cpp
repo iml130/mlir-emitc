@@ -287,31 +287,50 @@ TEST(mhlo, log_plus_one) {
 }
 
 TEST(mhlo, negate) {
-  EXPECT_EQ(1, mhlo::negate(-1));
+  {
+    int x = -1;
+    int expected_result = 1;
+    int result = mhlo::negate(x);
 
-  Tensor0D<int> s0{-3};
+    EXPECT_EQ(expected_result, result);
+  }
+  {
+    Tensor0D<int> x{3};
+    Tensor0D<int> expected_result{-3};
+    Tensor0D<int> result = mhlo::negate(x);
 
-  auto lambda_0d = [&s0]() -> Tensor0D<int> {
-    return mhlo::negate<Tensor0D<int>>(s0);
-  };
+    EXPECT_THAT(expected_result, Pointwise(Eq(), result));
+  }
+  {
+    Tensor1D<float, 2> x{-1.3f, 2.4f};
+    Tensor1D<float, 2> expected_result{1.3f, -2.4f};
+    Tensor1D<float, 2> result = mhlo::negate(x);
 
-  EXPECT_THAT(lambda_0d(), Pointwise(Eq(), {3}));
+    EXPECT_THAT(expected_result, Pointwise(FloatNear(EPSILON), result));
+  }
+  {
+    Tensor2D<long, 2, 2> x{3, 1, -4, 0};
+    Tensor2D<long, 2, 2> expected_result{-3, -1, 4, 0};
+    Tensor2D<long, 2, 2> result = mhlo::negate(x);
 
-  Tensor1D<float, 2> s1{-1.3f, 2.4f};
+    EXPECT_THAT(expected_result, Pointwise(Eq(), result));
+  }
+  {
+    Tensor3D<double, 2, 1, 1> x{3.1415, -2.7183};
+    Tensor3D<double, 2, 1, 1> expected_result{-3.1415, 2.7183};
+    Tensor3D<double, 2, 1, 1> result = mhlo::negate(x);
 
-  auto lambda_1d = [&s1]() -> Tensor1D<float, 2> {
-    return mhlo::negate<Tensor1D<float, 2>>(s1);
-  };
+    EXPECT_THAT(expected_result, Pointwise(FloatNear(EPSILON), result));
+  }
+  {
+    Tensor4D<int64_t, 1, 2, 1, 2> x{9223372036854775807, -4,
+                                    -9223372036854775807, 4};
+    Tensor4D<int64_t, 1, 2, 1, 2> expected_result{-9223372036854775807, 4,
+                                                  9223372036854775807, -4};
+    Tensor4D<int64_t, 1, 2, 1, 2> result = mhlo::negate(x);
 
-  EXPECT_THAT(lambda_1d(), Pointwise(FloatEq(), {1.3f, -2.4f}));
-
-  Tensor2D<long, 2, 2> s2{3, 1, -4, 0};
-
-  auto lambda_2d = [&s2]() -> Tensor2D<long, 2, 2> {
-    return mhlo::negate<Tensor2D<long, 2, 2>>(s2);
-  };
-
-  EXPECT_THAT(lambda_2d(), Pointwise(Eq(), {-3, -1, 4, 0}));
+    EXPECT_THAT(expected_result, Pointwise(Eq(), result));
+  }
 }
 
 TEST(mhlo, round) {

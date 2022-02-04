@@ -282,13 +282,41 @@ TEST(mhlo, exponential_minus_one) {
 TEST(mhlo, floor) {
   EXPECT_EQ(0.0, mhlo::floor(0.7));
 
-  Tensor0D<float> t0{0.7f};
-  Tensor1D<float, 2> t1{1.6f, 2.0f};
-  Tensor2D<double, 2, 2> t2{2.1, 1.6, 0.0, 2.0};
+  {
+    Tensor0D<float> x{0.7f};
+    Tensor0D<float> expected_result{0.0f};
+    Tensor0D<float> result = mhlo::floor(x);
 
-  EXPECT_THAT(mhlo::floor(t0), Pointwise(Eq(), {0.0f}));
-  EXPECT_THAT(mhlo::floor(t1), Pointwise(Eq(), {1.0f, 2.0f}));
-  EXPECT_THAT(mhlo::floor(t2), Pointwise(Eq(), {2.0, 1.0, 0.0, 2.0}));
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+  {
+    Tensor1D<float, 2> x{1.6f, 2.0f};
+    Tensor1D<float, 2> expected_result{1.0f, 2.0f};
+    Tensor1D<float, 2> result = mhlo::floor(x);
+
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+  {
+    Tensor2D<double, 2, 2> x{2.1, 1.6, 0.0, 2.0};
+    Tensor2D<double, 2, 2> expected_result{2.0, 1.0, 0.0, 2.0};
+    Tensor2D<double, 2, 2> result = mhlo::floor(x);
+
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+  {
+    Tensor3D<double, 2, 2, 2> x{2.1, 1.6, 0.0, 2.0, 3.2, 5.1, 6.9, 3.14};
+    Tensor3D<double, 2, 2, 2> expected_result{2.0, 1.0, 0.0, 2.0, 3.0, 5.0, 6.0, 3.0};
+    Tensor3D<double, 2, 2, 2> result = mhlo::floor(x);
+
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+  {
+    Tensor4D<double, 1, 2, 2, 2> x{2.1, 1.6, 0.0, 2.0, 3.2, 5.1, 6.9, 3.14};
+    Tensor4D<double, 1, 2, 2, 2> expected_result{2.0, 1.0, 0.0, 2.0, 3.0, 5.0, 6.0, 3.0};
+    Tensor4D<double, 1, 2, 2, 2> result = mhlo::floor(x);
+
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
 }
 
 TEST(mhlo, is_finite) {

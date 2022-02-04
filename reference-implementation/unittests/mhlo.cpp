@@ -362,16 +362,41 @@ TEST(mhlo, is_finite) {
 TEST(mhlo, log) {
   EXPECT_NEAR(0.0f, mhlo::log(1.0f), EPSILON);
 
-  Tensor0D<float> t0{M_Ef32};
-  Tensor1D<float, 2> t1{M_Ef32 * M_Ef32, M_Ef32 * M_Ef32 * M_Ef32};
-  Tensor2D<double, 2, 2> t2{1.0f, 2.0f, 3.0f, 4.0f};
+  {
+    Tensor0D<float> x{M_Ef32};
+    Tensor0D<float> expected_result{1.0f};
+    Tensor0D<float> result = mhlo::log(x);
 
-  EXPECT_THAT(mhlo::log(t0), Pointwise(FloatNear(EPSILON), {1.0f}));
-  EXPECT_THAT(mhlo::log(t1), Pointwise(FloatNear(EPSILON), {2.0f, 3.0f}));
-  // clang-format off
-  EXPECT_THAT(mhlo::log(t2), Pointwise(FloatNear(EPSILON), {0.0f,
-  0.693147f, 1.098612f, 1.386294f}));
-  // clang-format on
+    EXPECT_THAT(result, Pointwise(FloatNear(EPSILON), expected_result));
+  }
+  {
+    Tensor1D<float, 2> x{M_Ef32 * M_Ef32, M_Ef32 * M_Ef32 * M_Ef32};
+    Tensor1D<float, 2> expected_result{2.0f, 3.0f};
+    Tensor1D<float, 2> result = mhlo::log(x);
+
+    EXPECT_THAT(result, Pointwise(FloatNear(EPSILON), expected_result));
+  }
+  {
+    Tensor2D<float, 2, 2> x{1.0f, 2.0f, 3.0f, 4.0f};
+    Tensor2D<float, 2, 2> expected_result{0.0f, 0.693147f, 1.098612f, 1.386294f};
+    Tensor2D<float, 2, 2> result = mhlo::log(x);
+
+    EXPECT_THAT(result, Pointwise(FloatNear(EPSILON), expected_result));
+  }
+  {
+    Tensor3D<float, 2, 2, 2> x{1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f};
+    Tensor3D<float, 2, 2, 2> expected_result{0.0f, 0.693147f, 1.098612f, 1.386294f, 1.609437f, 1.791759f, 1.945910f, 2.079441f};
+    Tensor3D<float, 2, 2, 2> result = mhlo::log(x);
+
+    EXPECT_THAT(result, Pointwise(FloatNear(EPSILON), expected_result));
+  }
+  {
+    Tensor4D<float, 2, 2, 2, 1> x{1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f};
+    Tensor4D<float, 2, 2, 2, 1> expected_result{0.0f, 0.693147f, 1.098612f, 1.386294f, 1.609437f, 1.791759f, 1.945910f, 2.079441f};
+    Tensor4D<float, 2, 2, 2, 1> result = mhlo::log(x);
+
+    EXPECT_THAT(result, Pointwise(FloatNear(EPSILON), expected_result));
+  }
 }
 
 TEST(mhlo, log_plus_one) {

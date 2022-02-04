@@ -202,16 +202,41 @@ TEST(mhlo, cos) {
 TEST(mhlo, exponential) {
   EXPECT_NEAR(M_Ef32, mhlo::exponential(1.0f), EPSILON);
 
-  Tensor0D<float> t0{0.0f};
-  Tensor1D<float, 2> t1{M_LN2f32, M_LN10f32};
-  Tensor2D<double, 2, 2> t2{1.0f, 2.0f, 3.0f, 4.0f};
+  {
+    Tensor0D<float> x{0.0f};
+    Tensor0D<float> expected_result{1.0f};
+    Tensor0D<float> result = mhlo::exponential(x);
 
-  EXPECT_THAT(mhlo::exponential(t0), Pointwise(FloatNear(EPSILON), {1.0f}));
-  EXPECT_THAT(mhlo::exponential(t1),
-              Pointwise(FloatNear(EPSILON), {2.0f, 10.0f}));
-  EXPECT_THAT(mhlo::exponential(t2),
-              Pointwise(FloatNear(EPSILON),
-                        {2.718281f, 7.389056f, 20.085536f, 54.598150f}));
+    EXPECT_THAT(result, Pointwise(FloatNear(EPSILON), expected_result));
+  }
+  {
+    Tensor1D<float, 2> x{M_LN2f32, M_LN10f32};
+    Tensor1D<float, 2> expected_result{2.0f, 10.0f};
+    Tensor1D<float, 2> result = mhlo::exponential(x);
+
+    EXPECT_THAT(result, Pointwise(FloatNear(EPSILON), expected_result));
+  }
+  {
+    Tensor2D<double, 2, 2> x{1.0f, 2.0f, 3.0f, 4.0f};
+    Tensor2D<double, 2, 2> expected_result{2.718281f, 7.389056f, 20.085536f, 54.598150f};
+    Tensor2D<double, 2, 2> result = mhlo::exponential(x);
+
+    EXPECT_THAT(result, Pointwise(FloatNear(EPSILON), expected_result));
+  }
+  {
+    Tensor3D<double, 2, 2, 2> x{0.0f, 1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f};
+    Tensor3D<double, 2, 2, 2> expected_result{1.0f, 2.718281f, 7.389056f, 20.085536f, 54.598150f, 148.413159f, 403.428793f, 1096.633158f};
+    Tensor3D<double, 2, 2, 2> result = mhlo::exponential(x);
+
+    EXPECT_THAT(result, Pointwise(FloatNear(EPSILON), expected_result));
+  }
+  {
+    Tensor4D<double, 1, 2, 1, 2> x{1.0f, 2.0f, 3.0f, 4.0f};
+    Tensor4D<double, 1, 2, 1, 2> expected_result{2.718281f, 7.389056f, 20.085536f, 54.598150f};
+    Tensor4D<double, 1, 2, 1, 2> result = mhlo::exponential(x);
+
+    EXPECT_THAT(result, Pointwise(FloatNear(EPSILON), expected_result));
+  }
 }
 
 TEST(mhlo, exponential_minus_one) {

@@ -322,14 +322,41 @@ TEST(mhlo, floor) {
 TEST(mhlo, is_finite) {
   EXPECT_EQ(true, mhlo::is_finite(0.0f));
 
-  Tensor0D<float> t0{M_PIf32};
-  Tensor1D<float, 2> t1{M_PI_2f32, INFINITY};
-  Tensor2D<double, 2, 2> t2{INFINITY, -INFINITY, NAN, -0.0f};
+  {
+    Tensor0D<float> x{M_PIf32};
+    Tensor0D<bool> expected_result{true};
+    Tensor0D<bool> result = mhlo::is_finite(x);
 
-  EXPECT_THAT(mhlo::is_finite(t0), Pointwise(Eq(), {true}));
-  EXPECT_THAT(mhlo::is_finite(t1), Pointwise(Eq(), {true, false}));
-  EXPECT_THAT(mhlo::is_finite(t2),
-              Pointwise(Eq(), {false, false, false, true}));
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+  {
+    Tensor1D<float, 2> x{M_PI_2f32, INFINITY};
+    Tensor1D<bool,  2> expected_result{true, false};
+    Tensor1D<bool,  2> result = mhlo::is_finite(x);
+
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+  {
+    Tensor2D<float, 2, 2> x{INFINITY, -INFINITY, NAN, -0.0f};
+    Tensor2D<bool,  2, 2> expected_result{false, false, false, true};
+    Tensor2D<bool,  2, 2> result = mhlo::is_finite(x);
+
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+  {
+    Tensor3D<float, 2, 2, 1> x{INFINITY, -INFINITY, NAN, -0.0f};
+    Tensor3D<bool,  2, 2, 1> expected_result{false, false, false, true};
+    Tensor3D<bool,  2, 2, 1> result = mhlo::is_finite(x);
+
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+  {
+    Tensor4D<float, 2, 2, 1, 1> x{INFINITY, -INFINITY, NAN, -0.0f};
+    Tensor4D<bool,  2, 2, 1, 1> expected_result{false, false, false, true};
+    Tensor4D<bool,  2, 2, 1, 1> result = mhlo::is_finite(x);
+
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
 }
 
 TEST(mhlo, log) {

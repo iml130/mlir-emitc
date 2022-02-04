@@ -242,17 +242,41 @@ TEST(mhlo, exponential) {
 TEST(mhlo, exponential_minus_one) {
   EXPECT_NEAR(M_Ef32 - 1, mhlo::exponential_minus_one(1.0f), EPSILON);
 
-  Tensor0D<float> t0{0.0f};
-  Tensor1D<float, 2> t1{M_LN2f32, M_LN10f32};
-  Tensor2D<double, 2, 2> t2{1.0f, 2.0f, 3.0f, 4.0f};
+  {
+    Tensor0D<float> x{0.0f};
+    Tensor0D<float> expected_result{0.0f};
+    Tensor0D<float> result = mhlo::exponential_minus_one(x);
 
-  EXPECT_THAT(mhlo::exponential_minus_one(t0),
-              Pointwise(FloatNear(EPSILON), {0.0f}));
-  EXPECT_THAT(mhlo::exponential_minus_one(t1),
-              Pointwise(FloatNear(EPSILON), {1.0f, 9.0f}));
-  EXPECT_THAT(mhlo::exponential_minus_one(t2),
-              Pointwise(FloatNear(EPSILON),
-                        {1.718281f, 6.389056f, 19.085536f, 53.598150f}));
+    EXPECT_THAT(result, Pointwise(FloatNear(EPSILON), expected_result));
+  }
+  {
+    Tensor1D<float, 2> x{M_LN2f32, M_LN10f32};
+    Tensor1D<float, 2> expected_result{1.0f, 9.0f};
+    Tensor1D<float, 2> result = mhlo::exponential_minus_one(x);
+
+    EXPECT_THAT(result, Pointwise(FloatNear(EPSILON), expected_result));
+  }
+  {
+    Tensor2D<double, 2, 2> x{1.0f, 2.0f, 3.0f, 4.0f};
+    Tensor2D<double, 2, 2> expected_result{1.718281f, 6.389056f, 19.085536f, 53.598150f};
+    Tensor2D<double, 2, 2> result = mhlo::exponential_minus_one(x);
+
+    EXPECT_THAT(result, Pointwise(FloatNear(EPSILON), expected_result));
+  }
+  {
+    Tensor3D<double, 2, 2, 2> x{0.0f, 1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f};
+    Tensor3D<double, 2, 2, 2> expected_result{0.0f, 1.718281f, 6.389056f, 19.085536f, 53.598150f, 147.413159f, 402.428793f, 1095.633158f};
+    Tensor3D<double, 2, 2, 2> result = mhlo::exponential_minus_one(x);
+
+    EXPECT_THAT(result, Pointwise(FloatNear(EPSILON), expected_result));
+  }
+  {
+    Tensor4D<double, 1, 2, 1, 2> x{1.0f, 2.0f, 3.0f, 4.0f};
+    Tensor4D<double, 1, 2, 1, 2> expected_result{1.718281f, 6.389056f, 19.085536f, 53.598150f};
+    Tensor4D<double, 1, 2, 1, 2> result = mhlo::exponential_minus_one(x);
+
+    EXPECT_THAT(result, Pointwise(FloatNear(EPSILON), expected_result));
+  }
 }
 
 TEST(mhlo, floor) {

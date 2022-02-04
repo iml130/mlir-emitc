@@ -22,7 +22,6 @@ namespace emitc {
 std::unique_ptr<OperationPass<ModuleOp>> createInsertEmitCMHLOIncludePass();
 #endif // EMITC_BUILD_HLO
 std::unique_ptr<OperationPass<ModuleOp>> createInsertEmitCArithIncludePass();
-std::unique_ptr<OperationPass<ModuleOp>> createInsertEmitCStdIncludePass();
 std::unique_ptr<OperationPass<ModuleOp>> createInsertEmitCTensorIncludePass();
 std::unique_ptr<OperationPass<ModuleOp>> createInsertEmitCTosaIncludePass();
 

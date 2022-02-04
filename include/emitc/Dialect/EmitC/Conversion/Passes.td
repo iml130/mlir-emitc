@@ -29,12 +29,6 @@ def ConvertArithToEmitC : Pass<"convert-arith-to-emitc", "FuncOp"> {
   let dependentDialects = ["EmitCDialect"];
 }
 
-def ConvertStdToEmitC : Pass<"convert-std-to-emitc", "FuncOp"> {
-  let summary = "Convert std dialect to EmitC dialect, replacing SplatOp.";
-  let constructor = "createConvertStdToEmitCPass()";
-  let dependentDialects = ["EmitCDialect"];
-}
-
 def ConvertTensorToEmitC : Pass<"convert-tensor-to-emitc", "FuncOp"> {
   let summary = "Convert tensor dialect to EmitC dialect, replacing ExtractOp.";
   let constructor = "createConvertTensorToEmitCPass()";

@@ -23,12 +23,6 @@ def InsertEmitCArithInclude : Pass<"insert-emitc-arith-include", "ModuleOp"> {
   let dependentDialects = ["EmitCDialect"];
 }
 
-def InsertEmitCStdInclude : Pass<"insert-emitc-std-include", "ModuleOp"> {
-  let summary = "Insert an EmitC include for the std dialect.";
-  let constructor = "createInsertEmitCStdIncludePass()";
-  let dependentDialects = ["EmitCDialect"];
-}
-
 def InsertEmitCTensorInclude : Pass<"insert-emitc-tensor-include", "ModuleOp"> {
   let summary = "Insert an EmitC include for the tensor dialect.";
   let constructor = "createInsertEmitCTensorIncludePass()";

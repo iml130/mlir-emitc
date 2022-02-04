@@ -44,7 +44,7 @@ cmake --build . --target MLIREmitCTests
 
 ## Supported Conversions and Translations
 
-Conversions are supported for [MLIR-HLO](https://github.com/tensorflow/mlir-hlo) ops and some ops of the standard and Tensor dialect.
+Conversions are supported for [MLIR-HLO](https://github.com/tensorflow/mlir-hlo) ops and some ops of the arith and Tensor dialect.
 In addition, support for converting Tensor Operator Set Architecture [(TOSA)](https://mlir.llvm.org/docs/Dialects/TOSA/) dialect to EmitC is emerging.
 The `emitc-opt` tool supports the following options:
 
@@ -53,17 +53,14 @@ The `emitc-opt` tool supports the following options:
 | `--convert-mhlo-region-ops-to-emitc `    | Convert MHLO operations containing regions to EmitC dialect.             |
 | `--convert-mhlo-to-emitc `               | Convert from MHLO dialect to EmitC dialect.                              |
 | `--convert-arith-to-emitc `              | Convert arith dialect to EmitC dialect, replacing IndexCastOp.           |
-| `--convert-std-to-emitc `                | Convert std dialect to EmitC dialect, replacing SplatOp.                 |
-| `--convert-tensor-to-emitc `             | Convert tensor dialect to EmitC dialect, replacing ExtractOp.            |
+| `--convert-tensor-to-emitc `             | Convert tensor dialect to EmitC dialect.                                 |
 | `--convert-tosa-to-emitc `               | Convert TOSA dialect to EmitC dialect.                                   |
 | `--insert-emitc-mhlo-include`            | Insert an EmitC include for the MHLO dialect.                            |
 | `--insert-emitc-arith-include`           | Insert an EmitC include for the arith dialect.                           |
-| `--insert-emitc-std-include`             | Insert an EmitC include for the std dialect.                             |
 | `--insert-emitc-tensor-include`          | Insert an EmitC include for the tensor dialect.                          |
 | `--insert-emitc-tosa-include`            | Insert an EmitC include for the TOSA dialect.                            |
 | `--mhlo-to-emitc-pipeline`               | Run the MHLO to EmitC pipeline.                                          |
 | `--arith-to-emitc-pipeline`              | Run the Arithmetic to EmitC pipeline.                                    |
-| `--std-to-emitc-pipeline`                | Run the Std to EmitC pipeline.                                           |
 | `--tensor-to-emitc-pipeline`             | Run the Tensor to EmitC pipeline.                                        |
 | `--tosa-to-emitc-pipeline`               | Run the TOSA to EmitC pipeline.                                          |
 

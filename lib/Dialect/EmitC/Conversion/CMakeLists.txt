@@ -2,7 +2,6 @@ set(LLVM_OPTIONAL_SOURCES
   ArithToEmitC.cpp
   MHLOToEmitC.cpp
   MHLORegionOpsToEmitC.cpp
-  StdToEmitC.cpp
   TensorToEmitC.cpp
   TosaToEmitC.cpp
 )
@@ -45,22 +44,6 @@ endif()
 
 add_mlir_library(MLIRArithToEmitC
   ArithToEmitC.cpp
-
-  DEPENDS
-  MLIREmitC
-  MLIREmitCConversionPassIncGen
-
-  LINK_COMPONENTS
-  Core
-
-  LINK_LIBS PUBLIC
-  MLIRIR
-  MLIRPass
-  MLIRTransformUtils
-)
-
-add_mlir_library(MLIRStdToEmitC
-  StdToEmitC.cpp
 
   DEPENDS
   MLIREmitC

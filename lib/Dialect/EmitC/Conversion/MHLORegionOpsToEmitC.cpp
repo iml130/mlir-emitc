@@ -15,6 +15,7 @@
 #include "emitc/Dialect/EmitC/Conversion/Passes.h"
 #include "mlir-hlo/Dialect/mhlo/IR/hlo_ops.h"
 #include "mlir/Dialect/EmitC/IR/EmitC.h"
+#include "mlir/Dialect/StandardOps/IR/Ops.h"
 #include "mlir/IR/BlockAndValueMapping.h"
 #include "mlir/IR/BuiltinOps.h"
 #include "mlir/Pass/Pass.h"
@@ -43,6 +44,10 @@ SmallVector<Attribute, 2> indexSequence(int64_t n, MLIRContext *ctx) {
 
 struct ConvertMhloRegionOpsToEmitCPass
     : public ConvertMHLORegionOpsToEmitCBase<ConvertMhloRegionOpsToEmitCPass> {
+  void getDependentDialects(::mlir::DialectRegistry &registry) const override {
+    registry.insert<EmitCDialect, StandardOpsDialect>();
+  }
+
   /// Perform the lowering to EmitC dialect.
   void runOnOperation() override {
     // Convert region ops

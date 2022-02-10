@@ -80,7 +80,7 @@ TEST(mhlo, ceil) {
     EXPECT_THAT(result, Pointwise(Eq(), expected_result));
   }
   {
-    Tensor1D<float,  2> x{1.6f, 2.0f};
+    Tensor1D<float, 2> x{1.6f, 2.0f};
     Tensor1D<float, 2> expected_result{2.0f, 2.0f};
     Tensor1D<float, 2> result = mhlo::ceil(x);
 
@@ -128,32 +128,35 @@ TEST(mhlo, convert) {
 
   {
     Tensor1D<uint16_t, 2> x{1, 3};
-    Tensor1D<size_t,   2> expected_result{1, 3};
-    Tensor1D<size_t,   2> result = mhlo::convert<Tensor1D<size_t, 2>>(x);
+    Tensor1D<size_t, 2> expected_result{1, 3};
+    Tensor1D<size_t, 2> result = mhlo::convert<Tensor1D<size_t, 2>>(x);
 
     EXPECT_THAT(result, Pointwise(Eq(), expected_result));
   }
 
   {
-    Tensor2D<float,  2, 2>  x{1.0f, 2.0f, 4.0f, 8.0f};
-    Tensor2D<double, 2, 2>  expected_result{1.0, 2.0, 4.0, 8.0};
-    Tensor2D<double, 2, 2>  result = mhlo::convert<Tensor2D<double, 2, 2>>(x);
+    Tensor2D<float, 2, 2> x{1.0f, 2.0f, 4.0f, 8.0f};
+    Tensor2D<double, 2, 2> expected_result{1.0, 2.0, 4.0, 8.0};
+    Tensor2D<double, 2, 2> result = mhlo::convert<Tensor2D<double, 2, 2>>(x);
 
     EXPECT_THAT(result, Pointwise(DoubleEq(), expected_result));
   }
 
   {
-    Tensor3D<float,  2, 1, 2> x{1.0f, 2.0f, 4.0f, 8.0f};
+    Tensor3D<float, 2, 1, 2> x{1.0f, 2.0f, 4.0f, 8.0f};
     Tensor3D<double, 2, 1, 2> expected_result{1.0, 2.0, 4.0, 8.0};
-    Tensor3D<double, 2, 1, 2> result = mhlo::convert<Tensor3D<double, 2, 1, 2>>(x);
+    Tensor3D<double, 2, 1, 2> result =
+        mhlo::convert<Tensor3D<double, 2, 1, 2>>(x);
 
     EXPECT_THAT(result, Pointwise(DoubleEq(), expected_result));
   }
 
   {
     Tensor4D<double, 2, 1, 2, 2> x{1.0, 2.0, 4.0, 8.0, 16.0, 32.0, 64.0, 128.0};
-    Tensor4D<float,  2, 1, 2, 2> expected_result{1.0f, 2.0f, 4.0f, 8.0f, 16.0f, 32.0f, 64.0f, 128.0f};
-    Tensor4D<float,  2, 1, 2, 2> result = mhlo::convert<Tensor4D<float, 2, 1, 2, 2>>(x);
+    Tensor4D<float, 2, 1, 2, 2> expected_result{1.0f,  2.0f,  4.0f,  8.0f,
+                                                16.0f, 32.0f, 64.0f, 128.0f};
+    Tensor4D<float, 2, 1, 2, 2> result =
+        mhlo::convert<Tensor4D<float, 2, 1, 2, 2>>(x);
 
     EXPECT_THAT(result, Pointwise(FloatEq(), expected_result));
   }
@@ -183,16 +186,18 @@ TEST(mhlo, cos) {
 
     EXPECT_THAT(result, Pointwise(FloatNear(EPSILON), expected_result));
   }
-  { 
+  {
     Tensor3D<double, 2, 2, 1> x{2 * M_PIf32, 0.0f, -0.5f, 0.5f};
-    Tensor3D<double, 2, 2, 1> expected_result{1.0f, 1.0f, 0.8775826f, 0.8775826f};
+    Tensor3D<double, 2, 2, 1> expected_result{1.0f, 1.0f, 0.8775826f,
+                                              0.8775826f};
     Tensor3D<double, 2, 2, 1> result = mhlo::cos(x);
 
     EXPECT_THAT(result, Pointwise(FloatNear(EPSILON), expected_result));
   }
   {
-    Tensor4D<double, 1, 2, 1, 2> x{0.5f, 0.0f, -0.5f, 2 * M_PIf32 };
-    Tensor4D<double, 1, 2, 1, 2> expected_result{0.8775826f, 1.0f, 0.8775826f, 1.0f};
+    Tensor4D<double, 1, 2, 1, 2> x{0.5f, 0.0f, -0.5f, 2 * M_PIf32};
+    Tensor4D<double, 1, 2, 1, 2> expected_result{0.8775826f, 1.0f, 0.8775826f,
+                                                 1.0f};
     Tensor4D<double, 1, 2, 1, 2> result = mhlo::cos(x);
 
     EXPECT_THAT(result, Pointwise(FloatNear(EPSILON), expected_result));
@@ -218,21 +223,25 @@ TEST(mhlo, exponential) {
   }
   {
     Tensor2D<double, 2, 2> x{1.0f, 2.0f, 3.0f, 4.0f};
-    Tensor2D<double, 2, 2> expected_result{2.718281f, 7.389056f, 20.085536f, 54.598150f};
+    Tensor2D<double, 2, 2> expected_result{2.718281f, 7.389056f, 20.085536f,
+                                           54.598150f};
     Tensor2D<double, 2, 2> result = mhlo::exponential(x);
 
     EXPECT_THAT(result, Pointwise(FloatNear(EPSILON), expected_result));
   }
   {
     Tensor3D<double, 2, 2, 2> x{0.0f, 1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f};
-    Tensor3D<double, 2, 2, 2> expected_result{1.0f, 2.718281f, 7.389056f, 20.085536f, 54.598150f, 148.413159f, 403.428793f, 1096.633158f};
+    Tensor3D<double, 2, 2, 2> expected_result{
+        1.0f,       2.718281f,   7.389056f,   20.085536f,
+        54.598150f, 148.413159f, 403.428793f, 1096.633158f};
     Tensor3D<double, 2, 2, 2> result = mhlo::exponential(x);
 
     EXPECT_THAT(result, Pointwise(FloatNear(EPSILON), expected_result));
   }
   {
     Tensor4D<double, 1, 2, 1, 2> x{1.0f, 2.0f, 3.0f, 4.0f};
-    Tensor4D<double, 1, 2, 1, 2> expected_result{2.718281f, 7.389056f, 20.085536f, 54.598150f};
+    Tensor4D<double, 1, 2, 1, 2> expected_result{2.718281f, 7.389056f,
+                                                 20.085536f, 54.598150f};
     Tensor4D<double, 1, 2, 1, 2> result = mhlo::exponential(x);
 
     EXPECT_THAT(result, Pointwise(FloatNear(EPSILON), expected_result));
@@ -258,21 +267,25 @@ TEST(mhlo, exponential_minus_one) {
   }
   {
     Tensor2D<double, 2, 2> x{1.0f, 2.0f, 3.0f, 4.0f};
-    Tensor2D<double, 2, 2> expected_result{1.718281f, 6.389056f, 19.085536f, 53.598150f};
+    Tensor2D<double, 2, 2> expected_result{1.718281f, 6.389056f, 19.085536f,
+                                           53.598150f};
     Tensor2D<double, 2, 2> result = mhlo::exponential_minus_one(x);
 
     EXPECT_THAT(result, Pointwise(FloatNear(EPSILON), expected_result));
   }
   {
     Tensor3D<double, 2, 2, 2> x{0.0f, 1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f};
-    Tensor3D<double, 2, 2, 2> expected_result{0.0f, 1.718281f, 6.389056f, 19.085536f, 53.598150f, 147.413159f, 402.428793f, 1095.633158f};
+    Tensor3D<double, 2, 2, 2> expected_result{
+        0.0f,       1.718281f,   6.389056f,   19.085536f,
+        53.598150f, 147.413159f, 402.428793f, 1095.633158f};
     Tensor3D<double, 2, 2, 2> result = mhlo::exponential_minus_one(x);
 
     EXPECT_THAT(result, Pointwise(FloatNear(EPSILON), expected_result));
   }
   {
     Tensor4D<double, 1, 2, 1, 2> x{1.0f, 2.0f, 3.0f, 4.0f};
-    Tensor4D<double, 1, 2, 1, 2> expected_result{1.718281f, 6.389056f, 19.085536f, 53.598150f};
+    Tensor4D<double, 1, 2, 1, 2> expected_result{1.718281f, 6.389056f,
+                                                 19.085536f, 53.598150f};
     Tensor4D<double, 1, 2, 1, 2> result = mhlo::exponential_minus_one(x);
 
     EXPECT_THAT(result, Pointwise(FloatNear(EPSILON), expected_result));
@@ -305,14 +318,16 @@ TEST(mhlo, floor) {
   }
   {
     Tensor3D<double, 2, 2, 2> x{2.1, 1.6, 0.0, 2.0, 3.2, 5.1, 6.9, 3.14};
-    Tensor3D<double, 2, 2, 2> expected_result{2.0, 1.0, 0.0, 2.0, 3.0, 5.0, 6.0, 3.0};
+    Tensor3D<double, 2, 2, 2> expected_result{2.0, 1.0, 0.0, 2.0,
+                                              3.0, 5.0, 6.0, 3.0};
     Tensor3D<double, 2, 2, 2> result = mhlo::floor(x);
 
     EXPECT_THAT(result, Pointwise(Eq(), expected_result));
   }
   {
     Tensor4D<double, 1, 2, 2, 2> x{2.1, 1.6, 0.0, 2.0, 3.2, 5.1, 6.9, 3.14};
-    Tensor4D<double, 1, 2, 2, 2> expected_result{2.0, 1.0, 0.0, 2.0, 3.0, 5.0, 6.0, 3.0};
+    Tensor4D<double, 1, 2, 2, 2> expected_result{2.0, 1.0, 0.0, 2.0,
+                                                 3.0, 5.0, 6.0, 3.0};
     Tensor4D<double, 1, 2, 2, 2> result = mhlo::floor(x);
 
     EXPECT_THAT(result, Pointwise(Eq(), expected_result));
@@ -331,29 +346,29 @@ TEST(mhlo, is_finite) {
   }
   {
     Tensor1D<float, 2> x{M_PI_2f32, INFINITY};
-    Tensor1D<bool,  2> expected_result{true, false};
-    Tensor1D<bool,  2> result = mhlo::is_finite(x);
+    Tensor1D<bool, 2> expected_result{true, false};
+    Tensor1D<bool, 2> result = mhlo::is_finite(x);
 
     EXPECT_THAT(result, Pointwise(Eq(), expected_result));
   }
   {
     Tensor2D<float, 2, 2> x{INFINITY, -INFINITY, NAN, -0.0f};
-    Tensor2D<bool,  2, 2> expected_result{false, false, false, true};
-    Tensor2D<bool,  2, 2> result = mhlo::is_finite(x);
+    Tensor2D<bool, 2, 2> expected_result{false, false, false, true};
+    Tensor2D<bool, 2, 2> result = mhlo::is_finite(x);
 
     EXPECT_THAT(result, Pointwise(Eq(), expected_result));
   }
   {
     Tensor3D<float, 2, 2, 1> x{INFINITY, -INFINITY, NAN, -0.0f};
-    Tensor3D<bool,  2, 2, 1> expected_result{false, false, false, true};
-    Tensor3D<bool,  2, 2, 1> result = mhlo::is_finite(x);
+    Tensor3D<bool, 2, 2, 1> expected_result{false, false, false, true};
+    Tensor3D<bool, 2, 2, 1> result = mhlo::is_finite(x);
 
     EXPECT_THAT(result, Pointwise(Eq(), expected_result));
   }
   {
     Tensor4D<float, 2, 2, 1, 1> x{INFINITY, -INFINITY, NAN, -0.0f};
-    Tensor4D<bool,  2, 2, 1, 1> expected_result{false, false, false, true};
-    Tensor4D<bool,  2, 2, 1, 1> result = mhlo::is_finite(x);
+    Tensor4D<bool, 2, 2, 1, 1> expected_result{false, false, false, true};
+    Tensor4D<bool, 2, 2, 1, 1> result = mhlo::is_finite(x);
 
     EXPECT_THAT(result, Pointwise(Eq(), expected_result));
   }
@@ -378,21 +393,27 @@ TEST(mhlo, log) {
   }
   {
     Tensor2D<float, 2, 2> x{1.0f, 2.0f, 3.0f, 4.0f};
-    Tensor2D<float, 2, 2> expected_result{0.0f, 0.693147f, 1.098612f, 1.386294f};
+    Tensor2D<float, 2, 2> expected_result{0.0f, 0.693147f, 1.098612f,
+                                          1.386294f};
     Tensor2D<float, 2, 2> result = mhlo::log(x);
 
     EXPECT_THAT(result, Pointwise(FloatNear(EPSILON), expected_result));
   }
   {
     Tensor3D<float, 2, 2, 2> x{1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f};
-    Tensor3D<float, 2, 2, 2> expected_result{0.0f, 0.693147f, 1.098612f, 1.386294f, 1.609437f, 1.791759f, 1.945910f, 2.079441f};
+    Tensor3D<float, 2, 2, 2> expected_result{0.0f,      0.693147f, 1.098612f,
+                                             1.386294f, 1.609437f, 1.791759f,
+                                             1.945910f, 2.079441f};
     Tensor3D<float, 2, 2, 2> result = mhlo::log(x);
 
     EXPECT_THAT(result, Pointwise(FloatNear(EPSILON), expected_result));
   }
   {
-    Tensor4D<float, 2, 2, 2, 1> x{1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f};
-    Tensor4D<float, 2, 2, 2, 1> expected_result{0.0f, 0.693147f, 1.098612f, 1.386294f, 1.609437f, 1.791759f, 1.945910f, 2.079441f};
+    Tensor4D<float, 2, 2, 2, 1> x{1.0f, 2.0f, 3.0f, 4.0f,
+                                  5.0f, 6.0f, 7.0f, 8.0f};
+    Tensor4D<float, 2, 2, 2, 1> expected_result{0.0f,      0.693147f, 1.098612f,
+                                                1.386294f, 1.609437f, 1.791759f,
+                                                1.945910f, 2.079441f};
     Tensor4D<float, 2, 2, 2, 1> result = mhlo::log(x);
 
     EXPECT_THAT(result, Pointwise(FloatNear(EPSILON), expected_result));

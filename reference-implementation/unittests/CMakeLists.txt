@@ -1,12 +1,16 @@
+set(MLIREmitCTests_SRCS
+  mhlo.cpp
+  arith.cpp
+  tensor.cpp
+  tosa_eigen.cpp
+  tosa.cpp
+  types.cpp
+)
+
 add_executable(MLIREmitCTests "")
 target_sources(MLIREmitCTests
   PRIVATE
-    mhlo.cpp
-    arith.cpp
-    tensor.cpp
-    tosa_eigen.cpp
-    tosa.cpp
-    types.cpp
+    ${MLIREmitCTests_SRCS}
 )
 
 target_include_directories(MLIREmitCTests
@@ -15,6 +19,8 @@ target_include_directories(MLIREmitCTests
 )
 
 target_link_libraries(MLIREmitCTests PRIVATE EmitCRefImpl gtest_main gtest)
+target_code_coverage(MLIREmitCTests
+  EXCLUDE ${MLIREmitCTests_SRCS} ${gmock_SOURCE_DIR}/include)
 
 if(EMITC_TOSA_TEST_EIGEN)
   add_executable(MLIREmitCEigenTests "")
@@ -29,4 +35,5 @@ if(EMITC_TOSA_TEST_EIGEN)
   )
 
   target_link_libraries(MLIREmitCEigenTests PRIVATE EmitCRefImpl EmitCRefImpl_Eigen Eigen3::Eigen gtest_main gtest)
+  target_code_coverage(MLIREmitCEigenTests EXCLUDE tosa_eigen.cpp ${gmock_SOURCE_DIR}/include)
 endif()

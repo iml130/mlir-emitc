@@ -36,7 +36,6 @@ set(LIBS
   MLIRIR
   MLIREmitC
   MLIRArithToEmitC
-  MLIRStdToEmitC
   MLIRTensorToEmitC
   MLIRTosaToEmitC
   MLIREmitCTransforms

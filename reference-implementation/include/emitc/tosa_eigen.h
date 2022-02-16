@@ -16,7 +16,7 @@
 #ifndef EMITC_TOSA_EIGEN_H
 #define EMITC_TOSA_EIGEN_H
 
-#include "emitc/std.h"
+#include "emitc/types.h"
 #include <unsupported/Eigen/CXX11/Tensor>
 
 namespace {

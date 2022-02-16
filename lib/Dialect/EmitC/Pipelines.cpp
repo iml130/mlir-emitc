@@ -29,11 +29,6 @@ void buildArithToEmitCPipeline(OpPassManager &pm) {
   pm.addPass(createConvertArithToEmitCPass());
 }
 
-void buildStdToEmitCPipeline(OpPassManager &pm) {
-  pm.addPass(createInsertEmitCStdIncludePass());
-  pm.addPass(createConvertStdToEmitCPass());
-}
-
 void buildTensorToEmitCPipeline(OpPassManager &pm) {
   pm.addPass(createInsertEmitCTensorIncludePass());
   pm.addPass(createConvertTensorToEmitCPass());
@@ -58,12 +53,6 @@ void registerArithToEmitCPipeline() {
   PassPipelineRegistration<>("arith-to-emitc-pipeline",
                              "Run the Arithmetic to EmitC pipeline.",
                              buildArithToEmitCPipeline);
-}
-
-void registerStdToEmitCPipeline() {
-  PassPipelineRegistration<>("std-to-emitc-pipeline",
-                             "Run the Std to EmitC pipeline.",
-                             buildStdToEmitCPipeline);
 }
 
 void registerTensorToEmitCPipeline() {

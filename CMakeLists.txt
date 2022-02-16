@@ -86,6 +86,8 @@ endif()
 
 # Dependency on GoogleTest. Used to unit test the reference implementation.
 if(EMITC_INCLUDE_TESTS)
+  include(third_party/cmake-scripts/code-coverage.cmake)
+
   # With `LLVM_INSTALL_UTILS` set to `ON`, the LLVM/MLIR build dir contains a
   # gtest, added in llvm/utils/unittest/CMakeLists.txt. However, LLVM ships
   # gooletest version 1.8, whereas we require a more recent version. Therefore,

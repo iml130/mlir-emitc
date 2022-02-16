@@ -26,3 +26,14 @@ func @std_extract_element(%arg0: tensor<i32>, %arg1: tensor<2xi32> ) -> () {
 //  CPP-NEXT: emitc::tensor::extract(v1)
 //  CPP-NEXT: emitc::tensor::extract(v2, v3)
 //  CPP-NEXT: emitc::tensor::extract(v2, v4)
+
+func @splat_op(%s : f32) -> tensor<8xf32> {
+  %t = tensor.splat %s : tensor<8xf32>
+  return %t : tensor<8xf32>
+}
+// CHECK-LABEL: func @splat_op
+//  CHECK-NEXT: emitc.call "emitc::tensor::splat"(%arg0) {template_args = [tensor<8xf32>]} : (f32) -> tensor<8xf32>
+
+// CPP-LABEL: Tensor<float, 8> splat_op(float v1)
+//  CPP-NEXT: emitc::tensor::splat<Tensor<float, 8>>(v1)
+//  CPP-NEXT: return v2;

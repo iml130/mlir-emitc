@@ -19,6 +19,8 @@ namespace {
 
 using namespace emitc;
 using ::testing::Eq;
+using ::testing::FloatEq;
+using ::testing::Pointwise;
 
 TEST(tensor, extract) {
   {
@@ -55,6 +57,48 @@ TEST(tensor, extract) {
     uint32_t result = tensor::extract(x, 0, 1, 0, 1);
 
     EXPECT_EQ(result, expected_result);
+  }
+}
+
+TEST(tensor, splat) {
+  {
+    uint32_t x = 1;
+    Tensor0D<uint32_t> result = tensor::splat<Tensor0D<uint32_t>>(x);
+    Tensor0D<uint32_t> expected_result{1};
+
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+  {
+    int32_t x = -1;
+    Tensor1D<int32_t, 3> result = tensor::splat<Tensor1D<int32_t, 3>>(x);
+    Tensor1D<int32_t, 3> expected_result{-1, -1, -1};
+
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+  {
+    float x = 1.5f;
+    Tensor2D<float, 2, 2> result = tensor::splat<Tensor2D<float, 2, 2>>(x);
+    Tensor2D<float, 2, 2> expected_result{1.5f, 1.5f, 1.5f, 1.5f};
+
+    EXPECT_THAT(result, Pointwise(FloatEq(), expected_result));
+  }
+  {
+    float x = 1.2f;
+    Tensor3D<float, 2, 3, 1> result =
+        tensor::splat<Tensor3D<float, 2, 3, 1>>(x);
+    Tensor3D<float, 2, 3, 1> expected_result{1.2f, 1.2f, 1.2f,
+                                             1.2f, 1.2f, 1.2f};
+
+    EXPECT_THAT(result, Pointwise(FloatEq(), expected_result));
+  }
+  {
+    float x = 1.1f;
+    Tensor4D<float, 2, 3, 1, 2> result =
+        tensor::splat<Tensor4D<float, 2, 3, 1, 2>>(x);
+    Tensor4D<float, 2, 3, 1, 2> expected_result{
+        1.1f, 1.1f, 1.1f, 1.1f, 1.1f, 1.1f, 1.1f, 1.1f, 1.1f, 1.1f, 1.1f, 1.1f};
+
+    EXPECT_THAT(result, Pointwise(FloatEq(), expected_result));
   }
 }
 

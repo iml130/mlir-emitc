@@ -53,11 +53,38 @@ private:
     return success();
   }
 };
+
+/// Convert `tensor.splat` into an `emitc.call` operation.
+class SplatOpConversion : public OpConversionPattern<tensor::SplatOp> {
+  using OpConversionPattern<tensor::SplatOp>::OpConversionPattern;
+
+public:
+  SplatOpConversion(MLIRContext *ctx)
+      : OpConversionPattern<tensor::SplatOp>(ctx) {}
+
+private:
+  LogicalResult
+  matchAndRewrite(tensor::SplatOp splatOp, OpAdaptor adaptor,
+                  ConversionPatternRewriter &rewriter) const override {
+    StringAttr callee = rewriter.getStringAttr("emitc::tensor::splat");
+
+    ArrayAttr args;
+    Type resultType = splatOp.getResult().getType();
+    ArrayAttr templateArgs = rewriter.getArrayAttr({TypeAttr::get(resultType)});
+
+    rewriter.replaceOpWithNewOp<emitc::CallOp>(splatOp, splatOp.getType(),
+                                               callee, args, templateArgs,
+                                               adaptor.getOperands());
+
+    return success();
+  }
+};
 } // namespace
 
 void populateTensorToEmitcPatterns(MLIRContext *ctx,
                                    RewritePatternSet &patterns) {
   patterns.add<ExtractOpConversion>(ctx);
+  patterns.add<SplatOpConversion>(ctx);
 }
 
 namespace {
@@ -71,6 +98,7 @@ struct ConvertTensorToEmitCPass
 
     target.addLegalDialect<emitc::EmitCDialect>();
     target.addIllegalOp<tensor::ExtractOp>();
+    target.addIllegalOp<tensor::SplatOp>();
 
     RewritePatternSet patterns(&getContext());
     populateTensorToEmitcPatterns(&getContext(), patterns);

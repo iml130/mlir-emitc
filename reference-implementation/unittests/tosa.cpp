@@ -81,10 +81,44 @@ TEST(tosa, clamp) {
 }
 
 TEST(tosa, clz) {
-  Tensor<int32_t, 5> t0{0, 1, 0xC000, -1, -0x7FFFFFFF};
-  Tensor<int32_t, 5> expected{32, 31, 16, 0, 0};
-  Tensor<int32_t, 5> result = tosa::clz(t0);
-  EXPECT_THAT(result, Pointwise(Eq(), expected));
+  {
+    Tensor0D<int32_t> x{0};
+    Tensor0D<int32_t> expected_result{32};
+    Tensor0D<int32_t> result = tosa::clz(x);
+
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+  {
+    Tensor1D<int32_t, 2> x{1, -1};
+    Tensor1D<int32_t, 2> expected_result{31, 0};
+    Tensor1D<int32_t, 2> result = tosa::clz(x);
+
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+  {
+    Tensor2D<int32_t, 3, 2> x{-1328632289, 1459158945, -1912283137,
+                              627316066,   59808247,   42};
+    Tensor2D<int32_t, 3, 2> expected_result{0, 1, 0, 2, 6, 26};
+    Tensor2D<int32_t, 3, 2> result = tosa::clz(x);
+
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+  {
+    Tensor3D<int32_t, 2, 1, 2> x{0xC000, -0x7FFFFFFF, 132486298, -2104906602};
+    Tensor3D<int32_t, 2, 1, 2> expected_result{16, 0, 5, 0};
+    Tensor3D<int32_t, 2, 1, 2> result = tosa::clz(x);
+
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+  {
+    Tensor4D<int32_t, 1, 2, 2, 2> x{21845, 10922, 5461, 2730,
+                                    1365,  682,   341,  170};
+    Tensor4D<int32_t, 1, 2, 2, 2> expected_result{17, 18, 19, 20,
+                                                  21, 22, 23, 24};
+    Tensor4D<int32_t, 1, 2, 2, 2> result = tosa::clz(x);
+
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
 }
 
 TEST(tosa, reciprocal) {

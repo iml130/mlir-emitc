@@ -122,12 +122,52 @@ TEST(tosa, clz) {
 }
 
 TEST(tosa, reciprocal) {
-  Tensor<float, 4> t0{1.0f, 2.0f, 3.0f, 4.0f};
-  Tensor<float, 4> expected{1.0f, 0.5f, 0.3333f, 0.25f};
+  {
+    Tensor0D<float> x{1.0f};
+    Tensor0D<float> expected_result{1.0f};
+    Tensor0D<float> result = tosa::reciprocal(x);
 
-  Tensor<float, 4> result = tosa::reciprocal(t0);
+    EXPECT_THAT(result, Pointwise(FloatEq(), expected_result));
+  }
+  {
+    Tensor1D<double, 2> x{6.312247e+64, 9.053782e-32};
+    Tensor1D<double, 2> expected_result{1.5842219102009158e-65,
+                                        1.1045108000170537e+31};
+    Tensor1D<double, 2> result = tosa::reciprocal(x);
 
-  EXPECT_THAT(result, Pointwise(FloatNear(EPSILON), expected));
+    EXPECT_THAT(result, Pointwise(DoubleEq(), expected_result));
+  }
+  {
+    Tensor2D<float, 3, 2> x{1.393225e+27f, 1.151362e-12f, 5.340778e+5f,
+                            1.346074e+6f,  1.373985f,     9.198730e+7f};
+    Tensor2D<float, 3, 2> expected_result{7.177592e-28f, 8.685366e+11f,
+                                          1.872386e-6f,  7.429012e-7f,
+                                          7.278100e-1f,  1.087107e-8f};
+    Tensor2D<float, 3, 2> result = tosa::reciprocal(x);
+
+    EXPECT_THAT(result, Pointwise(FloatEq(), expected_result));
+  }
+  {
+    Tensor3D<double, 2, 1, 2> x{1.857135e-3, 3.523054e-5, 1.704234e+59,
+                                7.043905e-21};
+    Tensor3D<double, 2, 1, 2> expected_result{
+        5.384638165776855e+2, 2.838446416092402e+4, 5.867738819903839e-60,
+        1.4196670738745057e+20};
+    Tensor3D<double, 2, 1, 2> result = tosa::reciprocal(x);
+
+    EXPECT_THAT(result, Pointwise(DoubleEq(), expected_result));
+  }
+  {
+    Tensor4D<float, 1, 2, 2, 2> x{2.524463e+22f, 5.496311e-5f, 1.025806e-2f,
+                                  2.648090e-10f, 7.170789f,    2.227768e-26f,
+                                  2.188774e+17f, 5.150893f};
+    Tensor4D<float, 1, 2, 2, 2> expected_result{
+        3.961238e-23f, 1.819402e+4f,  9.748432e+1f,  3.776307e+9f,
+        1.394547e-1f,  4.488798e+25f, 4.568768e-18f, 1.941411e-1f};
+    Tensor4D<float, 1, 2, 2, 2> result = tosa::reciprocal(x);
+
+    EXPECT_THAT(result, Pointwise(FloatEq(), expected_result));
+  }
 }
 
 TEST(tosa, reluN) {

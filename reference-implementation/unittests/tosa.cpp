@@ -18,6 +18,7 @@
 namespace {
 
 using namespace emitc;
+using ::testing::DoubleEq;
 using ::testing::Eq;
 using ::testing::FloatEq;
 using ::testing::FloatNear;
@@ -27,62 +28,192 @@ const float EPSILON = 5e-4;
 
 // Unary elementwise ops
 TEST(tosa, clamp) {
-  Tensor<float, 2, 1> t0{-1.5f, 5.0f};
-  float min0 = -1.0f;
-  float max0 = 3.0f;
-  Tensor<float, 2, 1> expected_result0{-1.0, 3.0f};
-  Tensor<float, 2, 1> s0 = tosa::clamp(t0, min0, max0);
+  {
+    Tensor0D<int32_t> operand{-1};
+    int32_t min_value = -3;
+    int32_t max_value = -3;
+    Tensor0D<int32_t> expected_result{-3};
+    Tensor0D<int32_t> result = tosa::clamp(operand, min_value, max_value);
 
-  EXPECT_THAT(s0, Pointwise(FloatEq(), expected_result0));
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+  {
+    Tensor1D<double, 2> operand{-4.7, 1.3};
+    double min_value = -3.25;
+    double max_value = -3.25;
+    Tensor1D<double, 2> expected_result{-3.25, -3.25};
+    Tensor1D<double, 2> result = tosa::clamp(operand, min_value, max_value);
 
-  Tensor<int64_t, 4, 2, 1> t1{-2, 2, -2, 3, 4, -5, 5, 5};
-  int64_t min1 = 1;
-  int64_t max1 = 3;
-  Tensor<int64_t, 4, 2, 1> expected_result1{1, 2, 1, 3, 3, 1, 3, 3};
-  Tensor<int64_t, 4, 2, 1> s1 = tosa::clamp(t1, min1, max1);
-  EXPECT_THAT(s1, Pointwise(Eq(), expected_result1));
+    EXPECT_THAT(result, Pointwise(DoubleEq(), expected_result));
+  }
+  {
+    Tensor2D<float, 1, 2> operand{-1.5f, 5.0f};
+    float min_value = -1.0f;
+    float max_value = 3.0f;
+    Tensor2D<float, 1, 2> expected_result{-1.0, 3.0f};
+    Tensor2D<float, 1, 2> result = tosa::clamp(operand, min_value, max_value);
 
-  int64_t min2 = -1;
-  int64_t max2 = 4;
-  Tensor<int64_t, 4, 2, 1> expected_result2{-1, 2, -1, 3, 4, -1, 4, 4};
-  Tensor<int64_t, 4, 2, 1> s2 = tosa::clamp(t1, min2, max2);
-  EXPECT_THAT(s2, Pointwise(Eq(), expected_result2));
+    EXPECT_THAT(result, Pointwise(FloatEq(), expected_result));
+  }
+  {
+    Tensor3D<int64_t, 4, 2, 1> operand{-2, 2, -2, 3, 4, -5, 5, 5};
+    int64_t min_value = 1;
+    int64_t max_value = 3;
+    Tensor3D<int64_t, 4, 2, 1> expected_result{1, 2, 1, 3, 3, 1, 3, 3};
+    Tensor3D<int64_t, 4, 2, 1> result =
+        tosa::clamp(operand, min_value, max_value);
+
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+  {
+    Tensor4D<float, 1, 2, 3, 2> operand{-1.0, -0.5, 0.0, 2.0625, 2.875, 2.1875,
+                                        2.5,  -0.0, 2.0, 3.0,    -99.0, 99.0};
+    float min_value = 2.125;
+    float max_value = 2.875;
+    Tensor4D<float, 1, 2, 3, 2> expected_result{2.125, 2.125,  2.125, 2.125,
+                                                2.875, 2.1875, 2.5,   2.125,
+                                                2.125, 2.875,  2.125, 2.875};
+    Tensor4D<float, 1, 2, 3, 2> result =
+        tosa::clamp(operand, min_value, max_value);
+
+    EXPECT_THAT(result, Pointwise(FloatEq(), expected_result));
+  }
 }
 
 TEST(tosa, clz) {
-  Tensor<int32_t, 5> t0{0, 1, 0xC000, -1, -0x7FFFFFFF};
-  Tensor<int32_t, 5> expected{32, 31, 16, 0, 0};
-  Tensor<int32_t, 5> result = tosa::clz(t0);
-  EXPECT_THAT(result, Pointwise(Eq(), expected));
+  {
+    Tensor0D<int32_t> x{0};
+    Tensor0D<int32_t> expected_result{32};
+    Tensor0D<int32_t> result = tosa::clz(x);
+
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+  {
+    Tensor1D<int32_t, 2> x{1, -1};
+    Tensor1D<int32_t, 2> expected_result{31, 0};
+    Tensor1D<int32_t, 2> result = tosa::clz(x);
+
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+  {
+    Tensor2D<int32_t, 3, 2> x{-1328632289, 1459158945, -1912283137,
+                              627316066,   59808247,   42};
+    Tensor2D<int32_t, 3, 2> expected_result{0, 1, 0, 2, 6, 26};
+    Tensor2D<int32_t, 3, 2> result = tosa::clz(x);
+
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+  {
+    Tensor3D<int32_t, 2, 1, 2> x{0xC000, -0x7FFFFFFF, 132486298, -2104906602};
+    Tensor3D<int32_t, 2, 1, 2> expected_result{16, 0, 5, 0};
+    Tensor3D<int32_t, 2, 1, 2> result = tosa::clz(x);
+
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+  {
+    Tensor4D<int32_t, 1, 2, 2, 2> x{21845, 10922, 5461, 2730,
+                                    1365,  682,   341,  170};
+    Tensor4D<int32_t, 1, 2, 2, 2> expected_result{17, 18, 19, 20,
+                                                  21, 22, 23, 24};
+    Tensor4D<int32_t, 1, 2, 2, 2> result = tosa::clz(x);
+
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
 }
 
 TEST(tosa, reciprocal) {
-  Tensor<float, 4> t0{1.0f, 2.0f, 3.0f, 4.0f};
-  Tensor<float, 4> expected{1.0f, 0.5f, 0.3333f, 0.25f};
+  {
+    Tensor0D<float> x{1.0f};
+    Tensor0D<float> expected_result{1.0f};
+    Tensor0D<float> result = tosa::reciprocal(x);
 
-  Tensor<float, 4> result = tosa::reciprocal(t0);
+    EXPECT_THAT(result, Pointwise(FloatEq(), expected_result));
+  }
+  {
+    Tensor1D<double, 2> x{6.312247e+64, -9.053782e-32};
+    Tensor1D<double, 2> expected_result{1.5842219102009158e-65,
+                                        -1.1045108000170537e+31};
+    Tensor1D<double, 2> result = tosa::reciprocal(x);
 
-  EXPECT_THAT(result, Pointwise(FloatNear(EPSILON), expected));
+    EXPECT_THAT(result, Pointwise(DoubleEq(), expected_result));
+  }
+  {
+    Tensor2D<float, 3, 2> x{1.393225e+27f, -1.151362e-12f, -5.340778e+5f,
+                            1.346074e+6f,  1.373985f,      9.198730e+7f};
+    Tensor2D<float, 3, 2> expected_result{7.177592e-28f, -8.685366e+11f,
+                                          -1.872386e-6f, 7.429012e-7f,
+                                          7.278100e-1f,  1.087107e-8f};
+    Tensor2D<float, 3, 2> result = tosa::reciprocal(x);
+
+    EXPECT_THAT(result, Pointwise(FloatEq(), expected_result));
+  }
+  {
+    Tensor3D<double, 2, 1, 2> x{-1.857135e-3, 3.523054e-5, 1.704234e+59,
+                                -7.043905e-21};
+    Tensor3D<double, 2, 1, 2> expected_result{
+        -5.384638165776855e+2, 2.838446416092402e+4, 5.867738819903839e-60,
+        -1.4196670738745057e+20};
+    Tensor3D<double, 2, 1, 2> result = tosa::reciprocal(x);
+
+    EXPECT_THAT(result, Pointwise(DoubleEq(), expected_result));
+  }
+  {
+    Tensor4D<float, 1, 2, 2, 2> x{-2.524463e+22f, -5.496311e-5f, -1.025806e-2f,
+                                  2.648090e-10f,  7.170789f,     2.227768e-26f,
+                                  2.188774e+17f,  5.150893f};
+    Tensor4D<float, 1, 2, 2, 2> expected_result{
+        -3.961238e-23f, -1.819402e+4f, -9.748432e+1f, 3.776307e+9f,
+        1.394547e-1f,   4.488798e+25f, 4.568768e-18f, 1.941411e-1f};
+    Tensor4D<float, 1, 2, 2, 2> result = tosa::reciprocal(x);
+
+    EXPECT_THAT(result, Pointwise(FloatEq(), expected_result));
+  }
 }
 
 TEST(tosa, reluN) {
-  Tensor<float, 2, 1> t0{0.0f, 5.0f};
-  float max0 = 3.0f;
-  Tensor<float, 2, 1> expected_result0{0.0, 3.0f};
-  Tensor<float, 2, 1> s0 = tosa::reluN(t0, max0);
+  {
+    Tensor0D<int32_t> operand{0};
+    int32_t max_value = 0;
+    Tensor0D<int32_t> expected_result{0};
+    Tensor0D<int32_t> result = tosa::reluN(operand, max_value);
 
-  EXPECT_THAT(s0, Pointwise(FloatEq(), expected_result0));
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+  {
+    Tensor1D<double, 2> operand{-4.7, 1.3};
+    double max_value = 1.4;
+    Tensor1D<double, 2> expected_result{0, 1.3};
+    Tensor1D<double, 2> result = tosa::reluN(operand, max_value);
 
-  Tensor<int64_t, 4, 2, 1> t1{-2, 2, -2, 3, 4, -5, 5, 5};
-  int64_t max1 = 3;
-  Tensor<int64_t, 4, 2, 1> expected_result1{0, 2, 0, 3, 3, 0, 3, 3};
-  Tensor<int64_t, 4, 2, 1> s1 = tosa::reluN(t1, max1);
-  EXPECT_THAT(s1, Pointwise(Eq(), expected_result1));
+    EXPECT_THAT(result, Pointwise(DoubleEq(), expected_result));
+  }
+  {
+    Tensor2D<float, 2, 2> operand{0.0f, -9.9f, 4.4f, 8.8f};
+    float max_value = 5.5f;
+    Tensor2D<float, 2, 2> expected_result{0.0f, 0.0f, 4.4f, 5.5f};
+    Tensor2D<float, 2, 2> result = tosa::reluN(operand, max_value);
 
-  int64_t max2 = 100;
-  Tensor<int64_t, 4, 2, 1> expected_result2{0, 2, 0, 3, 4, 0, 5, 5};
-  Tensor<int64_t, 4, 2, 1> s2 = tosa::reluN(t1, max2);
-  EXPECT_THAT(s2, Pointwise(Eq(), expected_result2));
+    EXPECT_THAT(result, Pointwise(FloatEq(), expected_result));
+  }
+  {
+    Tensor3D<int64_t, 3, 2, 1> operand{4, 1, -1, 3, 0, 2};
+    int64_t max_value = 3;
+    Tensor3D<int64_t, 3, 2, 1> expected_result{3, 1, 0, 3, 0, 2};
+    Tensor3D<int64_t, 3, 2, 1> result = tosa::reluN(operand, max_value);
+
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+  {
+    Tensor4D<int16_t, 1, 2, 3, 2> operand{7812,  15481,  -30284, 30996,
+                                          18736, 6699,   31903,  26229,
+                                          15931, -18954, -27643, 19133};
+    int16_t max_value = 20000;
+    Tensor4D<int16_t, 1, 2, 3, 2> expected_result{
+        7812, 15481, 0, 20000, 18736, 6699, 20000, 20000, 15931, 0, 0, 19133};
+    Tensor4D<int16_t, 1, 2, 3, 2> result = tosa::reluN(operand, max_value);
+
+    EXPECT_THAT(result, Pointwise(FloatEq(), expected_result));
+  }
 }
 
 // Binary elementwise ops

@@ -509,17 +509,41 @@ TEST(mhlo, round) {
   EXPECT_EQ(1.0, mhlo::round(0.7));
   EXPECT_EQ(0.0, mhlo::round(0.4));
 
-  Tensor0D<float> t0{0.7f};
-  Tensor1D<float, 3> t1{1.4f, 1.6f, 2.0f};
-  Tensor2D<double, 2, 2> t2{2.1, 1.6, 0.0, 2.0};
-  Tensor3D<float, 2, 1, 2> t3{2.1, 1.6, 0.0, 2.0};
-  Tensor4D<double, 2, 2, 1, 1> t4{2.1, 1.6, 0.0, 2.0};
+  {
+    Tensor0D<float> x{0.7f};
+    Tensor0D<float> expected_result{1.0f};
+    Tensor0D<float> result = mhlo::round(x);
 
-  EXPECT_THAT(mhlo::round(t0), Pointwise(Eq(), {1.0f}));
-  EXPECT_THAT(mhlo::round(t1), Pointwise(Eq(), {1.0f, 2.0f, 2.0f}));
-  EXPECT_THAT(mhlo::round(t2), Pointwise(Eq(), {2.0, 2.0, 0.0, 2.0}));
-  EXPECT_THAT(mhlo::round(t3), Pointwise(Eq(), {2.0f, 2.0f, 0.0f, 2.0f}));
-  EXPECT_THAT(mhlo::round(t4), Pointwise(Eq(), {2.0, 2.0, 0.0, 2.0}));
+    EXPECT_THAT(expected_result, Pointwise(Eq(), result));
+  }
+  {
+    Tensor1D<float, 3> x{1.4f, 1.6f, 2.0f};
+    Tensor1D<float, 3> expected_result{1.0f, 2.0f, 2.0f};
+    Tensor1D<float, 3> result = mhlo::round(x);
+
+    EXPECT_THAT(expected_result, Pointwise(Eq(), result));
+  }
+  {
+    Tensor2D<double, 2, 2> x{2.1, 1.6, 0.0, 2.0};
+    Tensor2D<double, 2, 2> expected_result{2.0, 2.0, 0.0, 2.0};
+    Tensor2D<double, 2, 2> result = mhlo::round(x);
+
+    EXPECT_THAT(expected_result, Pointwise(Eq(), result));
+  }
+  {
+    Tensor3D<float, 2, 1, 2> x{2.1, 1.6, 0.0, 2.0};
+    Tensor3D<float, 2, 1, 2> expected_result{2.0f, 2.0f, 0.0f, 2.0f};
+    Tensor3D<float, 2, 1, 2> result = mhlo::round(x);
+
+    EXPECT_THAT(expected_result, Pointwise(Eq(), result));
+  }
+  {
+    Tensor4D<double, 2, 2, 1, 1> x{2.1, 1.6, 0.0, 2.0};
+    Tensor4D<double, 2, 2, 1, 1> expected_result{2.0, 2.0, 0.0, 2.0};
+    Tensor4D<double, 2, 2, 1, 1> result = mhlo::round(x);
+
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
 }
 
 TEST(mhlo, sin) {

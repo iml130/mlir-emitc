@@ -629,21 +629,41 @@ TEST(mhlo, sqrt) {
 TEST(mhlo, tanh) {
   EXPECT_NEAR(0.0f, mhlo::tanh(0.0f), EPSILON);
 
-  Tensor0D<float> t0{0.0f};
-  Tensor1D<float, 2> t1{0.0f, 1.0f};
-  Tensor2D<double, 2, 2> t2{0.0, 1.0, -1.0, 0.0};
-  Tensor3D<float, 1, 2, 2> t3{0.0f, 1.0f, -1.0f, 0.0f};
-  Tensor4D<double, 3, 1, 1, 2> t4{0.0, 1.0, -1.0, 0.0f, M_PIf64, -M_2_PIf64};
+  {
+    Tensor0D<float> x{0.0f};
+    Tensor0D<float> expected_result{0.0f};
+    Tensor0D<float> result = mhlo::tanh(x);
 
-  EXPECT_THAT(mhlo::tanh(t0), Pointwise(FloatNear(EPSILON), {0.0f}));
-  EXPECT_THAT(mhlo::tanh(t1), Pointwise(FloatNear(EPSILON), {0.0f, 0.761594f}));
-  EXPECT_THAT(mhlo::tanh(t2), Pointwise(FloatNear(EPSILON),
-                                        {0.0f, 0.761594f, -0.761594f, 0.0f}));
-  EXPECT_THAT(mhlo::tanh(t3), Pointwise(FloatNear(EPSILON),
-                                        {0.0f, 0.761594f, -0.761594f, 0.0f}));
-  EXPECT_THAT(mhlo::tanh(t4),
-              Pointwise(FloatNear(EPSILON), {0.0f, 0.761594f, -0.761594f, 0.0f,
-                                             0.996272f, -0.562593f}));
+    EXPECT_THAT(result, Pointwise(FloatNear(EPSILON), expected_result));
+  }
+  {
+    Tensor1D<float, 2> x{0.0f, 1.0f};
+    Tensor1D<float, 2> expected_result{0.0f, 0.761594f};
+    Tensor1D<float, 2> result = mhlo::tanh(x);
+
+    EXPECT_THAT(result, Pointwise(FloatNear(EPSILON), expected_result));
+  }
+  {
+    Tensor2D<double, 2, 2> x{0.0, 1.0, -1.0, 0.0};
+    Tensor2D<double, 2, 2> expected_result{0.0f, 0.761594f, -0.761594f, 0.0f};
+    Tensor2D<double, 2, 2> result = mhlo::tanh(x);
+
+    EXPECT_THAT(result, Pointwise(FloatNear(EPSILON), expected_result));
+  }
+  {
+    Tensor3D<float, 1, 2, 2> x{0.0f, 1.0f, -1.0f, 0.0f};
+    Tensor3D<float, 1, 2, 2> expected_result{0.0f, 0.761594f, -0.761594f, 0.0f};
+    Tensor3D<float, 1, 2, 2> result = mhlo::tanh(x);
+
+    EXPECT_THAT(result, Pointwise(FloatNear(EPSILON), expected_result));
+  }
+  {
+    Tensor4D<double, 3, 1, 1, 2> x{0.0, 1.0, -1.0, 0.0f, M_PIf64, -M_2_PIf64};
+    Tensor4D<double, 3, 1, 1, 2> expected_result{0.0f, 0.761594f, -0.761594f, 0.0f, 0.996272f, -0.562593f};
+    Tensor4D<double, 3, 1, 1, 2> result = mhlo::tanh(x);
+
+    EXPECT_THAT(result, Pointwise(FloatNear(EPSILON), expected_result));
+  }
 }
 
 // Binary elementwise ops

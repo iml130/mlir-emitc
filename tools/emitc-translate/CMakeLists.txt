@@ -15,7 +15,7 @@ target_link_libraries(emitc-translate
   MLIRParser
   MLIRPass
   MLIRSPIRV
-  MLIRTranslation
+  MLIRTranslateLib
   MLIRSupport
   MLIRTargetCpp
   )

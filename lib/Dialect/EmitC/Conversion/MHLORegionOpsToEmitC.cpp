@@ -15,7 +15,7 @@
 #include "emitc/Dialect/EmitC/Conversion/Passes.h"
 #include "mlir-hlo/Dialect/mhlo/IR/hlo_ops.h"
 #include "mlir/Dialect/EmitC/IR/EmitC.h"
-#include "mlir/Dialect/StandardOps/IR/Ops.h"
+#include "mlir/Dialect/Func/IR/FuncOps.h"
 #include "mlir/IR/BlockAndValueMapping.h"
 #include "mlir/IR/BuiltinOps.h"
 #include "mlir/Pass/Pass.h"
@@ -45,7 +45,7 @@ SmallVector<Attribute, 2> indexSequence(int64_t n, MLIRContext *ctx) {
 struct ConvertMhloRegionOpsToEmitCPass
     : public ConvertMHLORegionOpsToEmitCBase<ConvertMhloRegionOpsToEmitCPass> {
   void getDependentDialects(::mlir::DialectRegistry &registry) const override {
-    registry.insert<EmitCDialect, StandardOpsDialect>();
+    registry.insert<EmitCDialect, func::FuncDialect>();
   }
 
   /// Perform the lowering to EmitC dialect.
@@ -143,7 +143,8 @@ private:
 
     outlinedFunc.walk([](mhlo::ReturnOp returnOp) {
       OpBuilder replacer(returnOp);
-      replacer.create<ReturnOp>(returnOp.getLoc(), returnOp.getOperands());
+      replacer.create<func::ReturnOp>(returnOp.getLoc(),
+                                      returnOp.getOperands());
       returnOp.erase();
     });
     return outlinedFunc;

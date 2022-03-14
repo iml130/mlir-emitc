@@ -1,11 +1,9 @@
-# Standard Op Coverage
+# Func Op Coverage
 
-The table below shows the supported Standard ops.
+The table below shows the supported func ops.
 
 | op                    | supported          | comment |
 | :-------------------- |:------------------:| :------ |
-| br                    | :white_check_mark: | via `emitc-translate` |
 | call                  | :white_check_mark: | via `emitc-translate` |
-| cond_br               | :white_check_mark: | via `emitc-translate` |
 | constant              | :white_check_mark: | via `emitc-translate` |
 | return                | :white_check_mark: | via `emitc-translate` |

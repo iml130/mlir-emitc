@@ -1880,35 +1880,36 @@ TEST(mhlo, select) {
   EXPECT_EQ(-1, mhlo::select(true, -1, 3));
   EXPECT_EQ(3, mhlo::select(false, -1, 3));
 
-  Tensor0D<int> s0{-3};
-  Tensor0D<int> t0{8};
-  Tensor0D<bool> p0{true};
+  {
+    Tensor0D<int> s{-3};
+    Tensor0D<int> t{8};
+    Tensor0D<bool> p{true};
 
-  auto lambda_0d = [&p0, &s0, &t0]() -> Tensor0D<int> {
-    return mhlo::select<Tensor0D<int>>(p0, s0, t0);
-  };
+    Tensor0D<int> expected_result{-3};
+    Tensor0D<int> result = mhlo::select<Tensor0D<int>>(p, s, t);
 
-  EXPECT_THAT(lambda_0d(), Pointwise(Eq(), {-3}));
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+  {
+    Tensor1D<float, 2> s{-1.3f, 2.4f};
+    Tensor1D<float, 2> t{0.2f, -3.7f};
+    Tensor1D<bool, 2> p{true, false};
 
-  Tensor1D<float, 2> s1{-1.3f, 2.4f};
-  Tensor1D<float, 2> t1{0.2f, -3.7f};
-  Tensor1D<bool, 2> p1{true, false};
+    Tensor1D<float, 2> expected_result{-1.3f, -3.7f};
+    Tensor1D<float, 2> result = mhlo::select<Tensor1D<float, 2>>(p, s, t);
 
-  auto lambda_1d = [&p1, &s1, &t1]() -> Tensor1D<float, 2> {
-    return mhlo::select<Tensor1D<float, 2>>(p1, s1, t1);
-  };
+    EXPECT_THAT(result, Pointwise(FloatEq(), expected_result));
+  }
+  {
+    Tensor2D<long, 2, 2> s{3, 1, 4, 9};
+    Tensor2D<long, 2, 2> t{-2, 8, 6, -10};
+    Tensor2D<bool, 2, 2> p{false, true, true, false};
 
-  EXPECT_THAT(lambda_1d(), Pointwise(FloatEq(), {-1.3f, -3.7f}));
+    Tensor2D<long, 2, 2> expected_result{-2, 1, 4, -10};
+    Tensor2D<long, 2, 2> result = mhlo::select<Tensor2D<long, 2, 2>>(p, s, t);
 
-  Tensor2D<long, 2, 2> s2{3, 1, 4, 9};
-  Tensor2D<long, 2, 2> t2{-2, 8, 6, -10};
-  Tensor2D<bool, 2, 2> p2{false, true, true, false};
-
-  auto lambda_2d = [&p2, &s2, &t2]() -> Tensor2D<long, 2, 2> {
-    return mhlo::select<Tensor2D<long, 2, 2>>(p2, s2, t2);
-  };
-
-  EXPECT_THAT(lambda_2d(), Pointwise(Eq(), {-2, 1, 4, -10}));
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
 }
 
 } // namespace

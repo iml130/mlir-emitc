@@ -601,6 +601,17 @@ inline Src select(typename replace_element_type<bool, Src>::type pred,
 }
 
 template <typename Src, IsTensor<Src> = true>
+inline Src select(Tensor<bool> pred, Src on_true, Src on_false) {
+  Src z;
+
+  for (size_t i = 0; i < Src::size(); i++) {
+    z[i] = pred[0] ? on_true[i] : on_false[i];
+  }
+
+  return z;
+}
+
+template <typename Src, IsTensor<Src> = true>
 inline Src select(typename replace_element_type<bool, Src>::type pred,
                   Src on_true, Src on_false) {
   Src z;

@@ -1901,11 +1901,31 @@ TEST(mhlo, select) {
     EXPECT_THAT(result, Pointwise(FloatEq(), expected_result));
   }
   {
+    Tensor1D<float, 2> s{-1.3f, 2.4f};
+    Tensor1D<float, 2> t{0.2f, -3.7f};
+    Tensor0D<bool> p{true};
+
+    Tensor1D<float, 2> expected_result = s;
+    Tensor1D<float, 2> result = mhlo::select<Tensor1D<float, 2>>(p, s, t);
+
+    EXPECT_THAT(result, Pointwise(FloatEq(), expected_result));
+  }
+  {
     Tensor2D<long, 2, 2> s{3, 1, 4, 9};
     Tensor2D<long, 2, 2> t{-2, 8, 6, -10};
     Tensor2D<bool, 2, 2> p{false, true, true, false};
 
     Tensor2D<long, 2, 2> expected_result{-2, 1, 4, -10};
+    Tensor2D<long, 2, 2> result = mhlo::select<Tensor2D<long, 2, 2>>(p, s, t);
+
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+  {
+    Tensor2D<long, 2, 2> s{3, 1, 4, 9};
+    Tensor2D<long, 2, 2> t{-2, 8, 6, -10};
+    Tensor0D<bool> p{false};
+
+    Tensor2D<long, 2, 2> expected_result = t;
     Tensor2D<long, 2, 2> result = mhlo::select<Tensor2D<long, 2, 2>>(p, s, t);
 
     EXPECT_THAT(result, Pointwise(Eq(), expected_result));

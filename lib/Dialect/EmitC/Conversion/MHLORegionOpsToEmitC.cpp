@@ -151,11 +151,6 @@ private:
   }
 
   LogicalResult convertToCall(mhlo::ReduceOp &op, FuncOp &funcOp) {
-    if (op.getNumResults() > 1) {
-      return op.emitWarning()
-             << "Variadic case is not supported in the header implemenetation";
-    }
-
     OpBuilder builder(op);
     auto *ctx = op.getContext();
 

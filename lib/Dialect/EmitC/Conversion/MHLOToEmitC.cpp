@@ -278,9 +278,11 @@ private:
 
     StringAttr callee = rewriter.getStringAttr("emitc::mhlo::compare");
 
-    StringRef comparisonDirection = compareOp.comparison_direction();
+    mhlo::ComparisonDirection comparisonDirection =
+        compareOp.comparison_direction();
     Optional<StringRef> functionName =
-        StringSwitch<Optional<StringRef>>(comparisonDirection)
+        StringSwitch<Optional<StringRef>>(
+            stringifyComparisonDirection(comparisonDirection))
             .Case("EQ", StringRef("std::equal_to"))
             .Case("NE", StringRef("std::not_equal_to"))
             .Case("GE", StringRef("std::greater_equal"))

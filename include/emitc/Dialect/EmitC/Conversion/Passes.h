@@ -16,14 +16,18 @@
 #include "mlir/Pass/Pass.h"
 
 namespace mlir {
+namespace func {
+class FuncOp;
+} // namespace func
+
 namespace emitc {
 
 std::unique_ptr<OperationPass<ModuleOp>>
 createConvertMhloRegionOpsToEmitCPass();
-std::unique_ptr<OperationPass<FuncOp>> createConvertMhloToEmitCPass();
-std::unique_ptr<OperationPass<FuncOp>> createConvertArithToEmitCPass();
-std::unique_ptr<OperationPass<FuncOp>> createConvertTensorToEmitCPass();
-std::unique_ptr<OperationPass<FuncOp>> createConvertTosaToEmitCPass();
+std::unique_ptr<OperationPass<func::FuncOp>> createConvertMhloToEmitCPass();
+std::unique_ptr<OperationPass<func::FuncOp>> createConvertArithToEmitCPass();
+std::unique_ptr<OperationPass<func::FuncOp>> createConvertTensorToEmitCPass();
+std::unique_ptr<OperationPass<func::FuncOp>> createConvertTosaToEmitCPass();
 
 #define GEN_PASS_REGISTRATION
 #include "emitc/Dialect/EmitC/Conversion/Passes.h.inc"

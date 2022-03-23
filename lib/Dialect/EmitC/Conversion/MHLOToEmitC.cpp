@@ -636,7 +636,7 @@ struct ConvertMhloToEmitCPass
 
 } // namespace
 
-std::unique_ptr<OperationPass<FuncOp>>
+std::unique_ptr<OperationPass<func::FuncOp>>
 mlir::emitc::createConvertMhloToEmitCPass() {
   return std::make_unique<ConvertMhloToEmitCPass>();
 }

@@ -70,13 +70,13 @@ private:
     StringRef funcName = "emitc::mhlo::batch_norm_inference";
     StringAttr callee = rewriter.getStringAttr(funcName);
 
-    SmallVector<Attribute, 2> args_ = indexSequence(
+    SmallVector<Attribute, 2> arguments = indexSequence(
         adaptor.getOperands().size(), batchNormInferenceOp.getContext());
 
-    args_.push_back(batchNormInferenceOp.epsilonAttr());
-    args_.push_back(batchNormInferenceOp.feature_indexAttr());
+    arguments.push_back(batchNormInferenceOp.epsilonAttr());
+    arguments.push_back(batchNormInferenceOp.feature_indexAttr());
 
-    ArrayAttr args = rewriter.getArrayAttr(args_);
+    ArrayAttr args = rewriter.getArrayAttr(arguments);
     ArrayAttr templateArgs = rewriter.getArrayAttr(
         {TypeAttr::get(batchNormInferenceOp.getResult().getType()),
          TypeAttr::get(adaptor.scale().getType())});
@@ -103,12 +103,12 @@ private:
     StringRef funcName = "emitc::mhlo::broadcast_in_dim";
     StringAttr callee = rewriter.getStringAttr(funcName);
 
-    SmallVector<Attribute, 2> args_ = indexSequence(
+    SmallVector<Attribute, 2> arguments = indexSequence(
         adaptor.getOperands().size(), broadcastInDimOp.getContext());
 
-    args_.push_back(broadcastInDimOp.broadcast_dimensions());
+    arguments.push_back(broadcastInDimOp.broadcast_dimensions());
 
-    ArrayAttr args = rewriter.getArrayAttr(args_);
+    ArrayAttr args = rewriter.getArrayAttr(arguments);
 
     ArrayAttr templateArgs = rewriter.getArrayAttr(
         {TypeAttr::get(broadcastInDimOp.getResult().getType())});
@@ -164,39 +164,40 @@ private:
     StringRef funcName = "emitc::mhlo::convolution";
     StringAttr callee = rewriter.getStringAttr(funcName);
 
-    SmallVector<Attribute, 2> args_ =
+    SmallVector<Attribute, 2> arguments =
         indexSequence(adaptor.getOperands().size(), convOp.getContext());
 
-    args_.push_back(convOp.batch_group_countAttr());
-    args_.push_back(rewriter.getI64IntegerAttr(
+    arguments.push_back(convOp.batch_group_countAttr());
+    arguments.push_back(rewriter.getI64IntegerAttr(
         convOp.dimension_numbers().getInputBatchDimension()));
-    args_.push_back(rewriter.getI64IntegerAttr(
+    arguments.push_back(rewriter.getI64IntegerAttr(
         convOp.dimension_numbers().getInputFeatureDimension()));
-    args_.push_back(rewriter.getI64TensorAttr(
+    arguments.push_back(rewriter.getI64TensorAttr(
         convOp.dimension_numbers().getInputSpatialDimensions()));
-    args_.push_back(rewriter.getI64IntegerAttr(
+    arguments.push_back(rewriter.getI64IntegerAttr(
         convOp.dimension_numbers().getKernelInputFeatureDimension()));
-    args_.push_back(rewriter.getI64IntegerAttr(
+    arguments.push_back(rewriter.getI64IntegerAttr(
         convOp.dimension_numbers().getKernelOutputFeatureDimension()));
-    args_.push_back(rewriter.getI64TensorAttr(
+    arguments.push_back(rewriter.getI64TensorAttr(
         convOp.dimension_numbers().getKernelSpatialDimensions()));
-    args_.push_back(rewriter.getI64IntegerAttr(
+    arguments.push_back(rewriter.getI64IntegerAttr(
         convOp.dimension_numbers().getOutputBatchDimension()));
-    args_.push_back(rewriter.getI64IntegerAttr(
+    arguments.push_back(rewriter.getI64IntegerAttr(
         convOp.dimension_numbers().getOutputFeatureDimension()));
-    args_.push_back(rewriter.getI64TensorAttr(
+    arguments.push_back(rewriter.getI64TensorAttr(
         convOp.dimension_numbers().getOutputSpatialDimensions()));
-    args_.push_back(convOp.feature_group_countAttr());
+    arguments.push_back(convOp.feature_group_countAttr());
 
-    args_.push_back(convOp.padding().getValueOr(i64ElementsAttr(0, 2, ctx)));
-    args_.push_back(
+    arguments.push_back(
+        convOp.padding().getValueOr(i64ElementsAttr(0, 2, ctx)));
+    arguments.push_back(
         convOp.lhs_dilation().getValueOr(i64ElementsAttr(1, 2, ctx)));
-    args_.push_back(
+    arguments.push_back(
         convOp.rhs_dilation().getValueOr(i64ElementsAttr(1, 2, ctx)));
-    args_.push_back(
+    arguments.push_back(
         convOp.window_strides().getValueOr(i64ElementsAttr(1, 2, ctx)));
 
-    ArrayAttr args = rewriter.getArrayAttr(args_);
+    ArrayAttr args = rewriter.getArrayAttr(arguments);
     ArrayAttr templateArgs =
         rewriter.getArrayAttr({TypeAttr::get(convOp.getResult().getType()),
                                TypeAttr::get(adaptor.lhs().getType()),
@@ -230,22 +231,22 @@ private:
     StringAttr callee = rewriter.getStringAttr(funcName);
     ArrayAttr args;
 
-    SmallVector<Attribute, 4> templateArgs_;
+    SmallVector<Attribute, 4> templateArguments;
 
     if (explicitResultType) {
       Type type = srcOp.getType();
-      templateArgs_.push_back(TypeAttr::get(type));
+      templateArguments.push_back(TypeAttr::get(type));
     }
 
     if (explicitOperandTypes) {
       for (auto operand : adaptor.getOperands()) {
         Type type = operand.getType();
-        templateArgs_.push_back(TypeAttr::get(type));
+        templateArguments.push_back(TypeAttr::get(type));
       }
     }
     ArrayAttr templateArgs;
-    if (!templateArgs_.empty()) {
-      templateArgs = ArrayAttr::get(srcOp.getContext(), templateArgs_);
+    if (!templateArguments.empty()) {
+      templateArgs = ArrayAttr::get(srcOp.getContext(), templateArguments);
     }
 
     rewriter.replaceOpWithNewOp<emitc::CallOp>(srcOp, srcOp.getType(), callee,
@@ -352,14 +353,14 @@ private:
     StringRef funcName = "emitc::mhlo::slice";
     StringAttr callee = rewriter.getStringAttr(funcName);
 
-    SmallVector<Attribute, 2> args_ =
+    SmallVector<Attribute, 2> arguments =
         indexSequence(adaptor.getOperands().size(), sliceOp.getContext());
 
-    args_.push_back(sliceOp.start_indices());
-    args_.push_back(sliceOp.limit_indices());
-    args_.push_back(sliceOp.strides());
+    arguments.push_back(sliceOp.start_indices());
+    arguments.push_back(sliceOp.limit_indices());
+    arguments.push_back(sliceOp.strides());
 
-    ArrayAttr args = rewriter.getArrayAttr(args_);
+    ArrayAttr args = rewriter.getArrayAttr(arguments);
     ArrayAttr templateArgs =
         rewriter.getArrayAttr({TypeAttr::get(sliceOp.getResult().getType())});
 
@@ -387,12 +388,12 @@ private:
     StringRef funcName = "emitc::mhlo::dynamic_slice";
     StringAttr callee = rewriter.getStringAttr(funcName);
 
-    SmallVector<Attribute, 2> args_ = indexSequence(
+    SmallVector<Attribute, 2> arguments = indexSequence(
         adaptor.getOperands().size(), dynamicSliceOp.getContext());
 
-    args_.push_back(dynamicSliceOp.slice_sizes());
+    arguments.push_back(dynamicSliceOp.slice_sizes());
 
-    ArrayAttr args = rewriter.getArrayAttr(args_);
+    ArrayAttr args = rewriter.getArrayAttr(arguments);
 
     ArrayAttr templateArgs = rewriter.getArrayAttr(
         {TypeAttr::get(dynamicSliceOp.getResult().getType())});
@@ -448,14 +449,14 @@ private:
                   ConversionPatternRewriter &rewriter) const override {
     StringAttr callee = rewriter.getStringAttr("emitc::mhlo::pad");
 
-    SmallVector<Attribute, 2> args_ =
+    SmallVector<Attribute, 2> arguments =
         indexSequence(adaptor.getOperands().size(), padOp.getContext());
 
-    args_.push_back(padOp.edge_padding_low());
-    args_.push_back(padOp.edge_padding_high());
-    args_.push_back(padOp.interior_padding());
+    arguments.push_back(padOp.edge_padding_low());
+    arguments.push_back(padOp.edge_padding_high());
+    arguments.push_back(padOp.interior_padding());
 
-    ArrayAttr args = rewriter.getArrayAttr(args_);
+    ArrayAttr args = rewriter.getArrayAttr(arguments);
 
     Type resultType = padOp.getResult().getType();
     ArrayAttr templateArgs = rewriter.getArrayAttr({TypeAttr::get(resultType)});

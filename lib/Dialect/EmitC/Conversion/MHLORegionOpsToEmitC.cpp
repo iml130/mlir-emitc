@@ -109,7 +109,8 @@ struct ConvertMhloRegionOpsToEmitCPass
 
 private:
   template <typename OpType>
-  Optional<FuncOp> outlineRegionImpl(OpType &op, std::string functionName) {
+  Optional<FuncOp> outlineRegionImpl(OpType &op,
+                                     const std::string &functionName) {
     Location loc = op.getLoc();
     // Create a builder with no insertion point, insertion will happen
     // separately due to symbol table manipulation.

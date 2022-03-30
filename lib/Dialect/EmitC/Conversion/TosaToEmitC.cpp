@@ -68,23 +68,23 @@ private:
     StringAttr callee = rewriter.getStringAttr(funcName);
     ArrayAttr args;
 
-    SmallVector<Attribute, 4> templateArgs_;
+    SmallVector<Attribute, 4> templateArguments;
 
     if (explicitResultType) {
       Type type = srcOp.getType();
-      templateArgs_.push_back(TypeAttr::get(type));
+      templateArguments.push_back(TypeAttr::get(type));
     }
 
     if (explicitOperandTypes) {
       for (auto operand : adaptor.getOperands()) {
         Type type = operand.getType();
-        templateArgs_.push_back(TypeAttr::get(type));
+        templateArguments.push_back(TypeAttr::get(type));
       }
     }
 
     ArrayAttr templateArgs;
-    if (!templateArgs_.empty()) {
-      templateArgs = ArrayAttr::get(srcOp.getContext(), templateArgs_);
+    if (!templateArguments.empty()) {
+      templateArgs = ArrayAttr::get(srcOp.getContext(), templateArguments);
     }
 
     rewriter.replaceOpWithNewOp<emitc::CallOp>(srcOp, srcOp.getType(), callee,
@@ -253,8 +253,8 @@ private:
     StringRef funcName = "emitc::tosa::clamp";
     StringAttr callee = rewriter.getStringAttr(funcName);
 
-    SmallVector<Attribute, 2> args_;
-    args_.push_back(rewriter.getIndexAttr(0));
+    SmallVector<Attribute, 2> arguments;
+    arguments.push_back(rewriter.getIndexAttr(0));
 
     // TOSA specifies the min/max attributes to be either exact i64 or f32,
     // regardless of the operand's element type. So we need to make sure that
@@ -266,19 +266,19 @@ private:
       // Change the {min,max}_int type to the element type of the operand.
       auto minInt = clampOp.min_int();
       auto maxInt = clampOp.max_int();
-      args_.push_back(IntegerAttr::get(elementType, minInt));
-      args_.push_back(IntegerAttr::get(elementType, maxInt));
+      arguments.push_back(IntegerAttr::get(elementType, minInt));
+      arguments.push_back(IntegerAttr::get(elementType, maxInt));
     } else if (elementType.isa<FloatType>()) {
       // Change the {min,max}_fp type to the element type of the operand.
       auto minFp = clampOp.min_fpAttr().getValueAsDouble();
       auto maxFp = clampOp.max_fpAttr().getValueAsDouble();
-      args_.push_back(FloatAttr::get(elementType, minFp));
-      args_.push_back(FloatAttr::get(elementType, maxFp));
+      arguments.push_back(FloatAttr::get(elementType, minFp));
+      arguments.push_back(FloatAttr::get(elementType, maxFp));
     } else {
       return clampOp.emitError(
           "Operand of tosa.clamp has to be tensor of integer or float values.");
     }
-    ArrayAttr args = rewriter.getArrayAttr(args_);
+    ArrayAttr args = rewriter.getArrayAttr(arguments);
     ArrayAttr templateArgs;
 
     rewriter.replaceOpWithNewOp<emitc::CallOp>(clampOp, clampOp.getType(),
@@ -335,8 +335,8 @@ private:
     StringRef funcName = "emitc::tosa::reluN";
     StringAttr callee = rewriter.getStringAttr(funcName);
 
-    SmallVector<Attribute, 2> args_;
-    args_.push_back(rewriter.getIndexAttr(0));
+    SmallVector<Attribute, 2> arguments;
+    arguments.push_back(rewriter.getIndexAttr(0));
 
     // TOSA specifies the max attributes to be either exact i64 or f32,
     // regardless of the operand's element type. So we need to make sure that
@@ -347,16 +347,16 @@ private:
     if (elementType.isa<IntegerType>()) {
       // Change the max_int type to the element type of the operand.
       auto maxInt = reluNOp.max_int();
-      args_.push_back(IntegerAttr::get(elementType, maxInt));
+      arguments.push_back(IntegerAttr::get(elementType, maxInt));
     } else if (elementType.isa<FloatType>()) {
       // Change the max_fp type to the element type of the operand.
       auto maxFp = reluNOp.max_fpAttr().getValueAsDouble();
-      args_.push_back(FloatAttr::get(elementType, maxFp));
+      arguments.push_back(FloatAttr::get(elementType, maxFp));
     } else {
       return reluNOp.emitError(
           "Operand of tosa.reluN has to be tensor of integer or float values.");
     }
-    ArrayAttr args = rewriter.getArrayAttr(args_);
+    ArrayAttr args = rewriter.getArrayAttr(arguments);
     ArrayAttr templateArgs;
 
     rewriter.replaceOpWithNewOp<emitc::CallOp>(reluNOp, reluNOp.getType(),
@@ -483,23 +483,23 @@ private:
     StringAttr callee = rewriter.getStringAttr(funcName);
     ArrayAttr args;
 
-    SmallVector<Attribute, 4> templateArgs_;
+    SmallVector<Attribute, 4> templateArguments;
 
     if (explicitResultType) {
       Type type = srcOp.getType();
-      templateArgs_.push_back(TypeAttr::get(type));
+      templateArguments.push_back(TypeAttr::get(type));
     }
 
     if (explicitOperandTypes) {
       for (auto operand : adaptor.getOperands()) {
         Type type = operand.getType();
-        templateArgs_.push_back(TypeAttr::get(type));
+        templateArguments.push_back(TypeAttr::get(type));
       }
     }
 
     ArrayAttr templateArgs;
-    if (!templateArgs_.empty()) {
-      templateArgs = ArrayAttr::get(srcOp.getContext(), templateArgs_);
+    if (!templateArguments.empty()) {
+      templateArgs = ArrayAttr::get(srcOp.getContext(), templateArguments);
     }
 
     SmallVector<Value, 2> broadcastedOperands =
@@ -538,12 +538,12 @@ private:
 
     auto shiftAttr = mulOp.shiftAttr();
     ArrayAttr args;
-    SmallVector<Attribute, 1> args_;
+    SmallVector<Attribute, 1> arguments;
     if (shiftAttr.getInt() > 0) {
-      args_.push_back(rewriter.getIndexAttr(0));
-      args_.push_back(rewriter.getIndexAttr(1));
-      args_.push_back(shiftAttr);
-      args = rewriter.getArrayAttr(args_);
+      arguments.push_back(rewriter.getIndexAttr(0));
+      arguments.push_back(rewriter.getIndexAttr(1));
+      arguments.push_back(shiftAttr);
+      args = rewriter.getArrayAttr(arguments);
     }
 
     ArrayAttr templateArgs;
@@ -580,11 +580,11 @@ private:
 
     auto roundAttr = arithmeticRightShiftOp.roundAttr();
     ArrayAttr args;
-    SmallVector<Attribute, 1> args_;
-    args_.push_back(rewriter.getIndexAttr(0));
-    args_.push_back(rewriter.getIndexAttr(1));
-    args_.push_back(roundAttr);
-    args = rewriter.getArrayAttr(args_);
+    SmallVector<Attribute, 1> arguments;
+    arguments.push_back(rewriter.getIndexAttr(0));
+    arguments.push_back(rewriter.getIndexAttr(1));
+    arguments.push_back(roundAttr);
+    args = rewriter.getArrayAttr(arguments);
 
     ArrayAttr templateArgs;
 
@@ -615,11 +615,11 @@ private:
                   ConversionPatternRewriter &rewriter) const override {
     StringAttr callee = rewriter.getStringAttr(funcName);
 
-    SmallVector<Attribute> args_ =
+    SmallVector<Attribute> arguments =
         indexSequence(adaptor.getOperands().size(), reduceOp.getContext());
-    args_.push_back(reduceOp.axisAttr());
+    arguments.push_back(reduceOp.axisAttr());
 
-    ArrayAttr args = rewriter.getArrayAttr(args_);
+    ArrayAttr args = rewriter.getArrayAttr(arguments);
 
     // We need to adjust output shape of reduce since our implementation does
     // not keep reduced dimensions.
@@ -650,14 +650,14 @@ private:
         adaptor.getOperands());
 
     // Create tosa.reshape op.
-    SmallVector<Attribute> newShapeAttr_;
+    SmallVector<Attribute> newShapeAttributes;
     for (auto dim : output.getType().cast<RankedTensorType>().getShape()) {
-      newShapeAttr_.push_back(
+      newShapeAttributes.push_back(
           IntegerAttr::get(rewriter.getIntegerType(64), dim));
     };
 
     ArrayAttr newShapeAttr =
-        ArrayAttr::get(reduceOp.getContext(), newShapeAttr_);
+        ArrayAttr::get(reduceOp.getContext(), newShapeAttributes);
 
     rewriter.replaceOpWithNewOp<tosa::ReshapeOp>(
         reduceOp, output.getType(), emitcReduceOp.getResult(0), newShapeAttr);
@@ -873,7 +873,7 @@ struct ConvertTosaToEmitCPass
 
 } // namespace
 
-std::unique_ptr<OperationPass<FuncOp>>
+std::unique_ptr<OperationPass<func::FuncOp>>
 mlir::emitc::createConvertTosaToEmitCPass() {
   return std::make_unique<ConvertTosaToEmitCPass>();
 }

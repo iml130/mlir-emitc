@@ -109,7 +109,8 @@ struct ConvertMhloRegionOpsToEmitCPass
 
 private:
   template <typename OpType>
-  Optional<FuncOp> outlineRegionImpl(OpType &op, std::string functionName) {
+  Optional<FuncOp> outlineRegionImpl(OpType &op,
+                                     const std::string &functionName) {
     Location loc = op.getLoc();
     // Create a builder with no insertion point, insertion will happen
     // separately due to symbol table manipulation.
@@ -159,24 +160,24 @@ private:
     StringRef funcName = "emitc::mhlo::reduce";
     StringAttr callee = StringAttr::get(ctx, funcName);
 
-    SmallVector<Attribute, 2> args_ =
+    SmallVector<Attribute, 2> arguments =
         indexSequence(operands.size(), op.getContext());
 
-    args_.push_back(op.dimensions());
-    args_.push_back(SymbolRefAttr::get(ctx, funcOp.getName()));
+    arguments.push_back(op.dimensions());
+    arguments.push_back(SymbolRefAttr::get(ctx, funcOp.getName()));
 
-    ArrayAttr args = ArrayAttr::get(ctx, args_);
+    ArrayAttr args = ArrayAttr::get(ctx, arguments);
 
-    SmallVector<Attribute, 2> templateArgs_ = llvm::to_vector<2>(
+    SmallVector<Attribute, 2> templateArguments = llvm::to_vector<2>(
         llvm::map_range(llvm::seq<size_t>(0, op.getNumResults()),
                         [&op](size_t i) -> Attribute {
                           return TypeAttr::get(op.getResults()[i].getType());
                         }));
 
-    templateArgs_.push_back(
+    templateArguments.push_back(
         IntegerAttr::get(IntegerType::get(ctx, 64), op.dimensions().size()));
 
-    ArrayAttr templateArgs = ArrayAttr::get(ctx, templateArgs_);
+    ArrayAttr templateArgs = ArrayAttr::get(ctx, templateArguments);
 
     emitc::CallOp callOp = builder.create<emitc::CallOp>(
         op.getLoc(), op.getResultTypes(), callee, args, templateArgs, operands);
@@ -194,20 +195,21 @@ private:
     StringRef funcName = "emitc::mhlo::reduce_window";
     StringAttr callee = StringAttr::get(ctx, funcName);
 
-    SmallVector<Attribute, 2> args_ = indexSequence(operands.size(), ctx);
+    SmallVector<Attribute, 2> arguments = indexSequence(operands.size(), ctx);
 
     size_t dim = op.getResult(0).getType().cast<RankedTensorType>().getRank();
-    args_.push_back(op.window_dimensions());
-    args_.push_back(
+    arguments.push_back(op.window_dimensions());
+    arguments.push_back(
         op.window_strides().getValueOr(i64ElementsAttr(1, dim, ctx)));
-    args_.push_back(
+    arguments.push_back(
         op.base_dilations().getValueOr(i64ElementsAttr(1, dim, ctx)));
-    args_.push_back(
+    arguments.push_back(
         op.window_dilations().getValueOr(i64ElementsAttr(1, dim, ctx)));
-    args_.push_back(op.padding().getValueOr(i64ElementsAttr(0, 2 * dim, ctx)));
-    args_.push_back(SymbolRefAttr::get(ctx, funcOp.getName()));
+    arguments.push_back(
+        op.padding().getValueOr(i64ElementsAttr(0, 2 * dim, ctx)));
+    arguments.push_back(SymbolRefAttr::get(ctx, funcOp.getName()));
 
-    ArrayAttr args = ArrayAttr::get(ctx, args_);
+    ArrayAttr args = ArrayAttr::get(ctx, arguments);
 
     ArrayAttr templateArgs =
         ArrayAttr::get(ctx, {TypeAttr::get(op.getResult(0).getType())});

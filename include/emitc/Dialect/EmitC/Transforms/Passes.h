@@ -18,9 +18,7 @@
 namespace mlir {
 namespace emitc {
 
-#ifdef EMITC_BUILD_HLO
 std::unique_ptr<OperationPass<ModuleOp>> createInsertEmitCMHLOIncludePass();
-#endif // EMITC_BUILD_HLO
 std::unique_ptr<OperationPass<ModuleOp>> createInsertEmitCArithIncludePass();
 std::unique_ptr<OperationPass<ModuleOp>> createInsertEmitCTensorIncludePass();
 std::unique_ptr<OperationPass<ModuleOp>> createInsertEmitCTosaIncludePass();

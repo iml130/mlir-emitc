@@ -357,6 +357,10 @@ func @mhlo_reduce(%arg0 : tensor<2x1000xf32>, %arg1 : tensor<f32>, %arg2 : tenso
   // CHECK: "emitc::mhlo::add"(%arg0, %arg1) : (tensor<f32>, tensor<f32>) -> tensor<f32>
   // CHECK: func @mhlo_reduce_lambda_1(%arg0: tensor<i32>, %arg1: tensor<i32>)
   // CHECK: "emitc::mhlo::max"(%arg0, %arg1) : (tensor<i32>, tensor<i32>) -> tensor<i32>
+  // CHECK: func @mhlo_reduce_lambda_2(%arg0: tensor<f32>, %arg1: tensor<i32>, %arg2: tensor<f32>, %arg3: tensor<i32>)
+  // CHECK: "emitc::mhlo::max"(%arg0, %arg2) : (tensor<f32>, tensor<f32>) -> tensor<f32>
+  // CHECK: "emitc::mhlo::min"(%arg1, %arg3) : (tensor<i32>, tensor<i32>) -> tensor<i32>
+  
   // CHECK: emitc.call "emitc::mhlo::reduce"(%arg0, %arg1) {args = [0 : index, 1 : index, dense<1> : tensor<1xi64>, @mhlo_reduce_lambda_0], template_args = [tensor<2xf32>, 1]} : (tensor<2x1000xf32>, tensor<f32>) -> tensor<2xf32>
   %0 = "mhlo.reduce"(%arg0, %arg1) ({
     ^bb0(%arg4: tensor<f32>, %arg5: tensor<f32>):
@@ -370,6 +374,15 @@ func @mhlo_reduce(%arg0 : tensor<2x1000xf32>, %arg1 : tensor<f32>, %arg2 : tenso
       %2 = mhlo.maximum %arg4, %arg5 : tensor<i32>
       "mhlo.return"(%2) : (tensor<i32>) -> ()
     }) {dimensions = dense<1> : tensor<1xi64>} : (tensor<2x1000xi32>, tensor<i32>) -> tensor<2xi32>
+  
+  // CHECK: emitc.call "emitc::mhlo::reduce"(%arg0, %arg2, %arg1, %arg3) {args = [0 : index, 1 : index, 2 : index, 3 : index, dense<1> : tensor<1xi64>, @mhlo_reduce_lambda_2], template_args = [tensor<2xf32>, tensor<2xi32>, 1]} : (tensor<2x1000xf32>, tensor<2x1000xi32>, tensor<f32>, tensor<i32>) -> (tensor<2xf32>, tensor<2xi32>)
+  %2:2 = mhlo.reduce(%arg0 init: %arg1), (%arg2 init: %arg3) across dimensions = [1] : (tensor<2x1000xf32>, tensor<2x1000xi32>, tensor<f32>, tensor<i32>) -> (tensor<2xf32>, tensor<2xi32>)
+     reducer(%arg4: tensor<f32>, %arg5: tensor<f32>) (%arg6: tensor<i32>, %arg7: tensor<i32>)  {
+      %2 = mhlo.maximum %arg4, %arg5 : tensor<f32>
+      %3 = "mhlo.minimum"(%arg6, %arg7) : (tensor<i32>, tensor<i32>) -> tensor<i32>
+      "mhlo.return"(%2, %3) : (tensor<f32>, tensor<i32>) -> ()
+    }
+  
   return %1 : tensor<2xi32>
 }
 

@@ -9,6 +9,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+#include <tuple>
 
 #include "gmock/gmock.h"
 
@@ -1784,54 +1785,171 @@ Tensor<int32_t> reduce_computation(Tensor<int32_t> a, Tensor<int32_t> b) {
   return v0;
 }
 
+std::tuple<Tensor<int32_t>, Tensor<int32_t>>
+reduce_computation_tuple(Tensor<int32_t> reduction_a, Tensor<int32_t> next_a,
+                         Tensor<int32_t> reduction_b, Tensor<int32_t> next_b) {
+  Tensor<int32_t> v0 = mhlo::add(reduction_a, next_a);
+  Tensor<int32_t> v1 = mhlo::min(reduction_b, next_b);
+  return std::make_tuple(v0, v1);
+}
+
 TEST(mhlo, reduce) {
-  Tensor<int32_t, 2, 3> t0{1, 2, 3, 4, 5, 6};
-  Tensor<int32_t, 4, 2, 3> t1{1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6,
-                              1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6};
-  Tensor<int32_t, 3> expected_result0_0{5, 7, 9};
-  Tensor<int32_t, 2> expected_result0_1{6, 15};
-  Tensor<int32_t> expected_result0_01{21};
-  Tensor<int32_t, 2, 3> expected_result1_0{4, 8, 12, 16, 20, 24};
-  Tensor<int32_t, 4, 3> expected_result1_1{5, 7, 9, 5, 7, 9, 5, 7, 9, 5, 7, 9};
-  Tensor<int32_t, 4, 2> expected_result1_2{6, 15, 6, 15, 6, 15, 6, 15};
-  Tensor<int32_t, 3> expected_result1_01{20, 28, 36};
-  Tensor<int32_t, 2> expected_result1_02{24, 60};
-  Tensor<int32_t, 4> expected_result1_12{21, 21, 21, 21};
-  Tensor<int32_t> expected_result1_012{84};
+  {
+    Tensor<int32_t, 2, 3> x{1, 2, 3, 4, 5, 6};
+    Tensor<int32_t> initValue{0};
 
-  Tensor<int32_t> initValue;
+    Tensor<int32_t, 3> expected_result{5, 7, 9};
+    Tensor<int32_t, 3> result = mhlo::reduce<Tensor<int32_t, 3>, 1>(
+        x, initValue, {0}, reduce_computation);
 
-  Tensor<int32_t, 3> result0_0 = mhlo::reduce<Tensor<int32_t, 3>, 1>(
-      t0, initValue, {0}, reduce_computation);
-  Tensor<int32_t, 2> result0_1 = mhlo::reduce<Tensor<int32_t, 2>, 1>(
-      t0, initValue, {1}, reduce_computation);
-  Tensor<int32_t> result0_01 = mhlo::reduce<Tensor<int32_t>, 2>(
-      t0, initValue, {0, 1}, reduce_computation);
-  Tensor<int32_t, 2, 3> result1_0 = mhlo::reduce<Tensor<int32_t, 2, 3>, 1>(
-      t1, initValue, {0}, reduce_computation);
-  Tensor<int32_t, 4, 3> result1_1 = mhlo::reduce<Tensor<int32_t, 4, 3>, 1>(
-      t1, initValue, {1}, reduce_computation);
-  Tensor<int32_t, 4, 2> result1_2 = mhlo::reduce<Tensor<int32_t, 4, 2>, 1>(
-      t1, initValue, {2}, reduce_computation);
-  Tensor<int32_t, 3> result1_01 = mhlo::reduce<Tensor<int32_t, 3>, 2>(
-      t1, initValue, {0, 1}, reduce_computation);
-  Tensor<int32_t, 2> result1_02 = mhlo::reduce<Tensor<int32_t, 2>, 2>(
-      t1, initValue, {0, 2}, reduce_computation);
-  Tensor<int32_t, 4> result1_12 = mhlo::reduce<Tensor<int32_t, 4>, 2>(
-      t1, initValue, {1, 2}, reduce_computation);
-  Tensor<int32_t> result1_012 = mhlo::reduce<Tensor<int32_t>, 3>(
-      t1, initValue, {0, 1, 2}, reduce_computation);
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
 
-  EXPECT_THAT(result0_0, Pointwise(Eq(), expected_result0_0));
-  EXPECT_THAT(result0_1, Pointwise(Eq(), expected_result0_1));
-  EXPECT_THAT(result0_01, Pointwise(Eq(), expected_result0_01));
-  EXPECT_THAT(result1_0, Pointwise(Eq(), expected_result1_0));
-  EXPECT_THAT(result1_1, Pointwise(Eq(), expected_result1_1));
-  EXPECT_THAT(result1_2, Pointwise(Eq(), expected_result1_2));
-  EXPECT_THAT(result1_01, Pointwise(Eq(), expected_result1_01));
-  EXPECT_THAT(result1_02, Pointwise(Eq(), expected_result1_02));
-  EXPECT_THAT(result1_12, Pointwise(Eq(), expected_result1_12));
-  EXPECT_THAT(result1_012, Pointwise(Eq(), expected_result1_012));
+  {
+    Tensor<int32_t, 2, 3> x{1, 2, 3, 4, 5, 6};
+    Tensor<int32_t> initValue{0};
+
+    Tensor<int32_t, 2> expected_result{6, 15};
+    Tensor<int32_t, 2> result = mhlo::reduce<Tensor<int32_t, 2>, 1>(
+        x, initValue, {1}, reduce_computation);
+
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+
+  {
+    Tensor<int32_t, 2, 3> x{1, 2, 3, 4, 5, 6};
+    Tensor<int32_t> initValue{0};
+
+    Tensor<int32_t> expected_result{21};
+    Tensor<int32_t> result = mhlo::reduce<Tensor<int32_t>, 2>(
+        x, initValue, {0, 1}, reduce_computation);
+
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+
+  {
+    Tensor<int32_t, 4, 2, 3> x{1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6,
+                               1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6};
+    Tensor<int32_t> initValue{0};
+
+    Tensor<int32_t, 2, 3> expected_result{4, 8, 12, 16, 20, 24};
+    Tensor<int32_t, 2, 3> result = mhlo::reduce<Tensor<int32_t, 2, 3>, 1>(
+        x, initValue, {0}, reduce_computation);
+
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+
+  {
+    Tensor<int32_t, 4, 2, 3> x{1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6,
+                               1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6};
+    Tensor<int32_t> initValue{0};
+
+    Tensor<int32_t, 4, 3> expected_result{5, 7, 9, 5, 7, 9, 5, 7, 9, 5, 7, 9};
+    Tensor<int32_t, 4, 3> result = mhlo::reduce<Tensor<int32_t, 4, 3>, 1>(
+        x, initValue, {1}, reduce_computation);
+
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+
+  {
+    Tensor<int32_t, 4, 2, 3> x{1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6,
+                               1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6};
+    Tensor<int32_t> initValue{0};
+
+    Tensor<int32_t, 4, 2> expected_result{6, 15, 6, 15, 6, 15, 6, 15};
+    Tensor<int32_t, 4, 2> result = mhlo::reduce<Tensor<int32_t, 4, 2>, 1>(
+        x, initValue, {2}, reduce_computation);
+
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+
+  {
+    Tensor<int32_t, 4, 2, 3> x{1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6,
+                               1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6};
+    Tensor<int32_t> initValue{0};
+
+    Tensor<int32_t, 3> expected_result{20, 28, 36};
+    Tensor<int32_t, 3> result = mhlo::reduce<Tensor<int32_t, 3>, 2>(
+        x, initValue, {0, 1}, reduce_computation);
+
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+
+  {
+    Tensor<int32_t, 4, 2, 3> x{1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6,
+                               1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6};
+    Tensor<int32_t> initValue{0};
+
+    Tensor<int32_t, 2> expected_result{24, 60};
+    Tensor<int32_t, 2> result = mhlo::reduce<Tensor<int32_t, 2>, 2>(
+        x, initValue, {0, 2}, reduce_computation);
+
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+
+  {
+    Tensor<int32_t, 4, 2, 3> x{1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6,
+                               1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6};
+    Tensor<int32_t> initValue{0};
+
+    Tensor<int32_t, 4> expected_result{21, 21, 21, 21};
+    Tensor<int32_t, 4> result = mhlo::reduce<Tensor<int32_t, 4>, 2>(
+        x, initValue, {1, 2}, reduce_computation);
+
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+
+  {
+    Tensor<int32_t, 4, 2, 3> x{1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6,
+                               1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6};
+    Tensor<int32_t> initValue{0};
+
+    Tensor<int32_t> expected_result{84};
+    Tensor<int32_t> result = mhlo::reduce<Tensor<int32_t>, 3>(
+        x, initValue, {0, 1, 2}, reduce_computation);
+
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+
+  // 2 return values
+  {
+    Tensor<int32_t, 2, 3> x1{1, 2, 3, 4, 5, 6};
+    Tensor<int32_t, 2, 3> x2{1, 2, 3, 4, 5, 6};
+    Tensor<int32_t> initValue1{0};
+    Tensor<int32_t> initValue2{std::numeric_limits<int32_t>::max()};
+
+    std::tuple<Tensor<int32_t, 3>, Tensor<int32_t, 3>> expected_result{
+        {5, 7, 9}, {1, 2, 3}};
+
+    std::tuple<Tensor<int32_t, 3>, Tensor<int32_t, 3>> result =
+        mhlo::reduce<Tensor<int32_t, 3>, Tensor<int32_t, 3>, 1>(
+            x1, x2, initValue1, initValue2, {0}, reduce_computation_tuple);
+
+    EXPECT_THAT(std::get<0>(result),
+                Pointwise(Eq(), std::get<0>(expected_result)));
+    EXPECT_THAT(std::get<1>(result),
+                Pointwise(Eq(), std::get<1>(expected_result)));
+  }
+
+  {
+    Tensor<int32_t, 4, 2, 3> x1{1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6,
+                                1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6};
+    Tensor<int32_t, 4, 2, 3> x2{1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6,
+                                1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6};
+    Tensor<int32_t> initValue1{0};
+    Tensor<int32_t> initValue2{std::numeric_limits<int32_t>::max()};
+
+    std::tuple<Tensor<int32_t>, Tensor<int32_t>> expected_result{{84}, {1}};
+    std::tuple<Tensor<int32_t>, Tensor<int32_t>> result =
+        mhlo::reduce<Tensor<int32_t>, Tensor<int32_t>, 3>(
+            x1, x2, initValue1, initValue2, {0, 1, 2},
+            reduce_computation_tuple);
+
+    EXPECT_THAT(std::get<0>(result),
+                Pointwise(Eq(), std::get<0>(expected_result)));
+    EXPECT_THAT(std::get<1>(result),
+                Pointwise(Eq(), std::get<1>(expected_result)));
+  }
 }
 
 TEST(mhlo, reduce_window) {

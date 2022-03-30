@@ -463,6 +463,7 @@ inline Dest pad(Src operand,
 }
 
 // ReduceOp
+// 1 result overload
 template <typename Dest, size_t Dimension, typename Src, typename Computation>
 inline Dest
 reduce(Src operand, Tensor<typename get_element_type<Src>::type> initValue,
@@ -471,7 +472,7 @@ reduce(Src operand, Tensor<typename get_element_type<Src>::type> initValue,
   static_assert(is_tensor<Dest>::value, "Expected tensor result");
 
   using ET_Src = typename get_element_type<Src>::type;
-  using ET_Dest = typename get_element_type<Src>::type;
+  using ET_Dest = typename get_element_type<Dest>::type;
 
   static_assert(std::is_same<ET_Src, ET_Dest>::value, "Element type mismatch");
 
@@ -512,6 +513,82 @@ reduce(Src operand, Tensor<typename get_element_type<Src>::type> initValue,
   }
 
   return result;
+}
+
+// 2 result overload
+template <typename Dest1, typename Dest2, size_t Dimension, typename Src1,
+          typename Src2, typename Computation>
+inline std::tuple<Dest1, Dest2>
+reduce(Src1 operand1, Src2 operand2,
+       Tensor<typename get_element_type<Src1>::type> initValue1,
+       Tensor<typename get_element_type<Src2>::type> initValue2,
+       Tensor<int64_t, Dimension> dimensions, Computation computation) {
+  static_assert(is_tensor<Src1>::value, "Expected tensor argument");
+  static_assert(is_tensor<Src2>::value, "Expected tensor argument");
+  static_assert(is_tensor<Dest1>::value, "Expected tensor result");
+  static_assert(is_tensor<Dest2>::value, "Expected tensor result");
+
+  using ET_Src1 = typename get_element_type<Src1>::type;
+  using ET_Src2 = typename get_element_type<Src2>::type;
+  using ET_Dest1 = typename get_element_type<Dest1>::type;
+  using ET_Dest2 = typename get_element_type<Dest2>::type;
+
+  static_assert(std::is_same<ET_Src1, ET_Dest2>::value,
+                "Element type mismatch");
+  static_assert(std::is_same<ET_Src2, ET_Dest2>::value,
+                "Element type mismatch");
+
+  static_assert(Src1::rank() == Dest1::rank() + Dimension,
+                "source rank must equal dest rank + dimension size");
+  static_assert(Src2::rank() == Dest2::rank() + Dimension,
+                "source rank must equal dest rank + dimension size");
+
+  static_assert(Src1::rank() == Src2::rank(), "source ranks must match");
+  static_assert(Dest1::rank() == Dest2::rank(), "destination ranks must match");
+
+  std::vector<size_t> retainedDimensions(Src1::rank());
+  std::iota(retainedDimensions.begin(), retainedDimensions.end(), 0);
+
+  retainedDimensions.erase(
+      std::remove_if(retainedDimensions.begin(), retainedDimensions.end(),
+                     [&dimensions](size_t i) {
+                       return std::find(dimensions.begin(), dimensions.end(),
+                                        i) != dimensions.end();
+                     }),
+      retainedDimensions.end());
+
+  assert(retainedDimensions.size() == Dest1::rank());
+
+  Dest1 result1;
+  Dest2 result2;
+  std::fill(result1.begin(), result1.end(), initValue1());
+  std::fill(result2.begin(), result2.end(), initValue2());
+
+  for (size_t i = 0; i < operand1.size(); i++) {
+    auto index = operand1.unravel_index(i);
+    auto value1 = Tensor<ET_Src1>{operand1[i]};
+    auto value2 = Tensor<ET_Src2>{operand2[i]};
+
+    std::array<size_t, Dest1::rank()> reducedIndex;
+    size_t j = 0;
+    for (size_t dim : retainedDimensions) {
+      reducedIndex[j++] = index[dim];
+    }
+
+    auto reductionValue1 =
+        Tensor<ET_Src1>{result1[result1.ravel_index(reducedIndex)]};
+    auto reductionValue2 =
+        Tensor<ET_Src1>{result2[result2.ravel_index(reducedIndex)]};
+    Tensor<ET_Dest1> resultValue1;
+    Tensor<ET_Dest2> resultValue2;
+    std::tie(resultValue1, resultValue2) =
+        computation(reductionValue1, value1, reductionValue2, value2);
+
+    result1[result1.ravel_index(reducedIndex)] = resultValue1();
+    result2[result2.ravel_index(reducedIndex)] = resultValue2();
+  }
+
+  return std::make_tuple(result1, result2);
 }
 
 // ReduceWindowOp

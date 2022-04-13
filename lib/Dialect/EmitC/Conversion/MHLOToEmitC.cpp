@@ -10,14 +10,15 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "PassDetail.h"
-#include "emitc/Dialect/EmitC/Conversion/Passes.h"
 #include "mlir-hlo/Dialect/mhlo/IR/hlo_ops.h"
 #include "mlir/Dialect/EmitC/IR/EmitC.h"
 #include "mlir/IR/BuiltinOps.h"
 #include "mlir/IR/PatternMatch.h"
 #include "mlir/Pass/Pass.h"
 #include "mlir/Transforms/DialectConversion.h"
+
+#include "PassDetail.h"
+#include "emitc/Dialect/EmitC/Conversion/Passes.h"
 
 using namespace mlir;
 using namespace mlir::emitc;

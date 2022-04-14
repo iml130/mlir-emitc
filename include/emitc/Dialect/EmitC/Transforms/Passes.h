@@ -16,6 +16,8 @@
 #include "mlir/Pass/Pass.h"
 
 namespace mlir {
+class ModuleOp;
+
 namespace emitc {
 
 std::unique_ptr<OperationPass<ModuleOp>> createInsertEmitCMHLOIncludePass();

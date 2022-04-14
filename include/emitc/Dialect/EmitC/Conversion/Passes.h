@@ -16,6 +16,8 @@
 #include "mlir/Pass/Pass.h"
 
 namespace mlir {
+class ModuleOp;
+
 namespace func {
 class FuncOp;
 } // namespace func

@@ -17,10 +17,10 @@ from tensorflow.python import pywrap_mlir  # pylint: disable=no-name-in-module
 
 def convert(model_path: str, output_path: str):
     pass_pipeline = pass_pipeline = ",".join([
-        "inline", "canonicalize", "cse", "builtin.func(affine-loop-fusion)",
-        "builtin.func(affine-scalrep)", "builtin.func(tosa-fuse-bias-tf)",
-        "builtin.func(tosa-legalize-tf)", "builtin.func(tosa-infer-shapes)",
-        "builtin.func(tosa-make-broadcastable)", "inline", "symbol-dce"
+        "inline", "canonicalize", "cse", "func.func(affine-loop-fusion)",
+        "func.func(affine-scalrep)", "func.func(tosa-fuse-bias-tf)",
+        "func.func(tosa-legalize-tf)", "func.func(tosa-infer-shapes)",
+        "func.func(tosa-make-broadcastable)", "inline", "symbol-dce"
     ])
     with open(model_path) as file:
         mlir = file.read()

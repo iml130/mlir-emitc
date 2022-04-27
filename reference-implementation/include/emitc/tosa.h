@@ -482,6 +482,50 @@ inline Dest reduce(Src operand, typename get_element_type<Src>::type initValue,
 }
 } // namespace
 
+// ArgMaxOp
+template <typename Dest, typename Src>
+inline Dest argmax(Src operand, int64_t dimension) {
+  static_assert(is_tensor<Src>::value, "Expected tensor argument");
+  static_assert(is_tensor<Dest>::value, "Expected tensor result");
+
+  using ET_Src = typename get_element_type<Src>::type;
+
+  static_assert(Src::rank() == Dest::rank() + 1,
+                "source rank must equal dest rank + 1");
+
+  std::vector<size_t> retainedDimensions(Src::rank());
+  std::iota(retainedDimensions.begin(), retainedDimensions.end(), 0);
+  retainedDimensions.erase(retainedDimensions.begin() + dimension);
+
+  assert(retainedDimensions.size() == Dest::rank());
+
+  Dest result;
+  typename replace_element_type<ET_Src, Dest>::type maxValues;
+
+  std::fill(maxValues.begin(), maxValues.end(),
+            std::numeric_limits<ET_Src>::min());
+
+  for (size_t i = 0; i < operand.size(); ++i) {
+    auto value = operand[i];
+    auto index = operand.unravel_index(i);
+
+    std::array<size_t, Dest::rank()> reducedIndex;
+    size_t j = 0;
+    for (size_t dim : retainedDimensions) {
+      reducedIndex[j++] = index[dim];
+    }
+
+    auto destIndex = result.ravel_index(reducedIndex);
+
+    if (value > maxValues[destIndex]) {
+      maxValues[destIndex] = value;
+      result[destIndex] = index[dimension];
+    }
+  }
+
+  return result;
+}
+
 // ReduceAllOp
 template <typename Dest, typename Src>
 inline Dest reduce_all(Src input, int64_t dimension) {

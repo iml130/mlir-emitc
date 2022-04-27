@@ -622,6 +622,30 @@ TEST(tosa, matmul) {
   }
 }
 
+TEST(tosa, argmax) {
+  {
+    Tensor<int32_t, 6> x{4, 1, 3, 7, 0, 0};
+    Tensor<int32_t> expected_result{3};
+    Tensor<int32_t> result = tosa::argmax<Tensor<int32_t>>(x, 0);
+
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+  {
+    Tensor<double, 2, 3> x{4.5, 1.5, 3.5, 7.5, 0.5, 4.2};
+    Tensor<int32_t, 3> expected_result{1, 0, 1};
+    Tensor<int32_t, 3> result = tosa::argmax<Tensor<int32_t, 3>>(x, 0);
+
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+  {
+    Tensor<float, 2, 3> x{4.0f, -1.0f, 9.0f, -7.0f, 42.0f, 17.0f};
+    Tensor<int32_t, 2> expected_result{2, 1};
+    Tensor<int32_t, 2> result = tosa::argmax<Tensor<int32_t, 2>>(x, 1);
+
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+}
+
 TEST(tosa, reduce_all) {
   Tensor<bool, 2, 3> t0{true, true, true, false, true, false};
 

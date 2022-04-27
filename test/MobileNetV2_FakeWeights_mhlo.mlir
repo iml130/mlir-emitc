@@ -1,6 +1,6 @@
 // RUN: emitc-opt %s --convert-mhlo-region-ops-to-emitc --convert-mhlo-to-emitc | emitc-translate --mlir-to-cpp
 module attributes {tf.versions = {bad_consumers = [], min_consumer = 12 : i32, producer = 716 : i32}, tf_saved_model.semantics}  {
-  func @predict(%arg0: tensor<1x224x224x3xf32> {tf._user_specified_name = "args_0", tf_saved_model.index_path = [0]}) -> (tensor<1x1000xf32> {tf_saved_model.index_path = []}) attributes {tf._construction_context = "kEagerRuntime"} {
+  func.func @predict(%arg0: tensor<1x224x224x3xf32> {tf._user_specified_name = "args_0", tf_saved_model.index_path = [0]}) -> (tensor<1x1000xf32> {tf_saved_model.index_path = []}) attributes {tf._construction_context = "kEagerRuntime"} {
     %0 = mhlo.constant dense<5.000000e-01> : tensor<1x1000xf32>
     %1 = mhlo.constant dense<4.900000e+01> : tensor<1x1280xf32>
     %2 = mhlo.constant dense<5.000000e-01> : tensor<3x3x1x960xf32>

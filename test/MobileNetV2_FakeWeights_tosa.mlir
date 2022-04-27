@@ -1,6 +1,6 @@
 // RUN: emitc-opt %s --convert-tosa-to-emitc | emitc-translate --mlir-to-cpp
 module attributes {tf.versions = {bad_consumers = [], min_consumer = 12 : i32, producer = 812 : i32}, tf_saved_model.semantics}  {
-  func @predict(%arg0: tensor<1x224x224x3xf32> {tf._user_specified_name = "args_0", tf_saved_model.index_path = [0]}) -> (tensor<1x1000xf32> {tf_saved_model.index_path = []}) attributes {tf._construction_context = "kEagerRuntime"} {
+  func.func @predict(%arg0: tensor<1x224x224x3xf32> {tf._user_specified_name = "args_0", tf_saved_model.index_path = [0]}) -> (tensor<1x1000xf32> {tf_saved_model.index_path = []}) attributes {tf._construction_context = "kEagerRuntime"} {
     %0 = "tosa.const"() {value = dense<0.0204081628> : tensor<f32>} : () -> tensor<f32>
     %1 = "tosa.const"() {value = dense<1.000000e-03> : tensor<1xf32>} : () -> tensor<1xf32>
     %2 = "tosa.const"() {value = dense<[3, 0, 1, 2]> : tensor<4xi32>} : () -> tensor<4xi32>

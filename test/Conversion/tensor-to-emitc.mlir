@@ -5,7 +5,7 @@
 
 // CHECK-INCLUDE: emitc.include "emitc/tensor.h"
 
-func @std_extract_element(%arg0: tensor<i32>, %arg1: tensor<2xi32> ) -> () {
+func.func @std_extract_element(%arg0: tensor<i32>, %arg1: tensor<2xi32> ) -> () {
   %0 = arith.constant 0 : index
   %1 = arith.constant 1 : index
   %2 = tensor.extract %arg0[] : tensor<i32>
@@ -27,7 +27,7 @@ func @std_extract_element(%arg0: tensor<i32>, %arg1: tensor<2xi32> ) -> () {
 //  CPP-NEXT: emitc::tensor::extract(v2, v3)
 //  CPP-NEXT: emitc::tensor::extract(v2, v4)
 
-func @splat_op(%s : f32) -> tensor<8xf32> {
+func.func @splat_op(%s : f32) -> tensor<8xf32> {
   %t = tensor.splat %s : tensor<8xf32>
   return %t : tensor<8xf32>
 }

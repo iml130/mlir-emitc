@@ -1,14 +1,19 @@
-# MLIR EmitC
+# MLIR-EmitC
 
 ![Build and test](https://github.com/iml130/mlir-emitc/workflows/Build%20and%20test/badge.svg)
 
-EmitC is a MLIR dialect to emit C++ code. The initial checked in code is forked from https://reviews.llvm.org/D76571.
+MLIR-EmitC provides a way to translate ML models into C++ code. The repository
+contains scripts and tools to translate Keras and TensorFlow models into the
+[TOSA](https://mlir.llvm.org/docs/Dialects/TOSA/) and
+[MHLO](https://github.com/tensorflow/mlir-hlo) dialect and to convert those to
+[EmitC](https://mlir.llvm.org/docs/Dialects/EmitC/).
+The latter is used to generate calls to a reference implementation.
 
-**EmitC was moved into MLIR core! This repository does no longer contain the EmitC dialect or the C++ emitter.**
+**The [EmitC](https://mlir.llvm.org/docs/Dialects/EmitC/) dialect itself, as well as the C++ emitter, are part of MLIR core and are no longer provided via this repository.**
+
+The initial EmitC dialect and C++ emitter checked into this repository were forked from https://reviews.llvm.org/D76571.
 
 **DISCLAIMER:** This is a research project and not intended for everyday use. The code is made available without any support. However, we welcome any kind of feedback via the issue tracker.
-
-EmitC enables to convert operations from other MLIR dialects to [EmitC ops](https://mlir.llvm.org/docs/Dialects/EmitC/) and to translate those to C++.
 
 
 ## Getting Started

@@ -17,25 +17,25 @@ def ConvertMHLORegionOpsToEmitC : Pass<"convert-mhlo-region-ops-to-emitc", "Modu
   let dependentDialects = ["EmitCDialect"];
 }
 
-def ConvertMHLOToEmitC : Pass<"convert-mhlo-to-emitc", "FuncOp"> {
+def ConvertMHLOToEmitC : Pass<"convert-mhlo-to-emitc", "func::FuncOp"> {
   let summary = "Convert from MHLO dialect to EmitC dialect.";
   let constructor = "createConvertMhloToEmitCPass()";
   let dependentDialects = ["EmitCDialect"];
 }
 
-def ConvertArithToEmitC : Pass<"convert-arith-to-emitc", "FuncOp"> {
+def ConvertArithToEmitC : Pass<"convert-arith-to-emitc", "func::FuncOp"> {
   let summary = "Convert arith dialect to EmitC dialect, replacing IndexCastOp.";
   let constructor = "createConvertArithToEmitCPass()";
   let dependentDialects = ["EmitCDialect"];
 }
 
-def ConvertTensorToEmitC : Pass<"convert-tensor-to-emitc", "FuncOp"> {
+def ConvertTensorToEmitC : Pass<"convert-tensor-to-emitc", "func::FuncOp"> {
   let summary = "Convert tensor dialect to EmitC dialect, replacing ExtractOp.";
   let constructor = "createConvertTensorToEmitCPass()";
   let dependentDialects = ["EmitCDialect"];
 }
 
-def ConvertTosaToEmitC : Pass<"convert-tosa-to-emitc", "FuncOp"> {
+def ConvertTosaToEmitC : Pass<"convert-tosa-to-emitc", "func::FuncOp"> {
   let summary = "Convert TOSA dialect to EmitC dialect.";
   let constructor = "createConvertTosaToEmitCPass()";
   let dependentDialects = ["EmitCDialect"];

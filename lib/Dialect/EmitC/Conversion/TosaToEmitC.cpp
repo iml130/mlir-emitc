@@ -607,8 +607,9 @@ class ReduceOpConversion : public OpConversionPattern<SrcOp> {
   using OpConversionPattern<SrcOp>::OpConversionPattern;
 
 public:
-  ReduceOpConversion(MLIRContext *ctx, StringRef funcName)
-      : OpConversionPattern<SrcOp>(ctx), funcName(funcName) {}
+  ReduceOpConversion(MLIRContext *ctx, StringRef funcName, bool keepDims)
+      : OpConversionPattern<SrcOp>(ctx), funcName(funcName),
+        keepDims(keepDims) {}
 
 private:
   LogicalResult
@@ -622,51 +623,61 @@ private:
 
     ArrayAttr args = rewriter.getArrayAttr(arguments);
 
-    // We need to adjust output shape of reduce since our implementation does
-    // not keep reduced dimensions.
-    Value output = reduceOp.getResult();
-    RankedTensorType reducedOutputType =
-        output.getType().cast<RankedTensorType>();
+    if (keepDims) {
+      // We need to adjust output shape of reduce since our implementation does
+      // not keep reduced dimensions.
+      Value output = reduceOp.getResult();
+      RankedTensorType reducedOutputType =
+          output.getType().cast<RankedTensorType>();
 
-    SmallVector<int64_t> newReducedOutputShape;
+      SmallVector<int64_t> newReducedOutputShape;
 
-    for (auto dim : reducedOutputType.getShape()) {
-      newReducedOutputShape.push_back(dim);
-    };
+      for (auto dim : reducedOutputType.getShape()) {
+        newReducedOutputShape.push_back(dim);
+      };
 
-    // Remove reduced axis from shape.
-    newReducedOutputShape.erase(newReducedOutputShape.begin() +
-                                reduceOp.axis());
+      // Remove reduced axis from shape.
+      newReducedOutputShape.erase(newReducedOutputShape.begin() +
+                                  reduceOp.axis());
 
-    auto newOutputType =
-        RankedTensorType::get(llvm::makeArrayRef(newReducedOutputShape),
-                              reducedOutputType.getElementType());
+      auto newOutputType =
+          RankedTensorType::get(llvm::makeArrayRef(newReducedOutputShape),
+                                reducedOutputType.getElementType());
 
-    ArrayAttr templateArgs =
-        rewriter.getArrayAttr({TypeAttr::get(newOutputType),
-                               TypeAttr::get(reduceOp.input().getType())});
+      ArrayAttr templateArgs =
+          rewriter.getArrayAttr({TypeAttr::get(newOutputType),
+                                 TypeAttr::get(reduceOp.input().getType())});
 
-    auto emitcReduceOp = rewriter.create<emitc::CallOp>(
-        reduceOp.getLoc(), newOutputType, callee, args, templateArgs,
-        adaptor.getOperands());
+      auto emitcReduceOp = rewriter.create<emitc::CallOp>(
+          reduceOp.getLoc(), newOutputType, callee, args, templateArgs,
+          adaptor.getOperands());
 
-    // Create tosa.reshape op.
-    SmallVector<Attribute> newShapeAttributes;
-    for (auto dim : output.getType().cast<RankedTensorType>().getShape()) {
-      newShapeAttributes.push_back(
-          IntegerAttr::get(rewriter.getIntegerType(64), dim));
-    };
+      // Create tosa.reshape op.
+      SmallVector<Attribute> newShapeAttr_;
+      for (auto dim : output.getType().cast<RankedTensorType>().getShape()) {
+        newShapeAttr_.push_back(
+            IntegerAttr::get(rewriter.getIntegerType(64), dim));
+      };
 
-    ArrayAttr newShapeAttr =
-        ArrayAttr::get(reduceOp.getContext(), newShapeAttributes);
+      ArrayAttr newShapeAttr =
+          ArrayAttr::get(reduceOp.getContext(), newShapeAttr_);
 
-    rewriter.replaceOpWithNewOp<tosa::ReshapeOp>(
-        reduceOp, output.getType(), emitcReduceOp.getResult(0), newShapeAttr);
+      rewriter.replaceOpWithNewOp<tosa::ReshapeOp>(
+          reduceOp, output.getType(), emitcReduceOp.getResult(0), newShapeAttr);
+    } else {
+      ArrayAttr templateArgs =
+          rewriter.getArrayAttr({TypeAttr::get(reduceOp.getType()),
+                                 TypeAttr::get(reduceOp.input().getType())});
+      rewriter.replaceOpWithNewOp<emitc::CallOp>(reduceOp, reduceOp.getType(),
+                                                 callee, args, templateArgs,
+                                                 adaptor.getOperands());
+    }
 
     return success();
   }
 
   StringRef funcName;
+  bool keepDims;
 };
 
 /// Convert `tosa.pad` into an `emitc.call` operation.
@@ -784,18 +795,20 @@ void populateTosaToEmitcPatterns(MLIRContext *ctx,
       ctx, "emitc::tosa::depthwise_conv2d");
   patterns.add<FullyConnectedOpConversion>(ctx, "emitc::tosa::fully_connected");
   patterns.add<MatMulOpConversion>(ctx);
+  patterns.add<ReduceOpConversion<tosa::ArgMaxOp>>(ctx, "emitc::tosa::argmax",
+                                                   false);
   patterns.add<ReduceOpConversion<tosa::ReduceAllOp>>(
-      ctx, "emitc::tosa::reduce_all");
+      ctx, "emitc::tosa::reduce_all", true);
   patterns.add<ReduceOpConversion<tosa::ReduceAnyOp>>(
-      ctx, "emitc::tosa::reduce_any");
+      ctx, "emitc::tosa::reduce_any", true);
   patterns.add<ReduceOpConversion<tosa::ReduceMaxOp>>(
-      ctx, "emitc::tosa::reduce_max");
+      ctx, "emitc::tosa::reduce_max", true);
   patterns.add<ReduceOpConversion<tosa::ReduceMinOp>>(
-      ctx, "emitc::tosa::reduce_min");
+      ctx, "emitc::tosa::reduce_min", true);
   patterns.add<ReduceOpConversion<tosa::ReduceProdOp>>(
-      ctx, "emitc::tosa::reduce_prod");
+      ctx, "emitc::tosa::reduce_prod", true);
   patterns.add<ReduceOpConversion<tosa::ReduceSumOp>>(
-      ctx, "emitc::tosa::reduce_sum");
+      ctx, "emitc::tosa::reduce_sum", true);
   patterns.add<CallOpConversion<tosa::ReshapeOp>>(ctx, "emitc::tosa::reshape",
                                                   /*explicitResultType=*/true);
   patterns.add<SliceOpConversion>(ctx);
@@ -851,6 +864,7 @@ struct ConvertTosaToEmitCPass
                         tosa::DepthwiseConv2DOp,
                         tosa::FullyConnectedOp,
                         tosa::MatMulOp,
+                        tosa::ArgMaxOp,
                         tosa::ReduceAllOp,
                         tosa::ReduceAnyOp,
                         tosa::ReduceMaxOp,

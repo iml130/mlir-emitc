@@ -237,7 +237,14 @@ func.func @test_matmul(%arg0: tensor<1x14x19xf32>, %arg1: tensor<1x19x28xf32>) -
   return %0 : tensor<1x14x28xf32>
 }
 
+func.func @test_argmax(%arg0: tensor<13x21x3xi32>) -> tensor<21x3xi32> {
+  // CHECK: %0 = emitc.call "emitc::tosa::argmax"(%arg0) {args = [0 : index, 0], template_args = [tensor<21x3xi32>, tensor<13x21x3xi32>]} : (tensor<13x21x3xi32>) -> tensor<21x3xi32>
+  %0 = "tosa.argmax"(%arg0) {axis = 0 : i64} : (tensor<13x21x3xi32>) -> tensor<21x3xi32>
+  return %0 : tensor<21x3xi32>
+}
+
 // Reduce ops
+
 func.func @test_reduce_all(%arg0: tensor<13x21x3xi1>) -> tensor<1x21x3xi1> {
   // CHECK: %0 = emitc.call "emitc::tosa::reduce_all"(%arg0) {args = [0 : index, 0], template_args = [tensor<21x3xi1>, tensor<13x21x3xi1>]} : (tensor<13x21x3xi1>) -> tensor<21x3xi1>
   // CHECK: %1 = emitc.call "emitc::tosa::reshape"(%0) {template_args = [tensor<1x21x3xi1>]} : (tensor<21x3xi1>) -> tensor<1x21x3xi1>

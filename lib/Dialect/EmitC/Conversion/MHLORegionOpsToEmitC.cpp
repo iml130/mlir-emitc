@@ -53,7 +53,7 @@ struct ConvertMhloRegionOpsToEmitCPass
   void runOnOperation() override {
     // Convert region ops
     SymbolTable symbolTable(getOperation());
-    for (auto func : getOperation().getOps<FuncOp>()) {
+    for (auto func : getOperation().getOps<func::FuncOp>()) {
       // Insert just before the function.
       Block::iterator insertPt(func.getOperation());
 
@@ -61,11 +61,11 @@ struct ConvertMhloRegionOpsToEmitCPass
       // ReduceOp
       auto funcWalkResult = func.walk([&](mhlo::ReduceOp op) {
         std::string funcName =
-            Twine(op->getParentOfType<FuncOp>().getName(), "_lambda_")
+            Twine(op->getParentOfType<func::FuncOp>().getName(), "_lambda_")
                 .concat(Twine(count++))
                 .str();
 
-        Optional<FuncOp> outlinedFunc =
+        Optional<func::FuncOp> outlinedFunc =
             outlineRegionImpl<mhlo::ReduceOp>(op, funcName);
 
         if (!outlinedFunc.hasValue()) {
@@ -85,11 +85,11 @@ struct ConvertMhloRegionOpsToEmitCPass
       // ReduceWindowOp
       funcWalkResult = func.walk([&](mhlo::ReduceWindowOp op) {
         std::string funcName =
-            Twine(op->getParentOfType<FuncOp>().getName(), "_lambda_")
+            Twine(op->getParentOfType<func::FuncOp>().getName(), "_lambda_")
                 .concat(Twine(count++))
                 .str();
 
-        Optional<FuncOp> outlinedFunc =
+        Optional<func::FuncOp> outlinedFunc =
             outlineRegionImpl<mhlo::ReduceWindowOp>(op, funcName);
 
         if (!outlinedFunc.hasValue()) {
@@ -110,8 +110,8 @@ struct ConvertMhloRegionOpsToEmitCPass
 
 private:
   template <typename OpType>
-  Optional<FuncOp> outlineRegionImpl(OpType &op,
-                                     const std::string &functionName) {
+  Optional<func::FuncOp> outlineRegionImpl(OpType &op,
+                                           const std::string &functionName) {
     Location loc = op.getLoc();
     // Create a builder with no insertion point, insertion will happen
     // separately due to symbol table manipulation.
@@ -136,7 +136,7 @@ private:
     auto results = returnOp.getOperandTypes();
 
     FunctionType type = FunctionType::get(op.getContext(), inputs, results);
-    auto outlinedFunc = builder.create<FuncOp>(loc, functionName, type);
+    auto outlinedFunc = builder.create<func::FuncOp>(loc, functionName, type);
 
     Region &outlinedRegion = outlinedFunc.getRegion();
 
@@ -152,7 +152,7 @@ private:
     return outlinedFunc;
   }
 
-  LogicalResult convertToCall(mhlo::ReduceOp &op, FuncOp &funcOp) {
+  LogicalResult convertToCall(mhlo::ReduceOp &op, func::FuncOp &funcOp) {
     OpBuilder builder(op);
     auto *ctx = op.getContext();
 
@@ -187,7 +187,7 @@ private:
     return success();
   }
 
-  LogicalResult convertToCall(mhlo::ReduceWindowOp &op, FuncOp &funcOp) {
+  LogicalResult convertToCall(mhlo::ReduceWindowOp &op, func::FuncOp &funcOp) {
     OpBuilder builder(op);
     auto *ctx = op.getContext();
 

@@ -312,7 +312,9 @@ func.func @mhlo_concaternate(%arg0: tensor<1xf32>, %arg1: tensor<2xf32>) -> tens
 
 // Initially taken over from
 // https://github.com/tensorflow/mlir-hlo/blob/31c1c3aa1ffa12b1fb2d9988ad8cc0b2de9cd581/tests/hlo-legalize-to-lhlo.mlir#L552-L580
-func.func @mhlo_conv(%arg0: tensor<3x5x5x3xf32>, %arg1 : tensor<2x2x3x4xf32>) -> tensor<3x5x5x4xf32> {
+// Updated to
+// https://github.com/tensorflow/mlir-hlo/blob/2ee7bcc4b5d5a8afc7cbd414d10cdfeda97b7a54/tests/Dialect/mhlo/hlo-legalize-to-lhlo.mlir#L475-L501
+func.func @mhlo_conv(%arg0: tensor<3x2x4x3xf32>, %arg1 : tensor<2x2x3x4xf32>) -> tensor<2x1x2x3xf32> {
   %c0 = arith.constant 0 : index
   // CHECK: emitc.call "emitc::mhlo::convolution"(%arg1, %arg0)
   %out = "mhlo.convolution"(%arg1, %arg0) {
@@ -332,8 +334,8 @@ func.func @mhlo_conv(%arg0: tensor<3x5x5x3xf32>, %arg1 : tensor<2x2x3x4xf32>) ->
     padding = dense<[[0, 1], [0, 1]]> : tensor<2x2xi64>,
     rhs_dilation = dense<[1, 2]> : tensor<2xi64>,
     window_strides = dense<[2, 1]> : tensor<2xi64>
-  } : (tensor<2x2x3x4xf32>, tensor<3x5x5x3xf32>) -> tensor<3x5x5x4xf32>
-  return %out : tensor<3x5x5x4xf32>
+  } : (tensor<2x2x3x4xf32>, tensor<3x2x4x3xf32>) -> tensor<2x1x2x3xf32>
+  return %out : tensor<2x1x2x3xf32>
 }
 
 func.func @mhlo_dot(%arg0: tensor<512x512xf32>) -> tensor<512x512xf32> {

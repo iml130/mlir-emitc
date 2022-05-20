@@ -19,7 +19,7 @@ if [[ $# -ne 7 ]] ; then
   echo "Both a keras and a tensorflow saved model is supported."
   echo 
   echo "This script expects a python version in the PATH with a recent version of tensorflow installed."
-  echo "Tested with python 3.8.10 and tf-nightly 2.9.0.dev20220401"
+  echo "Tested with python 3.8.10 and tf-nightly 2.10.0.dev20220519"
 
   exit 1
 fi

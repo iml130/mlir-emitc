@@ -1,1 +1,2 @@
 tf-nightly==2.10.0.dev20220519
+protobuf==3.20.1

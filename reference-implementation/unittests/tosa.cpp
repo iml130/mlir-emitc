@@ -170,6 +170,79 @@ TEST(tosa, reciprocal) {
   }
 }
 
+TEST(tosa, rescale) {
+  { // int8_t -> int16_t, in_zp
+    Tensor1D<int8_t, 5> x{-10, 0, 10, 20, 30};
+    int8_t in_zp = 10;
+    int16_t out_zp = 0;
+    Tensor1D<int64_t, 1> mult{10000};
+    Tensor1D<int64_t, 1> shift{5};
+    bool scale32 = false;
+    bool double_round = false;
+    bool per_channel = false;
+
+    Tensor1D<int16_t, 5> expected_result{-6250, -3125, 0, 3125, 6250};
+    Tensor1D<int16_t, 5> result = tosa::rescale<Tensor<int16_t, 5>, 1>(
+        x, in_zp, out_zp, mult, shift, scale32, double_round, per_channel);
+
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+  { // int32_t -> int8_t, per_channel
+    Tensor2D<int32_t, 2, 3> x{-10000, -1000, 0, 1000, 10000, 100000};
+    int32_t in_zp = 0;
+    int8_t out_zp = 0;
+    Tensor1D<int64_t, 3> mult{150, 100, 50};
+    Tensor1D<int64_t, 3> shift{13, 14, 15};
+    bool scale32 = false;
+    bool double_round = false;
+    bool per_channel = true;
+
+    Tensor2D<int8_t, 2, 3> expected_result{-128, -6, 0, 18, 61, 127};
+    Tensor2D<int8_t, 2, 3> result = tosa::rescale<Tensor<int8_t, 2, 3>, 3>(
+        x, in_zp, out_zp, mult, shift, scale32, double_round, per_channel);
+
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+  { // int48_t -> uint8_t, out_zp
+    Tensor3D<int64_t, 2, 2, 2> x{-20000, -10000, 0,     1000,
+                                 5000,   10000,  20000, 30000};
+    int64_t in_zp = 0;
+    uint8_t out_zp = 100;
+    Tensor1D<int64_t, 1> mult{100};
+    Tensor1D<int64_t, 1> shift{14};
+    bool scale32 = false;
+    bool double_round = false;
+    bool per_channel = false;
+
+    Tensor3D<uint8_t, 2, 2, 2> expected_result{0,   39,  100, 106,
+                                               131, 161, 222, 255};
+    Tensor3D<uint8_t, 2, 2, 2> result =
+        tosa::rescale<Tensor<uint8_t, 2, 2, 2>, 1>(
+            x, in_zp, out_zp, mult, shift, scale32, double_round, per_channel);
+
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+  { // int16_t -> int32_t, double_round
+    Tensor4D<int16_t, 2, 1, 2, 2> x{-32768, -10000, -100,  0,
+                                    100,    1000,   10000, 32767};
+    int16_t in_zp = 0;
+    int32_t out_zp = 0;
+    Tensor1D<int64_t, 1> mult{10000000000};
+    Tensor1D<int64_t, 1> shift{32};
+    bool scale32 = true;
+    bool double_round = true;
+    bool per_channel = false;
+
+    Tensor4D<int32_t, 2, 1, 2, 2> expected_result{-76295, -23284, -234,  -1,
+                                                  232,    2328,   23282, 76291};
+    Tensor4D<int32_t, 2, 1, 2, 2> result =
+        tosa::rescale<Tensor<int32_t, 2, 1, 2, 2>, 1>(
+            x, in_zp, out_zp, mult, shift, scale32, double_round, per_channel);
+
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+}
+
 TEST(tosa, reluN) {
   {
     Tensor0D<int32_t> operand{0};

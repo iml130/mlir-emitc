@@ -114,6 +114,47 @@ inline Src reluN(Src operand, typename Src::value_type max_value) {
   return emitc::clamp(min, operand, max);
 }
 
+// RescaleOp
+template <typename Dest, size_t Dim, typename Src>
+inline Dest rescale(Src x, typename get_element_type<Src>::type in_zp,
+                    typename get_element_type<Dest>::type out_zp,
+                    Tensor1D<int64_t, Dim> mult, Tensor1D<int64_t, Dim> shift,
+                    bool scale32, bool double_round, bool per_channel) {
+  using ET_Dest = typename get_element_type<Dest>::type;
+  using Dest_I32 = typename replace_element_type<int32_t, Dest>::type;
+
+  assert(!(!scale32 && double_round) &&
+         "Invalid combination of `scale32` and `double_round` arguments.");
+
+  auto apply_scale = [=](int64_t element, int64_t mult, int64_t shift) {
+    int64_t round = 1 << (shift - 1);
+    if (double_round && shift > 31) {
+      if (element >= 0)
+        round += 1 << 30;
+      else
+        round -= 1 << 30;
+    }
+
+    int64_t result = (element * mult + round) >> shift;
+    return static_cast<int32_t>(result);
+  };
+
+  Dest_I32 result;
+  for (size_t i = 0; i < x.size(); ++i) {
+    size_t index = per_channel ? x.unravel_index(i)[x.rank() - 1] : 0;
+    int64_t element = x[i] - in_zp;
+    int32_t scaled_element = apply_scale(element, mult[index], shift[index]);
+    result[i] = scaled_element + out_zp;
+  }
+
+  Tensor0D<int32_t> min{
+      static_cast<int32_t>(std::numeric_limits<ET_Dest>::min())};
+  Tensor0D<int32_t> max{
+      static_cast<int32_t>(std::numeric_limits<ET_Dest>::max())};
+
+  return cast<Dest>(emitc::clamp(min, result, max));
+}
+
 // TanhOp
 template <typename Src>
 inline Src tanh(Src x) {

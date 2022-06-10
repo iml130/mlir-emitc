@@ -123,7 +123,8 @@ inline Dest rescale(Src x, typename get_element_type<Src>::type in_zp,
   using ET_Dest = typename get_element_type<Dest>::type;
   using Dest_I32 = typename replace_element_type<int32_t, Dest>::type;
 
-  double_round &= scale32;
+  assert(!(!scale32 && double_round) &&
+         "Invalid combination of `scale32` and `double_round` arguments.");
 
   auto apply_scale = [=](int64_t element, int64_t mult, int64_t shift) {
     int64_t round = 1 << (shift - 1);
@@ -142,8 +143,8 @@ inline Dest rescale(Src x, typename get_element_type<Src>::type in_zp,
   for (size_t i = 0; i < x.size(); ++i) {
     size_t index = per_channel ? x.unravel_index(i)[x.rank() - 1] : 0;
     int64_t element = x[i] - in_zp;
-    result[i] = apply_scale(element, mult[index], shift[index]);
-    result[i] += out_zp;
+    int32_t scaled_element = apply_scale(element, mult[index], shift[index]);
+    result[i] = scaled_element + out_zp;
   }
 
   Tensor0D<int32_t> min{

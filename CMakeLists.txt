@@ -32,7 +32,8 @@ endif()
 # Find MLIR if we are building standalone. If building as part of another
 # project, let it handle the MLIR dependency. The dependent project might
 # use a bundled version of MLIR instead of installing, for instance.
-if(NOT EMITC_BUILD_EMBEDDED)
+if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR AND NOT EMITC_BUILD_EMBEDDED)
+  # Out-of-tree build
   find_package(MLIR REQUIRED CONFIG)
 
   message(STATUS "Using MLIRConfig.cmake in: ${MLIR_DIR}")
@@ -46,21 +47,39 @@ if(NOT EMITC_BUILD_EMBEDDED)
   list(APPEND CMAKE_MODULE_PATH "${LLVM_CMAKE_DIR}")
 endif()
 
-include(TableGen)
-include(AddLLVM)
-include(AddMLIR)
-include(HandleLLVMOptions)
+
+if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR OR EMITC_BUILD_EMBEDDED)
+  # Out-of-tree build or embedded into another project
+  include(TableGen)
+  include(AddLLVM)
+  include(AddMLIR)
+  include(HandleLLVMOptions)
+else()
+  # In-tree-build
+  if(EMITC_ENABLE_HLO)
+    message(FATAL_ERROR "`EMITC_ENABLE_HLO=ON` is not supported as part of an in-tree-build.")
+  endif()
+
+  set(MLIR_MAIN_SRC_DIR ${LLVM_MAIN_SRC_DIR}/../mlir)
+  set(MLIR_INCLUDE_DIR ${MLIR_MAIN_SRC_DIR}/include)
+  set(MLIR_GENERATED_INCLUDE_DIR ${LLVM_BINARY_DIR}/tools/mlir/include)
+  set(MLIR_INCLUDE_DIRS "${MLIR_INCLUDE_DIR};${MLIR_GENERATED_INCLUDE_DIR}")
+
+  set(MLIR_TABLEGEN_EXE $<TARGET_FILE:mlir-tblgen>)
+endif()
+
 
 # TODO: With LLVM_ENABLE_WARNINGS set to ON in HandleLLVMOptions, the
 # compilation of googletest fails. As a workaround, we remove the
 # `-Wcovered-switch-default` flag.
 string(REPLACE "-Wcovered-switch-default" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 
-set(EMITC_MAIN_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include )
+set(EMITC_MAIN_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
+set(EMITC_INCLUDE_DIR ${CMAKE_CURRENT_BINARY_DIR}/include)
 include_directories(${LLVM_INCLUDE_DIRS})
 include_directories(${MLIR_INCLUDE_DIRS})
-include_directories(${PROJECT_SOURCE_DIR}/include)
-include_directories(${PROJECT_BINARY_DIR}/include)
+include_directories(${EMITC_MAIN_INCLUDE_DIR})
+include_directories(${EMITC_INCLUDE_DIR})
 link_directories(${LLVM_BUILD_LIBRARY_DIR})
 add_definitions(${LLVM_DEFINITIONS})
 

@@ -2,7 +2,7 @@ add_mlir_library(MLIREmitCTransforms
   InsertIncludes.cpp
 
   DEPENDS
-  MLIREmitC
+  MLIREmitCDialect
   MLIREmitCPassIncGen
 
   LINK_COMPONENTS

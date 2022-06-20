@@ -43,11 +43,11 @@ SmallVector<Attribute, 2> indexSequence(int64_t n, MLIRContext *ctx) {
 }
 
 /// Convert `mhlo.constant` into an `emitc.constant` operation.
-class ConstOpConversion : public OpRewritePattern<mhlo::ConstOp> {
+class ConstOpConversion : public OpRewritePattern<mhlo::ConstantOp> {
 public:
-  using OpRewritePattern<mhlo::ConstOp>::OpRewritePattern;
+  using OpRewritePattern<mhlo::ConstantOp>::OpRewritePattern;
 
-  LogicalResult matchAndRewrite(mhlo::ConstOp constOp,
+  LogicalResult matchAndRewrite(mhlo::ConstantOp constOp,
                                 PatternRewriter &rewriter) const final {
     rewriter.replaceOpWithNewOp<emitc::ConstantOp>(constOp, constOp.getType(),
                                                    constOp.value());
@@ -562,7 +562,7 @@ struct ConvertMhloToEmitCPass
 
     // clang-format off
     // MHLO nullary ops
-    target.addIllegalOp<mhlo::ConstOp>();
+    target.addIllegalOp<mhlo::ConstantOp>();
 
     // MHLO unary elementwise ops.
     target.addIllegalOp<mhlo::AbsOp,

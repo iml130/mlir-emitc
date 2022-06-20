@@ -34,7 +34,7 @@ set(LIBS
   MLIRTransformUtils
   MLIRSupport
   MLIRIR
-  MLIREmitC
+  MLIREmitCDialect
   MLIRArithToEmitC
   MLIRTensorToEmitC
   MLIRTosaToEmitC

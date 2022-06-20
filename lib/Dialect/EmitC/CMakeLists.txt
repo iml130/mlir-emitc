@@ -5,7 +5,7 @@ add_mlir_library(MLIREmitCPipelines
   Pipelines.cpp
 
   DEPENDS
-  MLIREmitC
+  MLIREmitCDialect
   MLIREmitCPassIncGen
   MLIREmitCConversionPassIncGen
 

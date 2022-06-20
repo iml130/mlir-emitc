@@ -11,7 +11,7 @@ if(EMITC_ENABLE_HLO)
     MHLOToEmitC.cpp
 
     DEPENDS
-    MLIREmitC
+    MLIREmitCDialect
     MLIREmitCConversionPassIncGen
     MLIRhlo_opsIncGen
 
@@ -28,7 +28,7 @@ if(EMITC_ENABLE_HLO)
     MHLORegionOpsToEmitC.cpp
 
     DEPENDS
-    MLIREmitC
+    MLIREmitCDialect
     MLIREmitCConversionPassIncGen
     MLIRhlo_opsIncGen
 
@@ -46,7 +46,7 @@ add_mlir_library(MLIRArithToEmitC
   ArithToEmitC.cpp
 
   DEPENDS
-  MLIREmitC
+  MLIREmitCDialect
   MLIREmitCConversionPassIncGen
 
   LINK_COMPONENTS
@@ -62,7 +62,7 @@ add_mlir_library(MLIRTensorToEmitC
   TensorToEmitC.cpp
 
   DEPENDS
-  MLIREmitC
+  MLIREmitCDialect
   MLIREmitCConversionPassIncGen
 
   LINK_COMPONENTS
@@ -78,7 +78,7 @@ add_mlir_library(MLIRTosaToEmitC
   TosaToEmitC.cpp
 
   DEPENDS
-  MLIREmitC
+  MLIREmitCDialect
   MLIREmitCConversionPassIncGen
 
   LINK_COMPONENTS

@@ -74,6 +74,8 @@ endif()
 # `-Wcovered-switch-default` flag.
 string(REPLACE "-Wcovered-switch-default" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 
+set(EMITC_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
+set(EMITC_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR})
 set(EMITC_MAIN_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 set(EMITC_INCLUDE_DIR ${CMAKE_CURRENT_BINARY_DIR}/include)
 include_directories(${LLVM_INCLUDE_DIRS})

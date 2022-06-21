@@ -1,3 +1,9 @@
+if(EMITC_ENABLE_HLO)
+  set(EMITC_ENABLE_HLO 1)
+else()
+  set(EMITC_ENABLE_HLO 0)
+endif()
+
 configure_lit_site_cfg(
         ${CMAKE_CURRENT_SOURCE_DIR}/lit.site.cfg.py.in
         ${CMAKE_CURRENT_BINARY_DIR}/lit.site.cfg.py

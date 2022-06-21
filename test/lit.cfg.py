@@ -43,9 +43,11 @@ llvm_config.use_default_substitutions()
 config.excludes = ['Inputs', 'Examples', 'CMakeLists.txt', 'README.txt', 'LICENSE.txt']
 
 if not config.emitc_enable_hlo:
-    config.excludes.extend([
-        "mhlo-to-emitc.mlir",
-        "MobileNetV2_FakeWeights_mhlo.mlir"]
+    config.excludes.extend(
+        [
+            "mhlo-to-emitc.mlir",
+            "MobileNetV2_FakeWeights_mhlo.mlir"
+        ]
     )
 
 # test_source_root: The root path where tests are located.

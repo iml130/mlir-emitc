@@ -23,4 +23,4 @@ add_lit_testsuite(check-emitc "Running the EmitC regression tests"
         )
 set_target_properties(check-emitc PROPERTIES FOLDER "Tests")
 
-add_lit_testsuites(STANDALONE_TEST ${CMAKE_CURRENT_SOURCE_DIR} DEPENDS ${EMITC_TEST_DEPENDS})
+add_lit_testsuites(EMITC ${CMAKE_CURRENT_SOURCE_DIR} DEPENDS ${EMITC_TEST_DEPENDS})

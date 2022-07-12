@@ -151,14 +151,14 @@ private:
 };
 
 /// Convert `mhlo.convolution` into an `emitc.call` operation.
-class ConvOpConversion : public OpConversionPattern<mhlo::ConvOp> {
+class ConvOpConversion : public OpConversionPattern<mhlo::ConvolutionOp> {
 
 public:
   ConvOpConversion(MLIRContext *ctx) : OpConversionPattern(ctx) {}
 
 private:
   LogicalResult
-  matchAndRewrite(mhlo::ConvOp convOp, OpAdaptor adaptor,
+  matchAndRewrite(mhlo::ConvolutionOp convOp, OpAdaptor adaptor,
                   ConversionPatternRewriter &rewriter) const override {
     auto *ctx = convOp.getContext();
 
@@ -373,7 +373,7 @@ private:
   }
 };
 
-/// Convert `mhlo.dynamic-slice` into an `emitc.call` operation.
+/// Convert `mhlo.dynamic_slice` into an `emitc.call` operation.
 class DynamicSliceOpConversion
     : public OpConversionPattern<mhlo::DynamicSliceOp> {
   using OpConversionPattern<mhlo::DynamicSliceOp>::OpConversionPattern;
@@ -407,7 +407,7 @@ private:
   }
 };
 
-/// Convert `mhlo.dynamic-update-slice` into an `emitc.call` operation.
+/// Convert `mhlo.dynamic_update_slice` into an `emitc.call` operation.
 class DynamicUpdateSliceOpConversion
     : public OpConversionPattern<mhlo::DynamicUpdateSliceOp> {
   using OpConversionPattern<mhlo::DynamicUpdateSliceOp>::OpConversionPattern;
@@ -470,6 +470,37 @@ private:
   }
 };
 
+/// Convert `mhlo.rng` into an `emitc.call` operation.
+class RngOpConversion : public OpConversionPattern<mhlo::RngOp> {
+
+public:
+  RngOpConversion(MLIRContext *ctx) : OpConversionPattern(ctx) {}
+
+private:
+  LogicalResult
+  matchAndRewrite(mhlo::RngOp rngOp, OpAdaptor adaptor,
+                  ConversionPatternRewriter &rewriter) const override {
+
+    if (rngOp.rng_distribution() != mhlo::RngDistribution::UNIFORM) {
+      return rngOp.emitError(
+          "Distributions other than uniform are not supported.");
+    }
+
+    StringRef funcName = "emitc::mhlo::rng_uniform";
+    StringAttr callee = rewriter.getStringAttr(funcName);
+    ArrayAttr args;
+
+    ArrayAttr templateArgs =
+        rewriter.getArrayAttr({TypeAttr::get(rngOp.getType())});
+
+    rewriter.replaceOpWithNewOp<emitc::CallOp>(rngOp, rngOp.getType(), callee,
+                                               args, templateArgs,
+                                               adaptor.getOperands());
+
+    return success();
+  }
+};
+
 } // namespace
 
 void populateMhloToEmitcPatterns(MLIRContext *ctx,
@@ -482,7 +513,7 @@ void populateMhloToEmitcPatterns(MLIRContext *ctx,
   patterns.add<CallOpConversion<mhlo::CeilOp>>(ctx, "emitc::mhlo::ceil");
   patterns.add<CallOpConversion<mhlo::ConvertOp>>(ctx, "emitc::mhlo::convert",
                                                   /*explicitResultType=*/true);
-  patterns.add<CallOpConversion<mhlo::CosOp>>(ctx, "emitc::mhlo::cos");
+  patterns.add<CallOpConversion<mhlo::CosineOp>>(ctx, "emitc::mhlo::cos");
   patterns.add<CallOpConversion<mhlo::ExpOp>>(ctx, "emitc::mhlo::exponential");
   patterns.add<CallOpConversion<mhlo::Expm1Op>>(
       ctx, "emitc::mhlo::exponential_minus_one");
@@ -494,7 +525,7 @@ void populateMhloToEmitcPatterns(MLIRContext *ctx,
                                                 "emitc::mhlo::log_plus_one");
   patterns.add<CallOpConversion<mhlo::NegOp>>(ctx, "emitc::mhlo::negate");
   patterns.add<CallOpConversion<mhlo::RoundOp>>(ctx, "emitc::mhlo::round");
-  patterns.add<CallOpConversion<mhlo::SinOp>>(ctx, "emitc::mhlo::sin");
+  patterns.add<CallOpConversion<mhlo::SineOp>>(ctx, "emitc::mhlo::sin");
   patterns.add<CallOpConversion<mhlo::SqrtOp>>(ctx, "emitc::mhlo::sqrt");
   patterns.add<CallOpConversion<mhlo::TanhOp>>(ctx, "emitc::mhlo::tanh");
 
@@ -544,8 +575,7 @@ void populateMhloToEmitcPatterns(MLIRContext *ctx,
   patterns.add<CallOpConversion<mhlo::SelectOp>>(ctx, "emitc::mhlo::select");
 
   // Insert patterns for MHLO RNG ops.
-  patterns.add<CallOpConversion<mhlo::RngUniformOp>>(
-      ctx, "emitc::mhlo::rng_uniform", /*explicitResultType=*/true);
+  patterns.add<RngOpConversion>(ctx);
 }
 
 namespace {
@@ -568,7 +598,7 @@ struct ConvertMhloToEmitCPass
     target.addIllegalOp<mhlo::AbsOp,
                         mhlo::CeilOp,
                         mhlo::ConvertOp,
-                        mhlo::CosOp,
+                        mhlo::CosineOp,
                         mhlo::ExpOp,
                         mhlo::Expm1Op,
                         mhlo::FloorOp,
@@ -577,7 +607,7 @@ struct ConvertMhloToEmitCPass
                         mhlo::Log1pOp,
                         mhlo::NegOp,
                         mhlo::RoundOp,
-                        mhlo::SinOp,
+                        mhlo::SineOp,
                         mhlo::SqrtOp,
                         mhlo::TanhOp>();
 
@@ -617,14 +647,14 @@ struct ConvertMhloToEmitCPass
                         mhlo::BroadcastInDimOp,
                         mhlo::ClampOp,
                         mhlo::ConcatenateOp,
-                        mhlo::ConvOp,
+                        mhlo::ConvolutionOp,
                         mhlo::DotOp,
                         mhlo::PadOp,
                         mhlo::ReshapeOp,
                         mhlo::SelectOp>();
 
     // MHLO RNG ops.
-    target.addIllegalOp<mhlo::RngUniformOp>();
+    target.addIllegalOp<mhlo::RngOp>();
     // clang-format on
 
     RewritePatternSet patterns(&getContext());

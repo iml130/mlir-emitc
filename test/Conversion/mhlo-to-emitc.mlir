@@ -265,9 +265,9 @@ func.func @mhlo_dynamic_update_slice(%arg0: tensor<12xi32>, %arg1: tensor<8x7xi3
   %cst_1 = "arith.constant"() {value = dense<1> : tensor<4xi32>} : () -> tensor<4xi32>
   %cst_2 = "arith.constant"() {value = dense<1> : tensor<2x4xi32>} : () -> tensor<2x4xi32>
   // CHECK: emitc.call "emitc::mhlo::dynamic_update_slice"(%arg0, %cst_1, %cst) {template_args = [tensor<4xi32>]}
-  %0 = "mhlo.dynamic-update-slice"(%arg0, %cst_1, %cst) : (tensor<12xi32>, tensor<4xi32>, tensor<i64>) -> tensor<12xi32>
+  %0 = "mhlo.dynamic_update_slice"(%arg0, %cst_1, %cst) : (tensor<12xi32>, tensor<4xi32>, tensor<i64>) -> tensor<12xi32>
   // CHECK: emitc.call "emitc::mhlo::dynamic_update_slice"(%arg1, %cst_2, %cst, %cst_0) {template_args = [tensor<2x4xi32>]}
-  %1 = "mhlo.dynamic-update-slice"(%arg1, %cst_2, %cst, %cst_0) : (tensor<8x7xi32>, tensor<2x4xi32>, tensor<i64>, tensor<i64>) -> tensor<8x7xi32>
+  %1 = "mhlo.dynamic_update_slice"(%arg1, %cst_2, %cst, %cst_0) : (tensor<8x7xi32>, tensor<2x4xi32>, tensor<i64>, tensor<i64>) -> tensor<8x7xi32>
   return
 }
 
@@ -426,13 +426,13 @@ func.func @mhlo_rng_uniform() -> () {
   %cst_1 = "arith.constant"() {value = dense<2> : tensor<1xi64>} : () -> tensor<1xi64>
 
   // CHECK: emitc.call "emitc::mhlo::rng_uniform"(%cst, %cst_0, %cst_1) {template_args = [tensor<2xi32>]} : (tensor<i32>, tensor<i32>, tensor<1xi64>) -> tensor<2xi32>
-  %0 = "mhlo.rng_uniform"(%cst, %cst_0, %cst_1) : (tensor<i32>, tensor<i32>, tensor<1xi64>) -> tensor<2xi32>
+  %0 = "mhlo.rng"(%cst, %cst_0, %cst_1) {rng_distribution = #mhlo.rng_distribution<UNIFORM>}: (tensor<i32>, tensor<i32>, tensor<1xi64>) -> tensor<2xi32>
   
   %cst_2 = "arith.constant"() {value = dense<-100.0> : tensor<f32>} : () -> tensor<f32>
   %cst_3 = "arith.constant"() {value = dense<100.0> : tensor<f32>} : () -> tensor<f32>
   %cst_4 = "arith.constant"() {value = dense<17> : tensor<1xi64>} : () -> tensor<1xi64>
 
   // CHECK: emitc.call "emitc::mhlo::rng_uniform"(%cst_2, %cst_3, %cst_4) {template_args = [tensor<17xf32>]} : (tensor<f32>, tensor<f32>, tensor<1xi64>) -> tensor<17xf32>
-  %1 = "mhlo.rng_uniform"(%cst_2, %cst_3, %cst_4) : (tensor<f32>, tensor<f32>, tensor<1xi64>) -> tensor<17xf32>
+  %1 = "mhlo.rng"(%cst_2, %cst_3, %cst_4) {rng_distribution = #mhlo.rng_distribution<UNIFORM>}: (tensor<f32>, tensor<f32>, tensor<1xi64>) -> tensor<17xf32>
   return
 }

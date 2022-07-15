@@ -230,7 +230,7 @@ inline Src pow(Src x, Src y) {
   return binary<Src>(x, y, f);
 }
 
-// SubOp
+// SubtractOp
 template <typename Src>
 inline Src sub(Src x, Src y) {
   using ET_Src = typename get_element_type<Src>::type;

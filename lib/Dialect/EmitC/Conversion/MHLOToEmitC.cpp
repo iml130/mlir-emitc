@@ -541,7 +541,7 @@ void populateMhloToEmitcPatterns(MLIRContext *ctx,
                                                     "emitc::mhlo::shift_left");
   patterns.add<CallOpConversion<mhlo::ShiftRightLogicalOp>>(
       ctx, "emitc::mhlo::shift_right_logical");
-  patterns.add<CallOpConversion<mhlo::SubOp>>(ctx, "emitc::mhlo::sub");
+  patterns.add<CallOpConversion<mhlo::SubtractOp>>(ctx, "emitc::mhlo::sub");
 
   // Insert patterns for MHLO binary logical elementwise ops.
   patterns.add<CallOpConversion<mhlo::OrOp>>(ctx, "emitc::mhlo::logical_or");
@@ -621,7 +621,7 @@ struct ConvertMhloToEmitCPass
                         mhlo::PowOp,
                         mhlo::ShiftLeftOp,
                         mhlo::ShiftRightLogicalOp,
-                        mhlo::SubOp>();
+                        mhlo::SubtractOp>();
 
     // MHLO binary logical elementwise ops.
     target.addIllegalOp<mhlo::OrOp,

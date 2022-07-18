@@ -223,17 +223,17 @@ func.func @mhlo_tuple_unpack(%arg0: tensor<i32>, %arg1: tensor<ui64>) -> (tuple<
 
 func.func @mhlo_compare(%arg0: tensor<4xi32>, %arg1: tensor<4xi32>) -> tensor<4xi1> {
   // CHECK: emitc.call "emitc::mhlo::compare"(%arg0, %arg1) {template_args = [tensor<4xi32>, #emitc.opaque<"std::less">]} : (tensor<4xi32>, tensor<4xi32>) -> tensor<4xi1>
-  %0 = "mhlo.compare"(%arg0, %arg1) {comparison_direction = #mhlo<"comparison_direction LT">} : (tensor<4xi32>, tensor<4xi32>) -> tensor<4xi1>
+  %0 = "mhlo.compare"(%arg0, %arg1) {comparison_direction = #mhlo<comparison_direction LT>} : (tensor<4xi32>, tensor<4xi32>) -> tensor<4xi1>
   // CHECK: emitc.call "emitc::mhlo::compare"(%arg0, %arg1) {template_args = [tensor<4xi32>, #emitc.opaque<"std::less_equal">]} : (tensor<4xi32>, tensor<4xi32>) -> tensor<4xi1>
-  %1 = "mhlo.compare"(%arg0, %arg1) {comparison_direction = #mhlo<"comparison_direction LE">} : (tensor<4xi32>, tensor<4xi32>) -> tensor<4xi1>
+  %1 = "mhlo.compare"(%arg0, %arg1) {comparison_direction = #mhlo<comparison_direction LE>} : (tensor<4xi32>, tensor<4xi32>) -> tensor<4xi1>
   // CHECK: emitc.call "emitc::mhlo::compare"(%arg0, %arg1) {template_args = [tensor<4xi32>, #emitc.opaque<"std::greater">]} : (tensor<4xi32>, tensor<4xi32>) -> tensor<4xi1>
-  %2 = "mhlo.compare"(%arg0, %arg1) {comparison_direction = #mhlo<"comparison_direction GT">} : (tensor<4xi32>, tensor<4xi32>) -> tensor<4xi1>
+  %2 = "mhlo.compare"(%arg0, %arg1) {comparison_direction = #mhlo<comparison_direction GT>} : (tensor<4xi32>, tensor<4xi32>) -> tensor<4xi1>
   // CHECK: emitc.call "emitc::mhlo::compare"(%arg0, %arg1) {template_args = [tensor<4xi32>, #emitc.opaque<"std::greater_equal">]} : (tensor<4xi32>, tensor<4xi32>) -> tensor<4xi1>
-  %3 = "mhlo.compare"(%arg0, %arg1) {comparison_direction = #mhlo<"comparison_direction GE">} : (tensor<4xi32>, tensor<4xi32>) -> tensor<4xi1>
+  %3 = "mhlo.compare"(%arg0, %arg1) {comparison_direction = #mhlo<comparison_direction GE>} : (tensor<4xi32>, tensor<4xi32>) -> tensor<4xi1>
   // CHECK: emitc.call "emitc::mhlo::compare"(%arg0, %arg1) {template_args = [tensor<4xi32>, #emitc.opaque<"std::equal_to">]} : (tensor<4xi32>, tensor<4xi32>) -> tensor<4xi1>
-  %4 = "mhlo.compare"(%arg0, %arg1) {comparison_direction = #mhlo<"comparison_direction EQ">} : (tensor<4xi32>, tensor<4xi32>) -> tensor<4xi1>
+  %4 = "mhlo.compare"(%arg0, %arg1) {comparison_direction = #mhlo<comparison_direction EQ>} : (tensor<4xi32>, tensor<4xi32>) -> tensor<4xi1>
   // CHECK: emitc.call "emitc::mhlo::compare"(%arg0, %arg1) {template_args = [tensor<4xi32>, #emitc.opaque<"std::not_equal_to">]} : (tensor<4xi32>, tensor<4xi32>) -> tensor<4xi1>
-  %5 = "mhlo.compare"(%arg0, %arg1) {comparison_direction = #mhlo<"comparison_direction NE">} : (tensor<4xi32>, tensor<4xi32>) -> tensor<4xi1>
+  %5 = "mhlo.compare"(%arg0, %arg1) {comparison_direction = #mhlo<comparison_direction NE>} : (tensor<4xi32>, tensor<4xi32>) -> tensor<4xi1>
 
   return %0 : tensor<4xi1>
 }

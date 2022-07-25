@@ -110,7 +110,7 @@ public:
   LogicalResult matchAndRewrite(tosa::ConstOp constOp,
                                 PatternRewriter &rewriter) const final {
     rewriter.replaceOpWithNewOp<emitc::ConstantOp>(constOp, constOp.getType(),
-                                                   constOp.value());
+                                                   constOp.getValue());
     return success();
   }
 };
@@ -130,7 +130,7 @@ private:
   matchAndRewrite(SrcOp convOp, Adaptor adaptor,
                   ConversionPatternRewriter &rewriter) const override {
     // Fail if quantization is requested.
-    if (convOp.quantization_info().hasValue()) {
+    if (convOp.getQuantizationInfo().hasValue()) {
       return convOp.emitError("Quantization for " + convOp.getOperationName() +
                               " is currently not supported.");
     }
@@ -148,9 +148,9 @@ private:
     ArrayAttr args = rewriter.getArrayAttr({
       rewriter.getIndexAttr(0),
       rewriter.getIndexAttr(1),
-      getI64ElementsAttr(convOp.pad(), convOp.getContext()),
-      getI64ElementsAttr(convOp.stride(), convOp.getContext()),
-      getI64ElementsAttr(convOp.dilation(), convOp.getContext()),
+      getI64ElementsAttr(convOp.getPad(), convOp.getContext()),
+      getI64ElementsAttr(convOp.getStride(), convOp.getContext()),
+      getI64ElementsAttr(convOp.getDilation(), convOp.getContext()),
     });
     // clang-format on
 
@@ -164,7 +164,7 @@ private:
 
     auto output = emitcConvOp.getResult(0);
     auto tosaAddOp = rewriter.create<tosa::AddOp>(
-        convOp.getLoc(), output.getType(), output, convOp.bias());
+        convOp.getLoc(), output.getType(), output, convOp.getBias());
 
     rewriter.replaceOp(convOp, {tosaAddOp.getResult()});
 
@@ -187,7 +187,7 @@ private:
   LogicalResult
   matchAndRewrite(tosa::FullyConnectedOp fullyConnectedOp, OpAdaptor adaptor,
                   ConversionPatternRewriter &rewriter) const override {
-    if (fullyConnectedOp.quantization_info().hasValue()) {
+    if (fullyConnectedOp.getQuantizationInfo().hasValue()) {
       return fullyConnectedOp.emitError(
           "Quantization of tosa.fully_connected is currently not supported.");
     }
@@ -220,7 +220,7 @@ private:
   LogicalResult
   matchAndRewrite(tosa::MatMulOp matMulOp, OpAdaptor adaptor,
                   ConversionPatternRewriter &rewriter) const override {
-    if (matMulOp.quantization_info().hasValue()) {
+    if (matMulOp.getQuantizationInfo().hasValue()) {
       return matMulOp.emitError(
           "Quantization of tosa.matmul is currently not supported.");
     }
@@ -265,14 +265,14 @@ private:
         adaptor.input().getType().cast<RankedTensorType>().getElementType();
     if (elementType.isa<IntegerType>()) {
       // Change the {min,max}_int type to the element type of the operand.
-      auto minInt = clampOp.min_int();
-      auto maxInt = clampOp.max_int();
+      auto minInt = clampOp.getMinInt();
+      auto maxInt = clampOp.getMaxInt();
       arguments.push_back(IntegerAttr::get(elementType, minInt));
       arguments.push_back(IntegerAttr::get(elementType, maxInt));
     } else if (elementType.isa<FloatType>()) {
       // Change the {min,max}_fp type to the element type of the operand.
-      auto minFp = clampOp.min_fpAttr().getValueAsDouble();
-      auto maxFp = clampOp.max_fpAttr().getValueAsDouble();
+      auto minFp = clampOp.getMinFpAttr().getValueAsDouble();
+      auto maxFp = clampOp.getMaxFpAttr().getValueAsDouble();
       arguments.push_back(FloatAttr::get(elementType, minFp));
       arguments.push_back(FloatAttr::get(elementType, maxFp));
     } else {
@@ -302,7 +302,7 @@ private:
   LogicalResult
   matchAndRewrite(tosa::NegateOp negateOp, OpAdaptor adaptor,
                   ConversionPatternRewriter &rewriter) const override {
-    if (negateOp.quantization_info().hasValue()) {
+    if (negateOp.getQuantizationInfo().hasValue()) {
       return negateOp.emitError(
           "Quantization of tosa.negate is currently not supported.");
     }
@@ -338,10 +338,10 @@ private:
     // clang-format off
     ArrayAttr args = rewriter.getArrayAttr({
         rewriter.getIndexAttr(0),
-        rescaleOp.input_zpAttr(),
-        rescaleOp.output_zpAttr(),
-        getI64ElementsAttr(rescaleOp.multiplierAttr(), rescaleOp.getContext()),
-        getI64ElementsAttr(rescaleOp.shiftAttr(), rescaleOp.getContext()),
+        rescaleOp.getInputZpAttr(),
+        rescaleOp.getOutputZpAttr(),
+        getI64ElementsAttr(rescaleOp.getMultiplierAttr(), rescaleOp.getContext()),
+        getI64ElementsAttr(rescaleOp.getShiftAttr(), rescaleOp.getContext()),
         rescaleOp.scale32Attr(),
         rescaleOp.double_roundAttr(),
         rescaleOp.per_channelAttr()
@@ -350,7 +350,7 @@ private:
 
     TypeAttr resultType = TypeAttr::get(rescaleOp.getResult().getType());
     IntegerAttr arraySize =
-        rewriter.getI32IntegerAttr(rescaleOp.multiplierAttr().size());
+        rewriter.getI32IntegerAttr(rescaleOp.getMultiplierAttr().size());
     ArrayAttr templateArgs = rewriter.getArrayAttr({resultType, arraySize});
 
     rewriter.replaceOpWithNewOp<emitc::CallOp>(rescaleOp, rescaleOp.getType(),
@@ -388,11 +388,11 @@ private:
         adaptor.input().getType().cast<RankedTensorType>().getElementType();
     if (elementType.isa<IntegerType>()) {
       // Change the max_int type to the element type of the operand.
-      auto maxInt = reluNOp.max_int();
+      auto maxInt = reluNOp.getMaxInt();
       arguments.push_back(IntegerAttr::get(elementType, maxInt));
     } else if (elementType.isa<FloatType>()) {
       // Change the max_fp type to the element type of the operand.
-      auto maxFp = reluNOp.max_fpAttr().getValueAsDouble();
+      auto maxFp = reluNOp.getMaxFpAttr().getValueAsDouble();
       arguments.push_back(FloatAttr::get(elementType, maxFp));
     } else {
       return reluNOp.emitError(
@@ -578,7 +578,7 @@ private:
     StringRef funcName = "emitc::tosa::mul";
     StringAttr callee = rewriter.getStringAttr(funcName);
 
-    auto shiftAttr = mulOp.shiftAttr();
+    auto shiftAttr = mulOp.getShiftAttr();
     ArrayAttr args;
     SmallVector<Attribute, 1> arguments;
     if (shiftAttr.getInt() > 0) {
@@ -620,7 +620,7 @@ private:
     StringRef funcName = "emitc::tosa::arithmetic_right_shift";
     StringAttr callee = rewriter.getStringAttr(funcName);
 
-    auto roundAttr = arithmeticRightShiftOp.roundAttr();
+    auto roundAttr = arithmeticRightShiftOp.getRoundAttr();
     ArrayAttr args;
     SmallVector<Attribute, 1> arguments;
     arguments.push_back(rewriter.getIndexAttr(0));
@@ -660,7 +660,7 @@ private:
 
     SmallVector<Attribute> arguments =
         indexSequence(adaptor.getOperands().size(), reduceOp.getContext());
-    arguments.push_back(reduceOp.axisAttr());
+    arguments.push_back(reduceOp.getAxisAttr());
 
     ArrayAttr args = rewriter.getArrayAttr(arguments);
 
@@ -679,7 +679,7 @@ private:
 
       // Remove reduced axis from shape.
       newReducedOutputShape.erase(newReducedOutputShape.begin() +
-                                  reduceOp.axis());
+                                  reduceOp.getAxis());
 
       auto newOutputType =
           RankedTensorType::get(llvm::makeArrayRef(newReducedOutputShape),
@@ -687,7 +687,7 @@ private:
 
       ArrayAttr templateArgs =
           rewriter.getArrayAttr({TypeAttr::get(newOutputType),
-                                 TypeAttr::get(reduceOp.input().getType())});
+                                 TypeAttr::get(reduceOp.getInput().getType())});
 
       auto emitcReduceOp = rewriter.create<emitc::CallOp>(
           reduceOp.getLoc(), newOutputType, callee, args, templateArgs,
@@ -708,7 +708,7 @@ private:
     } else {
       ArrayAttr templateArgs =
           rewriter.getArrayAttr({TypeAttr::get(reduceOp.getType()),
-                                 TypeAttr::get(reduceOp.input().getType())});
+                                 TypeAttr::get(reduceOp.getInput().getType())});
       rewriter.replaceOpWithNewOp<emitc::CallOp>(reduceOp, reduceOp.getType(),
                                                  callee, args, templateArgs,
                                                  adaptor.getOperands());
@@ -732,7 +732,7 @@ private:
   LogicalResult
   matchAndRewrite(tosa::PadOp padOp, OpAdaptor adaptor,
                   ConversionPatternRewriter &rewriter) const override {
-    if (padOp.quantization_info().hasValue()) {
+    if (padOp.getQuantizationInfo().hasValue()) {
       return padOp.emitError(
           "Quantization of tosa.pad is currently not supported.");
     }
@@ -771,8 +771,8 @@ private:
     // clang-format off
     ArrayAttr args = rewriter.getArrayAttr({
       rewriter.getIndexAttr(0),
-      getI64ElementsAttr(sliceOp.startAttr(), sliceOp.getContext()),
-      getI64ElementsAttr(sliceOp.sizeAttr(), sliceOp.getContext()),
+      getI64ElementsAttr(sliceOp.getStartAttr(), sliceOp.getContext()),
+      getI64ElementsAttr(sliceOp.getSizeAttr(), sliceOp.getContext()),
     });
     // clang-format on
 

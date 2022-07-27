@@ -27,6 +27,10 @@ git submodule update --init
 
 ### Build and Run
 
+There are two variants to build EmitC: As part of an LLVM/MLIR build (via the LLVM external projects mechanism) and against a pre-built LLVM/MLIR.
+
+#### Building with pre-built LLVM/MLIR
+
 The setup assumes that you have built LLVM and MLIR in `$BUILD_DIR` and installed them to `$PREFIX`. You can use the [`build_tools/build_mlir.sh`](https://github.com/iml130/mlir-emitc/blob/main/build_tools/build_mlir.sh) shell script to configure, build and install LLVM and MLIR.
 
 **Note**: The hash of the latest tested LLVM version is given in [`build_tools/llvm_version.txt`](https://github.com/iml130/mlir-emitc/blob/main/build_tools/llvm_version.txt). Since MLIR evolves fast, it is possible that EmitC fails to build with a newer LLVM.
@@ -46,6 +50,16 @@ cmake --build . --target MLIREmitCTests
 ./reference-implementation/unittests/MLIREmitCTests
 ```
 
+#### Bulding as part of an LLVM/MLIR build
+
+MLIR-EmitC can also be built as part of an LLVM/MLIR build, using the `LLVM_EXTERNAL_PROJECTS` mechanism (see https://llvm.org/docs/CMake.html).
+
+To build and launch the tests, run
+```shell
+mkdir build && cd build
+cmake -G Ninja -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_BUILD_TYPE=Release -DEMITC_ENABLE_HLO=OFF -DLLVM_ENABLE_PROJECTS=mlir -DLLVM_EXTERNAL_PROJECTS="mlir-emitc" -DLLVM_EXTERNAL_MLIR_EMITC_SOURCE_DIR=`realpath ../` -DLLVM_TARGETS_TO_BUILD=host ${ROOT_PATH_TO_llvm-project}/llvm
+cmake --build . --target check-emitc
+```
 
 ## Supported Conversions and Translations
 

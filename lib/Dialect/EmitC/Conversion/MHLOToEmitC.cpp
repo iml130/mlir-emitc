@@ -189,14 +189,13 @@ private:
         convOp.dimension_numbers().getOutputSpatialDimensions()));
     arguments.push_back(convOp.feature_group_countAttr());
 
+    arguments.push_back(convOp.padding().value_or(i64ElementsAttr(0, 2, ctx)));
     arguments.push_back(
-        convOp.padding().getValueOr(i64ElementsAttr(0, 2, ctx)));
+        convOp.lhs_dilation().value_or(i64ElementsAttr(1, 2, ctx)));
     arguments.push_back(
-        convOp.lhs_dilation().getValueOr(i64ElementsAttr(1, 2, ctx)));
+        convOp.rhs_dilation().value_or(i64ElementsAttr(1, 2, ctx)));
     arguments.push_back(
-        convOp.rhs_dilation().getValueOr(i64ElementsAttr(1, 2, ctx)));
-    arguments.push_back(
-        convOp.window_strides().getValueOr(i64ElementsAttr(1, 2, ctx)));
+        convOp.window_strides().value_or(i64ElementsAttr(1, 2, ctx)));
 
     ArrayAttr args = rewriter.getArrayAttr(arguments);
     ArrayAttr templateArgs =

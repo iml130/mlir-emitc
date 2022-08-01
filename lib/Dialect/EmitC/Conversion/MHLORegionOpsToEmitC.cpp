@@ -201,13 +201,13 @@ private:
     size_t dim = op.getResult(0).getType().cast<RankedTensorType>().getRank();
     arguments.push_back(op.window_dimensions());
     arguments.push_back(
-        op.window_strides().getValueOr(i64ElementsAttr(1, dim, ctx)));
+        op.window_strides().value_or(i64ElementsAttr(1, dim, ctx)));
     arguments.push_back(
-        op.base_dilations().getValueOr(i64ElementsAttr(1, dim, ctx)));
+        op.base_dilations().value_or(i64ElementsAttr(1, dim, ctx)));
     arguments.push_back(
-        op.window_dilations().getValueOr(i64ElementsAttr(1, dim, ctx)));
+        op.window_dilations().value_or(i64ElementsAttr(1, dim, ctx)));
     arguments.push_back(
-        op.padding().getValueOr(i64ElementsAttr(0, 2 * dim, ctx)));
+        op.padding().value_or(i64ElementsAttr(0, 2 * dim, ctx)));
     arguments.push_back(SymbolRefAttr::get(ctx, funcOp.getName()));
 
     ArrayAttr args = ArrayAttr::get(ctx, arguments);

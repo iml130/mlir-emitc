@@ -299,7 +299,8 @@ private:
     ArrayAttr args;
     ArrayAttr templateArgs = rewriter.getArrayAttr(
         {TypeAttr::get(elementType),
-         emitc::OpaqueAttr::get(ctx, functionName.getValue())});
+         emitc::OpaqueAttr::get(ctx, NoneType::get(ctx),
+                                functionName.getValue())});
 
     rewriter.replaceOpWithNewOp<emitc::CallOp>(compareOp, compareOp.getType(),
                                                callee, args, templateArgs,

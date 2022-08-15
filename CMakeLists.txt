@@ -8,7 +8,7 @@ project(mlir-emitc LANGUAGES CXX C)
 set(CMAKE_BUILD_WITH_INSTALL_NAME_DIR ON)
 
 set(CMAKE_C_STANDARD 11)
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 
 include(CMakeDependentOption)
 

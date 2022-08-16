@@ -262,7 +262,7 @@ private:
     // the min/max attribute type match the operand's element type and it's bit
     // width.
     auto elementType =
-        adaptor.input().getType().cast<RankedTensorType>().getElementType();
+        adaptor.getInput().getType().cast<RankedTensorType>().getElementType();
     if (elementType.isa<IntegerType>()) {
       // Change the {min,max}_int type to the element type of the operand.
       auto minInt = clampOp.getMinInt();
@@ -342,9 +342,9 @@ private:
         rescaleOp.getOutputZpAttr(),
         getI64ElementsAttr(rescaleOp.getMultiplierAttr(), rescaleOp.getContext()),
         getI64ElementsAttr(rescaleOp.getShiftAttr(), rescaleOp.getContext()),
-        rescaleOp.scale32Attr(),
-        rescaleOp.double_roundAttr(),
-        rescaleOp.per_channelAttr()
+        rescaleOp.getScale32Attr(),
+        rescaleOp.getDoubleRoundAttr(),
+        rescaleOp.getPerChannelAttr()
     });
     // clang-format on
 
@@ -385,7 +385,7 @@ private:
     // the max attribute type match the operand's element type and it's bit
     // width.
     auto elementType =
-        adaptor.input().getType().cast<RankedTensorType>().getElementType();
+        adaptor.getInput().getType().cast<RankedTensorType>().getElementType();
     if (elementType.isa<IntegerType>()) {
       // Change the max_int type to the element type of the operand.
       auto maxInt = reluNOp.getMaxInt();
@@ -743,7 +743,7 @@ private:
     // have to handle any conversion in tosa::pad.
     ArrayAttr args;
 
-    Type resultType = padOp.output().getType();
+    Type resultType = padOp.getOutput().getType();
     ArrayAttr templateArgs = rewriter.getArrayAttr({TypeAttr::get(resultType)});
 
     rewriter.replaceOpWithNewOp<emitc::CallOp>(padOp, padOp.getType(), callee,
@@ -776,7 +776,7 @@ private:
     });
     // clang-format on
 
-    Type resultType = sliceOp.output().getType();
+    Type resultType = sliceOp.getOutput().getType();
     ArrayAttr templateArgs = rewriter.getArrayAttr({TypeAttr::get(resultType)});
 
     rewriter.replaceOpWithNewOp<emitc::CallOp>(sliceOp, sliceOp.getType(),

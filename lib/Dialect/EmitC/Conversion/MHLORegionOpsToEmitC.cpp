@@ -68,13 +68,13 @@ struct ConvertMhloRegionOpsToEmitCPass
         Optional<func::FuncOp> outlinedFunc =
             outlineRegionImpl<mhlo::ReduceOp>(op, funcName);
 
-        if (!outlinedFunc.hasValue()) {
+        if (!outlinedFunc.has_value()) {
           return WalkResult::interrupt();
         }
 
-        symbolTable.insert(outlinedFunc.getValue(), insertPt);
+        symbolTable.insert(outlinedFunc.value(), insertPt);
 
-        if (failed(convertToCall(op, outlinedFunc.getValue()))) {
+        if (failed(convertToCall(op, outlinedFunc.value()))) {
           return WalkResult::interrupt();
         }
         return WalkResult::advance();
@@ -92,13 +92,13 @@ struct ConvertMhloRegionOpsToEmitCPass
         Optional<func::FuncOp> outlinedFunc =
             outlineRegionImpl<mhlo::ReduceWindowOp>(op, funcName);
 
-        if (!outlinedFunc.hasValue()) {
+        if (!outlinedFunc.has_value()) {
           return WalkResult::interrupt();
         }
 
-        symbolTable.insert(outlinedFunc.getValue(), insertPt);
+        symbolTable.insert(outlinedFunc.value(), insertPt);
 
-        if (failed(convertToCall(op, outlinedFunc.getValue()))) {
+        if (failed(convertToCall(op, outlinedFunc.value()))) {
           return WalkResult::interrupt();
         }
         return WalkResult::advance();

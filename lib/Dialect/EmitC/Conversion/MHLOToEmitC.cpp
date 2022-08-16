@@ -292,14 +292,14 @@ private:
             .Case("LT", StringRef("std::less"))
             .Default(None);
 
-    if (!functionName.hasValue())
+    if (!functionName.has_value())
       return failure();
 
     Type elementType = compareOp.getOperand(0).getType();
     ArrayAttr args;
     ArrayAttr templateArgs = rewriter.getArrayAttr(
         {TypeAttr::get(elementType),
-         emitc::OpaqueAttr::get(ctx, functionName.getValue())});
+         emitc::OpaqueAttr::get(ctx, functionName.value())});
 
     rewriter.replaceOpWithNewOp<emitc::CallOp>(compareOp, compareOp.getType(),
                                                callee, args, templateArgs,

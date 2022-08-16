@@ -68,8 +68,6 @@ else()
   set(MLIR_INCLUDE_DIR ${MLIR_MAIN_SRC_DIR}/include)
   set(MLIR_GENERATED_INCLUDE_DIR ${LLVM_BINARY_DIR}/tools/mlir/include)
   set(MLIR_INCLUDE_DIRS "${MLIR_INCLUDE_DIR};${MLIR_GENERATED_INCLUDE_DIR}")
-
-  set(MLIR_TABLEGEN_EXE $<TARGET_FILE:mlir-tblgen>)
 endif()
 
 

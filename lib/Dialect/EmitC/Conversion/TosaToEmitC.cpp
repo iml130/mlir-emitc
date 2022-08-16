@@ -130,7 +130,7 @@ private:
   matchAndRewrite(SrcOp convOp, Adaptor adaptor,
                   ConversionPatternRewriter &rewriter) const override {
     // Fail if quantization is requested.
-    if (convOp.getQuantizationInfo().hasValue()) {
+    if (convOp.getQuantizationInfo().has_value()) {
       return convOp.emitError("Quantization for " + convOp.getOperationName() +
                               " is currently not supported.");
     }
@@ -187,7 +187,7 @@ private:
   LogicalResult
   matchAndRewrite(tosa::FullyConnectedOp fullyConnectedOp, OpAdaptor adaptor,
                   ConversionPatternRewriter &rewriter) const override {
-    if (fullyConnectedOp.getQuantizationInfo().hasValue()) {
+    if (fullyConnectedOp.getQuantizationInfo().has_value()) {
       return fullyConnectedOp.emitError(
           "Quantization of tosa.fully_connected is currently not supported.");
     }
@@ -220,7 +220,7 @@ private:
   LogicalResult
   matchAndRewrite(tosa::MatMulOp matMulOp, OpAdaptor adaptor,
                   ConversionPatternRewriter &rewriter) const override {
-    if (matMulOp.getQuantizationInfo().hasValue()) {
+    if (matMulOp.getQuantizationInfo().has_value()) {
       return matMulOp.emitError(
           "Quantization of tosa.matmul is currently not supported.");
     }
@@ -302,7 +302,7 @@ private:
   LogicalResult
   matchAndRewrite(tosa::NegateOp negateOp, OpAdaptor adaptor,
                   ConversionPatternRewriter &rewriter) const override {
-    if (negateOp.getQuantizationInfo().hasValue()) {
+    if (negateOp.getQuantizationInfo().has_value()) {
       return negateOp.emitError(
           "Quantization of tosa.negate is currently not supported.");
     }
@@ -732,7 +732,7 @@ private:
   LogicalResult
   matchAndRewrite(tosa::PadOp padOp, OpAdaptor adaptor,
                   ConversionPatternRewriter &rewriter) const override {
-    if (padOp.getQuantizationInfo().hasValue()) {
+    if (padOp.getQuantizationInfo().has_value()) {
       return padOp.emitError(
           "Quantization of tosa.pad is currently not supported.");
     }

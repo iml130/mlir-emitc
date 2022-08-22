@@ -361,54 +361,6 @@ private:
   }
 };
 
-/// Convert `tosa.reluN` into an `emitc.call` operation.
-class ReluNOpConversion : public OpConversionPattern<tosa::ReluNOp> {
-  using OpConversionPattern<tosa::ReluNOp>::OpConversionPattern;
-
-public:
-  ReluNOpConversion(MLIRContext *ctx)
-      : OpConversionPattern<tosa::ReluNOp>(ctx) {}
-
-private:
-  LogicalResult
-  matchAndRewrite(tosa::ReluNOp reluNOp, OpAdaptor adaptor,
-                  ConversionPatternRewriter &rewriter) const override {
-
-    StringRef funcName = "emitc::tosa::reluN";
-    StringAttr callee = rewriter.getStringAttr(funcName);
-
-    SmallVector<Attribute, 2> arguments;
-    arguments.push_back(rewriter.getIndexAttr(0));
-
-    // TOSA specifies the max attributes to be either exact i64 or f32,
-    // regardless of the operand's element type. So we need to make sure that
-    // the max attribute type match the operand's element type and it's bit
-    // width.
-    auto elementType =
-        adaptor.getInput().getType().cast<RankedTensorType>().getElementType();
-    if (elementType.isa<IntegerType>()) {
-      // Change the max_int type to the element type of the operand.
-      auto maxInt = reluNOp.getMaxInt();
-      arguments.push_back(IntegerAttr::get(elementType, maxInt));
-    } else if (elementType.isa<FloatType>()) {
-      // Change the max_fp type to the element type of the operand.
-      auto maxFp = reluNOp.getMaxFpAttr().getValueAsDouble();
-      arguments.push_back(FloatAttr::get(elementType, maxFp));
-    } else {
-      return reluNOp.emitError(
-          "Operand of tosa.reluN has to be tensor of integer or float values.");
-    }
-    ArrayAttr args = rewriter.getArrayAttr(arguments);
-    ArrayAttr templateArgs;
-
-    rewriter.replaceOpWithNewOp<emitc::CallOp>(reluNOp, reluNOp.getType(),
-                                               callee, args, templateArgs,
-                                               adaptor.getOperands());
-
-    return success();
-  }
-};
-
 /// Convert `tosa.rsqrt` into an `emitc.call` operation.
 class RsqrtOpConversion : public OpConversionPattern<tosa::RsqrtOp> {
   using OpConversionPattern<tosa::RsqrtOp>::OpConversionPattern;
@@ -807,7 +759,6 @@ void populateTosaToEmitcPatterns(MLIRContext *ctx,
   patterns.add<NegateOpConversion>(ctx);
   patterns.add<CallOpConversion<tosa::ReciprocalOp>>(ctx,
                                                      "emitc::tosa::reciprocal");
-  patterns.add<ReluNOpConversion>(ctx);
   patterns.add<RescaleOpConversion>(ctx);
   patterns.add<RsqrtOpConversion>(ctx);
   patterns.add<CallOpConversion<tosa::TanhOp>>(ctx, "emitc::tosa::tanh");
@@ -886,7 +837,6 @@ struct ConvertTosaToEmitCPass
                         tosa::LogOp,
                         tosa::NegateOp,
                         tosa::ReciprocalOp,
-                        tosa::ReluNOp,
                         tosa::RescaleOp,
                         tosa::RsqrtOp,
                         tosa::TanhOp>();

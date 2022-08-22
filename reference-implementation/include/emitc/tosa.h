@@ -108,14 +108,6 @@ inline Src reciprocal(Src x) {
   return unary<Src>(x, f);
 }
 
-// ReluNOp
-template <typename Src>
-inline Src reluN(Src operand, typename Src::value_type max_value) {
-  Tensor<typename Src::value_type> min{0};
-  Tensor<typename Src::value_type> max{max_value};
-  return emitc::clamp(min, operand, max);
-}
-
 // RescaleOp
 template <typename Dest, size_t Dim, typename Src>
 inline Dest rescale(Src x, typename get_element_type<Src>::type in_zp,

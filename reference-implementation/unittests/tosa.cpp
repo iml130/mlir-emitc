@@ -80,6 +80,60 @@ TEST(tosa, clamp) {
 
     EXPECT_THAT(result, Pointwise(FloatEq(), expected_result));
   }
+
+  // These are the tests of the former ReluN operation, which has been removed
+  // from the TOSA specification. clamp with min_value=0 can be used instead.
+  {
+    Tensor0D<int32_t> operand{0};
+    int32_t max_value = 0;
+    Tensor0D<int32_t> expected_result{0};
+    Tensor0D<int32_t> result = tosa::clamp(operand, {0}, max_value);
+
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+  {
+    Tensor0D<int32_t> operand{0};
+    int32_t max_value = 0;
+    Tensor0D<int32_t> expected_result{0};
+    Tensor0D<int32_t> result = tosa::clamp(operand, {0}, max_value);
+
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+  {
+    Tensor1D<double, 2> operand{-4.7, 1.3};
+    double max_value = 1.4;
+    Tensor1D<double, 2> expected_result{0, 1.3};
+    Tensor1D<double, 2> result = tosa::clamp(operand, {0}, max_value);
+
+    EXPECT_THAT(result, Pointwise(DoubleEq(), expected_result));
+  }
+  {
+    Tensor2D<float, 2, 2> operand{0.0f, -9.9f, 4.4f, 8.8f};
+    float max_value = 5.5f;
+    Tensor2D<float, 2, 2> expected_result{0.0f, 0.0f, 4.4f, 5.5f};
+    Tensor2D<float, 2, 2> result = tosa::clamp(operand, {0}, max_value);
+
+    EXPECT_THAT(result, Pointwise(FloatEq(), expected_result));
+  }
+  {
+    Tensor3D<int64_t, 3, 2, 1> operand{4, 1, -1, 3, 0, 2};
+    int64_t max_value = 3;
+    Tensor3D<int64_t, 3, 2, 1> expected_result{3, 1, 0, 3, 0, 2};
+    Tensor3D<int64_t, 3, 2, 1> result = tosa::clamp(operand, {0}, max_value);
+
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+  {
+    Tensor4D<int16_t, 1, 2, 3, 2> operand{7812,  15481,  -30284, 30996,
+                                          18736, 6699,   31903,  26229,
+                                          15931, -18954, -27643, 19133};
+    int16_t max_value = 20000;
+    Tensor4D<int16_t, 1, 2, 3, 2> expected_result{
+        7812, 15481, 0, 20000, 18736, 6699, 20000, 20000, 15931, 0, 0, 19133};
+    Tensor4D<int16_t, 1, 2, 3, 2> result = tosa::clamp(operand, {0}, max_value);
+
+    EXPECT_THAT(result, Pointwise(FloatEq(), expected_result));
+  }
 }
 
 TEST(tosa, clz) {
@@ -242,52 +296,6 @@ TEST(tosa, rescale) {
             x, in_zp, out_zp, mult, shift, scale32, double_round, per_channel);
 
     EXPECT_THAT(result, Pointwise(Eq(), expected_result));
-  }
-}
-
-TEST(tosa, reluN) {
-  {
-    Tensor0D<int32_t> operand{0};
-    int32_t max_value = 0;
-    Tensor0D<int32_t> expected_result{0};
-    Tensor0D<int32_t> result = tosa::reluN(operand, max_value);
-
-    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
-  }
-  {
-    Tensor1D<double, 2> operand{-4.7, 1.3};
-    double max_value = 1.4;
-    Tensor1D<double, 2> expected_result{0, 1.3};
-    Tensor1D<double, 2> result = tosa::reluN(operand, max_value);
-
-    EXPECT_THAT(result, Pointwise(DoubleEq(), expected_result));
-  }
-  {
-    Tensor2D<float, 2, 2> operand{0.0f, -9.9f, 4.4f, 8.8f};
-    float max_value = 5.5f;
-    Tensor2D<float, 2, 2> expected_result{0.0f, 0.0f, 4.4f, 5.5f};
-    Tensor2D<float, 2, 2> result = tosa::reluN(operand, max_value);
-
-    EXPECT_THAT(result, Pointwise(FloatEq(), expected_result));
-  }
-  {
-    Tensor3D<int64_t, 3, 2, 1> operand{4, 1, -1, 3, 0, 2};
-    int64_t max_value = 3;
-    Tensor3D<int64_t, 3, 2, 1> expected_result{3, 1, 0, 3, 0, 2};
-    Tensor3D<int64_t, 3, 2, 1> result = tosa::reluN(operand, max_value);
-
-    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
-  }
-  {
-    Tensor4D<int16_t, 1, 2, 3, 2> operand{7812,  15481,  -30284, 30996,
-                                          18736, 6699,   31903,  26229,
-                                          15931, -18954, -27643, 19133};
-    int16_t max_value = 20000;
-    Tensor4D<int16_t, 1, 2, 3, 2> expected_result{
-        7812, 15481, 0, 20000, 18736, 6699, 20000, 20000, 15931, 0, 0, 19133};
-    Tensor4D<int16_t, 1, 2, 3, 2> result = tosa::reluN(operand, max_value);
-
-    EXPECT_THAT(result, Pointwise(FloatEq(), expected_result));
   }
 }
 

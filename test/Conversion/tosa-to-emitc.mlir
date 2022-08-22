@@ -326,27 +326,3 @@ func.func @test_transpose(%arg0: tensor<13x21x3xf32>) -> tensor<3x13x21xf32> {
   %1 = "tosa.transpose"(%arg0, %0) : (tensor<13x21x3xf32>, tensor<3xi32>) -> tensor<3x13x21xf32>
   return %1 : tensor<3x13x21xf32>
 }
-
-func.func @test_relu0(%arg0: tensor<13x21x3xf32>) -> tensor<13x21x3xf32> {
-  // CHECK: %0 = emitc.call "emitc::tosa::reluN"(%arg0) {args = [0 : index, 3.40282347E+38 : f32]} : (tensor<13x21x3xf32>) -> tensor<13x21x3xf32>
-  %0 = "tosa.reluN"(%arg0) {max_fp = 3.40282347E+38 : f32, max_int = 0 : i64} : (tensor<13x21x3xf32>) -> tensor<13x21x3xf32>
-  return %0 : tensor<13x21x3xf32>
-}
-
-func.func @test_relu1(%arg0: tensor<13x21x3xi64>) -> tensor<13x21x3xi64> {
-  // CHECK: %0 = emitc.call "emitc::tosa::reluN"(%arg0) {args = [0 : index, 255]} : (tensor<13x21x3xi64>) -> tensor<13x21x3xi64>
-  %0 = "tosa.reluN"(%arg0) {max_fp = 0.0 : f32, max_int = 255 : i64} : (tensor<13x21x3xi64>) -> tensor<13x21x3xi64>
-  return %0 : tensor<13x21x3xi64>
-}
-
-func.func @test_relu2(%arg0: tensor<13x21x3xi32>) -> tensor<13x21x3xi32> {
-  // CHECK: %0 = emitc.call "emitc::tosa::reluN"(%arg0) {args = [0 : index, 255 : i32]} : (tensor<13x21x3xi32>) -> tensor<13x21x3xi32>
-  %0 = "tosa.reluN"(%arg0) {max_fp = 0.0 : f32, max_int = 255 : i64} : (tensor<13x21x3xi32>) -> tensor<13x21x3xi32>
-  return %0 : tensor<13x21x3xi32>
-}
-
-func.func @test_relu3(%arg0: tensor<13x21x3xf16>) -> tensor<13x21x3xf16> {
-  // CHECK: %0 = emitc.call "emitc::tosa::reluN"(%arg0) {args = [0 : index, 1.500000e+00 : f16]} : (tensor<13x21x3xf16>) -> tensor<13x21x3xf16>
-  %0 = "tosa.reluN"(%arg0) {max_fp = 1.5 : f32, max_int = 0 : i64} : (tensor<13x21x3xf16>) -> tensor<13x21x3xf16>
-  return %0 : tensor<13x21x3xf16>
-}

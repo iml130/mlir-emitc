@@ -60,10 +60,6 @@ if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR OR EMITC_BUILD_EMBEDDED)
   include(HandleLLVMOptions)
 else()
   # In-tree-build
-  if(EMITC_ENABLE_HLO)
-    message(FATAL_ERROR "`EMITC_ENABLE_HLO=ON` is not supported as part of an in-tree-build.")
-  endif()
-
   set(MLIR_MAIN_SRC_DIR ${LLVM_MAIN_SRC_DIR}/../mlir)
   set(MLIR_INCLUDE_DIR ${MLIR_MAIN_SRC_DIR}/include)
   set(MLIR_GENERATED_INCLUDE_DIR ${LLVM_BINARY_DIR}/tools/mlir/include)
@@ -95,8 +91,8 @@ add_definitions(${LLVM_DEFINITIONS})
 # another, let it handle the submodule and includes.
 if(EMITC_ENABLE_HLO AND NOT EMITC_BUILD_EMBEDDED)
   add_subdirectory(third_party/mlir-hlo EXCLUDE_FROM_ALL)
-  include_directories(${mlir-hlo_SOURCE_DIR}/include)
-  include_directories(${mlir-hlo_BINARY_DIR}/include)
+  include_directories(${CMAKE_CURRENT_SOURCE_DIR}/third_party/mlir-hlo/include)
+  include_directories(${CMAKE_CURRENT_BINARY_DIR}/third_party/mlir-hlo/include)
 endif()
 
 # Optional Eigen dependency for some TOSA Ops

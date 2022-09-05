@@ -93,6 +93,8 @@ if(EMITC_ENABLE_HLO AND NOT EMITC_BUILD_EMBEDDED)
   add_subdirectory(third_party/mlir-hlo EXCLUDE_FROM_ALL)
   include_directories(${CMAKE_CURRENT_SOURCE_DIR}/third_party/mlir-hlo/include)
   include_directories(${CMAKE_CURRENT_BINARY_DIR}/third_party/mlir-hlo/include)
+  include_directories(${CMAKE_CURRENT_SOURCE_DIR}/third_party/mlir-hlo/stablehlo)
+  include_directories(${CMAKE_CURRENT_BINARY_DIR}/third_party/mlir-hlo/stablehlo)
 endif()
 
 # Optional Eigen dependency for some TOSA Ops

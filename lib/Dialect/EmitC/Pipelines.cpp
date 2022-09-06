@@ -6,7 +6,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "emitc/Dialect/EmitC/Conversion/Passes.h"
+#include "emitc/Conversion/Passes.h"
 #include "emitc/Dialect/EmitC/Transforms/Passes.h"
 
 #include "mlir/Pass/Pass.h"

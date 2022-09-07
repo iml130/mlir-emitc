@@ -17,7 +17,7 @@
 #include "mlir/Pass/Pass.h"
 #include "mlir/Transforms/DialectConversion.h"
 
-#include "PassDetail.h"
+#include "../PassDetail.h"
 #include "emitc/Conversion/TosaToEmitC/TosaToEmitC.h"
 
 using namespace mlir;

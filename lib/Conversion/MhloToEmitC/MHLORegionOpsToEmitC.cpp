@@ -18,7 +18,7 @@
 #include "mlir/IR/BuiltinOps.h"
 #include "mlir/Pass/Pass.h"
 
-#include "PassDetail.h"
+#include "../PassDetail.h"
 #include "emitc/Conversion/MhloToEmitC/MhloToEmitC.h"
 
 using namespace mlir;

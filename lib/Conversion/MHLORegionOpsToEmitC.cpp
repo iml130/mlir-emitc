@@ -19,7 +19,7 @@
 #include "mlir/Pass/Pass.h"
 
 #include "PassDetail.h"
-#include "emitc/Dialect/EmitC/Conversion/Passes.h"
+#include "emitc/Conversion/MhloToEmitC/MhloToEmitC.h"
 
 using namespace mlir;
 using namespace mlir::emitc;

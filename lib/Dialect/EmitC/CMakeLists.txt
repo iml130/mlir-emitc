@@ -1,4 +1,3 @@
-add_subdirectory(Conversion)
 add_subdirectory(Transforms)
 
 add_mlir_library(MLIREmitCPipelines

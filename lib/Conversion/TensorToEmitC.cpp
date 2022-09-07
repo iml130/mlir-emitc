@@ -18,7 +18,7 @@
 #include "mlir/Transforms/DialectConversion.h"
 
 #include "PassDetail.h"
-#include "emitc/Dialect/EmitC/Conversion/Passes.h"
+#include "emitc/Conversion/TensorToEmitC/TensorToEmitC.h"
 
 using namespace mlir;
 using namespace mlir::emitc;

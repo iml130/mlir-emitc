@@ -319,6 +319,14 @@ TEST(tosa, arithmetic_right_shift) {
   }
 }
 
+TEST(tosa, equal) {
+  Tensor2D<int32_t, 2, 2> s0{3, 2, -1, 0};
+  Tensor2D<int32_t, 2, 2> t0{3, -2, 0, 0};
+  Tensor2D<bool, 2, 2> expected_result{true, false, false, true};
+  Tensor2D<bool, 2, 2> result = tosa::equal<Tensor<bool, 2, 2>>(s0, t0);
+  EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+}
+
 TEST(tosa, logical_left_shift) {
   Tensor1D<int16_t, 4> s0{0b1, 0b1, -0b1, 0b101};
   Tensor1D<int16_t, 4> t0{0, 1, 1, 2};

@@ -13,7 +13,7 @@
 #include "emitc/InitDialect.h"
 #include "emitc/InitPasses.h"
 #ifdef EMITC_BUILD_HLO
-#include "mlir-hlo/Dialect/mhlo/IR/hlo_ops.h"
+#include "mhlo/IR/hlo_ops.h"
 #endif
 #include "mlir/IR/AsmState.h"
 #include "mlir/IR/Dialect.h"

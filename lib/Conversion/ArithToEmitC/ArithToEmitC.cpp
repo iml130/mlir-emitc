@@ -10,7 +10,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "mlir/Dialect/Arithmetic/IR/Arithmetic.h"
+#include "mlir/Dialect/Arith/IR/Arith.h"
 #include "mlir/Dialect/EmitC/IR/EmitC.h"
 #include "mlir/IR/BuiltinOps.h"
 #include "mlir/IR/PatternMatch.h"
@@ -67,7 +67,7 @@ struct ConvertArithToEmitCPass
     ConversionTarget target(getContext());
 
     target.addLegalDialect<emitc::EmitCDialect>();
-    target.addLegalDialect<arith::ArithmeticDialect>();
+    target.addLegalDialect<arith::ArithDialect>();
     target.addIllegalOp<arith::IndexCastOp>();
 
     RewritePatternSet patterns(&getContext());

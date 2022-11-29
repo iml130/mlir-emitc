@@ -769,7 +769,7 @@ void populateTosaToEmitcPatterns(MLIRContext *ctx,
   patterns.add<ArithmeticRightShiftOpConversion>(
       ctx, "emitc::tosa::arithmetic_right_shift");
   patterns.add<CallOpBroadcastableConversion<tosa::EqualOp>>(
-      ctx, "emitc::tosa::equal");
+      ctx, "emitc::tosa::equal", /*explicitResultType=*/true);
   patterns.add<CallOpBroadcastableConversion<tosa::LogicalLeftShiftOp>>(
       ctx, "emitc::tosa::logical_left_shift");
   patterns.add<CallOpBroadcastableConversion<tosa::MaximumOp>>(

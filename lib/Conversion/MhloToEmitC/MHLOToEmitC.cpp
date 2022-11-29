@@ -10,7 +10,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "mlir-hlo/Dialect/mhlo/IR/hlo_ops.h"
+#include "mhlo/IR/hlo_ops.h"
 #include "mlir/Dialect/EmitC/IR/EmitC.h"
 #include "mlir/IR/BuiltinOps.h"
 #include "mlir/IR/PatternMatch.h"
@@ -50,7 +50,7 @@ public:
   LogicalResult matchAndRewrite(mhlo::ConstantOp constOp,
                                 PatternRewriter &rewriter) const final {
     rewriter.replaceOpWithNewOp<emitc::ConstantOp>(constOp, constOp.getType(),
-                                                   constOp.value());
+                                                   constOp.getValue());
     return success();
   }
 };
@@ -74,13 +74,13 @@ private:
     SmallVector<Attribute, 2> arguments = indexSequence(
         adaptor.getOperands().size(), batchNormInferenceOp.getContext());
 
-    arguments.push_back(batchNormInferenceOp.epsilonAttr());
-    arguments.push_back(batchNormInferenceOp.feature_indexAttr());
+    arguments.push_back(batchNormInferenceOp.getEpsilonAttr());
+    arguments.push_back(batchNormInferenceOp.getFeatureIndexAttr());
 
     ArrayAttr args = rewriter.getArrayAttr(arguments);
     ArrayAttr templateArgs = rewriter.getArrayAttr(
         {TypeAttr::get(batchNormInferenceOp.getResult().getType()),
-         TypeAttr::get(adaptor.scale().getType())});
+         TypeAttr::get(adaptor.getScale().getType())});
 
     rewriter.replaceOpWithNewOp<emitc::CallOp>(
         batchNormInferenceOp, batchNormInferenceOp.getType(), callee, args,
@@ -107,7 +107,7 @@ private:
     SmallVector<Attribute, 2> arguments = indexSequence(
         adaptor.getOperands().size(), broadcastInDimOp.getContext());
 
-    arguments.push_back(broadcastInDimOp.broadcast_dimensions());
+    arguments.push_back(broadcastInDimOp.getBroadcastDimensions());
 
     ArrayAttr args = rewriter.getArrayAttr(arguments);
 
@@ -139,7 +139,7 @@ private:
 
     ArrayAttr args;
     ArrayAttr templateArgs = rewriter.getArrayAttr(
-        {rewriter.getI64IntegerAttr(concatenateOp.dimension()),
+        {rewriter.getI64IntegerAttr(concatenateOp.getDimension()),
          TypeAttr::get(concatenateOp.getResult().getType())});
 
     rewriter.replaceOpWithNewOp<emitc::CallOp>(
@@ -168,40 +168,41 @@ private:
     SmallVector<Attribute, 2> arguments =
         indexSequence(adaptor.getOperands().size(), convOp.getContext());
 
-    arguments.push_back(convOp.batch_group_countAttr());
+    arguments.push_back(convOp.getBatchGroupCountAttr());
     arguments.push_back(rewriter.getI64IntegerAttr(
-        convOp.dimension_numbers().getInputBatchDimension()));
+        convOp.getDimensionNumbers().getInputBatchDimension()));
     arguments.push_back(rewriter.getI64IntegerAttr(
-        convOp.dimension_numbers().getInputFeatureDimension()));
+        convOp.getDimensionNumbers().getInputFeatureDimension()));
     arguments.push_back(rewriter.getI64TensorAttr(
-        convOp.dimension_numbers().getInputSpatialDimensions()));
+        convOp.getDimensionNumbers().getInputSpatialDimensions()));
     arguments.push_back(rewriter.getI64IntegerAttr(
-        convOp.dimension_numbers().getKernelInputFeatureDimension()));
+        convOp.getDimensionNumbers().getKernelInputFeatureDimension()));
     arguments.push_back(rewriter.getI64IntegerAttr(
-        convOp.dimension_numbers().getKernelOutputFeatureDimension()));
+        convOp.getDimensionNumbers().getKernelOutputFeatureDimension()));
     arguments.push_back(rewriter.getI64TensorAttr(
-        convOp.dimension_numbers().getKernelSpatialDimensions()));
+        convOp.getDimensionNumbers().getKernelSpatialDimensions()));
     arguments.push_back(rewriter.getI64IntegerAttr(
-        convOp.dimension_numbers().getOutputBatchDimension()));
+        convOp.getDimensionNumbers().getOutputBatchDimension()));
     arguments.push_back(rewriter.getI64IntegerAttr(
-        convOp.dimension_numbers().getOutputFeatureDimension()));
+        convOp.getDimensionNumbers().getOutputFeatureDimension()));
     arguments.push_back(rewriter.getI64TensorAttr(
-        convOp.dimension_numbers().getOutputSpatialDimensions()));
-    arguments.push_back(convOp.feature_group_countAttr());
+        convOp.getDimensionNumbers().getOutputSpatialDimensions()));
+    arguments.push_back(convOp.getFeatureGroupCountAttr());
 
-    arguments.push_back(convOp.padding().value_or(i64ElementsAttr(0, 2, ctx)));
     arguments.push_back(
-        convOp.lhs_dilation().value_or(i64ElementsAttr(1, 2, ctx)));
+        convOp.getPadding().value_or(i64ElementsAttr(0, 2, ctx)));
     arguments.push_back(
-        convOp.rhs_dilation().value_or(i64ElementsAttr(1, 2, ctx)));
+        convOp.getLhsDilation().value_or(i64ElementsAttr(1, 2, ctx)));
     arguments.push_back(
-        convOp.window_strides().value_or(i64ElementsAttr(1, 2, ctx)));
+        convOp.getRhsDilation().value_or(i64ElementsAttr(1, 2, ctx)));
+    arguments.push_back(
+        convOp.getWindowStrides().value_or(i64ElementsAttr(1, 2, ctx)));
 
     ArrayAttr args = rewriter.getArrayAttr(arguments);
     ArrayAttr templateArgs =
         rewriter.getArrayAttr({TypeAttr::get(convOp.getResult().getType()),
-                               TypeAttr::get(adaptor.lhs().getType()),
-                               TypeAttr::get(adaptor.rhs().getType())});
+                               TypeAttr::get(adaptor.getLhs().getType()),
+                               TypeAttr::get(adaptor.getRhs().getType())});
 
     rewriter.replaceOpWithNewOp<emitc::CallOp>(convOp, convOp.getType(), callee,
                                                args, templateArgs,
@@ -280,7 +281,7 @@ private:
     StringAttr callee = rewriter.getStringAttr("emitc::mhlo::compare");
 
     mhlo::ComparisonDirection comparisonDirection =
-        compareOp.comparison_direction();
+        compareOp.getComparisonDirection();
     Optional<StringRef> functionName =
         StringSwitch<Optional<StringRef>>(
             stringifyComparisonDirection(comparisonDirection))
@@ -322,7 +323,7 @@ private:
   LogicalResult
   matchAndRewrite(mhlo::GetTupleElementOp getTupleElementOp, OpAdaptor adaptor,
                   ConversionPatternRewriter &rewriter) const override {
-    auto index = getTupleElementOp.index();
+    auto index = getTupleElementOp.getIndex();
 
     StringAttr callee = rewriter.getStringAttr("std::get");
 
@@ -356,9 +357,9 @@ private:
     SmallVector<Attribute, 2> arguments =
         indexSequence(adaptor.getOperands().size(), sliceOp.getContext());
 
-    arguments.push_back(sliceOp.start_indices());
-    arguments.push_back(sliceOp.limit_indices());
-    arguments.push_back(sliceOp.strides());
+    arguments.push_back(sliceOp.getStartIndices());
+    arguments.push_back(sliceOp.getLimitIndices());
+    arguments.push_back(sliceOp.getStrides());
 
     ArrayAttr args = rewriter.getArrayAttr(arguments);
     ArrayAttr templateArgs =
@@ -391,7 +392,7 @@ private:
     SmallVector<Attribute, 2> arguments = indexSequence(
         adaptor.getOperands().size(), dynamicSliceOp.getContext());
 
-    arguments.push_back(dynamicSliceOp.slice_sizes());
+    arguments.push_back(dynamicSliceOp.getSliceSizes());
 
     ArrayAttr args = rewriter.getArrayAttr(arguments);
 
@@ -426,7 +427,7 @@ private:
 
     ArrayAttr args;
     ArrayAttr templateArgs =
-        rewriter.getArrayAttr({TypeAttr::get(adaptor.update().getType())});
+        rewriter.getArrayAttr({TypeAttr::get(adaptor.getUpdate().getType())});
 
     rewriter.replaceOpWithNewOp<emitc::CallOp>(
         dynamicUpdateSliceOp, dynamicUpdateSliceOp.getType(), callee, args,
@@ -452,9 +453,9 @@ private:
     SmallVector<Attribute, 2> arguments =
         indexSequence(adaptor.getOperands().size(), padOp.getContext());
 
-    arguments.push_back(padOp.edge_padding_low());
-    arguments.push_back(padOp.edge_padding_high());
-    arguments.push_back(padOp.interior_padding());
+    arguments.push_back(padOp.getEdgePaddingLow());
+    arguments.push_back(padOp.getEdgePaddingHigh());
+    arguments.push_back(padOp.getInteriorPadding());
 
     ArrayAttr args = rewriter.getArrayAttr(arguments);
 
@@ -480,7 +481,7 @@ private:
   matchAndRewrite(mhlo::RngOp rngOp, OpAdaptor adaptor,
                   ConversionPatternRewriter &rewriter) const override {
 
-    if (rngOp.rng_distribution() != mhlo::RngDistribution::UNIFORM) {
+    if (rngOp.getRngDistribution() != mhlo::RngDistribution::UNIFORM) {
       return rngOp.emitError(
           "Distributions other than uniform are not supported.");
     }

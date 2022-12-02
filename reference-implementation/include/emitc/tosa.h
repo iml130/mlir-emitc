@@ -702,6 +702,83 @@ inline Dest pad(Src operand, Padding padding,
                           edge_padding_high, interior_padding);
 }
 
+// TileOp
+// Overload for 1d case
+template <typename Dest, typename Src, IsTensorOfDim<1, Dest> = true>
+Dest tile(Src input, Tensor1D<int64_t, 1> multiples) {
+  Dest result;
+  auto it = result.begin();
+  for (int64_t i = 0; i < multiples[0]; i++) {
+    it = std::copy(input.begin(), input.end(), it);
+  }
+  return result;
+}
+
+// Overload for 2d case
+template <typename Dest, typename Src, IsTensorOfDim<2, Src> = true>
+Dest tile(Src input, Tensor1D<int64_t, 2> multiples) {
+  Dest result;
+  auto it = result.begin();
+  for (int64_t i = 0; i < multiples[0]; i++) {
+    for (int64_t j = 0; j < Src::dim(0); j++) {
+      for (int64_t k = 0; k < multiples[1]; k++) {
+        auto start = input.begin() + j * Src::dim(1);
+        auto end = start + Src::dim(1);
+        it = std::copy(start, end, it);
+      }
+    }
+  }
+  return result;
+}
+
+// Overload for 3d case
+template <typename Dest, typename Src, IsTensorOfDim<3, Src> = true>
+Dest tile(Src input, Tensor1D<int64_t, 3> multiples) {
+  Dest result;
+  auto it = result.begin();
+  for (int64_t m0 = 0; m0 < multiples[0]; m0++) {
+    for (int64_t d0 = 0; d0 < Src::dim(0); d0++) {
+      for (int64_t m1 = 0; m1 < multiples[1]; m1++) {
+        for (int64_t d1 = 0; d1 < Src::dim(1); d1++) {
+          for (int64_t m2 = 0; m2 < multiples[2]; m2++) {
+            auto start = input.begin() + (d0 * Src::dim(1) + d1) * Src::dim(2);
+            auto end = start + Src::dim(2);
+            it = std::copy(start, end, it);
+          }
+        }
+      }
+    }
+  }
+  return result;
+}
+
+// Overload for 4d case
+template <typename Dest, typename Src, IsTensorOfDim<4, Src> = true>
+Dest tile(Src input, Tensor1D<int64_t, 4> multiples) {
+  Dest result;
+  auto it = result.begin();
+  for (int64_t m0 = 0; m0 < multiples[0]; m0++) {
+    for (int64_t d0 = 0; d0 < Src::dim(0); d0++) {
+      for (int64_t m1 = 0; m1 < multiples[1]; m1++) {
+        for (int64_t d1 = 0; d1 < Src::dim(1); d1++) {
+          for (int64_t m2 = 0; m2 < multiples[2]; m2++) {
+            for (int64_t d2 = 0; d2 < Src::dim(2); d2++) {
+              for (int64_t m3 = 0; m3 < multiples[3]; m3++) {
+                auto start =
+                    input.begin() +
+                    ((d0 * Src::dim(1) + d1) * Src::dim(2) + d2) * Src::dim(3);
+                auto end = start + Src::dim(3);
+                it = std::copy(start, end, it);
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  return result;
+}
+
 // TransposeOp
 // Maps the perms dimension from Dest to Src.
 template <typename Dest, typename Src>

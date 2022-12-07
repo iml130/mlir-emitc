@@ -42,6 +42,22 @@ DenseIntElementsAttr getI64ElementsAttr(const ArrayAttr values,
   return DenseIntElementsAttr::get(ty, valuesAsI64);
 }
 
+DenseIntElementsAttr getI32ElementsAttr(const ArrayAttr values,
+                                        MLIRContext *ctx) {
+  RankedTensorType ty = RankedTensorType::get(
+      {static_cast<int32_t>(values.size())}, IntegerType::get(ctx, 32));
+
+  SmallVector<int32_t> valuesAsI32;
+
+  // Convert values to int32_t.
+  for (auto &value : values) {
+    auto valueAsIntAttr = value.cast<IntegerAttr>();
+    valuesAsI32.push_back(valueAsIntAttr.getInt());
+  };
+
+  return DenseIntElementsAttr::get(ty, valuesAsI32);
+}
+
 SmallVector<Attribute, 2> indexSequence(int64_t n, MLIRContext *ctx) {
   return llvm::to_vector<2>(
       llvm::map_range(llvm::seq<int64_t>(0, n), [&ctx](int64_t i) -> Attribute {

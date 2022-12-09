@@ -326,7 +326,7 @@ func.func @test_reshape(%arg0: tensor<13x21x3xf32>) -> tensor<1x819xf32> {
 }
 
 func.func @test_tile(%arg0: tensor<1x3x1x4xf32>) -> tensor<2x3x3x8xf32> {
-  // CHECK: emitc.call "emitc::tosa::tile"(%arg0) {args = [0 : index, dense<[2, 1, 3, 2]> : tensor<4xi64>], template_args = [tensor<2x3x3x8xf32>]} : (tensor<1x3x1x4xf32>) -> tensor<2x3x3x8xf32>
+  // CHECK: emitc.call "emitc::tosa::tile"(%arg0) {args = [0 : index, dense<[2, 1, 3, 2]> : tensor<4xi32>], template_args = [tensor<2x3x3x8xf32>]} : (tensor<1x3x1x4xf32>) -> tensor<2x3x3x8xf32>
   %0 = "tosa.tile"(%arg0) {multiples = [2, 1, 3, 2]} : (tensor<1x3x1x4xf32>) -> tensor<2x3x3x8xf32>
   return %0 : tensor<2x3x3x8xf32>
 }

@@ -755,7 +755,7 @@ private:
     // clang-format off
     ArrayAttr args = rewriter.getArrayAttr({
       rewriter.getIndexAttr(0),
-      getI64ElementsAttr(tileOp.getMultiplesAttr(), tileOp.getContext()),
+      getI32ElementsAttr(tileOp.getMultiplesAttr(), tileOp.getContext()),
     });
     // clang-format on
 

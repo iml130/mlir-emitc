@@ -767,6 +767,14 @@ private:
   matchAndRewrite(tosa::TileOp tileOp, OpAdaptor adaptor,
                   ConversionPatternRewriter &rewriter) const override {
     StringAttr callee = rewriter.getStringAttr("emitc::tosa::tile");
+    auto inputShape =
+        adaptor.getInput1().getType().cast<RankedTensorType>().getShape();
+    for (int64_t i = 0, e = inputShape.size(); i < e; i++) {
+      if (inputShape[i] > std::numeric_limits<int>::max()) {
+        return tileOp.emitError("tosa.tile with dimensions larger than the "
+                                 "i32 limit are not supported.");
+      }
+    }
 
     // clang-format off
     ArrayAttr args = rewriter.getArrayAttr({

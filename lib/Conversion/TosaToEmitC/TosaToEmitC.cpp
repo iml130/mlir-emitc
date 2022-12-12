@@ -772,7 +772,7 @@ private:
     for (int64_t i = 0, e = inputShape.size(); i < e; i++) {
       if (inputShape[i] > std::numeric_limits<int>::max()) {
         return tileOp.emitError("tosa.tile with dimensions larger than the "
-                                 "i32 limit are not supported.");
+                                "i32 limit are not supported.");
       }
     }
 

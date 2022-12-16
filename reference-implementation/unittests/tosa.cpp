@@ -1062,6 +1062,79 @@ TEST(tosa, pad) {
   }
 }
 
+TEST(tosa, tile) {
+  { // 1d case
+    Tensor1D<int32_t, 4> input{1, 2, 3, 4};
+    Tensor1D<int32_t, 1> multiples{3};
+    Tensor1D<int32_t, 12> expected_result{1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4};
+    Tensor1D<int32_t, 12> result =
+        tosa::tile<Tensor1D<int32_t, 12>>(input, multiples);
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+  { // 2d case
+    Tensor2D<int32_t, 3, 3> input{1, 2, 3, 4, 5, 6, 7, 8, 9};
+    Tensor1D<int32_t, 2> multiples{2, 3};
+    Tensor2D<int32_t, 6, 9> expected_result{
+        1, 2, 3, 1, 2, 3, 1, 2, 3, 4, 5, 6, 4, 5, 6, 4, 5, 6,
+        7, 8, 9, 7, 8, 9, 7, 8, 9, 1, 2, 3, 1, 2, 3, 1, 2, 3,
+        4, 5, 6, 4, 5, 6, 4, 5, 6, 7, 8, 9, 7, 8, 9, 7, 8, 9};
+    Tensor2D<int32_t, 6, 9> result =
+        tosa::tile<Tensor2D<int32_t, 6, 9>>(input, multiples);
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+  { // 2d case
+    Tensor2D<int32_t, 2, 4> input{1, 2, 3, 4, 5, 6, 7, 8};
+    Tensor1D<int32_t, 2> multiples{3, 1};
+    Tensor2D<int32_t, 6, 4> expected_result{1, 2, 3, 4, 5, 6, 7, 8, 1, 2, 3, 4,
+                                            5, 6, 7, 8, 1, 2, 3, 4, 5, 6, 7, 8};
+    Tensor2D<int32_t, 6, 4> result =
+        tosa::tile<Tensor2D<int32_t, 6, 4>>(input, multiples);
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+  { // 3d case
+    Tensor3D<int32_t, 2, 2, 3> input{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+    Tensor1D<int32_t, 3> multiples{2, 1, 3};
+    Tensor3D<int32_t, 4, 2, 9> expected_result{
+        1, 2, 3, 1, 2, 3, 1, 2, 3, 4,  5,  6,  4,  5,  6,  4,  5,  6,
+        7, 8, 9, 7, 8, 9, 7, 8, 9, 10, 11, 12, 10, 11, 12, 10, 11, 12,
+        1, 2, 3, 1, 2, 3, 1, 2, 3, 4,  5,  6,  4,  5,  6,  4,  5,  6,
+        7, 8, 9, 7, 8, 9, 7, 8, 9, 10, 11, 12, 10, 11, 12, 10, 11, 12};
+    Tensor3D<int32_t, 4, 2, 9> result =
+        tosa::tile<Tensor3D<int32_t, 4, 2, 9>>(input, multiples);
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+  {
+    Tensor3D<int32_t, 1, 3, 2> input{1, 2, 3, 4, 5, 6};
+    Tensor1D<int32_t, 3> multiples{2, 2, 2};
+    Tensor3D<int32_t, 2, 6, 4> expected_result{
+        1, 2, 1, 2, 3, 4, 3, 4, 5, 6, 5, 6, 1, 2, 1, 2, 3, 4, 3, 4, 5, 6, 5, 6,
+        1, 2, 1, 2, 3, 4, 3, 4, 5, 6, 5, 6, 1, 2, 1, 2, 3, 4, 3, 4, 5, 6, 5, 6};
+    Tensor3D<int32_t, 2, 6, 4> result =
+        tosa::tile<Tensor3D<int32_t, 2, 6, 4>>(input, multiples);
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+  { // 4d case
+    Tensor4D<int32_t, 2, 2, 2, 2> input{1, 2,  3,  4,  5,  6,  7,  8,
+                                        9, 10, 11, 12, 13, 14, 15, 16};
+    Tensor1D<int32_t, 4> multiples{2, 3, 1, 2};
+    Tensor4D<int32_t, 4, 6, 2, 4> expected_result{
+        1,  2,  1,  2,  3,  4,  3,  4,  5,  6,  5,  6,  7,  8,  7,  8,  1,  2,
+        1,  2,  3,  4,  3,  4,  5,  6,  5,  6,  7,  8,  7,  8,  1,  2,  1,  2,
+        3,  4,  3,  4,  5,  6,  5,  6,  7,  8,  7,  8,  9,  10, 9,  10, 11, 12,
+        11, 12, 13, 14, 13, 14, 15, 16, 15, 16, 9,  10, 9,  10, 11, 12, 11, 12,
+        13, 14, 13, 14, 15, 16, 15, 16, 9,  10, 9,  10, 11, 12, 11, 12, 13, 14,
+        13, 14, 15, 16, 15, 16, 1,  2,  1,  2,  3,  4,  3,  4,  5,  6,  5,  6,
+        7,  8,  7,  8,  1,  2,  1,  2,  3,  4,  3,  4,  5,  6,  5,  6,  7,  8,
+        7,  8,  1,  2,  1,  2,  3,  4,  3,  4,  5,  6,  5,  6,  7,  8,  7,  8,
+        9,  10, 9,  10, 11, 12, 11, 12, 13, 14, 13, 14, 15, 16, 15, 16, 9,  10,
+        9,  10, 11, 12, 11, 12, 13, 14, 13, 14, 15, 16, 15, 16, 9,  10, 9,  10,
+        11, 12, 11, 12, 13, 14, 13, 14, 15, 16, 15, 16};
+    Tensor4D<int32_t, 4, 6, 2, 4> result =
+        tosa::tile<Tensor4D<int32_t, 4, 6, 2, 4>>(input, multiples);
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+}
+
 TEST(tosa, transpose) {
   // clang-format off
   Tensor2D<float, 3, 2> t0 = {1, 2,

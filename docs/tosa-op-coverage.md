@@ -50,4 +50,5 @@ The table below shows the supported TOSA ops.
 | reshape                | :heavy_check_mark: | |
 | slice                  | :white_check_mark: | Only for 1D to 4D inputs |
 | pad                    | :white_check_mark: | Quantization not supported |
+| tile                   | :heavy_check_mark: | |
 | transpose              | :heavy_check_mark: | |

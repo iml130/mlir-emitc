@@ -32,7 +32,7 @@ The table below shows the supported TOSA ops.
 | sub                    | :heavy_check_mark: | |
 | table                  | :heavy_check_mark: | |
 | **Ternary elementwise ops**
-| argmax                 | :heavy_check_mark: | |
+| select                 | :heavy_check_mark: | |
 | **Other ops**
 | argmax                 | :heavy_check_mark: | |
 | concat                 | :heavy_check_mark: | |

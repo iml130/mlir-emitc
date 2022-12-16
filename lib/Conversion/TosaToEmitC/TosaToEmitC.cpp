@@ -671,34 +671,6 @@ private:
   }
 };
 
-/// Convert `tosa.gather` into an `emitc.call` operation.
-class GatherOpConversion : public OpConversionPattern<tosa::GatherOp> {
-  using OpConversionPattern<tosa::GatherOp>::OpConversionPattern;
-
-public:
-  GatherOpConversion(MLIRContext *ctx)
-      : OpConversionPattern<tosa::GatherOp>(ctx) {}
-
-private:
-  LogicalResult
-  matchAndRewrite(tosa::GatherOp gatherOp, OpAdaptor adaptor,
-                  ConversionPatternRewriter &rewriter) const override {
-    StringRef funcName = "emitc::tosa::gather";
-    StringAttr callee = rewriter.getStringAttr(funcName);
-
-    ArrayAttr args;
-    Type type = gatherOp.getType();
-    ArrayAttr templateArgs =
-        ArrayAttr::get(gatherOp.getContext(), {TypeAttr::get(type)});
-
-    rewriter.replaceOpWithNewOp<emitc::CallOp>(gatherOp, gatherOp.getType(),
-                                               callee, args, templateArgs,
-                                               adaptor.getOperands());
-
-    return success();
-  }
-};
-
 /// Convert `tosa.reduce_*` into an `emitc.call` operation.
 template <typename SrcOp, typename Adaptor = typename SrcOp::Adaptor>
 class ReduceOpConversion : public OpConversionPattern<SrcOp> {
@@ -936,7 +908,8 @@ void populateTosaToEmitcPatterns(MLIRContext *ctx,
   patterns.add<GenericConvOpConversion<tosa::DepthwiseConv2DOp>>(
       ctx, "emitc::tosa::depthwise_conv2d");
   patterns.add<FullyConnectedOpConversion>(ctx, "emitc::tosa::fully_connected");
-  patterns.add<GatherOpConversion>(ctx);
+  patterns.add<CallOpConversion<tosa::GatherOp>>(ctx, "emitc::tosa::gather",
+                                                 /*explicitResultType=*/true);
   patterns.add<MatMulOpConversion>(ctx);
   patterns.add<TileOpConversion>(ctx);
   patterns.add<ReduceOpConversion<tosa::ArgMaxOp>>(ctx, "emitc::tosa::argmax",

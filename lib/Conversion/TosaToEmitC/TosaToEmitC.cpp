@@ -755,6 +755,44 @@ private:
   }
 };
 
+/// Convert `tosa.tile` into an `emitc.call` operation.
+class TileOpConversion : public OpConversionPattern<tosa::TileOp> {
+  using OpConversionPattern<tosa::TileOp>::OpConversionPattern;
+
+public:
+  TileOpConversion(MLIRContext *ctx) : OpConversionPattern<tosa::TileOp>(ctx) {}
+
+private:
+  LogicalResult
+  matchAndRewrite(tosa::TileOp tileOp, OpAdaptor adaptor,
+                  ConversionPatternRewriter &rewriter) const override {
+    StringAttr callee = rewriter.getStringAttr("emitc::tosa::tile");
+    auto inputShape =
+        adaptor.getInput1().getType().cast<RankedTensorType>().getShape();
+    for (int64_t i = 0, e = inputShape.size(); i < e; i++) {
+      if (inputShape[i] > std::numeric_limits<int>::max()) {
+        return tileOp.emitError("tosa.tile with dimensions larger than the "
+                                "i32 limit are not supported.");
+      }
+    }
+
+    // clang-format off
+    ArrayAttr args = rewriter.getArrayAttr({
+      rewriter.getIndexAttr(0),
+      getI32ElementsAttr(tileOp.getMultiplesAttr(), tileOp.getContext()),
+    });
+    // clang-format on
+
+    Type resultType = tileOp.getOutput().getType();
+    ArrayAttr templateArgs = rewriter.getArrayAttr({TypeAttr::get(resultType)});
+
+    rewriter.replaceOpWithNewOp<emitc::CallOp>(tileOp, tileOp.getType(), callee,
+                                               args, templateArgs,
+                                               adaptor.getOperands());
+    return success();
+  }
+};
+
 } // namespace
 
 void populateTosaToEmitcPatterns(MLIRContext *ctx,
@@ -806,6 +844,7 @@ void populateTosaToEmitcPatterns(MLIRContext *ctx,
       ctx, "emitc::tosa::depthwise_conv2d");
   patterns.add<FullyConnectedOpConversion>(ctx, "emitc::tosa::fully_connected");
   patterns.add<MatMulOpConversion>(ctx);
+  patterns.add<TileOpConversion>(ctx);
   patterns.add<ReduceOpConversion<tosa::ArgMaxOp>>(ctx, "emitc::tosa::argmax",
                                                    false);
   patterns.add<ReduceOpConversion<tosa::ReduceAllOp>>(
@@ -886,6 +925,7 @@ struct ConvertTosaToEmitCPass
                         tosa::ReshapeOp,
                         tosa::SliceOp,
                         tosa::PadOp,
+                        tosa::TileOp,
                         tosa::TransposeOp>();
     // clang-format on
 

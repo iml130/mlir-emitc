@@ -239,7 +239,16 @@ func.func @test_select_broadcast_input(%arg0: tensor<12x6x3xi1>, %arg1: tensor<1
   // CHECK: %1 = emitc.call "emitc::tosa::select"(%arg0, %0, %arg2) : (tensor<12x6x3xi1>, tensor<12x6x3xi32>, tensor<12x6x3xi32>) -> tensor<12x6x3xi32>
   %0 = "tosa.select"(%arg0, %arg1, %arg2) : (tensor<12x6x3xi1>, tensor<12x1x3xi32>, tensor<12x6x3xi32>) -> tensor<12x6x3xi32>
   return %0 : tensor<12x6x3xi32>
-} 
+}
+
+func.func @test_select_broadcast_all_elements(%arg0: tensor<12x6x1xi1>, %arg1: tensor<12x1x3xi32>, %arg2: tensor<12x1x3xi32>) -> tensor<12x6x3xi32> {
+  // CHECK: %0 = emitc.call "emitc::broadcast_in_dim"(%arg0) {args = [0 : index, dense<[0, 1, 2]> : tensor<3xi64>], template_args = [tensor<12x6x3xi1>]} : (tensor<12x6x1xi1>) -> tensor<12x6x3xi1>
+  // CHECK: %1 = emitc.call "emitc::broadcast_in_dim"(%arg1) {args = [0 : index, dense<[0, 1, 2]> : tensor<3xi64>], template_args = [tensor<12x6x3xi32>]} : (tensor<12x1x3xi32>) -> tensor<12x6x3xi32>
+  // CHECK: %2 = emitc.call "emitc::broadcast_in_dim"(%arg2) {args = [0 : index, dense<[0, 1, 2]> : tensor<3xi64>], template_args = [tensor<12x6x3xi32>]} : (tensor<12x1x3xi32>) -> tensor<12x6x3xi32>
+  // CHECK: %3 = emitc.call "emitc::tosa::select"(%0, %1, %2) : (tensor<12x6x3xi1>, tensor<12x6x3xi32>, tensor<12x6x3xi32>) -> tensor<12x6x3xi32>
+  %0 = "tosa.select"(%arg0, %arg1, %arg2) : (tensor<12x6x1xi1>, tensor<12x1x3xi32>, tensor<12x1x3xi32>) -> tensor<12x6x3xi32>
+  return %0 : tensor<12x6x3xi32>
+}
 
 // Other ops
 

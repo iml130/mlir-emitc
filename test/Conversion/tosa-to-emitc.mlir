@@ -219,7 +219,35 @@ func.func @test_table(%arg0: tensor<64xi16>, %arg1: tensor<513xi16>) -> tensor<6
   return %0 : tensor<64xi32>
 }
 
+// Ternary ops
+
+func.func @test_select(%arg0: tensor<12x6x3xi1>, %arg1: tensor<12x6x3xi32>, %arg2: tensor<12x6x3xi32>) -> tensor<12x6x3xi32> {
+  // CHECK: emitc.call "emitc::tosa::select"(%arg0, %arg1, %arg2) : (tensor<12x6x3xi1>, tensor<12x6x3xi32>, tensor<12x6x3xi32>) -> tensor<12x6x3xi32>
+  %0 = "tosa.select"(%arg0, %arg1, %arg2) : (tensor<12x6x3xi1>, tensor<12x6x3xi32>, tensor<12x6x3xi32>) -> tensor<12x6x3xi32>
+  return %0 : tensor<12x6x3xi32>
+}
+
+func.func @test_select_broadcast_condition(%arg0: tensor<12x6x1xi1>, %arg1: tensor<12x6x3xi32>, %arg2: tensor<12x6x3xi32>) -> tensor<12x6x3xi32> {
+  // CHECK: %0 = emitc.call "emitc::broadcast_in_dim"(%arg0) {args = [0 : index, dense<[0, 1, 2]> : tensor<3xi64>], template_args = [tensor<12x6x3xi1>]} : (tensor<12x6x1xi1>) -> tensor<12x6x3xi1>
+  // CHECK: %1 = emitc.call "emitc::tosa::select"(%0, %arg1, %arg2) : (tensor<12x6x3xi1>, tensor<12x6x3xi32>, tensor<12x6x3xi32>) -> tensor<12x6x3xi32>
+  %0 = "tosa.select"(%arg0, %arg1, %arg2) : (tensor<12x6x1xi1>, tensor<12x6x3xi32>, tensor<12x6x3xi32>) -> tensor<12x6x3xi32>
+  return %0 : tensor<12x6x3xi32>
+}
+
+func.func @test_select_broadcast_input(%arg0: tensor<12x6x3xi1>, %arg1: tensor<12x1x3xi32>, %arg2: tensor<12x6x3xi32>) -> tensor<12x6x3xi32> {
+  // CHECK: %0 = emitc.call "emitc::broadcast_in_dim"(%arg1) {args = [0 : index, dense<[0, 1, 2]> : tensor<3xi64>], template_args = [tensor<12x6x3xi32>]} : (tensor<12x1x3xi32>) -> tensor<12x6x3xi32>
+  // CHECK: %1 = emitc.call "emitc::tosa::select"(%arg0, %0, %arg2) : (tensor<12x6x3xi1>, tensor<12x6x3xi32>, tensor<12x6x3xi32>) -> tensor<12x6x3xi32>
+  %0 = "tosa.select"(%arg0, %arg1, %arg2) : (tensor<12x6x3xi1>, tensor<12x1x3xi32>, tensor<12x6x3xi32>) -> tensor<12x6x3xi32>
+  return %0 : tensor<12x6x3xi32>
+} 
+
 // Other ops
+
+func.func @test_concat(%arg0: tensor<13x21x3xf32>, %arg1: tensor<13x21x3xf32>, %arg2: tensor<13x21x3xf32>, %arg3: tensor<13x21x3xf32>) -> tensor<52x21x3xf32> {
+  // CHECK: %0 = emitc.call "emitc::tosa::concat"(%arg0, %arg1, %arg2, %arg3) {template_args = [0, tensor<52x21x3xf32>]} : (tensor<13x21x3xf32>, tensor<13x21x3xf32>, tensor<13x21x3xf32>, tensor<13x21x3xf32>) -> tensor<52x21x3xf32>
+  %0 = "tosa.concat"(%arg0, %arg1, %arg2, %arg3) {axis = 0} : (tensor<13x21x3xf32>, tensor<13x21x3xf32>, tensor<13x21x3xf32>, tensor<13x21x3xf32>) -> tensor<52x21x3xf32>
+  return %0 : tensor<52x21x3xf32>
+}
 
 func.func @test_conv2d(%arg0: tensor<1x4x4x4xf32>, %arg1: tensor<8x1x1x4xf32>, %arg2: tensor<8xf32>) -> tensor<1x4x4x8xf32> {
     // CHECK: %0 = emitc.call "emitc::tosa::conv2d"(%arg0, %arg1) {args = [0 : index, 1 : index, dense<0> : tensor<4xi64>, dense<1> : tensor<2xi64>, dense<1> : tensor<2xi64>], template_args = [tensor<1x4x4x8xf32>]} : (tensor<1x4x4x4xf32>, tensor<8x1x1x4xf32>) -> tensor<1x4x4x8xf32>
@@ -241,6 +269,12 @@ func.func @test_fully_connected(%arg0: tensor<14x19xf32>, %arg1: tensor<19x28xf3
   // CHECK: emitc.call "emitc::tosa::fully_connected"(%arg0, %arg1, %arg2) {template_args = [tensor<14x28xf32>]} : (tensor<14x19xf32>, tensor<19x28xf32>, tensor<28xf32>) -> tensor<14x28xf32>
   %0 = "tosa.fully_connected"(%arg0, %arg1, %arg2) : (tensor<14x19xf32>, tensor<19x28xf32>, tensor<28xf32>) -> tensor<14x28xf32>
   return %0 : tensor<14x28xf32>
+}
+
+func.func @test_gather(%arg0: tensor<3x4x5xf32>, %arg1: tensor<3x6xi32>) -> tensor<3x6x5xf32> {
+  // CHECK: emitc.call "emitc::tosa::gather"(%arg0, %arg1) {template_args = [tensor<3x6x5xf32>]} : (tensor<3x4x5xf32>, tensor<3x6xi32>) -> tensor<3x6x5xf32>
+  %0 = "tosa.gather"(%arg0, %arg1) : (tensor<3x4x5xf32>, tensor<3x6xi32>) -> tensor<3x6x5xf32>
+  return %0 : tensor<3x6x5xf32>
 }
 
 func.func @test_matmul(%arg0: tensor<1x14x19xf32>, %arg1: tensor<1x19x28xf32>) -> tensor<1x14x28xf32> {

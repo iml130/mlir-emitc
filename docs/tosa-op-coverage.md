@@ -31,10 +31,14 @@ The table below shows the supported TOSA ops.
 | pow                    | :heavy_check_mark: | |
 | sub                    | :heavy_check_mark: | |
 | table                  | :heavy_check_mark: | |
+| **Ternary elementwise ops**
+| argmax                 | :heavy_check_mark: | |
 | **Other ops**
 | argmax                 | :heavy_check_mark: | |
+| concat                 | :heavy_check_mark: | |
 | conv2d                 | :white_check_mark: | Quantization and dilation not supported |
 | depthwise_conv2d       | :white_check_mark: | Quantization and dilation not supported |
+| gather                 | :heavy_check_mark: | |
 | fully_connected        | :white_check_mark: | Quantization not supported |
 | matmul                 | :white_check_mark: | Quantization not supported |
 | reduce_all             | :heavy_check_mark: | |

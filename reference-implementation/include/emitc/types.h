@@ -292,6 +292,34 @@ inline Dest binary(const SrcLeft &x, const SrcRight &y, BinaryOp &&op) {
   return z;
 }
 
+template <typename Dest, typename SrcA, typename SrcB, typename SrcC,
+          typename TernaryOp, IsScalar<SrcA> = true, IsScalar<SrcB> = true,
+          IsScalar<SrcC> = true>
+inline Dest ternary(const SrcA &a, const SrcB &b, const SrcB &c,
+                    TernaryOp &&op) {
+  return op(a, b, c);
+}
+
+template <typename Dest, typename SrcA, typename SrcB, typename SrcC,
+          typename TernaryOp, IsTensor<SrcA> = true, IsTensor<SrcB> = true,
+          IsTensor<SrcC> = true>
+inline Dest ternary(const SrcA &a, const SrcB &b, const SrcB &c,
+                    TernaryOp &&op) {
+  Dest d;
+  auto first1 = a.begin(), last1 = a.end();
+  auto first2 = b.begin(), first3 = c.begin();
+  auto result = d.begin();
+
+  while (first1 != last1) {
+    *result = op(*first1, *first2, *first3);
+    result++;
+    first1++;
+    first2++;
+    first3++;
+  }
+  return d;
+}
+
 template <size_t Dim, typename T, typename... Ts>
 struct concat {};
 

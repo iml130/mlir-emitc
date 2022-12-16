@@ -303,54 +303,14 @@ inline Src clamp(Min min, Src operand, Max max) {
 }
 
 // ConcatenateOp
-template <int64_t Dimension, typename Dest, typename Src>
-inline Dest concatenate(Src input) {
-  Dest z = input;
-  return z;
+template <int64_t Dimension, typename Dest, typename... Src>
+inline Dest concatenate(Src... inputs) {
+  return emitc::concatenate<Dimension, Dest, Src...>(inputs...);
 }
 
 template <int64_t Dimension, typename Dest, typename Src1, typename... Src>
 inline Dest concatenate(Src1 input1, Src... inputs) {
-  static_assert(sizeof...(inputs) > 0, "Wrong template specialization chosen");
-
-  // Concatenate all but the first input.
-  // We need to build the correct return type for the rest of the inputs.
-  using ET_Src = typename get_element_type<Src1>::type;
-  using Rest = typename concat<Dimension, ET_Src, Src...>::type;
-  Rest rest = concatenate<Dimension, Rest, Src...>(inputs...);
-
-  Dest z;
-
-  // a: AxBxI    xD
-  // b: AxBxJ    xD
-  // c: AxBx(I+J)xD
-
-  // repeat repeat until a_ptr == a.end():
-  //    copy IxD elements from a_ptr to c_ptr
-  //    move a_ptr, c_ptr by IxD elements
-  //    copy JxD elements from b_ptr to c_ptr
-  //    move b_ptr, c_ptr by JxD elements
-
-  // Take the product of all dimensions, starting at `Dimension`.
-  auto calculate_shift = [](const auto &shape) {
-    size_t shift = 1;
-    for (size_t i = Dimension; i < shape.size(); i++) {
-      shift *= shape[i];
-    }
-    return shift;
-  };
-  auto a_shift = calculate_shift(Src1::shape());
-  auto b_shift = calculate_shift(Rest::shape());
-
-  for (auto a_ptr = input1.begin(), b_ptr = rest.begin(), c_ptr = z.begin();
-       a_ptr != input1.end(); a_ptr += a_shift, b_ptr += b_shift) {
-    std::copy(a_ptr, a_ptr + a_shift, c_ptr);
-    c_ptr += a_shift;
-    std::copy(b_ptr, b_ptr + b_shift, c_ptr);
-    c_ptr += b_shift;
-  }
-
-  return z;
+  return emitc::concatenate<Dimension, Dest, Src1, Src...>(input1, inputs...);
 }
 
 // SliceOp

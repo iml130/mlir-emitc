@@ -308,11 +308,6 @@ inline Dest concatenate(Src... inputs) {
   return emitc::concatenate<Dimension, Dest, Src...>(inputs...);
 }
 
-template <int64_t Dimension, typename Dest, typename Src1, typename... Src>
-inline Dest concatenate(Src1 input1, Src... inputs) {
-  return emitc::concatenate<Dimension, Dest, Src1, Src...>(input1, inputs...);
-}
-
 // SliceOp
 template <typename Dest, typename Src>
 Dest slice(Src x, Tensor<int64_t, Src::rank()> start_indices,

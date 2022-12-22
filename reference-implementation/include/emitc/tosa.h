@@ -289,11 +289,6 @@ inline Dest concat(Src... inputs) {
   return emitc::concatenate<Dimension, Dest, Src...>(inputs...);
 }
 
-template <int32_t Dimension, typename Dest, typename Src1, typename... Src>
-inline Dest concat(Src1 input1, Src... inputs) {
-  return emitc::concatenate<Dimension, Dest, Src1, Src...>(input1, inputs...);
-}
-
 // Disable Conv2DOp if Eigen implementation is used
 #ifndef EMITC_TOSA_USE_EIGEN
 // Conv2DOp
@@ -515,7 +510,7 @@ Dest gather(Src input, Idx indices) {
 
   auto it = result.begin();
   size_t d0offset = Src::dim(1) * Src::dim(2);
-  for (int64_t i = 0, idx = Idx::size(); i < idx; i++) {
+  for (size_t i = 0, idx = Idx::size(); i < idx; i++) {
     auto d0 = d0offset * (i / Idx::dim(1));
     auto d1 = Src::dim(2) * indices[i];
     auto start = input.begin() + d0 + d1;

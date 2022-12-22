@@ -134,7 +134,7 @@ private:
 
     ArrayAttr args;
     ArrayAttr templateArgs =
-        rewriter.getArrayAttr({rewriter.getI64IntegerAttr(concatOp.getAxis()),
+        rewriter.getArrayAttr({concatOp.getAxisAttr(),
                                TypeAttr::get(concatOp.getResult().getType())});
 
     rewriter.replaceOpWithNewOp<emitc::CallOp>(concatOp, concatOp.getType(),
@@ -441,10 +441,9 @@ private:
   }
 };
 
-/// Convert `tosa.fully_connected` into an `emitc.call` operation.
-template <size_t operands, typename SrcOp,
-          typename Adaptor = typename SrcOp::Adaptor>
-SmallVector<Value, operands>
+/// Creates a broadcast operation if the inputs don't match the output shape.
+template <typename SrcOp, typename Adaptor = typename SrcOp::Adaptor>
+SmallVector<Value>
 createBroadcastOpIfNeeded(SrcOp &srcOp, Adaptor adaptor,
                           ConversionPatternRewriter &rewriter) {
   // TOSA allows implicit broadcasting, so we need to insert broadcast_in_dim
@@ -459,7 +458,8 @@ createBroadcastOpIfNeeded(SrcOp &srcOp, Adaptor adaptor,
   Value output = srcOp.getResult();
   auto opOutputShape = output.getType().cast<RankedTensorType>().getShape();
   auto opOutputRank = output.getType().cast<RankedTensorType>().getRank();
-  SmallVector<Value, operands> broadcastedOperands;
+  size_t operands = srcOp.getNumOperands();
+  SmallVector<Value> broadcastedOperands;
 
   for (auto operand : adaptor.getOperands()) {
     RankedTensorType operandTensor =
@@ -544,7 +544,7 @@ private:
     }
 
     SmallVector<Value, 2> broadcastedOperands =
-        createBroadcastOpIfNeeded<2>(srcOp, adaptor, rewriter);
+        createBroadcastOpIfNeeded(srcOp, adaptor, rewriter);
 
     rewriter.replaceOpWithNewOp<emitc::CallOp>(
         srcOp, srcOp.getType(), callee, args, templateArgs,
@@ -590,7 +590,7 @@ private:
     ArrayAttr templateArgs;
 
     SmallVector<Value, 2> broadcastedOperands =
-        createBroadcastOpIfNeeded<2>(mulOp, adaptor, rewriter);
+        createBroadcastOpIfNeeded(mulOp, adaptor, rewriter);
 
     rewriter.replaceOpWithNewOp<emitc::CallOp>(
         mulOp, mulOp.getType(), callee, args, templateArgs,
@@ -630,7 +630,7 @@ private:
     ArrayAttr templateArgs;
 
     SmallVector<Value, 2> broadcastedOperands =
-        createBroadcastOpIfNeeded<2>(arithmeticRightShiftOp, adaptor, rewriter);
+        createBroadcastOpIfNeeded(arithmeticRightShiftOp, adaptor, rewriter);
 
     rewriter.replaceOpWithNewOp<emitc::CallOp>(
         arithmeticRightShiftOp, arithmeticRightShiftOp.getType(), callee, args,
@@ -660,12 +660,11 @@ private:
     ArrayAttr templateArgs;
 
     SmallVector<Value, 3> broadcastedOperands =
-        createBroadcastOpIfNeeded<3>(selectOp, adaptor, rewriter);
+        createBroadcastOpIfNeeded(selectOp, adaptor, rewriter);
 
-    rewriter.replaceOpWithNewOp<emitc::CallOp>(
-        selectOp, selectOp.getType(), callee, args, templateArgs,
-        ValueRange({broadcastedOperands[0], broadcastedOperands[1],
-                    broadcastedOperands[2]}));
+    rewriter.replaceOpWithNewOp<emitc::CallOp>(selectOp, selectOp.getType(),
+                                               callee, args, templateArgs,
+                                               broadcastedOperands);
 
     return success();
   }

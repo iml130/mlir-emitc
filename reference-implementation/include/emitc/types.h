@@ -312,10 +312,10 @@ inline Dest ternary(const SrcA &a, const SrcB &b, const SrcB &c,
 
   while (first1 != last1) {
     *result = op(*first1, *first2, *first3);
-    result++;
-    first1++;
-    first2++;
-    first3++;
+    ++result;
+    ++first1;
+    ++first2;
+    ++first3;
   }
   return d;
 }

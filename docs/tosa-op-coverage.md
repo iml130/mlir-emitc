@@ -38,8 +38,8 @@ The table below shows the supported TOSA ops.
 | concat                 | :heavy_check_mark: | |
 | conv2d                 | :white_check_mark: | Quantization and dilation not supported |
 | depthwise_conv2d       | :white_check_mark: | Quantization and dilation not supported |
-| gather                 | :heavy_check_mark: | |
 | fully_connected        | :white_check_mark: | Quantization not supported |
+| gather                 | :heavy_check_mark: | |
 | matmul                 | :white_check_mark: | Quantization not supported |
 | reduce_all             | :heavy_check_mark: | |
 | reduce_any             | :heavy_check_mark: | |

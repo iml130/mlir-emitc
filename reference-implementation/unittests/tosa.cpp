@@ -628,16 +628,27 @@ TEST(tosa, broadcastable_op) {
 
 // Ternary elementwise ops
 TEST(tosa, select) {
-  using PredType = Tensor3D<bool, 1, 2, 3>;
-  using OperandType = Tensor3D<float, 1, 2, 3>;
-  PredType pred{true, false, true, false, false, true};
-  OperandType a{1000, 3, 15, 73, 6028, 1};
-  OperandType b{-1000, -3, -15, -73, -6028, -1};
-  OperandType expected_result{1000, -3, 15, -73, -6028, 1};
-  OperandType result = tosa::select<OperandType>(pred, a, b);
-  EXPECT_THAT(result, Pointwise(FloatNear(EPSILON), expected_result));
+  {
+    using PredType = Tensor1D<bool, 4>;
+    using OperandType = Tensor1D<int32_t, 4>;
+    PredType pred{true, false, true, false};
+    OperandType a{17, 23, 0, 10};
+    OperandType b{17, 10, 15, 200};
+    OperandType expected_result{17, 10, 0, 200};
+    OperandType result = tosa::select<OperandType>(pred, a, b);
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+  {
+    using PredType = Tensor3D<bool, 1, 2, 3>;
+    using OperandType = Tensor3D<float, 1, 2, 3>;
+    PredType pred{true, false, true, false, false, true};
+    OperandType a{1000, 3, 15, 73, 6028, 1};
+    OperandType b{-1000, -3, -15, -73, -6028, -1};
+    OperandType expected_result{1000, -3, 15, -73, -6028, 1};
+    OperandType result = tosa::select<OperandType>(pred, a, b);
+    EXPECT_THAT(result, Pointwise(FloatNear(EPSILON), expected_result));
+  }
 }
-
 // Other ops
 TEST(tosa, concat) {
   using Input1Type = Tensor2D<float, 2, 2>;
@@ -724,14 +735,14 @@ TEST(tosa, gather) {
     EXPECT_THAT(result, Pointwise(FloatNear(EPSILON), expected_result));
   }
   {
-    using InputType = Tensor3D<float, 2, 4, 2>;  // N K C
-    using IndexType = Tensor2D<int32_t, 2, 3>;   // N W
-    using ResultType = Tensor3D<float, 2, 3, 2>; // N W C
+    using InputType = Tensor3D<int32_t, 2, 4, 2>;  // N K C
+    using IndexType = Tensor2D<int32_t, 2, 3>;     // N W
+    using ResultType = Tensor3D<int32_t, 2, 3, 2>; // N W C
     InputType input{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
     IndexType indices{0, 1, 2, 3, 0, 1};
     ResultType expected_result{1, 2, 3, 4, 5, 6, 15, 16, 9, 10, 11, 12};
     ResultType result = tosa::gather<ResultType>(input, indices);
-    EXPECT_THAT(result, Pointwise(FloatNear(EPSILON), expected_result));
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
   }
 }
 

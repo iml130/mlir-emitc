@@ -458,7 +458,6 @@ createBroadcastOpIfNeeded(SrcOp &srcOp, Adaptor adaptor,
   Value output = srcOp.getResult();
   auto opOutputShape = output.getType().cast<RankedTensorType>().getShape();
   auto opOutputRank = output.getType().cast<RankedTensorType>().getRank();
-  size_t operands = srcOp.getNumOperands();
   SmallVector<Value> broadcastedOperands;
 
   for (auto operand : adaptor.getOperands()) {

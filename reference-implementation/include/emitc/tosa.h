@@ -270,7 +270,25 @@ inline Tensor<int32_t, Shape...> table(Tensor<int16_t, Shape...> x,
   return unary<Tensor<int32_t, Shape...>>(x, f);
 }
 
+/// Functions for ternary elementwise TOSA ops.
+template <typename Dest, typename SrcPred, typename SrcOperand>
+inline Dest select(SrcPred a, SrcOperand b, SrcOperand c) {
+  using ET_Src_Pred = typename get_element_type<SrcPred>::type;
+  static_assert(std::is_same<ET_Src_Pred, bool>::value,
+                "Pred tensor type must be bool");
+  using ET_Src_Operand = typename get_element_type<SrcOperand>::type;
+  auto f = [](ET_Src_Pred pred, ET_Src_Operand on_true,
+              ET_Src_Operand on_false) { return pred ? on_true : on_false; };
+  return ternary<Dest, SrcPred, SrcOperand, SrcOperand>(a, b, c, f);
+}
+
 /// Functions for other TOSA ops.
+// ConcatOp
+template <int32_t Dimension, typename Dest, typename... Src>
+inline Dest concat(Src... inputs) {
+  return emitc::concatenate<Dimension, Dest, Src...>(inputs...);
+}
+
 // Disable Conv2DOp if Eigen implementation is used
 #ifndef EMITC_TOSA_USE_EIGEN
 // Conv2DOp
@@ -473,6 +491,33 @@ Dest fully_connected(Src input, Weights weights, Bias bias) {
     }
   }
   return output;
+}
+
+// GatherOp
+template <typename Dest, typename Src, typename Idx,
+          IsTensorOfDim<3, Dest> = true, IsTensorOfDim<3, Src> = true,
+          IsTensorOfDim<2, Idx> = true, IsTensorOfType<Idx, int32_t> = true>
+Dest gather(Src input, Idx indices) {
+  Dest result;
+  static_assert(input.dim(0) == result.dim(0),
+                "Input and output batch dimension do not match.");
+  static_assert(input.dim(0) == indices.dim(0),
+                "Input and weight batch dimension do not match.");
+  static_assert(input.dim(2) == result.dim(2),
+                "Input and output channel dimension do not match.");
+  static_assert(indices.dim(1) == result.dim(1),
+                "Weight and output index dimension do not match.");
+
+  auto it = result.begin();
+  size_t d0offset = Src::dim(1) * Src::dim(2);
+  for (size_t i = 0, idx = Idx::size(); i < idx; i++) {
+    auto d0 = d0offset * (i / Idx::dim(1));
+    auto d1 = Src::dim(2) * indices[i];
+    auto start = input.begin() + d0 + d1;
+    auto end = start + Src::dim(2);
+    it = std::copy(start, end, it);
+  }
+  return result;
 }
 
 // MatMulOp

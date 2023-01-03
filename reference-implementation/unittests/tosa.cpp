@@ -626,7 +626,42 @@ TEST(tosa, broadcastable_op) {
             t1_arg1_broadcasted); // Just make sure it compiles in this test
 }
 
+// Ternary elementwise ops
+TEST(tosa, select) {
+  {
+    using PredType = Tensor1D<bool, 4>;
+    using OperandType = Tensor1D<int32_t, 4>;
+    PredType pred{true, false, true, false};
+    OperandType a{17, 23, 0, 10};
+    OperandType b{17, 10, 15, 200};
+    OperandType expected_result{17, 10, 0, 200};
+    OperandType result = tosa::select<OperandType>(pred, a, b);
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+  {
+    using PredType = Tensor3D<bool, 1, 2, 3>;
+    using OperandType = Tensor3D<float, 1, 2, 3>;
+    PredType pred{true, false, true, false, false, true};
+    OperandType a{1000, 3, 15, 73, 6028, 1};
+    OperandType b{-1000, -3, -15, -73, -6028, -1};
+    OperandType expected_result{1000, -3, 15, -73, -6028, 1};
+    OperandType result = tosa::select<OperandType>(pred, a, b);
+    EXPECT_THAT(result, Pointwise(FloatNear(EPSILON), expected_result));
+  }
+}
 // Other ops
+TEST(tosa, concat) {
+  using Input1Type = Tensor2D<float, 2, 2>;
+  using Input2Type = Tensor2D<float, 2, 3>;
+  using ResultType = Tensor2D<float, 2, 5>;
+  Input1Type input1{1, 2, 3, 4};
+  Input2Type input2{5, 6, 7, 8, 9, 10};
+  ResultType expected_result{1, 2, 5, 6, 7, 3, 4, 8, 9, 10};
+  ResultType result =
+      tosa::concat<1, ResultType, Input1Type, Input2Type>(input1, input2);
+  EXPECT_THAT(result, Pointwise(FloatNear(EPSILON), expected_result));
+}
+
 TEST(tosa, depthwise_conv2d) {
   {
     // test for channel_multiplier=1
@@ -686,6 +721,29 @@ TEST(tosa, fully_connected) {
   ResultType result = tosa::fully_connected<ResultType>(input, weights, bias);
 
   EXPECT_THAT(result, Pointwise(FloatNear(EPSILON), expected_result));
+}
+
+TEST(tosa, gather) {
+  {
+    using InputType = Tensor3D<float, 1, 2, 2>;  // N K C
+    using IndexType = Tensor2D<int32_t, 1, 2>;   // N W
+    using ResultType = Tensor3D<float, 1, 2, 2>; // N W C
+    InputType input{1, 2, 3, 4};
+    IndexType indices{1, 0};
+    ResultType expected_result{3, 4, 1, 2};
+    ResultType result = tosa::gather<ResultType>(input, indices);
+    EXPECT_THAT(result, Pointwise(FloatNear(EPSILON), expected_result));
+  }
+  {
+    using InputType = Tensor3D<int32_t, 2, 4, 2>;  // N K C
+    using IndexType = Tensor2D<int32_t, 2, 3>;     // N W
+    using ResultType = Tensor3D<int32_t, 2, 3, 2>; // N W C
+    InputType input{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
+    IndexType indices{0, 1, 2, 3, 0, 1};
+    ResultType expected_result{1, 2, 3, 4, 5, 6, 15, 16, 9, 10, 11, 12};
+    ResultType result = tosa::gather<ResultType>(input, indices);
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
 }
 
 TEST(tosa, matmul) {

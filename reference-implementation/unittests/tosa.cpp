@@ -327,6 +327,15 @@ TEST(tosa, equal) {
   EXPECT_THAT(result, Pointwise(Eq(), expected_result));
 }
 
+TEST(tosa, greater_equal) {
+  Tensor3D<int32_t, 2, 2, 1> s0{3, 2, -1, -5};
+  Tensor3D<int32_t, 2, 2, 1> t0{3, -2, 0, -3};
+  Tensor3D<bool, 2, 2, 1> expected_result{true, true, false, false};
+  Tensor3D<bool, 2, 2, 1> result =
+      tosa::greater_equal<Tensor<bool, 2, 2, 1>>(s0, t0);
+  EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+}
+
 TEST(tosa, logical_left_shift) {
   Tensor1D<int16_t, 4> s0{0b1, 0b1, -0b1, 0b101};
   Tensor1D<int16_t, 4> t0{0, 1, 1, 2};

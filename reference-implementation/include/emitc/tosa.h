@@ -189,6 +189,14 @@ inline Dest equal(Src x, Src y) {
   return binary<Dest, Src>(x, y, f);
 }
 
+// GreaterEqualOp
+template <typename Dest, typename Src>
+inline Dest greater_equal(Src x, Src y) {
+  using ET_Src = typename get_element_type<Src>::type;
+  auto f = [](ET_Src left, ET_Src right) { return left >= right; };
+  return binary<Dest, Src>(x, y, f);
+}
+
 // LogicalLeftShiftOp
 template <typename Src>
 inline Src logical_left_shift(Src x, Src y) {

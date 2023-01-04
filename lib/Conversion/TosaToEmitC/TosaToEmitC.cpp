@@ -968,8 +968,8 @@ struct ConvertTosaToEmitCPass
     // Binary elementwise ops.
     target.addIllegalOp<tosa::AddOp,
                         tosa::ArithmeticRightShiftOp,
-                        tosa::GreaterEqualOp,
                         tosa::EqualOp,
+                        tosa::GreaterEqualOp,
                         tosa::LogicalLeftShiftOp,
                         tosa::MaximumOp,
                         tosa::MinimumOp,

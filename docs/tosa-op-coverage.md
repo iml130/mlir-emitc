@@ -23,6 +23,7 @@ The table below shows the supported TOSA ops.
 | **Binary elementwise ops**
 | add                    | :heavy_check_mark: | |
 | arithmetic_right_shift | :heavy_check_mark: | |
+| greater_equal          | :heavy_check_mark: | |
 | equal                  | :heavy_check_mark: | |
 | logical_left_shift     | :heavy_check_mark: | |
 | maximum                | :heavy_check_mark: | |

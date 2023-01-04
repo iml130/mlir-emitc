@@ -125,6 +125,12 @@ func.func @test_arithmetic_right_shift2(%arg0: tensor<13x21x1xi32>, %arg1: tenso
   return %0 : tensor<13x21x3xi32>
 }
 
+func.func @test_greater_equal(%arg0: tensor<13x21x3xf32>, %arg1: tensor<13x21x3xf32>) -> tensor<13x21x3xi1> {
+  // CHECK: emitc.call "emitc::tosa::greater_equal"(%arg0, %arg1) {template_args = [tensor<13x21x3xi1>]} : (tensor<13x21x3xf32>, tensor<13x21x3xf32>) -> tensor<13x21x3xi1>
+  %0 = "tosa.greater_equal"(%arg0, %arg1) : (tensor<13x21x3xf32>, tensor<13x21x3xf32>) -> tensor<13x21x3xi1>
+  return %0 : tensor<13x21x3xi1>
+}
+
 func.func @test_equal(%arg0: tensor<13x21x3xi32>, %arg1: tensor<13x21x3xi32>) -> tensor<13x21x3xi1> {
   // CHECK: emitc.call "emitc::tosa::equal"(%arg0, %arg1) {template_args = [tensor<13x21x3xi1>]} : (tensor<13x21x3xi32>, tensor<13x21x3xi32>) -> tensor<13x21x3xi1>
   %0 = "tosa.equal"(%arg0, %arg1) : (tensor<13x21x3xi32>, tensor<13x21x3xi32>) -> tensor<13x21x3xi1>

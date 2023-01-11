@@ -291,7 +291,7 @@ private:
             .Case("GT", StringRef("std::greater"))
             .Case("LE", StringRef("std::less_equal"))
             .Case("LT", StringRef("std::less"))
-            .Default(None);
+            .Default(std::nullopt);
 
     if (!functionName.has_value())
       return failure();

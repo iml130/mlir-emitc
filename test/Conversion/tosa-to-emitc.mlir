@@ -83,8 +83,8 @@ func.func @test_reciprocal(%arg0: tensor<13x21x3xf32>) -> tensor<13x21x3xf32> {
 }
 
 func.func @test_rescale(%arg0: tensor<13x21x3xui8>) -> tensor<13x21x3xi8> {
-  // CHECK: %0 = emitc.call "emitc::tosa::rescale"(%arg0) {args = [0 : index, 127 : i32, -1 : i32, dense<1073741824> : tensor<1xi64>, dense<30> : tensor<1xi64>, true, false, false], template_args = [tensor<13x21x3xi8>, 1 : i32]} : (tensor<13x21x3xui8>) -> tensor<13x21x3xi8>
-  %0 = "tosa.rescale"(%arg0) {double_round = false, input_zp = 127 : i32, multiplier = [1073741824 : i32], output_zp = -1 : i32, per_channel = false, scale32 = true, shift = [30 : i32]} : (tensor<13x21x3xui8>) -> tensor<13x21x3xi8>
+  // CHECK: %0 = emitc.call "emitc::tosa::rescale"(%arg0) {args = [0 : index, 127 : i32, -1 : i32, array<i32: 1073741824>, array<i32: 30>, true, false, false], template_args = [tensor<13x21x3xi8>, 1 : i32]} : (tensor<13x21x3xui8>) -> tensor<13x21x3xi8>
+  %0 = "tosa.rescale"(%arg0) {double_round = false, input_zp = 127 : i32, multiplier = array<i32: 1073741824>, output_zp = -1 : i32, per_channel = false, scale32 = true, shift = array<i32: 30>} : (tensor<13x21x3xui8>) -> tensor<13x21x3xi8>
   return %0 : tensor<13x21x3xi8>
 }
 
@@ -268,7 +268,7 @@ func.func @test_conv2d(%arg0: tensor<1x4x4x4xf32>, %arg1: tensor<8x1x1x4xf32>, %
     // CHECK: %0 = emitc.call "emitc::tosa::conv2d"(%arg0, %arg1) {args = [0 : index, 1 : index, dense<0> : tensor<4xi64>, dense<1> : tensor<2xi64>, dense<1> : tensor<2xi64>], template_args = [tensor<1x4x4x8xf32>]} : (tensor<1x4x4x4xf32>, tensor<8x1x1x4xf32>) -> tensor<1x4x4x8xf32>
     // CHECK: %1 = emitc.call "emitc::broadcast_in_dim"(%arg2) {args = [0 : index, dense<3> : tensor<1xi64>], template_args = [tensor<1x4x4x8xf32>]} : (tensor<8xf32>) -> tensor<1x4x4x8xf32>
     // CHECK: %2 = emitc.call "emitc::tosa::add"(%0, %1) : (tensor<1x4x4x8xf32>, tensor<1x4x4x8xf32>) -> tensor<1x4x4x8xf32>
-    %0 = "tosa.conv2d"(%arg0, %arg1, %arg2) {dilation = [1, 1], pad = [0, 0, 0, 0], stride = [1, 1]} : (tensor<1x4x4x4xf32>, tensor<8x1x1x4xf32>, tensor<8xf32>) -> tensor<1x4x4x8xf32>
+    %0 = "tosa.conv2d"(%arg0, %arg1, %arg2) {dilation = array<i64: 1, 1>, pad = array<i64: 0, 0, 0, 0>, stride = array<i64: 1, 1>} : (tensor<1x4x4x4xf32>, tensor<8x1x1x4xf32>, tensor<8xf32>) -> tensor<1x4x4x8xf32>
     return %0 : tensor<1x4x4x8xf32>
 }
 
@@ -276,7 +276,7 @@ func.func @test_depthwise_conv2d(%arg0: tensor<1x4x5x2xf32>, %arg1: tensor<2x2x2
     // CHECK: %0 = emitc.call "emitc::tosa::depthwise_conv2d"(%arg0, %arg1) {args = [0 : index, 1 : index, dense<0> : tensor<4xi64>, dense<1> : tensor<2xi64>, dense<1> : tensor<2xi64>], template_args = [tensor<1x3x4x4xf32>]} : (tensor<1x4x5x2xf32>, tensor<2x2x2x2xf32>) -> tensor<1x3x4x4xf32>
     // CHECK: %1 = emitc.call "emitc::broadcast_in_dim"(%arg2) {args = [0 : index, dense<3> : tensor<1xi64>], template_args = [tensor<1x3x4x4xf32>]} : (tensor<4xf32>) -> tensor<1x3x4x4xf32>
     // CHECK: %2 = emitc.call "emitc::tosa::add"(%0, %1) : (tensor<1x3x4x4xf32>, tensor<1x3x4x4xf32>) -> tensor<1x3x4x4xf32>
-    %0 = "tosa.depthwise_conv2d"(%arg0, %arg1, %arg2) {dilation = [1, 1], pad = [0, 0, 0, 0], stride = [1, 1]} : (tensor<1x4x5x2xf32>, tensor<2x2x2x2xf32>, tensor<4xf32>) -> tensor<1x3x4x4xf32>
+    %0 = "tosa.depthwise_conv2d"(%arg0, %arg1, %arg2) {dilation = array<i64: 1, 1>, pad = array<i64: 0, 0, 0, 0>, stride = array<i64: 1, 1>} : (tensor<1x4x5x2xf32>, tensor<2x2x2x2xf32>, tensor<4xf32>) -> tensor<1x3x4x4xf32>
     return %0 : tensor<1x3x4x4xf32>
 }
 
@@ -349,8 +349,8 @@ func.func @test_reduce_sum(%arg0: tensor<13x21x3xf32>) -> tensor<13x1x3xf32> {
 }
 
 func.func @test_slice(%arg0: tensor<13x21x3xf32>) -> tensor<4x11x1xf32> {
-  // CHECK: %0 = emitc.call "emitc::tosa::slice"(%arg0) {args = [0 : index, dense<[6, 8, 0]> : tensor<3xi64>, dense<[4, 11, 1]> : tensor<3xi64>], template_args = [tensor<4x11x1xf32>]} : (tensor<13x21x3xf32>) -> tensor<4x11x1xf32>
-  %0 = "tosa.slice"(%arg0) {start = [6, 8, 0], size = [4, 11, 1]} : (tensor<13x21x3xf32>) -> tensor<4x11x1xf32>
+  // CHECK: %0 = emitc.call "emitc::tosa::slice"(%arg0) {args = [0 : index, array<i64: 6, 8, 0>, array<i64: 4, 11, 1>], template_args = [tensor<4x11x1xf32>]} : (tensor<13x21x3xf32>) -> tensor<4x11x1xf32>
+  %0 = "tosa.slice"(%arg0) {start = array<i64: 6, 8, 0>, size = array<i64: 4, 11, 1>} : (tensor<13x21x3xf32>) -> tensor<4x11x1xf32>
   return %0 : tensor<4x11x1xf32>
 }
 
@@ -370,13 +370,13 @@ func.func @test_pad_explicit_value(%arg0: tensor<2x3xf32>, %arg1: tensor<2x2xi32
 
 func.func @test_reshape(%arg0: tensor<13x21x3xf32>) -> tensor<1x819xf32> {
   // CHECK: %0 = emitc.call "emitc::tosa::reshape"(%arg0) {template_args = [tensor<1x819xf32>]} : (tensor<13x21x3xf32>) -> tensor<1x819xf32>
-  %0 = "tosa.reshape"(%arg0) {new_shape = [1, 819]} : (tensor<13x21x3xf32>) -> tensor<1x819xf32>
+  %0 = "tosa.reshape"(%arg0) {new_shape = array<i64: 1, 819>} : (tensor<13x21x3xf32>) -> tensor<1x819xf32>
   return %0 : tensor<1x819xf32>
 }
 
 func.func @test_tile(%arg0: tensor<1x3x1x4xf32>) -> tensor<2x3x3x8xf32> {
-  // CHECK: emitc.call "emitc::tosa::tile"(%arg0) {args = [0 : index, dense<[2, 1, 3, 2]> : tensor<4xi32>], template_args = [tensor<2x3x3x8xf32>]} : (tensor<1x3x1x4xf32>) -> tensor<2x3x3x8xf32>
-  %0 = "tosa.tile"(%arg0) {multiples = [2, 1, 3, 2]} : (tensor<1x3x1x4xf32>) -> tensor<2x3x3x8xf32>
+  // CHECK: %0 = emitc.call "emitc::tosa::tile"(%arg0) {args = [0 : index, array<i64: 2, 1, 3, 2>], template_args = [tensor<2x3x3x8xf32>]} : (tensor<1x3x1x4xf32>) -> tensor<2x3x3x8xf32>
+  %0 = "tosa.tile"(%arg0) {multiples = array<i64: 2, 1, 3, 2>} : (tensor<1x3x1x4xf32>) -> tensor<2x3x3x8xf32>
   return %0 : tensor<2x3x3x8xf32>
 }
 

@@ -112,7 +112,7 @@ inline Src reciprocal(Src x) {
 template <typename Dest, size_t Dim, typename Src>
 inline Dest rescale(Src x, typename get_element_type<Src>::type in_zp,
                     typename get_element_type<Dest>::type out_zp,
-                    Tensor1D<int64_t, Dim> mult, Tensor1D<int64_t, Dim> shift,
+                    Tensor1D<int32_t, Dim> mult, Tensor1D<int32_t, Dim> shift,
                     bool scale32, bool double_round, bool per_channel) {
   using ET_Dest = typename get_element_type<Dest>::type;
   using Dest_I32 = typename replace_element_type<int32_t, Dest>::type;
@@ -758,7 +758,7 @@ inline Dest pad(Src operand, Padding padding,
 // TileOp
 // Overload for 1d case
 template <typename Dest, typename Src, IsTensorOfDim<1, Dest> = true>
-Dest tile(Src input, Tensor1D<int32_t, 1> multiples) {
+Dest tile(Src input, Tensor1D<int64_t, 1> multiples) {
   Dest result;
   auto it = result.begin();
   for (int32_t i = 0, M0 = multiples[0]; i < M0; i++) {
@@ -769,7 +769,7 @@ Dest tile(Src input, Tensor1D<int32_t, 1> multiples) {
 
 // Overload for 2d case
 template <typename Dest, typename Src, IsTensorOfDim<2, Src> = true>
-Dest tile(Src input, Tensor1D<int32_t, 2> multiples) {
+Dest tile(Src input, Tensor1D<int64_t, 2> multiples) {
   Dest result;
   auto it = result.begin();
   for (int32_t i = 0, M0 = multiples[0]; i < M0; i++) {
@@ -786,7 +786,7 @@ Dest tile(Src input, Tensor1D<int32_t, 2> multiples) {
 
 // Overload for 3d case
 template <typename Dest, typename Src, IsTensorOfDim<3, Src> = true>
-Dest tile(Src input, Tensor1D<int32_t, 3> multiples) {
+Dest tile(Src input, Tensor1D<int64_t, 3> multiples) {
   Dest result;
   auto it = result.begin();
   for (int32_t m0 = 0, M0 = multiples[0]; m0 < M0; m0++) {
@@ -807,7 +807,7 @@ Dest tile(Src input, Tensor1D<int32_t, 3> multiples) {
 
 // Overload for 4d case
 template <typename Dest, typename Src, IsTensorOfDim<4, Src> = true>
-Dest tile(Src input, Tensor1D<int32_t, 4> multiples) {
+Dest tile(Src input, Tensor1D<int64_t, 4> multiples) {
   Dest result;
   auto it = result.begin();
   for (int32_t m0 = 0, M0 = multiples[0]; m0 < M0; m0++) {

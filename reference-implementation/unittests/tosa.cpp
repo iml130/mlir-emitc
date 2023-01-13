@@ -278,7 +278,7 @@ TEST(tosa, rescale) {
 
     EXPECT_THAT(result, Pointwise(Eq(), expected_result));
   }
-  // TODO: Fix test
+  // TODO(#344): Fix test
   /*
   { // int16_t -> int32_t, double_round
     Tensor4D<int16_t, 2, 1, 2, 2> x{-32768, -10000, -100,  0,

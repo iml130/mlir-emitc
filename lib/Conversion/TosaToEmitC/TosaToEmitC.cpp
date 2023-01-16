@@ -26,36 +26,12 @@ using namespace mlir::emitc;
 namespace {
 
 /// Common functions.
-DenseIntElementsAttr getI64ElementsAttr(const ArrayAttr values,
+DenseIntElementsAttr getI64ElementsAttr(const ArrayRef<long> values,
                                         MLIRContext *ctx) {
   RankedTensorType ty = RankedTensorType::get(
       {static_cast<int64_t>(values.size())}, IntegerType::get(ctx, 64));
 
-  SmallVector<int64_t> valuesAsI64;
-
-  // Convert values to int64_t.
-  for (auto &value : values) {
-    auto valueAsIntAttr = value.cast<IntegerAttr>();
-    valuesAsI64.push_back(valueAsIntAttr.getInt());
-  };
-
-  return DenseIntElementsAttr::get(ty, valuesAsI64);
-}
-
-DenseIntElementsAttr getI32ElementsAttr(const ArrayAttr values,
-                                        MLIRContext *ctx) {
-  RankedTensorType ty = RankedTensorType::get(
-      {static_cast<int32_t>(values.size())}, IntegerType::get(ctx, 32));
-
-  SmallVector<int32_t> valuesAsI32;
-
-  // Convert values to int32_t.
-  for (auto &value : values) {
-    auto valueAsIntAttr = value.cast<IntegerAttr>();
-    valuesAsI32.push_back(valueAsIntAttr.getInt());
-  };
-
-  return DenseIntElementsAttr::get(ty, valuesAsI32);
+  return DenseIntElementsAttr::get(ty, values);
 }
 
 SmallVector<Attribute, 2> indexSequence(int64_t n, MLIRContext *ctx) {
@@ -383,8 +359,8 @@ private:
         rewriter.getIndexAttr(0),
         rescaleOp.getInputZpAttr(),
         rescaleOp.getOutputZpAttr(),
-        getI64ElementsAttr(rescaleOp.getMultiplierAttr(), rescaleOp.getContext()),
-        getI64ElementsAttr(rescaleOp.getShiftAttr(), rescaleOp.getContext()),
+        rescaleOp.getMultiplierAttr(),
+        rescaleOp.getShiftAttr(),
         rescaleOp.getScale32Attr(),
         rescaleOp.getDoubleRoundAttr(),
         rescaleOp.getPerChannelAttr()
@@ -483,7 +459,7 @@ createBroadcastOpIfNeeded(SrcOp &srcOp, Adaptor adaptor,
            DenseIntElementsAttr::get(tensorType, broadcastIndices)});
 
       auto newBroadcastType = RankedTensorType::get(
-          llvm::makeArrayRef(opOutputShape), operandTensor.getElementType());
+          llvm::ArrayRef(opOutputShape), operandTensor.getElementType());
 
       ArrayAttr templateBroadcastArgs =
           rewriter.getArrayAttr({TypeAttr::get(newBroadcastType)});
@@ -709,7 +685,7 @@ private:
                                   reduceOp.getAxis());
 
       auto newOutputType =
-          RankedTensorType::get(llvm::makeArrayRef(newReducedOutputShape),
+          RankedTensorType::get(llvm::ArrayRef(newReducedOutputShape),
                                 reducedOutputType.getElementType());
 
       ArrayAttr templateArgs =
@@ -721,14 +697,13 @@ private:
           adaptor.getOperands());
 
       // Create tosa.reshape op.
-      SmallVector<Attribute> newShapeAttr_;
+      SmallVector<int64_t> newShapeAttr_;
       for (auto dim : output.getType().cast<RankedTensorType>().getShape()) {
-        newShapeAttr_.push_back(
-            IntegerAttr::get(rewriter.getIntegerType(64), dim));
+        newShapeAttr_.push_back(dim);
       };
 
-      ArrayAttr newShapeAttr =
-          ArrayAttr::get(reduceOp.getContext(), newShapeAttr_);
+      DenseI64ArrayAttr newShapeAttr =
+          DenseI64ArrayAttr::get(reduceOp.getContext(), newShapeAttr_);
 
       rewriter.replaceOpWithNewOp<tosa::ReshapeOp>(
           reduceOp, output.getType(), emitcReduceOp.getResult(0), newShapeAttr);
@@ -798,8 +773,8 @@ private:
     // clang-format off
     ArrayAttr args = rewriter.getArrayAttr({
       rewriter.getIndexAttr(0),
-      getI64ElementsAttr(sliceOp.getStartAttr(), sliceOp.getContext()),
-      getI64ElementsAttr(sliceOp.getSizeAttr(), sliceOp.getContext()),
+      sliceOp.getStartAttr(),
+      sliceOp.getSizeAttr(),
     });
     // clang-format on
 
@@ -838,7 +813,7 @@ private:
     // clang-format off
     ArrayAttr args = rewriter.getArrayAttr({
       rewriter.getIndexAttr(0),
-      getI32ElementsAttr(tileOp.getMultiplesAttr(), tileOp.getContext()),
+      tileOp.getMultiplesAttr(),
     });
     // clang-format on
 

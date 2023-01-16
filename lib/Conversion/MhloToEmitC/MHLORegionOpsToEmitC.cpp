@@ -122,14 +122,14 @@ private:
     auto &blocks = region.getBlocks();
 
     if (blocks.size() > 1) {
-      return None;
+      return std::nullopt;
     }
 
     Block &block = blocks.front();
     auto *terminator = block.getTerminator();
     auto returnOp = dyn_cast_or_null<mhlo::ReturnOp>(terminator);
     if (!returnOp) {
-      return None;
+      return std::nullopt;
     }
 
     auto inputs = region.getArgumentTypes();

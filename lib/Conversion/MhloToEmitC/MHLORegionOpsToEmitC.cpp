@@ -14,8 +14,8 @@
 #include "mhlo/IR/hlo_ops.h"
 #include "mlir/Dialect/EmitC/IR/EmitC.h"
 #include "mlir/Dialect/Func/IR/FuncOps.h"
-#include "mlir/IR/BlockAndValueMapping.h"
 #include "mlir/IR/BuiltinOps.h"
+#include "mlir/IR/IRMapping.h"
 #include "mlir/Pass/Pass.h"
 
 #include "../PassDetail.h"
@@ -140,8 +140,8 @@ private:
 
     Region &outlinedRegion = outlinedFunc.getRegion();
 
-    BlockAndValueMapping map;
-    region.cloneInto(&outlinedRegion, map);
+    IRMapping mapper;
+    region.cloneInto(&outlinedRegion, mapper);
 
     outlinedFunc.walk([](mhlo::ReturnOp returnOp) {
       OpBuilder replacer(returnOp);

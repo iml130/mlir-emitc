@@ -278,30 +278,26 @@ TEST(tosa, rescale) {
 
     EXPECT_THAT(result, Pointwise(Eq(), expected_result));
   }
-  // TODO(#344): Fix test
-  /*
-  { // int16_t -> int32_t, double_round
-    Tensor4D<int16_t, 2, 1, 2, 2> x{-32768, -10000, -100,  0,
-                                    100,    1000,   10000, 32767};
-    int16_t in_zp = 0;
+  { // int48_t -> int32_t, double_round
+    Tensor4D<int64_t, 2, 1, 2, 2> x{
+        -10000000001, -2147483648, -101,       0,
+        101,          123456789,   2147483647, 9999999999};
+    int64_t in_zp = 0;
     int32_t out_zp = 0;
-    // TODO: Fix `'long' to 'const int' changes value from 10000000000 to
-    //            1410065408 [-Wconstant-conversion]`
-    Tensor1D<int32_t, 1> mult{10000000000};
+    Tensor1D<int32_t, 1> mult{2147483647};
     Tensor1D<int32_t, 1> shift{32};
     bool scale32 = true;
     bool double_round = true;
     bool per_channel = false;
 
-    Tensor4D<int32_t, 2, 1, 2, 2> expected_result{-76295, -23284, -234,  -1,
-                                                  232,    2328,   23282, 76291};
+    Tensor4D<int32_t, 2, 1, 2, 2> expected_result{
+        -705032703, -1073741825, -52, -1, 50, 61728394, 1073741822, 705032700};
     Tensor4D<int32_t, 2, 1, 2, 2> result =
         tosa::rescale<Tensor<int32_t, 2, 1, 2, 2>, 1>(
             x, in_zp, out_zp, mult, shift, scale32, double_round, per_channel);
 
     EXPECT_THAT(result, Pointwise(Eq(), expected_result));
   }
-  */
 }
 
 // Binary elementwise ops

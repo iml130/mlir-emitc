@@ -156,16 +156,16 @@ func.func @mhlo_power(%arg0: tensor<f32>, %arg1: tensor<f32>) -> tensor<f32> {
   return %0 : tensor<f32>
 }
 
-func.func @mhlo_shift_left(%arg0: tensor<f32>, %arg1: tensor<f32>) -> tensor<f32> {
-  // CHECK: emitc.call "emitc::mhlo::shift_left"(%arg0, %arg1) : (tensor<f32>, tensor<f32>) -> tensor<f32>
-  %0 = "mhlo.shift_left"(%arg0, %arg1) : (tensor<f32>, tensor<f32>) -> tensor<f32>
-  return %0 : tensor<f32>
+func.func @mhlo_shift_left(%arg0: tensor<i32>, %arg1: tensor<i32>) -> tensor<i32> {
+  // CHECK: emitc.call "emitc::mhlo::shift_left"(%arg0, %arg1) : (tensor<i32>, tensor<i32>) -> tensor<i32>
+  %0 = "mhlo.shift_left"(%arg0, %arg1) : (tensor<i32>, tensor<i32>) -> tensor<i32>
+  return %0 : tensor<i32>
 }
 
-func.func @mhlo_shift_right_logical(%arg0: tensor<f32>, %arg1: tensor<f32>) -> tensor<f32> {
-  // CHECK: emitc.call "emitc::mhlo::shift_right_logical"(%arg0, %arg1) : (tensor<f32>, tensor<f32>) -> tensor<f32>
-  %0 = "mhlo.shift_right_logical"(%arg0, %arg1) : (tensor<f32>, tensor<f32>) -> tensor<f32>
-  return %0 : tensor<f32>
+func.func @mhlo_shift_right_logical(%arg0: tensor<i32>, %arg1: tensor<i32>) -> tensor<i32> {
+  // CHECK: emitc.call "emitc::mhlo::shift_right_logical"(%arg0, %arg1) : (tensor<i32>, tensor<i32>) -> tensor<i32>
+  %0 = "mhlo.shift_right_logical"(%arg0, %arg1) : (tensor<i32>, tensor<i32>) -> tensor<i32>
+  return %0 : tensor<i32>
 }
 
 func.func @mhlo_sub(%arg0: tensor<f32>) -> tensor<f32> {

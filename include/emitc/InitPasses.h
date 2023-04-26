@@ -39,6 +39,7 @@ inline void registerAllEmitCPasses() {
   registerConvertMHLOToEmitCPass();
   registerInsertEmitCMHLOIncludePass();
   registerMHLOToEmitCPipeline();
+  registerConvertStablehloToEmitCPass();
 #endif // EMITC_BUILD_HLO
   registerConvertArithToEmitCPass();
   registerConvertTensorToEmitCPass();

@@ -42,7 +42,6 @@ int main(int argc, char **argv) {
   registry.insert<mlir::mhlo::MhloDialect>();
 #endif // EMITC_BUILD_HLO
 
-  return failed(MlirOptMain(argc, argv, "MLIR EmitC modular optimizer driver\n",
-                            registry,
-                            /*preloadDialectsInContext=*/false));
+  return mlir::asMainReturnCode(mlir::MlirOptMain(
+      argc, argv, "MLIR EmitC modular optimizer driver\n", registry));
 }

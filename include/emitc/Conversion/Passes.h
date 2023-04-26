@@ -15,6 +15,7 @@
 
 #include "emitc/Conversion/ArithToEmitC/ArithToEmitC.h"
 #include "emitc/Conversion/MhloToEmitC/MhloToEmitC.h"
+#include "emitc/Conversion/StablehloToEmitC/StablehloToEmitC.h"
 #include "emitc/Conversion/TensorToEmitC/TensorToEmitC.h"
 #include "emitc/Conversion/TosaToEmitC/TosaToEmitC.h"
 

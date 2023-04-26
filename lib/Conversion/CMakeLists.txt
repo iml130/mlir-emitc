@@ -1,4 +1,5 @@
 add_subdirectory(ArithToEmitC)
 add_subdirectory(MhloToEmitC)
+add_subdirectory(StablehloToEmitC)
 add_subdirectory(TensorToEmitC)
 add_subdirectory(TosaToEmitC)

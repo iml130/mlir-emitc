@@ -20,7 +20,7 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
     - name: Checkout EmitC
-      uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+      uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
       with:
         path: ${{ env.EMITC }}
         submodules: 'true'
@@ -39,7 +39,7 @@ jobs:
 
     - name: Checkout LLVM
       if: steps.cache-llvm.outputs.cache-hit != 'true'
-      uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+      uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
       with:
         repository: llvm/llvm-project
         path: ${{ env.LLVM }}
@@ -71,7 +71,7 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
     - name: Checkout EmitC
-      uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+      uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
       with:
         path: ${{ env.EMITC }}
         submodules: 'false'
@@ -117,7 +117,7 @@ jobs:
       run: sudo apt-get install -y libeigen3-dev
 
     - name: Checkout EmitC
-      uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+      uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
       with:
         path: ${{ env.EMITC }}
         submodules: 'true'
@@ -167,7 +167,7 @@ jobs:
       run: sudo apt-get install -y libeigen3-dev
 
     - name: Checkout EmitC
-      uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+      uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
       with:
         path: ${{ env.EMITC }}
         submodules: 'true'

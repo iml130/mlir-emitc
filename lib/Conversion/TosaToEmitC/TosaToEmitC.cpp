@@ -18,6 +18,7 @@
 #include "mlir/Transforms/DialectConversion.h"
 
 #include "../PassDetail.h"
+#include "emitc/Conversion/EmitCCommon/GenericOpConversion.h"
 #include "emitc/Conversion/TosaToEmitC/TosaToEmitC.h"
 
 using namespace mlir;
@@ -40,59 +41,6 @@ SmallVector<Attribute, 2> indexSequence(int64_t n, MLIRContext *ctx) {
         return IntegerAttr::get(IndexType::get(ctx), i);
       }));
 }
-
-/// Convert a common `tosa` operation into an `emitc.call` operation.
-template <typename SrcOp, typename Adaptor = typename SrcOp::Adaptor>
-class CallOpConversion : public OpConversionPattern<SrcOp> {
-  using OpConversionPattern<SrcOp>::OpConversionPattern;
-
-public:
-  CallOpConversion(MLIRContext *ctx, StringRef funcName,
-                   bool explicitResultType = false,
-                   bool explicitOperandTypes = false)
-      : OpConversionPattern<SrcOp>(ctx), funcName(funcName),
-        explicitResultType(explicitResultType),
-        explicitOperandTypes(explicitOperandTypes) {}
-
-private:
-  LogicalResult
-  matchAndRewrite(SrcOp srcOp, Adaptor adaptor,
-                  ConversionPatternRewriter &rewriter) const override {
-    StringAttr callee = rewriter.getStringAttr(funcName);
-    ArrayAttr args;
-
-    SmallVector<Attribute, 4> templateArguments;
-
-    if (explicitResultType) {
-      Type type = srcOp.getType();
-      templateArguments.push_back(TypeAttr::get(type));
-    }
-
-    if (explicitOperandTypes) {
-      for (auto operand : adaptor.getOperands()) {
-        Type type = operand.getType();
-        templateArguments.push_back(TypeAttr::get(type));
-      }
-    }
-
-    ArrayAttr templateArgs;
-    if (!templateArguments.empty()) {
-      templateArgs = ArrayAttr::get(srcOp.getContext(), templateArguments);
-    }
-
-    rewriter.replaceOpWithNewOp<emitc::CallOp>(srcOp, srcOp.getType(), callee,
-                                               args, templateArgs,
-                                               adaptor.getOperands());
-
-    return success();
-  }
-
-  StringRef funcName;
-  // If set, use the result type of the operation as template parameter.
-  bool explicitResultType;
-  // If set, use the operand types as (additional) template parameters.
-  bool explicitOperandTypes;
-};
 
 /// Convert `tosa.concat` into an `emitc.call` operation.
 class ConcatOpConversion : public OpConversionPattern<tosa::ConcatOp> {
@@ -835,21 +783,21 @@ void populateTosaToEmitcPatterns(MLIRContext *ctx,
   patterns.add<ConstOpConversion>(ctx);
 
   // Insert patterns for TOSA unary elementwise ops.
-  patterns.add<CallOpConversion<tosa::AbsOp>>(ctx, "emitc::tosa::abs");
-  patterns.add<CallOpConversion<tosa::CastOp>>(ctx, "emitc::tosa::cast",
-                                               /*explicitResultType=*/true);
-  patterns.add<CallOpConversion<tosa::CeilOp>>(ctx, "emitc::tosa::ceil");
-  patterns.add<CallOpConversion<tosa::ClzOp>>(ctx, "emitc::tosa::clz");
+  patterns.add<GenericOpConversion<tosa::AbsOp>>(ctx, "emitc::tosa::abs");
+  patterns.add<GenericOpConversion<tosa::CastOp>>(ctx, "emitc::tosa::cast",
+                                                  /*explicitResultType=*/true);
+  patterns.add<GenericOpConversion<tosa::CeilOp>>(ctx, "emitc::tosa::ceil");
+  patterns.add<GenericOpConversion<tosa::ClzOp>>(ctx, "emitc::tosa::clz");
   patterns.add<ClampOpConversion>(ctx);
-  patterns.add<CallOpConversion<tosa::ExpOp>>(ctx, "emitc::tosa::exp");
-  patterns.add<CallOpConversion<tosa::FloorOp>>(ctx, "emitc::tosa::floor");
-  patterns.add<CallOpConversion<tosa::LogOp>>(ctx, "emitc::tosa::log");
+  patterns.add<GenericOpConversion<tosa::ExpOp>>(ctx, "emitc::tosa::exp");
+  patterns.add<GenericOpConversion<tosa::FloorOp>>(ctx, "emitc::tosa::floor");
+  patterns.add<GenericOpConversion<tosa::LogOp>>(ctx, "emitc::tosa::log");
   patterns.add<NegateOpConversion>(ctx);
-  patterns.add<CallOpConversion<tosa::ReciprocalOp>>(ctx,
-                                                     "emitc::tosa::reciprocal");
+  patterns.add<GenericOpConversion<tosa::ReciprocalOp>>(
+      ctx, "emitc::tosa::reciprocal");
   patterns.add<RescaleOpConversion>(ctx);
   patterns.add<RsqrtOpConversion>(ctx);
-  patterns.add<CallOpConversion<tosa::TanhOp>>(ctx, "emitc::tosa::tanh");
+  patterns.add<GenericOpConversion<tosa::TanhOp>>(ctx, "emitc::tosa::tanh");
 
   // Insert patterns for TOSA binary elementwise ops.
   patterns.add<CallOpBroadcastableConversion<tosa::AddOp>>(ctx,
@@ -871,7 +819,7 @@ void populateTosaToEmitcPatterns(MLIRContext *ctx,
                                                            "emitc::tosa::pow");
   patterns.add<CallOpBroadcastableConversion<tosa::SubOp>>(ctx,
                                                            "emitc::tosa::sub");
-  patterns.add<CallOpConversion<tosa::TableOp>>(ctx, "emitc::tosa::table");
+  patterns.add<GenericOpConversion<tosa::TableOp>>(ctx, "emitc::tosa::table");
 
   // Insert patterns for TOSA ternary elementwise ops.
   patterns.add<SelectOpConversion>(ctx);
@@ -883,8 +831,9 @@ void populateTosaToEmitcPatterns(MLIRContext *ctx,
   patterns.add<GenericConvOpConversion<tosa::DepthwiseConv2DOp>>(
       ctx, "emitc::tosa::depthwise_conv2d");
   patterns.add<FullyConnectedOpConversion>(ctx, "emitc::tosa::fully_connected");
-  patterns.add<CallOpConversion<tosa::GatherOp>>(ctx, "emitc::tosa::gather",
-                                                 /*explicitResultType=*/true);
+  patterns.add<GenericOpConversion<tosa::GatherOp>>(
+      ctx, "emitc::tosa::gather",
+      /*explicitResultType=*/true);
   patterns.add<MatMulOpConversion>(ctx);
   patterns.add<TileOpConversion>(ctx);
   patterns.add<ReduceOpConversion<tosa::ArgMaxOp>>(ctx, "emitc::tosa::argmax",
@@ -901,11 +850,12 @@ void populateTosaToEmitcPatterns(MLIRContext *ctx,
       ctx, "emitc::tosa::reduce_prod", true);
   patterns.add<ReduceOpConversion<tosa::ReduceSumOp>>(
       ctx, "emitc::tosa::reduce_sum", true);
-  patterns.add<CallOpConversion<tosa::ReshapeOp>>(ctx, "emitc::tosa::reshape",
-                                                  /*explicitResultType=*/true);
+  patterns.add<GenericOpConversion<tosa::ReshapeOp>>(
+      ctx, "emitc::tosa::reshape",
+      /*explicitResultType=*/true);
   patterns.add<SliceOpConversion>(ctx);
   patterns.add<PadOpConversion>(ctx);
-  patterns.add<CallOpConversion<tosa::TransposeOp>>(
+  patterns.add<GenericOpConversion<tosa::TransposeOp>>(
       ctx, "emitc::tosa::transpose", /*explicitResultType=*/true);
 }
 

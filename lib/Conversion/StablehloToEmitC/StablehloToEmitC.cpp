@@ -18,71 +18,16 @@
 #include "stablehlo/dialect/StablehloOps.h"
 
 #include "../PassDetail.h"
+#include "emitc/Conversion/EmitCCommon/GenericOpConversion.h"
 #include "emitc/Conversion/StablehloToEmitC/StablehloToEmitC.h"
 
 using namespace mlir;
 using namespace mlir::emitc;
 
-namespace {
-
-/// Convert a common `stablehlo` operation into an `emitc.call` operation.
-template <typename SrcOp, typename Adaptor = typename SrcOp::Adaptor>
-class CallOpConversion : public OpConversionPattern<SrcOp> {
-  using OpConversionPattern<SrcOp>::OpConversionPattern;
-
-public:
-  CallOpConversion(MLIRContext *ctx, StringRef funcName,
-                   bool explicitResultType = false,
-                   bool explicitOperandTypes = false)
-      : OpConversionPattern<SrcOp>(ctx), funcName(funcName),
-        explicitResultType(explicitResultType),
-        explicitOperandTypes(explicitOperandTypes) {}
-
-private:
-  LogicalResult
-  matchAndRewrite(SrcOp srcOp, Adaptor adaptor,
-                  ConversionPatternRewriter &rewriter) const override {
-    StringAttr callee = rewriter.getStringAttr(funcName);
-    ArrayAttr args;
-
-    SmallVector<Attribute, 4> templateArguments;
-
-    if (explicitResultType) {
-      Type type = srcOp.getType();
-      templateArguments.push_back(TypeAttr::get(type));
-    }
-
-    if (explicitOperandTypes) {
-      for (auto operand : adaptor.getOperands()) {
-        Type type = operand.getType();
-        templateArguments.push_back(TypeAttr::get(type));
-      }
-    }
-    ArrayAttr templateArgs;
-    if (!templateArguments.empty()) {
-      templateArgs = ArrayAttr::get(srcOp.getContext(), templateArguments);
-    }
-
-    rewriter.replaceOpWithNewOp<emitc::CallOp>(srcOp, srcOp.getType(), callee,
-                                               args, templateArgs,
-                                               adaptor.getOperands());
-
-    return success();
-  }
-
-  StringRef funcName;
-  // If set, use the result type of the operation as template parameter.
-  bool explicitResultType;
-  // If set, use the operand types as (additional) template parameters.
-  bool explicitOperandTypes;
-};
-
-} // namespace
-
 void populateStablehloToEmitcPatterns(MLIRContext *ctx,
                                       RewritePatternSet &patterns) {
   // Insert patterns for StableHLO unary elementwise ops.
-  patterns.add<CallOpConversion<stablehlo::AbsOp>>(ctx, "emitc::mhlo::abs");
+  patterns.add<GenericOpConversion<stablehlo::AbsOp>>(ctx, "emitc::mhlo::abs");
 }
 
 namespace {

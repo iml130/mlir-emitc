@@ -18,6 +18,7 @@
 #include "mlir/Transforms/DialectConversion.h"
 
 #include "../PassDetail.h"
+#include "emitc/Conversion/EmitCCommon/GenericOpConversion.h"
 #include "emitc/Conversion/MhloToEmitC/MhloToEmitC.h"
 
 using namespace mlir;
@@ -210,58 +211,6 @@ private:
 
     return success();
   }
-};
-
-/// Convert a common `mhlo` operation into an `emitc.call` operation.
-template <typename SrcOp, typename Adaptor = typename SrcOp::Adaptor>
-class CallOpConversion : public OpConversionPattern<SrcOp> {
-  using OpConversionPattern<SrcOp>::OpConversionPattern;
-
-public:
-  CallOpConversion(MLIRContext *ctx, StringRef funcName,
-                   bool explicitResultType = false,
-                   bool explicitOperandTypes = false)
-      : OpConversionPattern<SrcOp>(ctx), funcName(funcName),
-        explicitResultType(explicitResultType),
-        explicitOperandTypes(explicitOperandTypes) {}
-
-private:
-  LogicalResult
-  matchAndRewrite(SrcOp srcOp, Adaptor adaptor,
-                  ConversionPatternRewriter &rewriter) const override {
-    StringAttr callee = rewriter.getStringAttr(funcName);
-    ArrayAttr args;
-
-    SmallVector<Attribute, 4> templateArguments;
-
-    if (explicitResultType) {
-      Type type = srcOp.getType();
-      templateArguments.push_back(TypeAttr::get(type));
-    }
-
-    if (explicitOperandTypes) {
-      for (auto operand : adaptor.getOperands()) {
-        Type type = operand.getType();
-        templateArguments.push_back(TypeAttr::get(type));
-      }
-    }
-    ArrayAttr templateArgs;
-    if (!templateArguments.empty()) {
-      templateArgs = ArrayAttr::get(srcOp.getContext(), templateArguments);
-    }
-
-    rewriter.replaceOpWithNewOp<emitc::CallOp>(srcOp, srcOp.getType(), callee,
-                                               args, templateArgs,
-                                               adaptor.getOperands());
-
-    return success();
-  }
-
-  StringRef funcName;
-  // If set, use the result type of the operation as template parameter.
-  bool explicitResultType;
-  // If set, use the operand types as (additional) template parameters.
-  bool explicitOperandTypes;
 };
 
 /// Convert `mhlo.compare` into an `emitc.call` operation.
@@ -509,47 +458,50 @@ void populateMhloToEmitcPatterns(MLIRContext *ctx,
   patterns.add<ConstOpConversion>(ctx);
 
   // Insert patterns for MHLO unary elementwise ops.
-  patterns.add<CallOpConversion<mhlo::AbsOp>>(ctx, "emitc::mhlo::abs");
-  patterns.add<CallOpConversion<mhlo::CeilOp>>(ctx, "emitc::mhlo::ceil");
-  patterns.add<CallOpConversion<mhlo::ConvertOp>>(ctx, "emitc::mhlo::convert",
-                                                  /*explicitResultType=*/true);
-  patterns.add<CallOpConversion<mhlo::CosineOp>>(ctx, "emitc::mhlo::cos");
-  patterns.add<CallOpConversion<mhlo::ExpOp>>(ctx, "emitc::mhlo::exponential");
-  patterns.add<CallOpConversion<mhlo::Expm1Op>>(
+  patterns.add<GenericOpConversion<mhlo::AbsOp>>(ctx, "emitc::mhlo::abs");
+  patterns.add<GenericOpConversion<mhlo::CeilOp>>(ctx, "emitc::mhlo::ceil");
+  patterns.add<GenericOpConversion<mhlo::ConvertOp>>(
+      ctx, "emitc::mhlo::convert",
+      /*explicitResultType=*/true);
+  patterns.add<GenericOpConversion<mhlo::CosineOp>>(ctx, "emitc::mhlo::cos");
+  patterns.add<GenericOpConversion<mhlo::ExpOp>>(ctx,
+                                                 "emitc::mhlo::exponential");
+  patterns.add<GenericOpConversion<mhlo::Expm1Op>>(
       ctx, "emitc::mhlo::exponential_minus_one");
-  patterns.add<CallOpConversion<mhlo::FloorOp>>(ctx, "emitc::mhlo::floor");
-  patterns.add<CallOpConversion<mhlo::IsFiniteOp>>(ctx,
-                                                   "emitc::mhlo::is_finite");
-  patterns.add<CallOpConversion<mhlo::LogOp>>(ctx, "emitc::mhlo::log");
-  patterns.add<CallOpConversion<mhlo::Log1pOp>>(ctx,
-                                                "emitc::mhlo::log_plus_one");
-  patterns.add<CallOpConversion<mhlo::NegOp>>(ctx, "emitc::mhlo::negate");
-  patterns.add<CallOpConversion<mhlo::RoundOp>>(ctx, "emitc::mhlo::round");
-  patterns.add<CallOpConversion<mhlo::SineOp>>(ctx, "emitc::mhlo::sin");
-  patterns.add<CallOpConversion<mhlo::SqrtOp>>(ctx, "emitc::mhlo::sqrt");
-  patterns.add<CallOpConversion<mhlo::TanhOp>>(ctx, "emitc::mhlo::tanh");
+  patterns.add<GenericOpConversion<mhlo::FloorOp>>(ctx, "emitc::mhlo::floor");
+  patterns.add<GenericOpConversion<mhlo::IsFiniteOp>>(ctx,
+                                                      "emitc::mhlo::is_finite");
+  patterns.add<GenericOpConversion<mhlo::LogOp>>(ctx, "emitc::mhlo::log");
+  patterns.add<GenericOpConversion<mhlo::Log1pOp>>(ctx,
+                                                   "emitc::mhlo::log_plus_one");
+  patterns.add<GenericOpConversion<mhlo::NegOp>>(ctx, "emitc::mhlo::negate");
+  patterns.add<GenericOpConversion<mhlo::RoundOp>>(ctx, "emitc::mhlo::round");
+  patterns.add<GenericOpConversion<mhlo::SineOp>>(ctx, "emitc::mhlo::sin");
+  patterns.add<GenericOpConversion<mhlo::SqrtOp>>(ctx, "emitc::mhlo::sqrt");
+  patterns.add<GenericOpConversion<mhlo::TanhOp>>(ctx, "emitc::mhlo::tanh");
 
   // Insert patterns for MHLO binary elementwise ops.
-  patterns.add<CallOpConversion<mhlo::AddOp>>(ctx, "emitc::mhlo::add");
-  patterns.add<CallOpConversion<mhlo::Atan2Op>>(ctx, "emitc::mhlo::atan2");
-  patterns.add<CallOpConversion<mhlo::DivOp>>(ctx, "emitc::mhlo::div");
-  patterns.add<CallOpConversion<mhlo::MaxOp>>(ctx, "emitc::mhlo::max");
-  patterns.add<CallOpConversion<mhlo::MinOp>>(ctx, "emitc::mhlo::min");
-  patterns.add<CallOpConversion<mhlo::MulOp>>(ctx, "emitc::mhlo::mul");
-  patterns.add<CallOpConversion<mhlo::PowOp>>(ctx, "emitc::mhlo::pow");
-  patterns.add<CallOpConversion<mhlo::ShiftLeftOp>>(ctx,
-                                                    "emitc::mhlo::shift_left");
-  patterns.add<CallOpConversion<mhlo::ShiftRightLogicalOp>>(
+  patterns.add<GenericOpConversion<mhlo::AddOp>>(ctx, "emitc::mhlo::add");
+  patterns.add<GenericOpConversion<mhlo::Atan2Op>>(ctx, "emitc::mhlo::atan2");
+  patterns.add<GenericOpConversion<mhlo::DivOp>>(ctx, "emitc::mhlo::div");
+  patterns.add<GenericOpConversion<mhlo::MaxOp>>(ctx, "emitc::mhlo::max");
+  patterns.add<GenericOpConversion<mhlo::MinOp>>(ctx, "emitc::mhlo::min");
+  patterns.add<GenericOpConversion<mhlo::MulOp>>(ctx, "emitc::mhlo::mul");
+  patterns.add<GenericOpConversion<mhlo::PowOp>>(ctx, "emitc::mhlo::pow");
+  patterns.add<GenericOpConversion<mhlo::ShiftLeftOp>>(
+      ctx, "emitc::mhlo::shift_left");
+  patterns.add<GenericOpConversion<mhlo::ShiftRightLogicalOp>>(
       ctx, "emitc::mhlo::shift_right_logical");
-  patterns.add<CallOpConversion<mhlo::SubtractOp>>(ctx, "emitc::mhlo::sub");
+  patterns.add<GenericOpConversion<mhlo::SubtractOp>>(ctx, "emitc::mhlo::sub");
 
   // Insert patterns for MHLO binary logical elementwise ops.
-  patterns.add<CallOpConversion<mhlo::OrOp>>(ctx, "emitc::mhlo::logical_or");
-  patterns.add<CallOpConversion<mhlo::XorOp>>(ctx, "emitc::mhlo::logical_xor");
+  patterns.add<GenericOpConversion<mhlo::OrOp>>(ctx, "emitc::mhlo::logical_or");
+  patterns.add<GenericOpConversion<mhlo::XorOp>>(ctx,
+                                                 "emitc::mhlo::logical_xor");
 
   // Insert patterns for MHLO tuple ops.
   patterns.add<CompareOpConversion>(ctx);
-  patterns.add<CallOpConversion<mhlo::TupleOp>>(ctx, "std::make_tuple");
+  patterns.add<GenericOpConversion<mhlo::TupleOp>>(ctx, "std::make_tuple");
   patterns.add<GetTupleElementOpConversion>(ctx);
 
   // Insert patterns for MHLO slice ops.
@@ -559,20 +511,22 @@ void populateMhloToEmitcPatterns(MLIRContext *ctx,
 
   // Insert patterns for other MHLO ops.
   patterns.add<BatchNormInferenceOpConversion>(ctx);
-  patterns.add<CallOpConversion<mhlo::BitcastConvertOp>>(
+  patterns.add<GenericOpConversion<mhlo::BitcastConvertOp>>(
       ctx, "emitc::mhlo::bitcast_convert", /*explicitResultType=*/true);
   patterns.add<BroadcastInDimOpConversion>(ctx);
-  patterns.add<CallOpConversion<mhlo::ClampOp>>(ctx, "emitc::mhlo::clamp",
-                                                /*explicitResultType=*/false,
-                                                /*explicitOperandTypes=*/true);
+  patterns.add<GenericOpConversion<mhlo::ClampOp>>(
+      ctx, "emitc::mhlo::clamp",
+      /*explicitResultType=*/false,
+      /*explicitOperandTypes=*/true);
   patterns.add<ConcatenateOpConversion>(ctx);
   patterns.add<ConvOpConversion>(ctx);
-  patterns.add<CallOpConversion<mhlo::DotOp>>(ctx, "emitc::mhlo::dot",
-                                              /*explicitResultType=*/true);
+  patterns.add<GenericOpConversion<mhlo::DotOp>>(ctx, "emitc::mhlo::dot",
+                                                 /*explicitResultType=*/true);
   patterns.add<PadOpConversion>(ctx);
-  patterns.add<CallOpConversion<mhlo::ReshapeOp>>(ctx, "emitc::mhlo::reshape",
-                                                  /*explicitResultType=*/true);
-  patterns.add<CallOpConversion<mhlo::SelectOp>>(ctx, "emitc::mhlo::select");
+  patterns.add<GenericOpConversion<mhlo::ReshapeOp>>(
+      ctx, "emitc::mhlo::reshape",
+      /*explicitResultType=*/true);
+  patterns.add<GenericOpConversion<mhlo::SelectOp>>(ctx, "emitc::mhlo::select");
 
   // Insert patterns for MHLO RNG ops.
   patterns.add<RngOpConversion>(ctx);

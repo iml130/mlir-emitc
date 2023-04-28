@@ -19,11 +19,12 @@ import argparse
 from tensorflow.python import pywrap_mlir  # pylint: disable=no-name-in-module
 
 
-def convert(model_path: str, output_path: str):
-    pass_pipeline = ",".join([
-        "func.func(xla-legalize-tf)", "canonicalize",
-        "tf-saved-model-optimize-global-tensors"
-    ])
+def convert(model_path: str, output_path: str, hlo_dialect: str):
+    pass_pipeline = ["tf-lower-to-mlprogram-and-hlo"]
+    if hlo_dialect == "mhlo":
+        pass_pipeline.append("stablehlo-legalize-to-hlo")
+    pass_pipeline = ",".join(pass_pipeline)
+    
     with open(model_path) as file:
         mlir = file.read()
 
@@ -36,6 +37,13 @@ def convert(model_path: str, output_path: str):
 def main():
     parser = argparse.ArgumentParser(
         description="Convert model in tf dialect to mhlo dialect")
+    parser.add_argument(
+        "--hlo-dialect",
+        type=str,
+        choices=["mhlo", "stablehlo"],
+        default="mhlo",
+        help="Which flavor of HLO dialect to export",
+    )
     parser.add_argument("model_path",
                         metavar="model-path",
                         help="Path to tf mlir model")
@@ -44,7 +52,7 @@ def main():
                         help="Output path")
     args = parser.parse_args()
 
-    convert(args.model_path, args.output_path)
+    convert(args.model_path, args.output_path, args.hlo_dialect)
 
 
 if __name__ == "__main__":

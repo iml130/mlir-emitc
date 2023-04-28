@@ -58,7 +58,7 @@ echo "Optimizing tf dialect"
 python optimize_tf_dialect.py "$OUTPUT_DIR"/model_tf.mlir "$OUTPUT_DIR"/model_tf_opt.mlir
 
 echo "Converting tf dialect to mhlo dialect"
-python tf_to_mhlo_dialect.py "$OUTPUT_DIR"/model_tf_opt.mlir "$OUTPUT_DIR"/model_mhlo.mlir
+python tf_to_hlo_dialect.py --hlo-dialect mhlo "$OUTPUT_DIR"/model_tf_opt.mlir "$OUTPUT_DIR"/model_mhlo.mlir
 
 echo "Removing tf._input_shapes attribute"
 sed "s/tf._input_shapes =.*]//" "$OUTPUT_DIR"/model_mhlo.mlir > "$OUTPUT_DIR"/model_mhlo_noattr.mlir

@@ -114,6 +114,8 @@ public:
     assert(data.size() == size());
   }
 
+  T* get() { return data.data(); }
+
   static constexpr size_t dim(size_t index) {
     assert(0 <= index && index < rank());
     constexpr std::array<size_t, rank()> s = {Shape...};

@@ -97,6 +97,18 @@ TEST(types, tensor_of_bool) {
   EXPECT_TRUE(t2(1, 1));
 }
 
+TEST(types, tensor_get) {
+  Tensor2D<int, 2, 2> t{1, 2, 3, 4};
+  int* data = t.get();
+
+  // Test that the linear layout of the data array corresponds to the
+  // columnar layout of the multidimensional tensor
+  EXPECT_EQ(data[2*0 + 0], t(0, 0));
+  EXPECT_EQ(data[2*0 + 1], t(0, 1));
+  EXPECT_EQ(data[2*1 + 0], t(1, 0));
+  EXPECT_EQ(data[2*1 + 1], t(1, 1));
+}
+
 TEST(types, default_constructor_0d) {
   Tensor0D<float> tensor;
 

@@ -287,3 +287,46 @@ jobs:
     #    cd ${EMITC}/test_tosa/
     #    clang++ test.cpp -O3 -I `pwd`/../reference-implementation/include -I `pwd` -o test
     #    ./test
+
+  build-release-no-hlo:
+    name: Build and test EmitC (Release, HLO disabled)
+    needs: build-llvm
+    runs-on: ubuntu-20.04
+    steps:
+    - name: Configure environment
+      run: echo "$GITHUB_WORKSPACE/${LLVM}/install/bin" >> $GITHUB_PATH
+
+    - name: Checkout EmitC
+      uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
+      with:
+        path: ${{ env.EMITC }}
+        submodules: 'true'
+
+    - name: Get LLVM hash
+      id: get-llvm-hash
+      run: echo "llvm_hash=$(cat ${{ env.EMITC }}/build_tools/llvm_version.txt)" >> $GITHUB_ENV
+      shell: bash
+
+    - name: Cache LLVM
+      id: cache-llvm
+      uses: actions/cache@58c146cc91c5b9e778e71775dfe9bf1442ad9a12 # v3.2.3
+      with:
+        path: ${{ env.LLVM }}
+        key: ${{ runner.os }}-llvm-20.04-install-${{ env.llvm_hash }}
+
+    - name: Build and test EmitC, HLO disabled
+      id: build-emitc-release
+      run: |
+        mkdir -p ${EMITC}/build_release_hlo_disabled
+        cd ${EMITC}/build_release_hlo_disabled
+        cmake .. \
+          -DCMAKE_BUILD_TYPE=Release \
+          -DLLVM_ENABLE_ASSERTIONS=OFF \
+          -DMLIR_DIR=$GITHUB_WORKSPACE/${LLVM}/install/lib/cmake/mlir/ \
+          -DLLVM_DIR=$GITHUB_WORKSPACE/${LLVM}/install/lib/cmake/llvm/ \
+          -DCMAKE_LINKER=lld \
+          -DCMAKE_C_COMPILER=clang \
+          -DCMAKE_CXX_COMPILER=clang++ \
+          -DLLVM_EXTERNAL_LIT=`pwd`/../../${LLVM}/build/bin/llvm-lit \
+          -DEMITC_ENABLE_HLO=OFF
+        cmake --build . --target check-emitc -- -j$(nproc)

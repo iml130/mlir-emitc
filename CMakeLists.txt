@@ -12,6 +12,12 @@ set(CMAKE_CXX_STANDARD 17)
 
 include(CMakeDependentOption)
 
+# CMP0116: Ninja generators transform `DEPFILE`s from `add_custom_command()`
+# New in CMake 3.20. https://cmake.org/cmake/help/latest/policy/CMP0116.html
+if(POLICY CMP0116)
+  cmake_policy(SET CMP0116 OLD)
+endif()
+
 #-------------------------------------------------------------------------------
 # Options and definitions
 #-------------------------------------------------------------------------------
@@ -90,11 +96,9 @@ add_definitions(${LLVM_DEFINITIONS})
 # Configure StableHLO if we are building standalone. If building as part of
 # another, let it handle the submodule and includes.
 if(EMITC_ENABLE_HLO AND NOT EMITC_BUILD_EMBEDDED)
-  add_subdirectory(third_party/mlir-hlo EXCLUDE_FROM_ALL)
-  include_directories(${CMAKE_CURRENT_SOURCE_DIR}/third_party/mlir-hlo)
-  include_directories(${CMAKE_CURRENT_BINARY_DIR}/third_party/mlir-hlo)
-  include_directories(${CMAKE_CURRENT_SOURCE_DIR}/third_party/mlir-hlo/stablehlo)
-  include_directories(${CMAKE_CURRENT_BINARY_DIR}/third_party/mlir-hlo/stablehlo)
+  add_subdirectory(third_party/stablehlo EXCLUDE_FROM_ALL)
+  include_directories(${CMAKE_CURRENT_SOURCE_DIR}/third_party/stablehlo)
+  include_directories(${CMAKE_CURRENT_BINARY_DIR}/third_party/stablehlo)
 endif()
 
 # Optional Eigen dependency for some TOSA Ops

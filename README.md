@@ -5,7 +5,7 @@
 MLIR-EmitC provides a way to translate ML models into C++ code. The repository
 contains scripts and tools to translate Keras and TensorFlow models into the
 [TOSA](https://mlir.llvm.org/docs/Dialects/TOSA/) and
-[MHLO](https://github.com/tensorflow/mlir-hlo) dialect and to convert those to
+[StableHLO](https://github.com/tensorflow/mlir-hlo) dialect and to convert those to
 [EmitC](https://mlir.llvm.org/docs/Dialects/EmitC/).
 The latter is used to generate calls to a reference implementation.
 
@@ -63,27 +63,27 @@ cmake --build . --target check-emitc
 
 ## Supported Conversions and Translations
 
-Conversions are supported for [MLIR-HLO](https://github.com/tensorflow/mlir-hlo) ops and some ops of the arith and Tensor dialect.
+Conversions are supported for [StableHLO](https://github.com/tensorflow/mlir-hlo) ops and some ops of the arith and Tensor dialect.
 In addition, support for converting Tensor Operator Set Architecture [(TOSA)](https://mlir.llvm.org/docs/Dialects/TOSA/) dialect to EmitC is emerging.
 The `emitc-opt` tool supports the following options:
 
-| option                                   |                                                                          |
-| :--------------------------------------- |:------------------------------------------------------------------------ |
-| `--convert-mhlo-region-ops-to-emitc `    | Convert MHLO operations containing regions to EmitC dialect.             |
-| `--convert-mhlo-to-emitc `               | Convert from MHLO dialect to EmitC dialect.                              |
-| `--convert-arith-to-emitc `              | Convert arith dialect to EmitC dialect, replacing IndexCastOp.           |
-| `--convert-tensor-to-emitc `             | Convert tensor dialect to EmitC dialect.                                 |
-| `--convert-tosa-to-emitc `               | Convert TOSA dialect to EmitC dialect.                                   |
-| `--insert-emitc-mhlo-include`            | Insert an EmitC include for the MHLO dialect.                            |
-| `--insert-emitc-arith-include`           | Insert an EmitC include for the arith dialect.                           |
-| `--insert-emitc-tensor-include`          | Insert an EmitC include for the tensor dialect.                          |
-| `--insert-emitc-tosa-include`            | Insert an EmitC include for the TOSA dialect.                            |
-| `--mhlo-to-emitc-pipeline`               | Run the MHLO to EmitC pipeline.                                          |
-| `--arith-to-emitc-pipeline`              | Run the Arithmetic to EmitC pipeline.                                    |
-| `--tensor-to-emitc-pipeline`             | Run the Tensor to EmitC pipeline.                                        |
-| `--tosa-to-emitc-pipeline`               | Run the TOSA to EmitC pipeline.                                          |
+| option                                     |                                                                          |
+| :----------------------------------------- |:------------------------------------------------------------------------ |
+| `--convert-stablehlo-region-ops-to-emitc ` | Convert StableHLO operations containing regions to EmitC dialect.        |
+| `--convert-stablehlo-to-emitc `            | Convert from StableHLO dialect to EmitC dialect.                         |
+| `--convert-arith-to-emitc `                | Convert arith dialect to EmitC dialect, replacing IndexCastOp.           |
+| `--convert-tensor-to-emitc `               | Convert tensor dialect to EmitC dialect.                                 |
+| `--convert-tosa-to-emitc `                 | Convert TOSA dialect to EmitC dialect.                                   |
+| `--insert-emitc-stablehlo-include`         | Insert an EmitC include for the StableHLO dialect.                       |
+| `--insert-emitc-arith-include`             | Insert an EmitC include for the arith dialect.                           |
+| `--insert-emitc-tensor-include`            | Insert an EmitC include for the tensor dialect.                          |
+| `--insert-emitc-tosa-include`              | Insert an EmitC include for the TOSA dialect.                            |
+| `--stablehlo-to-emitc-pipeline`            | Run the StableHLO to EmitC pipeline.                                     |
+| `--arith-to-emitc-pipeline`                | Run the Arithmetic to EmitC pipeline.                                    |
+| `--tensor-to-emitc-pipeline`               | Run the Tensor to EmitC pipeline.                                        |
+| `--tosa-to-emitc-pipeline`                 | Run the TOSA to EmitC pipeline.                                          |
 
-The currently supported MHLO ops are listed in the [docs/mhlo-op-coverage.md](docs/mhlo-op-coverage.md) document.
+The currently supported StableHLO ops are listed in the [docs/stablehlo-op-coverage.md](docs/stablehlo-op-coverage.md) document.
 Supported TOSA ops are listed in the [docs/tosa-op-coverage.md](docs/tosa-op-coverage.md) document.
 
 After converting to EmitC dialect, C++ code can be emitted using `emitc-translate --mlir-to-cpp`.

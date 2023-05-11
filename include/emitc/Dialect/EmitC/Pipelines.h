@@ -19,7 +19,7 @@ namespace mlir {
 namespace emitc {
 
 #ifdef EMITC_BUILD_HLO
-void registerMHLOToEmitCPipeline();
+void registerStablehloToEmitCPipeline();
 #endif // EMITC_BUILD_HLO
 void registerArithToEmitCPipeline();
 void registerTensorToEmitCPipeline();

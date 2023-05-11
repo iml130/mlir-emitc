@@ -15,10 +15,10 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-// This file defines functions emitted by MHLOToEmitC.
+// This file defines functions emitted by StablehloToEmitC.
 
-#ifndef EMITC_MHLO_H
-#define EMITC_MHLO_H
+#ifndef EMITC_STABLEHLO_H
+#define EMITC_STABLEHLO_H
 
 #include <algorithm>
 #include <cmath>
@@ -33,12 +33,12 @@
 #include "emitc/core_ops.h"
 
 namespace emitc {
-namespace mhlo {
+namespace stablehlo {
 /// See
 /// https://github.com/tensorflow/tensorflow/blob/6f59650012f8904745dffaba540afc794c6613be/tensorflow/compiler/xla/service/hlo_evaluator.cc
 /// for the XLA implementation
 
-/// Functions for MHLO unary elementwise ops.
+/// Functions for StableHLO unary elementwise ops.
 // AbsOp
 // TODO: Add support for complex numbers.
 template <typename Src>
@@ -187,7 +187,7 @@ inline Src tanh(Src x) {
   return emitc::tanh<Src>(x);
 }
 
-/// Functions for MHLO binary elementwise ops.
+/// Functions for StableHLO binary elementwise ops.
 // AddOp
 template <typename Src>
 inline Src add(Src x, Src y) {
@@ -268,7 +268,7 @@ inline Src sub(Src x, Src y) {
   return emitc::sub<Src>(x, y);
 }
 
-/// Functions for MHLO binary logical elementwise ops.
+/// Functions for StableHLO binary logical elementwise ops.
 // OrOp
 template <typename Src>
 inline Src logical_or(Src x, Src y) {
@@ -289,7 +289,7 @@ inline Src logical_xor(Src x, Src y) {
   return binary<Src>(x, y, f);
 }
 
-/// Functions for other MHLO ops.
+/// Functions for other StableHLO ops.
 // BroadcastInDimOp
 // The broadcast_dimensions argument maps from Src to Dest dimensions.
 template <typename Dest, typename Src>
@@ -840,7 +840,7 @@ Dest dot(Lhs lhs, Rhs rhs) {
   return emitc::dot<Dest>(lhs, rhs);
 }
 
-} // namespace mhlo
+} // namespace stablehlo
 } // namespace emitc
 
-#endif // EMITC_MHLO_H
+#endif // EMITC_STABLEHLO_H

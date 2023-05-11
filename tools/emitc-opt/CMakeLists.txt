@@ -3,10 +3,9 @@ get_property(conversion_libs GLOBAL PROPERTY MLIR_CONVERSION_LIBS)
 
 if(${EMITC_ENABLE_HLO})
   set(HLO_LIBS
-    MLIRMHLOToEmitC
-    MLIRMHLORegionOpsToEmitC
     MhloRegisterDialects
     MLIRStablehloToEmitC
+    MLIRStablehloRegionOpsToEmitC
     )
   set(HLO_LIBS_DEPS
     MLIREmitCConversionPassIncGen

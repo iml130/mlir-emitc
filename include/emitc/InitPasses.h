@@ -35,11 +35,10 @@ namespace emitc {
 
 inline void registerAllEmitCPasses() {
 #ifdef EMITC_BUILD_HLO
-  registerConvertMHLORegionOpsToEmitCPass();
-  registerConvertMHLOToEmitCPass();
-  registerInsertEmitCMHLOIncludePass();
-  registerMHLOToEmitCPipeline();
+  registerConvertStablehloRegionOpsToEmitCPass();
   registerConvertStablehloToEmitCPass();
+  registerInsertEmitCStablehloIncludePass();
+  registerStablehloToEmitCPipeline();
 #endif // EMITC_BUILD_HLO
   registerConvertArithToEmitCPass();
   registerConvertTensorToEmitCPass();

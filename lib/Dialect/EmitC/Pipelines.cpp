@@ -17,10 +17,10 @@ namespace emitc {
 namespace {
 
 #ifdef EMITC_BUILD_HLO
-void buildMHLOToEmitCPipeline(OpPassManager &pm) {
-  pm.addPass(createInsertEmitCMHLOIncludePass());
-  pm.addPass(createConvertMhloRegionOpsToEmitCPass());
-  pm.addPass(createConvertMhloToEmitCPass());
+void buildStablehloToEmitCPipeline(OpPassManager &pm) {
+  pm.addPass(createInsertEmitCStablehloIncludePass());
+  pm.addPass(createConvertStablehloRegionOpsToEmitCPass());
+  pm.addPass(createConvertStablehloToEmitCPass());
 }
 #endif // EMITC_BUILD_HLO
 
@@ -42,10 +42,10 @@ void buildTosaToEmitCPipeline(OpPassManager &pm) {
 } // namespace
 
 #ifdef EMITC_BUILD_HLO
-void registerMHLOToEmitCPipeline() {
-  PassPipelineRegistration<>("mhlo-to-emitc-pipeline",
-                             "Run the MHLO to EmitC pipeline.",
-                             buildMHLOToEmitCPipeline);
+void registerStablehloToEmitCPipeline() {
+  PassPipelineRegistration<>("stablehlo-to-emitc-pipeline",
+                             "Run the StableHLO to EmitC pipeline.",
+                             buildStablehloToEmitCPipeline);
 }
 #endif // EMITC_BUILD_HLO
 

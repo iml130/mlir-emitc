@@ -11,9 +11,9 @@
 
 include "mlir/Pass/PassBase.td"
 
-def InsertEmitCMHLOInclude : Pass<"insert-emitc-mhlo-include", "ModuleOp"> {
-  let summary = "Insert an EmitC include for the MHLO dialect.";
-  let constructor = "createInsertEmitCMHLOIncludePass()";
+def InsertEmitCStablehloInclude : Pass<"insert-emitc-stablehlo-include", "ModuleOp"> {
+  let summary = "Insert an EmitC include for the StableHLO dialect.";
+  let constructor = "createInsertEmitCStablehloIncludePass()";
   let dependentDialects = ["EmitCDialect"];
 }
 

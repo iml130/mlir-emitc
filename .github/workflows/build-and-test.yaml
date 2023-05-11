@@ -12,7 +12,7 @@ env:
   EMITC: emitc
   LLVM: llvm
   E2E: emitc-e2e
-  E2E_VERSION: 1
+  E2E_VERSION: 2
 
 jobs:
   build-llvm:
@@ -97,9 +97,6 @@ jobs:
         python3 ../${EMITC}/scripts/model_to_savedmodel_with_predict_function.py --batch-size 2 mobilenet_v2.h5 model
         python3 ../${EMITC}/scripts/savedmodel_to_tf_dialect.py --exported-names predict model model_tf.mlir
         python3 ../${EMITC}/scripts/optimize_tf_dialect.py model_tf.mlir model_tf_opt.mlir
-        python3 ../${EMITC}/scripts/tf_to_hlo_dialect.py --hlo-dialect mhlo model_tf_opt.mlir model_mhlo.mlir
-        sed "s/tf._input_shapes =.*]//" model_mhlo.mlir > ../${E2E}/model_mhlo_noattr.mlir
-        sed -i "s/, }/}/" ../${E2E}/model_mhlo_noattr.mlir
         python3 ../${EMITC}/scripts/tf_to_hlo_dialect.py --hlo-dialect stablehlo model_tf_opt.mlir ../${E2E}/model_stablehlo.mlir
         python3 ../${EMITC}/scripts/tf_to_tosa_dialect.py model_tf_opt.mlir model_tosa.mlir
         sed "s/tf._input_shapes =.*]//" model_tosa.mlir > ../${E2E}/model_tosa_noattr.mlir
@@ -212,38 +209,22 @@ jobs:
         path: ${{ env.E2E }}
         key: ${{ runner.os }}-e2e-${{ hashFiles('emitc/scripts/*.py', 'emitc/scripts/requirements.txt', 'emitc/scripts/e2e*.sh') }}-${{ env.E2E_VERSION }}
 
-    - name: Run MHLO e2e test
+    - name: Run StableHLO e2e test
       run: |
-        mkdir tmp-mhlo
-        cd tmp-mhlo
-        ../${EMITC}/build_release/bin/emitc-opt --canonicalize --inline --symbol-dce ../${E2E}/model_mhlo_noattr.mlir > model_canon.mlir
+        mkdir tmp-stablehlo
+        cd tmp-stablehlo
+        ../${EMITC}/build_release/bin/emitc-opt --canonicalize --inline --symbol-dce ../${E2E}/model_stablehlo.mlir > model_canon.mlir
         FUNCTION_NAME=$(grep -oe "@[^(]*" model_canon.mlir)
         FUNCTION_NAME="${FUNCTION_NAME:1}"
         sed "s/$FUNCTION_NAME/predict/g" model_canon.mlir > model_fix_name.mlir
         ../${EMITC}/build_release/bin/emitc-opt \
-          --insert-emitc-mhlo-include \
-          --convert-mhlo-region-ops-to-emitc \
-          --convert-mhlo-to-emitc \
+          --insert-emitc-stablehlo-include \
+          --convert-stablehlo-region-ops-to-emitc \
+          --convert-stablehlo-to-emitc \
           model_fix_name.mlir > model_emitc.mlir
         ../${EMITC}/build_release/bin/emitc-translate --mlir-to-cpp model_emitc.mlir > model_generated.h
         clang++ ../${E2E}/test.cpp -O3 -I `pwd`/../emitc/reference-implementation/include -I `pwd` -o test
         ./test
-    
-    # - name: Run StableHLO e2e test
-    #   run: |
-    #     mkdir tmp-stablehlo
-    #     cd tmp-stablehlo
-    #     ../${EMITC}/build_release/bin/emitc-opt --canonicalize --inline --symbol-dce ../${E2E}/model_stablehlo.mlir > model_canon.mlir
-    #     FUNCTION_NAME=$(grep -oe "@[^(]*" model_canon.mlir)
-    #     FUNCTION_NAME="${FUNCTION_NAME:1}"
-    #     sed "s/$FUNCTION_NAME/predict/g" model_canon.mlir > model_fix_name.mlir
-    #     ../${EMITC}/build_release/bin/emitc-opt \
-    #       --insert-emitc-mhlo-include \
-    #       --convert-stablehlo-to-emitc \
-    #       model_fix_name.mlir > model_emitc.mlir
-    #     ../${EMITC}/build_release/bin/emitc-translate --mlir-to-cpp model_emitc.mlir > model_generated.h
-    #     clang++ ../${E2E}/test.cpp -O3 -I `pwd`/../emitc/reference-implementation/include -I `pwd` -o test
-    #     ./test
 
     - name: Run TOSA e2e test
       run: |

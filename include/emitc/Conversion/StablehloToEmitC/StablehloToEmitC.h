@@ -20,6 +20,8 @@ class FuncOp;
 
 namespace emitc {
 
+std::unique_ptr<OperationPass<ModuleOp>>
+createConvertStablehloRegionOpsToEmitCPass();
 std::unique_ptr<OperationPass<func::FuncOp>>
 createConvertStablehloToEmitCPass();
 

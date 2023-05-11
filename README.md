@@ -5,7 +5,7 @@
 MLIR-EmitC provides a way to translate ML models into C++ code. The repository
 contains scripts and tools to translate Keras and TensorFlow models into the
 [TOSA](https://mlir.llvm.org/docs/Dialects/TOSA/) and
-[StableHLO](https://github.com/tensorflow/mlir-hlo) dialect and to convert those to
+[StableHLO](https://github.com/openxla/stablehlo/) dialect and to convert those to
 [EmitC](https://mlir.llvm.org/docs/Dialects/EmitC/).
 The latter is used to generate calls to a reference implementation.
 
@@ -63,7 +63,7 @@ cmake --build . --target check-emitc
 
 ## Supported Conversions and Translations
 
-Conversions are supported for [StableHLO](https://github.com/tensorflow/mlir-hlo) ops and some ops of the arith and Tensor dialect.
+Conversions are supported for [StableHLO](https://github.com/openxla/stablehlo/) ops and some ops of the arith and Tensor dialect.
 In addition, support for converting Tensor Operator Set Architecture [(TOSA)](https://mlir.llvm.org/docs/Dialects/TOSA/) dialect to EmitC is emerging.
 The `emitc-opt` tool supports the following options:
 

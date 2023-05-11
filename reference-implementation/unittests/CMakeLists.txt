@@ -1,5 +1,5 @@
 set(MLIREmitCTests_SRCS
-  mhlo.cpp
+  stablehlo.cpp
   arith.cpp
   tensor.cpp
   tosa_eigen.cpp

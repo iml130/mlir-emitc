@@ -1,6 +1,6 @@
-# MHLO HLO Op Coverage
+# StableHLO Op Coverage
 
-The table below shows the supported MHLO ops.
+The table below shows the supported StableHLO ops.
 
 | op                    | supported          | comment |
 | :-------------------- |:------------------:| :------ |
@@ -33,9 +33,6 @@ The table below shows the supported MHLO ops.
 | shift_left            | :heavy_check_mark: | |
 | shift_right_logical   | :heavy_check_mark: | |
 | subtract              | :heavy_check_mark: | |
-| **Control flow ops**
-| if                    | :white_check_mark: | `--mhlo-control-flow-to-scf` |
-| while                 | :white_check_mark: | `--mhlo-control-flow-to-scf` |
 | **Binary logical elementwise ops**
 | or                    | :heavy_check_mark: | |
 | xor                   | :heavy_check_mark: | |

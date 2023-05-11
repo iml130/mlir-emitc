@@ -20,8 +20,9 @@ class ModuleOp;
 
 namespace emitc {
 
-std::unique_ptr<OperationPass<ModuleOp>> createInsertEmitCMHLOIncludePass();
 std::unique_ptr<OperationPass<ModuleOp>> createInsertEmitCArithIncludePass();
+std::unique_ptr<OperationPass<ModuleOp>>
+createInsertEmitCStablehloIncludePass();
 std::unique_ptr<OperationPass<ModuleOp>> createInsertEmitCTensorIncludePass();
 std::unique_ptr<OperationPass<ModuleOp>> createInsertEmitCTosaIncludePass();
 

@@ -31,11 +31,11 @@ void insertIncludeOp(ModuleOp &op, StringRef includeName) {
   builder.create<emitc::IncludeOp>(op.getLoc(), includeName, false);
 }
 
-struct InsertEmitCMHLOIncludePass
-    : public InsertEmitCMHLOIncludeBase<InsertEmitCMHLOIncludePass> {
+struct InsertEmitCStablehloIncludePass
+    : public InsertEmitCStablehloIncludeBase<InsertEmitCStablehloIncludePass> {
   void runOnOperation() override {
     auto op = getOperation();
-    insertIncludeOp(op, "emitc/mhlo.h");
+    insertIncludeOp(op, "emitc/stablehlo.h");
   }
 };
 
@@ -66,8 +66,8 @@ struct InsertEmitCTosaIncludePass
 } // namespace
 
 std::unique_ptr<OperationPass<mlir::ModuleOp>>
-createInsertEmitCMHLOIncludePass() {
-  return std::make_unique<InsertEmitCMHLOIncludePass>();
+createInsertEmitCStablehloIncludePass() {
+  return std::make_unique<InsertEmitCStablehloIncludePass>();
 }
 
 std::unique_ptr<OperationPass<mlir::ModuleOp>>

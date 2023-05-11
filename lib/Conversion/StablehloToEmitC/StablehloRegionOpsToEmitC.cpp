@@ -1,4 +1,4 @@
-//===- MHLORegionOpsToEmitC.cpp - MHLO to EmitC conversion ----------------===//
+//===- StablehloRegionOpsToEmitC.cpp - StableHLO to EmitC conversion ------===//
 //
 // This file is licensed under the Apache License v2.0 with LLVM Exceptions.
 // See https://llvm.org/LICENSE.txt for license information.
@@ -6,20 +6,20 @@
 //
 //===----------------------------------------------------------------------===//
 //
-// This file implements logic for converting MHLO ops containing regions to the
-// EmitC dialect by outlining the regions to module level functions.
+// This file implements logic for converting StableHLO ops containing regions
+// to the EmitC dialect by outlining the regions to module level functions.
 //
 //===----------------------------------------------------------------------===//
 
-#include "mhlo/IR/hlo_ops.h"
 #include "mlir/Dialect/EmitC/IR/EmitC.h"
 #include "mlir/Dialect/Func/IR/FuncOps.h"
 #include "mlir/IR/BuiltinOps.h"
 #include "mlir/IR/IRMapping.h"
 #include "mlir/Pass/Pass.h"
+#include "stablehlo/dialect/StablehloOps.h"
 
 #include "../PassDetail.h"
-#include "emitc/Conversion/MhloToEmitC/MhloToEmitC.h"
+#include "emitc/Conversion/StablehloToEmitC/StablehloToEmitC.h"
 
 using namespace mlir;
 using namespace mlir::emitc;
@@ -43,8 +43,9 @@ SmallVector<Attribute, 2> indexSequence(int64_t n, MLIRContext *ctx) {
       }));
 }
 
-struct ConvertMhloRegionOpsToEmitCPass
-    : public ConvertMHLORegionOpsToEmitCBase<ConvertMhloRegionOpsToEmitCPass> {
+struct ConvertStablehloRegionOpsToEmitCPass
+    : public ConvertStablehloRegionOpsToEmitCBase<
+          ConvertStablehloRegionOpsToEmitCPass> {
   void getDependentDialects(::mlir::DialectRegistry &registry) const override {
     registry.insert<EmitCDialect, func::FuncDialect>();
   }
@@ -59,14 +60,14 @@ struct ConvertMhloRegionOpsToEmitCPass
 
       int count = 0;
       // ReduceOp
-      auto funcWalkResult = func.walk([&](mhlo::ReduceOp op) {
+      auto funcWalkResult = func.walk([&](stablehlo::ReduceOp op) {
         std::string funcName =
             Twine(op->getParentOfType<func::FuncOp>().getName(), "_lambda_")
                 .concat(Twine(count++))
                 .str();
 
         Optional<func::FuncOp> outlinedFunc =
-            outlineRegionImpl<mhlo::ReduceOp>(op, funcName);
+            outlineRegionImpl<stablehlo::ReduceOp>(op, funcName);
 
         if (!outlinedFunc.has_value()) {
           return WalkResult::interrupt();
@@ -83,14 +84,14 @@ struct ConvertMhloRegionOpsToEmitCPass
         return signalPassFailure();
 
       // ReduceWindowOp
-      funcWalkResult = func.walk([&](mhlo::ReduceWindowOp op) {
+      funcWalkResult = func.walk([&](stablehlo::ReduceWindowOp op) {
         std::string funcName =
             Twine(op->getParentOfType<func::FuncOp>().getName(), "_lambda_")
                 .concat(Twine(count++))
                 .str();
 
         Optional<func::FuncOp> outlinedFunc =
-            outlineRegionImpl<mhlo::ReduceWindowOp>(op, funcName);
+            outlineRegionImpl<stablehlo::ReduceWindowOp>(op, funcName);
 
         if (!outlinedFunc.has_value()) {
           return WalkResult::interrupt();
@@ -127,7 +128,7 @@ private:
 
     Block &block = blocks.front();
     auto *terminator = block.getTerminator();
-    auto returnOp = dyn_cast_or_null<mhlo::ReturnOp>(terminator);
+    auto returnOp = dyn_cast_or_null<stablehlo::ReturnOp>(terminator);
     if (!returnOp) {
       return std::nullopt;
     }
@@ -143,7 +144,7 @@ private:
     IRMapping mapper;
     region.cloneInto(&outlinedRegion, mapper);
 
-    outlinedFunc.walk([](mhlo::ReturnOp returnOp) {
+    outlinedFunc.walk([](stablehlo::ReturnOp returnOp) {
       OpBuilder replacer(returnOp);
       replacer.create<func::ReturnOp>(returnOp.getLoc(),
                                       returnOp.getOperands());
@@ -152,13 +153,13 @@ private:
     return outlinedFunc;
   }
 
-  LogicalResult convertToCall(mhlo::ReduceOp &op, func::FuncOp &funcOp) {
+  LogicalResult convertToCall(stablehlo::ReduceOp &op, func::FuncOp &funcOp) {
     OpBuilder builder(op);
     auto *ctx = op.getContext();
 
     auto operands = op.getOperands();
 
-    StringRef funcName = "emitc::mhlo::reduce";
+    StringRef funcName = "emitc::stablehlo::reduce";
     StringAttr callee = StringAttr::get(ctx, funcName);
 
     SmallVector<Attribute, 2> arguments =
@@ -187,13 +188,14 @@ private:
     return success();
   }
 
-  LogicalResult convertToCall(mhlo::ReduceWindowOp &op, func::FuncOp &funcOp) {
+  LogicalResult convertToCall(stablehlo::ReduceWindowOp &op,
+                              func::FuncOp &funcOp) {
     OpBuilder builder(op);
     auto *ctx = op.getContext();
 
     auto operands = op.getOperands();
 
-    StringRef funcName = "emitc::mhlo::reduce_window";
+    StringRef funcName = "emitc::stablehlo::reduce_window";
     StringAttr callee = StringAttr::get(ctx, funcName);
 
     SmallVector<Attribute, 2> arguments = indexSequence(operands.size(), ctx);
@@ -226,6 +228,6 @@ private:
 } // namespace
 
 std::unique_ptr<OperationPass<ModuleOp>>
-mlir::emitc::createConvertMhloRegionOpsToEmitCPass() {
-  return std::make_unique<ConvertMhloRegionOpsToEmitCPass>();
+mlir::emitc::createConvertStablehloRegionOpsToEmitCPass() {
+  return std::make_unique<ConvertStablehloRegionOpsToEmitCPass>();
 }

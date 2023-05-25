@@ -101,7 +101,7 @@ struct switch_t<case_t<B, T>> {
 } // namespace detail
 
 /// The elements of a Tensor are stored contiguously in memory in a
-/// column-major layout.
+/// row-major layout.
 template <typename T, size_t... Shape>
 class Tensor {
 public:

@@ -103,7 +103,7 @@ TEST(types, tensor_get) {
   int *data = t.get();
 
   // Test that the linear layout of the data array corresponds to the
-  // columnar layout of the multidimensional tensor
+  // row-major layout of the multidimensional tensor
   EXPECT_EQ(data[2 * 0 + 0], t(0, 0));
   EXPECT_EQ(data[2 * 0 + 1], t(0, 1));
   EXPECT_EQ(data[2 * 1 + 0], t(1, 0));

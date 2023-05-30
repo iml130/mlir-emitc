@@ -6,8 +6,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef CONVERSION_PASSDETAIL_H
-#define CONVERSION_PASSDETAIL_H
+#ifndef EMITC_CONVERSION_PASSDETAIL_H
+#define EMITC_CONVERSION_PASSDETAIL_H
 
 #include "mlir/Dialect/Func/IR/FuncOps.h"
 #include "mlir/Pass/Pass.h"
@@ -23,4 +23,4 @@ class EmitCDialect;
 } // namespace emitc
 } // namespace mlir
 
-#endif // CONVERSION_PASSDETAIL_H
+#endif // EMITC_CONVERSION_PASSDETAIL_H

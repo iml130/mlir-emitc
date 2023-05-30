@@ -11,15 +11,9 @@
 
 include "mlir/Pass/PassBase.td"
 
-def ConvertMHLORegionOpsToEmitC : Pass<"convert-mhlo-region-ops-to-emitc", "ModuleOp"> {
-  let summary = "Convert MHLO operations containing regions to EmitC dialect.";
-  let constructor = "createConvertMhloRegionOpsToEmitCPass()";
-  let dependentDialects = ["EmitCDialect"];
-}
-
-def ConvertMHLOToEmitC : Pass<"convert-mhlo-to-emitc", "func::FuncOp"> {
-  let summary = "Convert from MHLO dialect to EmitC dialect.";
-  let constructor = "createConvertMhloToEmitCPass()";
+def ConvertStablehloRegionOpsToEmitC : Pass<"convert-stablehlo-region-ops-to-emitc", "ModuleOp"> {
+  let summary = "Convert StableHLO operations containing regions to EmitC dialect.";
+  let constructor = "createConvertStablehloRegionOpsToEmitCPass()";
   let dependentDialects = ["EmitCDialect"];
 }
 

@@ -12,12 +12,18 @@ set(CMAKE_CXX_STANDARD 17)
 
 include(CMakeDependentOption)
 
+# CMP0116: Ninja generators transform `DEPFILE`s from `add_custom_command()`
+# New in CMake 3.20. https://cmake.org/cmake/help/latest/policy/CMP0116.html
+if(POLICY CMP0116)
+  cmake_policy(SET CMP0116 OLD)
+endif()
+
 #-------------------------------------------------------------------------------
 # Options and definitions
 #-------------------------------------------------------------------------------
 
 option(EMITC_BUILD_EMBEDDED "Build EmitC as part of another project" OFF)
-option(EMITC_ENABLE_HLO "Enables building MLIR-HLO." ON)
+option(EMITC_ENABLE_HLO "Enables building StableHLO." ON)
 option(EMITC_TOSA_USE_EIGEN "Enables use of Eigen library for some TOSA Ops." OFF)
 option(EMITC_INCLUDE_TESTS "Generate build targets for the MLIR EmitC unit tests." ON)
 cmake_dependent_option(EMITC_TOSA_TEST_EIGEN "Enables testing of Eigen library for some TOSA Ops." ON "EMITC_INCLUDE_TESTS;EMITC_TOSA_USE_EIGEN" OFF)
@@ -87,14 +93,12 @@ add_definitions(${LLVM_DEFINITIONS})
 # Dependent projects and dependencies
 #-------------------------------------------------------------------------------
 
-# Configure MHLO if we are building standalone. If building as part of
+# Configure StableHLO if we are building standalone. If building as part of
 # another, let it handle the submodule and includes.
 if(EMITC_ENABLE_HLO AND NOT EMITC_BUILD_EMBEDDED)
-  add_subdirectory(third_party/mlir-hlo EXCLUDE_FROM_ALL)
-  include_directories(${CMAKE_CURRENT_SOURCE_DIR}/third_party/mlir-hlo)
-  include_directories(${CMAKE_CURRENT_BINARY_DIR}/third_party/mlir-hlo)
-  include_directories(${CMAKE_CURRENT_SOURCE_DIR}/third_party/mlir-hlo/stablehlo)
-  include_directories(${CMAKE_CURRENT_BINARY_DIR}/third_party/mlir-hlo/stablehlo)
+  add_subdirectory(third_party/stablehlo EXCLUDE_FROM_ALL)
+  include_directories(${CMAKE_CURRENT_SOURCE_DIR}/third_party/stablehlo)
+  include_directories(${CMAKE_CURRENT_BINARY_DIR}/third_party/stablehlo)
 endif()
 
 # Optional Eigen dependency for some TOSA Ops

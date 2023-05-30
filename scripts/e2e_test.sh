@@ -57,25 +57,18 @@ python savedmodel_to_tf_dialect.py --exported-names "$EXPORTED_NAME" "$OUTPUT_DI
 echo "Optimizing tf dialect"
 python optimize_tf_dialect.py "$OUTPUT_DIR"/model_tf.mlir "$OUTPUT_DIR"/model_tf_opt.mlir
 
-echo "Converting tf dialect to mhlo dialect"
-python tf_to_mhlo_dialect.py "$OUTPUT_DIR"/model_tf_opt.mlir "$OUTPUT_DIR"/model_mhlo.mlir
-
-echo "Removing tf._input_shapes attribute"
-sed "s/tf._input_shapes =.*]//" "$OUTPUT_DIR"/model_mhlo.mlir > "$OUTPUT_DIR"/model_mhlo_noattr.mlir
-sed -i "s/, }/}/" "$OUTPUT_DIR"/model_mhlo_noattr.mlir
-
-echo "Canonicalizing mhlo dialect"
-"$EMITC_OPT" --canonicalize --inline --symbol-dce "$OUTPUT_DIR"/model_mhlo_noattr.mlir > "$OUTPUT_DIR"/model_canon.mlir
+echo "Converting tf dialect to stablehlo dialect"
+python tf_to_hlo_dialect.py --hlo-dialect stablehlo "$OUTPUT_DIR"/model_tf_opt.mlir "$OUTPUT_DIR"/model_stablehlo.mlir
 
 echo "Fixing function name"
 FUNCTION_NAME=$(grep -oe "@[^(]*" "$OUTPUT_DIR"/model_canon.mlir)
 sed "s/$FUNCTION_NAME/@predict/g" "$OUTPUT_DIR"/model_canon.mlir > "$OUTPUT_DIR"/model_fix_name.mlir
 
-echo "Converting mhlo dialect to emitc dialect"
+echo "Converting stablehlo dialect to emitc dialect"
 "$EMITC_OPT" \
-  --insert-emitc-mhlo-include \
-  --convert-mhlo-region-ops-to-emitc \
-  --convert-mhlo-to-emitc \
+  --insert-emitc-stablehlo-include \
+  --convert-stablehlo-region-ops-to-emitc \
+  --convert-stablehlo-to-emitc \
   "$OUTPUT_DIR"/model_fix_name.mlir > "$OUTPUT_DIR"/model_emitc.mlir
 
 echo "Translating emitc dialect to cpp header"

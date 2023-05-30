@@ -12,7 +12,7 @@ env:
   EMITC: emitc
   LLVM: llvm
   E2E: emitc-e2e
-  E2E_VERSION: 1
+  E2E_VERSION: 2
 
 jobs:
   build-llvm:
@@ -97,9 +97,7 @@ jobs:
         python3 ../${EMITC}/scripts/model_to_savedmodel_with_predict_function.py --batch-size 2 mobilenet_v2.h5 model
         python3 ../${EMITC}/scripts/savedmodel_to_tf_dialect.py --exported-names predict model model_tf.mlir
         python3 ../${EMITC}/scripts/optimize_tf_dialect.py model_tf.mlir model_tf_opt.mlir
-        python3 ../${EMITC}/scripts/tf_to_mhlo_dialect.py model_tf_opt.mlir model_mhlo.mlir
-        sed "s/tf._input_shapes =.*]//" model_mhlo.mlir > ../${E2E}/model_mhlo_noattr.mlir
-        sed -i "s/, }/}/" ../${E2E}/model_mhlo_noattr.mlir
+        python3 ../${EMITC}/scripts/tf_to_hlo_dialect.py --hlo-dialect stablehlo model_tf_opt.mlir ../${E2E}/model_stablehlo.mlir
         python3 ../${EMITC}/scripts/tf_to_tosa_dialect.py model_tf_opt.mlir model_tosa.mlir
         sed "s/tf._input_shapes =.*]//" model_tosa.mlir > ../${E2E}/model_tosa_noattr.mlir
         sed -i "s/, }/}/" ../${E2E}/model_tosa_noattr.mlir
@@ -211,18 +209,18 @@ jobs:
         path: ${{ env.E2E }}
         key: ${{ runner.os }}-e2e-${{ hashFiles('emitc/scripts/*.py', 'emitc/scripts/requirements.txt', 'emitc/scripts/e2e*.sh') }}-${{ env.E2E_VERSION }}
 
-    - name: Run MHLO e2e test
+    - name: Run StableHLO e2e test
       run: |
-        mkdir tmp-mhlo
-        cd tmp-mhlo
-        ../${EMITC}/build_release/bin/emitc-opt --canonicalize --inline --symbol-dce ../${E2E}/model_mhlo_noattr.mlir > model_canon.mlir
+        mkdir tmp-stablehlo
+        cd tmp-stablehlo
+        ../${EMITC}/build_release/bin/emitc-opt --canonicalize --inline --symbol-dce ../${E2E}/model_stablehlo.mlir > model_canon.mlir
         FUNCTION_NAME=$(grep -oe "@[^(]*" model_canon.mlir)
         FUNCTION_NAME="${FUNCTION_NAME:1}"
         sed "s/$FUNCTION_NAME/predict/g" model_canon.mlir > model_fix_name.mlir
         ../${EMITC}/build_release/bin/emitc-opt \
-          --insert-emitc-mhlo-include \
-          --convert-mhlo-region-ops-to-emitc \
-          --convert-mhlo-to-emitc \
+          --insert-emitc-stablehlo-include \
+          --convert-stablehlo-region-ops-to-emitc \
+          --convert-stablehlo-to-emitc \
           model_fix_name.mlir > model_emitc.mlir
         ../${EMITC}/build_release/bin/emitc-translate --mlir-to-cpp model_emitc.mlir > model_generated.h
         clang++ ../${E2E}/test.cpp -O3 -I `pwd`/../emitc/reference-implementation/include -I `pwd` -o test
@@ -270,3 +268,46 @@ jobs:
     #    cd ${EMITC}/test_tosa/
     #    clang++ test.cpp -O3 -I `pwd`/../reference-implementation/include -I `pwd` -o test
     #    ./test
+
+  build-release-no-hlo:
+    name: Build and test EmitC (Release, HLO disabled)
+    needs: build-llvm
+    runs-on: ubuntu-20.04
+    steps:
+    - name: Configure environment
+      run: echo "$GITHUB_WORKSPACE/${LLVM}/install/bin" >> $GITHUB_PATH
+
+    - name: Checkout EmitC
+      uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
+      with:
+        path: ${{ env.EMITC }}
+        submodules: 'true'
+
+    - name: Get LLVM hash
+      id: get-llvm-hash
+      run: echo "llvm_hash=$(cat ${{ env.EMITC }}/build_tools/llvm_version.txt)" >> $GITHUB_ENV
+      shell: bash
+
+    - name: Cache LLVM
+      id: cache-llvm
+      uses: actions/cache@58c146cc91c5b9e778e71775dfe9bf1442ad9a12 # v3.2.3
+      with:
+        path: ${{ env.LLVM }}
+        key: ${{ runner.os }}-llvm-20.04-install-${{ env.llvm_hash }}
+
+    - name: Build and test EmitC, HLO disabled
+      id: build-emitc-release
+      run: |
+        mkdir -p ${EMITC}/build_release_hlo_disabled
+        cd ${EMITC}/build_release_hlo_disabled
+        cmake .. \
+          -DCMAKE_BUILD_TYPE=Release \
+          -DLLVM_ENABLE_ASSERTIONS=OFF \
+          -DMLIR_DIR=$GITHUB_WORKSPACE/${LLVM}/install/lib/cmake/mlir/ \
+          -DLLVM_DIR=$GITHUB_WORKSPACE/${LLVM}/install/lib/cmake/llvm/ \
+          -DCMAKE_LINKER=lld \
+          -DCMAKE_C_COMPILER=clang \
+          -DCMAKE_CXX_COMPILER=clang++ \
+          -DLLVM_EXTERNAL_LIT=`pwd`/../../${LLVM}/build/bin/llvm-lit \
+          -DEMITC_ENABLE_HLO=OFF
+        cmake --build . --target check-emitc -- -j$(nproc)

@@ -1,3 +1,6 @@
+// Copyright Fraunhofer-Gesellschaft zur Förderung der angewandten
+//           Forschung e.V.
+//
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
@@ -16,7 +19,7 @@
 
 #include "gmock/gmock.h"
 
-#include "emitc/mhlo.h"
+#include "emitc/stablehlo.h"
 #include "emitc/types.h"
 
 namespace {
@@ -33,113 +36,114 @@ const float EPSILON = 5e-4;
 
 // Unary elementwise ops
 
-TEST(mhlo, abs) {
-  EXPECT_EQ(1, mhlo::abs(-1));
+TEST(stablehlo, abs) {
+  EXPECT_EQ(1, stablehlo::abs(-1));
 
   {
     Tensor0D<int> x{-1};
     Tensor0D<int> expected_result{1};
-    Tensor0D<int> result = mhlo::abs(x);
+    Tensor0D<int> result = stablehlo::abs(x);
 
     EXPECT_THAT(result, Pointwise(Eq(), expected_result));
   }
   {
     Tensor1D<float, 2> x{-1.0f, -2.0f};
     Tensor1D<float, 2> expected_result{1.0f, 2.0f};
-    Tensor1D<float, 2> result = mhlo::abs(x);
+    Tensor1D<float, 2> result = stablehlo::abs(x);
 
     EXPECT_THAT(result, Pointwise(Eq(), expected_result));
   }
   {
     Tensor2D<long, 2, 2> x{-2, -1, 0, 2};
     Tensor2D<long, 2, 2> expected_result{2, 1, 0, 2};
-    Tensor2D<long, 2, 2> result = mhlo::abs(x);
+    Tensor2D<long, 2, 2> result = stablehlo::abs(x);
 
     EXPECT_THAT(result, Pointwise(Eq(), expected_result));
   }
   {
     Tensor3D<int32_t, 2, 1, 2> x{-2, -1, 0, 2};
     Tensor3D<int32_t, 2, 1, 2> expected_result{2, 1, 0, 2};
-    Tensor3D<int32_t, 2, 1, 2> result = mhlo::abs(x);
+    Tensor3D<int32_t, 2, 1, 2> result = stablehlo::abs(x);
 
     EXPECT_THAT(result, Pointwise(Eq(), expected_result));
   }
   {
     Tensor4D<int, 2, 2, 1, 2> x{-2, -1, 0, 0, 3, -3, -2, 1};
     Tensor4D<int, 2, 2, 1, 2> expected_result{2, 1, 0, 0, 3, 3, 2, 1};
-    Tensor4D<int, 2, 2, 1, 2> result = mhlo::abs(x);
+    Tensor4D<int, 2, 2, 1, 2> result = stablehlo::abs(x);
 
     EXPECT_THAT(result, Pointwise(Eq(), expected_result));
   }
   // TODO:: Test complex to real.
 }
 
-TEST(mhlo, ceil) {
-  EXPECT_EQ(1.0, mhlo::ceil(0.7));
+TEST(stablehlo, ceil) {
+  EXPECT_EQ(1.0, stablehlo::ceil(0.7));
 
   {
     Tensor0D<float> x{0.7f};
     Tensor0D<float> expected_result{1.0f};
-    Tensor0D<float> result = mhlo::ceil(x);
+    Tensor0D<float> result = stablehlo::ceil(x);
 
     EXPECT_THAT(result, Pointwise(Eq(), expected_result));
   }
   {
     Tensor1D<float, 2> x{1.6f, 2.0f};
     Tensor1D<float, 2> expected_result{2.0f, 2.0f};
-    Tensor1D<float, 2> result = mhlo::ceil(x);
+    Tensor1D<float, 2> result = stablehlo::ceil(x);
 
     EXPECT_THAT(result, Pointwise(Eq(), expected_result));
   }
   {
     Tensor2D<double, 2, 2> x{2.1, 1.6, 0.0, 2.0};
     Tensor2D<double, 2, 2> expected_result{3.0, 2.0, 0.0, 2.0};
-    Tensor2D<double, 2, 2> result = mhlo::ceil(x);
+    Tensor2D<double, 2, 2> result = stablehlo::ceil(x);
 
     EXPECT_THAT(result, Pointwise(Eq(), expected_result));
   }
   {
     Tensor3D<double, 2, 1, 2> x{2.1, 1.6, 0.0, 2.0};
     Tensor3D<double, 2, 1, 2> expected_result{3.0, 2.0, 0.0, 2.0};
-    Tensor3D<double, 2, 1, 2> result = mhlo::ceil(x);
+    Tensor3D<double, 2, 1, 2> result = stablehlo::ceil(x);
 
     EXPECT_THAT(result, Pointwise(Eq(), expected_result));
   }
   {
     Tensor4D<double, 1, 2, 1, 2> x{2.1, 1.6, 0.0, 2.0};
     Tensor4D<double, 1, 2, 1, 2> expected_result{3.0, 2.0, 0.0, 2.0};
-    Tensor4D<double, 1, 2, 1, 2> result = mhlo::ceil(x);
+    Tensor4D<double, 1, 2, 1, 2> result = stablehlo::ceil(x);
 
     EXPECT_THAT(result, Pointwise(Eq(), expected_result));
   }
 }
 
-TEST(mhlo, convert) {
+TEST(stablehlo, convert) {
   {
     uint32_t x = 1;
     uint64_t expected_result = 1;
-    uint64_t result = mhlo::convert<uint64_t>(x);
+    uint64_t result = stablehlo::convert<uint64_t>(x);
 
     EXPECT_EQ(result, expected_result);
   }
   {
     Tensor0D<uint32_t> x{1};
     Tensor0D<size_t> expected_result{1};
-    Tensor0D<size_t> result = mhlo::convert<Tensor0D<size_t>>(x);
+    Tensor0D<size_t> result = stablehlo::convert<Tensor0D<size_t>>(x);
 
     EXPECT_THAT(result, Pointwise(Eq(), expected_result));
   }
   {
     Tensor1D<uint16_t, 2> x{1, 3};
     Tensor1D<size_t, 2> expected_result{1, 3};
-    Tensor1D<size_t, 2> result = mhlo::convert<Tensor1D<size_t, 2>>(x);
+    Tensor1D<size_t, 2> result = stablehlo::convert<Tensor1D<size_t, 2>>(x);
 
     EXPECT_THAT(result, Pointwise(Eq(), expected_result));
   }
   {
     Tensor2D<float, 2, 2> x{1.0f, 2.0f, 4.0f, 8.0f};
     Tensor2D<double, 2, 2> expected_result{1.0, 2.0, 4.0, 8.0};
-    Tensor2D<double, 2, 2> result = mhlo::convert<Tensor2D<double, 2, 2>>(x);
+    Tensor2D<double, 2, 2> result =
+        stablehlo::convert<Tensor2D<double, 2, 2>>(x);
 
     EXPECT_THAT(result, Pointwise(DoubleEq(), expected_result));
   }
@@ -147,7 +151,7 @@ TEST(mhlo, convert) {
     Tensor3D<float, 2, 1, 2> x{1.0f, 2.0f, 4.0f, 8.0f};
     Tensor3D<double, 2, 1, 2> expected_result{1.0, 2.0, 4.0, 8.0};
     Tensor3D<double, 2, 1, 2> result =
-        mhlo::convert<Tensor3D<double, 2, 1, 2>>(x);
+        stablehlo::convert<Tensor3D<double, 2, 1, 2>>(x);
 
     EXPECT_THAT(result, Pointwise(DoubleEq(), expected_result));
   }
@@ -156,33 +160,33 @@ TEST(mhlo, convert) {
     Tensor4D<float, 2, 1, 2, 2> expected_result{1.0f,  2.0f,  4.0f,  8.0f,
                                                 16.0f, 32.0f, 64.0f, 128.0f};
     Tensor4D<float, 2, 1, 2, 2> result =
-        mhlo::convert<Tensor4D<float, 2, 1, 2, 2>>(x);
+        stablehlo::convert<Tensor4D<float, 2, 1, 2, 2>>(x);
 
     EXPECT_THAT(result, Pointwise(FloatEq(), expected_result));
   }
 }
 
-TEST(mhlo, cos) {
-  EXPECT_NEAR(1.0f, mhlo::cos(0.0f), EPSILON);
+TEST(stablehlo, cos) {
+  EXPECT_NEAR(1.0f, stablehlo::cos(0.0f), EPSILON);
 
   {
     Tensor0D<float> x{M_PIf32};
     Tensor0D<float> expected_result{-1.0f};
-    Tensor0D<float> result = mhlo::cos(x);
+    Tensor0D<float> result = stablehlo::cos(x);
 
     EXPECT_THAT(result, Pointwise(FloatNear(EPSILON), expected_result));
   }
   {
     Tensor1D<float, 2> x{M_PI_2f32, -M_PI_2f32};
     Tensor1D<float, 2> expected_result{0.0f, 0.0f};
-    Tensor1D<float, 2> result = mhlo::cos(x);
+    Tensor1D<float, 2> result = stablehlo::cos(x);
 
     EXPECT_THAT(result, Pointwise(FloatNear(EPSILON), expected_result));
   }
   {
     Tensor2D<double, 2, 2> x{2 * M_PIf32, 0.0f, -0.5f, 0.5f};
     Tensor2D<double, 2, 2> expected_result{1.0f, 1.0f, 0.8775826f, 0.8775826f};
-    Tensor2D<double, 2, 2> result = mhlo::cos(x);
+    Tensor2D<double, 2, 2> result = stablehlo::cos(x);
 
     EXPECT_THAT(result, Pointwise(FloatNear(EPSILON), expected_result));
   }
@@ -190,7 +194,7 @@ TEST(mhlo, cos) {
     Tensor3D<double, 2, 2, 1> x{2 * M_PIf32, 0.0f, -0.5f, 0.5f};
     Tensor3D<double, 2, 2, 1> expected_result{1.0f, 1.0f, 0.8775826f,
                                               0.8775826f};
-    Tensor3D<double, 2, 2, 1> result = mhlo::cos(x);
+    Tensor3D<double, 2, 2, 1> result = stablehlo::cos(x);
 
     EXPECT_THAT(result, Pointwise(FloatNear(EPSILON), expected_result));
   }
@@ -198,26 +202,26 @@ TEST(mhlo, cos) {
     Tensor4D<double, 1, 2, 1, 2> x{0.5f, 0.0f, -0.5f, 2 * M_PIf32};
     Tensor4D<double, 1, 2, 1, 2> expected_result{0.8775826f, 1.0f, 0.8775826f,
                                                  1.0f};
-    Tensor4D<double, 1, 2, 1, 2> result = mhlo::cos(x);
+    Tensor4D<double, 1, 2, 1, 2> result = stablehlo::cos(x);
 
     EXPECT_THAT(result, Pointwise(FloatNear(EPSILON), expected_result));
   }
 }
 
-TEST(mhlo, exponential) {
-  EXPECT_NEAR(M_Ef32, mhlo::exponential(1.0f), EPSILON);
+TEST(stablehlo, exponential) {
+  EXPECT_NEAR(M_Ef32, stablehlo::exponential(1.0f), EPSILON);
 
   {
     Tensor0D<float> x{0.0f};
     Tensor0D<float> expected_result{1.0f};
-    Tensor0D<float> result = mhlo::exponential(x);
+    Tensor0D<float> result = stablehlo::exponential(x);
 
     EXPECT_THAT(result, Pointwise(FloatNear(EPSILON), expected_result));
   }
   {
     Tensor1D<float, 2> x{M_LN2f32, M_LN10f32};
     Tensor1D<float, 2> expected_result{2.0f, 10.0f};
-    Tensor1D<float, 2> result = mhlo::exponential(x);
+    Tensor1D<float, 2> result = stablehlo::exponential(x);
 
     EXPECT_THAT(result, Pointwise(FloatNear(EPSILON), expected_result));
   }
@@ -225,7 +229,7 @@ TEST(mhlo, exponential) {
     Tensor2D<double, 2, 2> x{1.0f, 2.0f, 3.0f, -1.0f};
     Tensor2D<double, 2, 2> expected_result{2.718281f, 7.389056f, 20.085536f,
                                            0.367879f};
-    Tensor2D<double, 2, 2> result = mhlo::exponential(x);
+    Tensor2D<double, 2, 2> result = stablehlo::exponential(x);
 
     EXPECT_THAT(result, Pointwise(FloatNear(EPSILON), expected_result));
   }
@@ -234,7 +238,7 @@ TEST(mhlo, exponential) {
     Tensor3D<double, 2, 2, 2> expected_result{
         1.0f,       2.718281f,   7.389056f,   20.085536f,
         54.598150f, 148.413159f, 403.428793f, 1096.633158f};
-    Tensor3D<double, 2, 2, 2> result = mhlo::exponential(x);
+    Tensor3D<double, 2, 2, 2> result = stablehlo::exponential(x);
 
     EXPECT_THAT(result, Pointwise(FloatNear(EPSILON), expected_result));
   }
@@ -242,26 +246,26 @@ TEST(mhlo, exponential) {
     Tensor4D<double, 1, 2, 1, 2> x{-1.0f, -2.0f, -3.0f, 4.0f};
     Tensor4D<double, 1, 2, 1, 2> expected_result{0.367879f, 0.135335f,
                                                  0.049787f, 54.598150f};
-    Tensor4D<double, 1, 2, 1, 2> result = mhlo::exponential(x);
+    Tensor4D<double, 1, 2, 1, 2> result = stablehlo::exponential(x);
 
     EXPECT_THAT(result, Pointwise(FloatNear(EPSILON), expected_result));
   }
 }
 
-TEST(mhlo, exponential_minus_one) {
-  EXPECT_NEAR(M_Ef32 - 1, mhlo::exponential_minus_one(1.0f), EPSILON);
+TEST(stablehlo, exponential_minus_one) {
+  EXPECT_NEAR(M_Ef32 - 1, stablehlo::exponential_minus_one(1.0f), EPSILON);
 
   {
     Tensor0D<float> x{0.0f};
     Tensor0D<float> expected_result{0.0f};
-    Tensor0D<float> result = mhlo::exponential_minus_one(x);
+    Tensor0D<float> result = stablehlo::exponential_minus_one(x);
 
     EXPECT_THAT(result, Pointwise(FloatNear(EPSILON), expected_result));
   }
   {
     Tensor1D<float, 2> x{M_LN2f32, M_LN10f32};
     Tensor1D<float, 2> expected_result{1.0f, 9.0f};
-    Tensor1D<float, 2> result = mhlo::exponential_minus_one(x);
+    Tensor1D<float, 2> result = stablehlo::exponential_minus_one(x);
 
     EXPECT_THAT(result, Pointwise(FloatNear(EPSILON), expected_result));
   }
@@ -269,7 +273,7 @@ TEST(mhlo, exponential_minus_one) {
     Tensor2D<double, 2, 2> x{-1.0f, 2.0f, 3.0f, 4.0f};
     Tensor2D<double, 2, 2> expected_result{-0.632120f, 6.389056f, 19.085536f,
                                            53.598150f};
-    Tensor2D<double, 2, 2> result = mhlo::exponential_minus_one(x);
+    Tensor2D<double, 2, 2> result = stablehlo::exponential_minus_one(x);
 
     EXPECT_THAT(result, Pointwise(FloatNear(EPSILON), expected_result));
   }
@@ -279,7 +283,7 @@ TEST(mhlo, exponential_minus_one) {
     Tensor3D<double, 2, 2, 2> expected_result{
         0.0f,       1.718281f,   6.389056f,   19.085536f,
         53.598150f, 147.413159f, 402.428793f, -0.9990881f};
-    Tensor3D<double, 2, 2, 2> result = mhlo::exponential_minus_one(x);
+    Tensor3D<double, 2, 2, 2> result = stablehlo::exponential_minus_one(x);
 
     EXPECT_THAT(result, Pointwise(FloatNear(EPSILON), expected_result));
   }
@@ -287,33 +291,33 @@ TEST(mhlo, exponential_minus_one) {
     Tensor4D<double, 1, 2, 1, 2> x{1.0f, 2.0f, 3.0f, -4.0f};
     Tensor4D<double, 1, 2, 1, 2> expected_result{1.718281f, 6.389056f,
                                                  19.085536f, -0.981684f};
-    Tensor4D<double, 1, 2, 1, 2> result = mhlo::exponential_minus_one(x);
+    Tensor4D<double, 1, 2, 1, 2> result = stablehlo::exponential_minus_one(x);
 
     EXPECT_THAT(result, Pointwise(FloatNear(EPSILON), expected_result));
   }
 }
 
-TEST(mhlo, floor) {
-  EXPECT_EQ(0.0, mhlo::floor(0.7));
+TEST(stablehlo, floor) {
+  EXPECT_EQ(0.0, stablehlo::floor(0.7));
 
   {
     Tensor0D<float> x{0.7f};
     Tensor0D<float> expected_result{0.0f};
-    Tensor0D<float> result = mhlo::floor(x);
+    Tensor0D<float> result = stablehlo::floor(x);
 
     EXPECT_THAT(result, Pointwise(Eq(), expected_result));
   }
   {
     Tensor1D<float, 2> x{1.6f, 2.0f};
     Tensor1D<float, 2> expected_result{1.0f, 2.0f};
-    Tensor1D<float, 2> result = mhlo::floor(x);
+    Tensor1D<float, 2> result = stablehlo::floor(x);
 
     EXPECT_THAT(result, Pointwise(Eq(), expected_result));
   }
   {
     Tensor2D<double, 2, 2> x{2.1, 1.6, 0.0, 2.0};
     Tensor2D<double, 2, 2> expected_result{2.0, 1.0, 0.0, 2.0};
-    Tensor2D<double, 2, 2> result = mhlo::floor(x);
+    Tensor2D<double, 2, 2> result = stablehlo::floor(x);
 
     EXPECT_THAT(result, Pointwise(Eq(), expected_result));
   }
@@ -321,7 +325,7 @@ TEST(mhlo, floor) {
     Tensor3D<double, 2, 2, 2> x{2.1, 1.6, 0.0, -2.0, 3.2, 5.1, 6.9, 3.14};
     Tensor3D<double, 2, 2, 2> expected_result{2.0, 1.0, 0.0, -2.0,
                                               3.0, 5.0, 6.0, 3.0};
-    Tensor3D<double, 2, 2, 2> result = mhlo::floor(x);
+    Tensor3D<double, 2, 2, 2> result = stablehlo::floor(x);
 
     EXPECT_THAT(result, Pointwise(Eq(), expected_result));
   }
@@ -329,66 +333,66 @@ TEST(mhlo, floor) {
     Tensor4D<double, 1, 2, 2, 2> x{2.1, 1.6, 0.0, 2.0, -3.2, 5.1, -6.9, 3.14};
     Tensor4D<double, 1, 2, 2, 2> expected_result{2.0,  1.0, 0.0,  2.0,
                                                  -4.0, 5.0, -7.0, 3.0};
-    Tensor4D<double, 1, 2, 2, 2> result = mhlo::floor(x);
+    Tensor4D<double, 1, 2, 2, 2> result = stablehlo::floor(x);
 
     EXPECT_THAT(result, Pointwise(Eq(), expected_result));
   }
 }
 
-TEST(mhlo, is_finite) {
-  EXPECT_EQ(true, mhlo::is_finite(0.0f));
+TEST(stablehlo, is_finite) {
+  EXPECT_EQ(true, stablehlo::is_finite(0.0f));
 
   {
     Tensor0D<float> x{M_PIf32};
     Tensor0D<bool> expected_result{true};
-    Tensor0D<bool> result = mhlo::is_finite(x);
+    Tensor0D<bool> result = stablehlo::is_finite(x);
 
     EXPECT_THAT(result, Pointwise(Eq(), expected_result));
   }
   {
     Tensor1D<float, 2> x{M_PI_2f32, INFINITY};
     Tensor1D<bool, 2> expected_result{true, false};
-    Tensor1D<bool, 2> result = mhlo::is_finite(x);
+    Tensor1D<bool, 2> result = stablehlo::is_finite(x);
 
     EXPECT_THAT(result, Pointwise(Eq(), expected_result));
   }
   {
     Tensor2D<float, 2, 2> x{INFINITY, -INFINITY, NAN, -0.0f};
     Tensor2D<bool, 2, 2> expected_result{false, false, false, true};
-    Tensor2D<bool, 2, 2> result = mhlo::is_finite(x);
+    Tensor2D<bool, 2, 2> result = stablehlo::is_finite(x);
 
     EXPECT_THAT(result, Pointwise(Eq(), expected_result));
   }
   {
     Tensor3D<float, 2, 2, 1> x{INFINITY, -INFINITY, NAN, -0.0f};
     Tensor3D<bool, 2, 2, 1> expected_result{false, false, false, true};
-    Tensor3D<bool, 2, 2, 1> result = mhlo::is_finite(x);
+    Tensor3D<bool, 2, 2, 1> result = stablehlo::is_finite(x);
 
     EXPECT_THAT(result, Pointwise(Eq(), expected_result));
   }
   {
     Tensor4D<float, 2, 2, 1, 1> x{INFINITY, -INFINITY, NAN, -0.0f};
     Tensor4D<bool, 2, 2, 1, 1> expected_result{false, false, false, true};
-    Tensor4D<bool, 2, 2, 1, 1> result = mhlo::is_finite(x);
+    Tensor4D<bool, 2, 2, 1, 1> result = stablehlo::is_finite(x);
 
     EXPECT_THAT(result, Pointwise(Eq(), expected_result));
   }
 }
 
-TEST(mhlo, log) {
-  EXPECT_NEAR(0.0f, mhlo::log(1.0f), EPSILON);
+TEST(stablehlo, log) {
+  EXPECT_NEAR(0.0f, stablehlo::log(1.0f), EPSILON);
 
   {
     Tensor0D<float> x{M_Ef32};
     Tensor0D<float> expected_result{1.0f};
-    Tensor0D<float> result = mhlo::log(x);
+    Tensor0D<float> result = stablehlo::log(x);
 
     EXPECT_THAT(result, Pointwise(FloatNear(EPSILON), expected_result));
   }
   {
     Tensor1D<float, 2> x{M_Ef32 * M_Ef32, M_Ef32 * M_Ef32 * M_Ef32};
     Tensor1D<float, 2> expected_result{2.0f, 3.0f};
-    Tensor1D<float, 2> result = mhlo::log(x);
+    Tensor1D<float, 2> result = stablehlo::log(x);
 
     EXPECT_THAT(result, Pointwise(FloatNear(EPSILON), expected_result));
   }
@@ -396,7 +400,7 @@ TEST(mhlo, log) {
     Tensor2D<float, 2, 2> x{1.0f, 2.0f, 3.0f, 4.0f};
     Tensor2D<float, 2, 2> expected_result{0.0f, 0.693147f, 1.098612f,
                                           1.386294f};
-    Tensor2D<float, 2, 2> result = mhlo::log(x);
+    Tensor2D<float, 2, 2> result = stablehlo::log(x);
 
     EXPECT_THAT(result, Pointwise(FloatNear(EPSILON), expected_result));
   }
@@ -405,7 +409,7 @@ TEST(mhlo, log) {
     Tensor3D<float, 2, 2, 2> expected_result{0.0f,      0.693147f, 1.098612f,
                                              1.386294f, 1.609437f, 1.791759f,
                                              1.945910f, 2.079441f};
-    Tensor3D<float, 2, 2, 2> result = mhlo::log(x);
+    Tensor3D<float, 2, 2, 2> result = stablehlo::log(x);
 
     EXPECT_THAT(result, Pointwise(FloatNear(EPSILON), expected_result));
   }
@@ -415,33 +419,33 @@ TEST(mhlo, log) {
     Tensor4D<float, 2, 2, 2, 1> expected_result{0.0f,      0.693147f, 1.098612f,
                                                 1.386294f, 1.609437f, 1.791759f,
                                                 1.945910f, 2.079441f};
-    Tensor4D<float, 2, 2, 2, 1> result = mhlo::log(x);
+    Tensor4D<float, 2, 2, 2, 1> result = stablehlo::log(x);
 
     EXPECT_THAT(result, Pointwise(FloatNear(EPSILON), expected_result));
   }
 }
 
-TEST(mhlo, log_plus_one) {
-  EXPECT_NEAR(0.693147f, mhlo::log_plus_one(1.0f), EPSILON);
+TEST(stablehlo, log_plus_one) {
+  EXPECT_NEAR(0.693147f, stablehlo::log_plus_one(1.0f), EPSILON);
 
   {
     Tensor0D<float> x{M_Ef32 - 1};
     Tensor0D<float> expected_result{1.0f};
-    Tensor0D<float> result = mhlo::log_plus_one(x);
+    Tensor0D<float> result = stablehlo::log_plus_one(x);
 
     EXPECT_THAT(result, Pointwise(FloatNear(EPSILON), expected_result));
   }
   {
     Tensor1D<float, 2> x{M_Ef32 * M_Ef32, M_Ef32 * M_Ef32 * M_Ef32};
     Tensor1D<float, 2> expected_result{2.126928f, 3.048587f};
-    Tensor1D<float, 2> result = mhlo::log_plus_one(x);
+    Tensor1D<float, 2> result = stablehlo::log_plus_one(x);
 
     EXPECT_THAT(result, Pointwise(FloatNear(EPSILON), expected_result));
   }
   {
     Tensor2D<double, 2, 2> x{0.0, 1.0, 2.0, 3.0};
     Tensor2D<double, 2, 2> expected_result{0.0, 0.693147, 1.098612, 1.386294};
-    Tensor2D<double, 2, 2> result = mhlo::log_plus_one(x);
+    Tensor2D<double, 2, 2> result = stablehlo::log_plus_one(x);
 
     EXPECT_THAT(result, Pointwise(DoubleNear(EPSILON), expected_result));
   }
@@ -449,7 +453,7 @@ TEST(mhlo, log_plus_one) {
     Tensor3D<double, 2, 2, 1> x{0.0, 1.0, 2.0, 3.0};
     Tensor3D<double, 2, 2, 1> expected_result{0.0, 0.693147, 1.098612,
                                               1.386294};
-    Tensor3D<double, 2, 2, 1> result = mhlo::log_plus_one(x);
+    Tensor3D<double, 2, 2, 1> result = stablehlo::log_plus_one(x);
 
     EXPECT_THAT(result, Pointwise(DoubleNear(EPSILON), expected_result));
   }
@@ -458,45 +462,45 @@ TEST(mhlo, log_plus_one) {
     Tensor4D<double, 2, 2, 1, 2> expected_result{0.0,      0.693147, 1.098612,
                                                  1.386294, 1.609437, 1.791759,
                                                  1.945910, 2.079441};
-    Tensor4D<double, 2, 2, 1, 2> result = mhlo::log_plus_one(x);
+    Tensor4D<double, 2, 2, 1, 2> result = stablehlo::log_plus_one(x);
 
     EXPECT_THAT(result, Pointwise(DoubleNear(EPSILON), expected_result));
   }
 }
 
-TEST(mhlo, negate) {
+TEST(stablehlo, negate) {
   {
     int x = -1;
     int expected_result = 1;
-    int result = mhlo::negate(x);
+    int result = stablehlo::negate(x);
 
     EXPECT_EQ(expected_result, result);
   }
   {
     Tensor0D<int> x{3};
     Tensor0D<int> expected_result{-3};
-    Tensor0D<int> result = mhlo::negate(x);
+    Tensor0D<int> result = stablehlo::negate(x);
 
     EXPECT_THAT(expected_result, Pointwise(Eq(), result));
   }
   {
     Tensor1D<float, 2> x{-1.3f, 2.4f};
     Tensor1D<float, 2> expected_result{1.3f, -2.4f};
-    Tensor1D<float, 2> result = mhlo::negate(x);
+    Tensor1D<float, 2> result = stablehlo::negate(x);
 
     EXPECT_THAT(expected_result, Pointwise(FloatNear(EPSILON), result));
   }
   {
     Tensor2D<long, 2, 2> x{3, 1, -4, 0};
     Tensor2D<long, 2, 2> expected_result{-3, -1, 4, 0};
-    Tensor2D<long, 2, 2> result = mhlo::negate(x);
+    Tensor2D<long, 2, 2> result = stablehlo::negate(x);
 
     EXPECT_THAT(expected_result, Pointwise(Eq(), result));
   }
   {
     Tensor3D<double, 2, 1, 1> x{3.1415, -2.7183};
     Tensor3D<double, 2, 1, 1> expected_result{-3.1415, 2.7183};
-    Tensor3D<double, 2, 1, 1> result = mhlo::negate(x);
+    Tensor3D<double, 2, 1, 1> result = stablehlo::negate(x);
 
     EXPECT_THAT(expected_result, Pointwise(FloatNear(EPSILON), result));
   }
@@ -505,114 +509,114 @@ TEST(mhlo, negate) {
                                     -9223372036854775807, 4};
     Tensor4D<int64_t, 1, 2, 1, 2> expected_result{-9223372036854775807, 4,
                                                   9223372036854775807, -4};
-    Tensor4D<int64_t, 1, 2, 1, 2> result = mhlo::negate(x);
+    Tensor4D<int64_t, 1, 2, 1, 2> result = stablehlo::negate(x);
 
     EXPECT_THAT(expected_result, Pointwise(Eq(), result));
   }
 }
 
-TEST(mhlo, round) {
-  EXPECT_EQ(1.0, mhlo::round(0.7));
-  EXPECT_EQ(0.0, mhlo::round(0.4));
+TEST(stablehlo, round) {
+  EXPECT_EQ(1.0, stablehlo::round(0.7));
+  EXPECT_EQ(0.0, stablehlo::round(0.4));
 
   {
     Tensor0D<float> x{0.7f};
     Tensor0D<float> expected_result{1.0f};
-    Tensor0D<float> result = mhlo::round(x);
+    Tensor0D<float> result = stablehlo::round(x);
 
     EXPECT_THAT(expected_result, Pointwise(Eq(), result));
   }
   {
     Tensor1D<float, 3> x{1.4f, -1.6f, 2.0f};
     Tensor1D<float, 3> expected_result{1.0f, -2.0f, 2.0f};
-    Tensor1D<float, 3> result = mhlo::round(x);
+    Tensor1D<float, 3> result = stablehlo::round(x);
 
     EXPECT_THAT(expected_result, Pointwise(Eq(), result));
   }
   {
     Tensor2D<double, 2, 2> x{-2.1, 1.6, 0.0, 2.0};
     Tensor2D<double, 2, 2> expected_result{-2.0, 2.0, 0.0, 2.0};
-    Tensor2D<double, 2, 2> result = mhlo::round(x);
+    Tensor2D<double, 2, 2> result = stablehlo::round(x);
 
     EXPECT_THAT(expected_result, Pointwise(Eq(), result));
   }
   {
     Tensor3D<float, 2, 1, 2> x{2.1f, 1.6f, 0.0f, 2.0f};
     Tensor3D<float, 2, 1, 2> expected_result{2.0f, 2.0f, 0.0f, 2.0f};
-    Tensor3D<float, 2, 1, 2> result = mhlo::round(x);
+    Tensor3D<float, 2, 1, 2> result = stablehlo::round(x);
 
     EXPECT_THAT(expected_result, Pointwise(Eq(), result));
   }
   {
     Tensor4D<double, 2, 2, 1, 1> x{2.1, -3.2, 0.0, 2.0};
     Tensor4D<double, 2, 2, 1, 1> expected_result{2.0, -3.0, 0.0, 2.0};
-    Tensor4D<double, 2, 2, 1, 1> result = mhlo::round(x);
+    Tensor4D<double, 2, 2, 1, 1> result = stablehlo::round(x);
 
     EXPECT_THAT(result, Pointwise(Eq(), expected_result));
   }
 }
 
-TEST(mhlo, sin) {
-  EXPECT_NEAR(0.0f, mhlo::sin(0.0f), EPSILON);
+TEST(stablehlo, sin) {
+  EXPECT_NEAR(0.0f, stablehlo::sin(0.0f), EPSILON);
 
   {
     Tensor0D<float> x{M_PIf32};
     Tensor0D<float> expected_result{0.0f};
-    Tensor0D<float> result = mhlo::sin(x);
+    Tensor0D<float> result = stablehlo::sin(x);
 
     EXPECT_THAT(result, Pointwise(FloatNear(EPSILON), expected_result));
   }
   {
     Tensor1D<float, 2> x{M_PI_2f32, -M_PI_2f32};
     Tensor1D<float, 2> expected_result{1.0f, -1.0f};
-    Tensor1D<float, 2> result = mhlo::sin(x);
+    Tensor1D<float, 2> result = stablehlo::sin(x);
 
     EXPECT_THAT(result, Pointwise(FloatNear(EPSILON), expected_result));
   }
   {
     Tensor2D<double, 2, 2> x{2 * M_PIf32, 0.0, -0.5, 0.5};
     Tensor2D<double, 2, 2> expected_result{0.0, 0.0, -0.479426, 0.479426};
-    Tensor2D<double, 2, 2> result = mhlo::sin(x);
+    Tensor2D<double, 2, 2> result = stablehlo::sin(x);
 
     EXPECT_THAT(result, Pointwise(DoubleNear(EPSILON), expected_result));
   }
   {
     Tensor3D<double, 1, 2, 2> x{2 * M_PIf32, 0.0, -0.5, 0.5};
     Tensor3D<double, 1, 2, 2> expected_result{0.0, 0.0, -0.479426, 0.479426};
-    Tensor3D<double, 1, 2, 2> result = mhlo::sin(x);
+    Tensor3D<double, 1, 2, 2> result = stablehlo::sin(x);
 
     EXPECT_THAT(result, Pointwise(DoubleNear(EPSILON), expected_result));
   }
   {
     Tensor4D<double, 2, 1, 2, 1> x{2 * M_PIf32, 0.0, -0.5, 0.5};
     Tensor4D<double, 2, 1, 2, 1> expected_result{0.0, 0.0, -0.479426, 0.479426};
-    Tensor4D<double, 2, 1, 2, 1> result = mhlo::sin(x);
+    Tensor4D<double, 2, 1, 2, 1> result = stablehlo::sin(x);
 
     EXPECT_THAT(result, Pointwise(DoubleNear(EPSILON), expected_result));
   }
 }
 
-TEST(mhlo, sqrt) {
-  EXPECT_NEAR(3.0f, mhlo::sqrt(9.0f), EPSILON);
+TEST(stablehlo, sqrt) {
+  EXPECT_NEAR(3.0f, stablehlo::sqrt(9.0f), EPSILON);
 
   {
     Tensor0D<float> x{4.0f};
     Tensor0D<float> expected_result{2.0f};
-    Tensor0D<float> result = mhlo::sqrt(x);
+    Tensor0D<float> result = stablehlo::sqrt(x);
 
     EXPECT_THAT(result, Pointwise(FloatNear(EPSILON), expected_result));
   }
   {
     Tensor1D<float, 2> x{0.0f, 81.0f};
     Tensor1D<float, 2> expected_result{0.0f, 9.0f};
-    Tensor1D<float, 2> result = mhlo::sqrt(x);
+    Tensor1D<float, 2> result = stablehlo::sqrt(x);
 
     EXPECT_THAT(result, Pointwise(FloatNear(EPSILON), expected_result));
   }
   {
     Tensor2D<double, 2, 2> x{2.0, 3.0, 10.0, 1.0};
     Tensor2D<double, 2, 2> expected_result{1.414213, 1.732050, 3.162277, 1.0};
-    Tensor2D<double, 2, 2> result = mhlo::sqrt(x);
+    Tensor2D<double, 2, 2> result = stablehlo::sqrt(x);
 
     EXPECT_THAT(result, Pointwise(DoubleNear(EPSILON), expected_result));
   }
@@ -620,7 +624,7 @@ TEST(mhlo, sqrt) {
     Tensor3D<double, 2, 1, 2> x{2.0, 3.0, 10.0, 1.0};
     Tensor3D<double, 2, 1, 2> expected_result{1.414213, 1.732050, 3.162277,
                                               1.0};
-    Tensor3D<double, 2, 1, 2> result = mhlo::sqrt(x);
+    Tensor3D<double, 2, 1, 2> result = stablehlo::sqrt(x);
 
     EXPECT_THAT(result, Pointwise(DoubleNear(EPSILON), expected_result));
   }
@@ -628,40 +632,40 @@ TEST(mhlo, sqrt) {
     Tensor4D<double, 2, 2, 1, 2> x{2.0, 3.0, 10.0, 1.0, 18.0, 9.0, 5.0, 25.0};
     Tensor4D<double, 2, 2, 1, 2> expected_result{
         1.414213, 1.732050, 3.162277, 1.0, 4.242640, 3.0, 2.236067, 5.0};
-    Tensor4D<double, 2, 2, 1, 2> result = mhlo::sqrt(x);
+    Tensor4D<double, 2, 2, 1, 2> result = stablehlo::sqrt(x);
 
     EXPECT_THAT(result, Pointwise(DoubleNear(EPSILON), expected_result));
   }
 }
 
-TEST(mhlo, tanh) {
-  EXPECT_NEAR(0.0f, mhlo::tanh(0.0f), EPSILON);
+TEST(stablehlo, tanh) {
+  EXPECT_NEAR(0.0f, stablehlo::tanh(0.0f), EPSILON);
 
   {
     Tensor0D<float> x{0.0f};
     Tensor0D<float> expected_result{0.0f};
-    Tensor0D<float> result = mhlo::tanh(x);
+    Tensor0D<float> result = stablehlo::tanh(x);
 
     EXPECT_THAT(result, Pointwise(FloatNear(EPSILON), expected_result));
   }
   {
     Tensor1D<float, 2> x{0.0f, 1.0f};
     Tensor1D<float, 2> expected_result{0.0f, 0.761594f};
-    Tensor1D<float, 2> result = mhlo::tanh(x);
+    Tensor1D<float, 2> result = stablehlo::tanh(x);
 
     EXPECT_THAT(result, Pointwise(FloatNear(EPSILON), expected_result));
   }
   {
     Tensor2D<double, 2, 2> x{0.0, 1.0, -1.0, 0.0};
     Tensor2D<double, 2, 2> expected_result{0.0, 0.761594, -0.761594, 0.0};
-    Tensor2D<double, 2, 2> result = mhlo::tanh(x);
+    Tensor2D<double, 2, 2> result = stablehlo::tanh(x);
 
     EXPECT_THAT(result, Pointwise(DoubleNear(EPSILON), expected_result));
   }
   {
     Tensor3D<float, 1, 2, 2> x{0.0f, 1.0f, -1.0f, 0.0f};
     Tensor3D<float, 1, 2, 2> expected_result{0.0f, 0.761594f, -0.761594f, 0.0f};
-    Tensor3D<float, 1, 2, 2> result = mhlo::tanh(x);
+    Tensor3D<float, 1, 2, 2> result = stablehlo::tanh(x);
 
     EXPECT_THAT(result, Pointwise(FloatNear(EPSILON), expected_result));
   }
@@ -669,7 +673,7 @@ TEST(mhlo, tanh) {
     Tensor4D<double, 3, 1, 1, 2> x{0.0, 1.0, -1.0, 0.0, M_PIf64, -M_2_PIf64};
     Tensor4D<double, 3, 1, 1, 2> expected_result{0.0, 0.761594, -0.761594,
                                                  0.0, 0.996272, -0.562593};
-    Tensor4D<double, 3, 1, 1, 2> result = mhlo::tanh(x);
+    Tensor4D<double, 3, 1, 1, 2> result = stablehlo::tanh(x);
 
     EXPECT_THAT(result, Pointwise(DoubleNear(EPSILON), expected_result));
   }
@@ -677,14 +681,14 @@ TEST(mhlo, tanh) {
 
 // Binary elementwise ops
 
-TEST(mhlo, add) {
-  EXPECT_EQ(2, mhlo::add(-1, 3));
+TEST(stablehlo, add) {
+  EXPECT_EQ(2, stablehlo::add(-1, 3));
 
   Tensor0D<int> s0{-3};
   Tensor0D<int> t0{8};
 
   auto lambda_0d = [&s0, &t0]() -> Tensor0D<int> {
-    return mhlo::add<Tensor0D<int>>(s0, t0);
+    return stablehlo::add<Tensor0D<int>>(s0, t0);
   };
 
   EXPECT_THAT(lambda_0d(), Pointwise(Eq(), {5}));
@@ -693,7 +697,7 @@ TEST(mhlo, add) {
   Tensor1D<float, 2> t1{0.2f, -3.7f};
 
   auto lambda_1d = [&s1, &t1]() -> Tensor1D<float, 2> {
-    return mhlo::add<Tensor1D<float, 2>>(s1, t1);
+    return stablehlo::add<Tensor1D<float, 2>>(s1, t1);
   };
 
   EXPECT_THAT(lambda_1d(), Pointwise(FloatEq(), {-1.1f, -1.3f}));
@@ -702,7 +706,7 @@ TEST(mhlo, add) {
   Tensor2D<long, 2, 2> t2{-2, 8, 6, -10};
 
   auto lambda_2d = [&s2, &t2]() -> Tensor2D<long, 2, 2> {
-    return mhlo::add<Tensor2D<long, 2, 2>>(s2, t2);
+    return stablehlo::add<Tensor2D<long, 2, 2>>(s2, t2);
   };
 
   EXPECT_THAT(lambda_2d(), Pointwise(Eq(), {1, 9, 10, -1}));
@@ -711,7 +715,7 @@ TEST(mhlo, add) {
   Tensor3D<int16_t, 2, 1, 2> t3{-2, 8, 6, -10};
 
   auto lambda_3d = [&s3, &t3]() -> Tensor3D<int16_t, 2, 1, 2> {
-    return mhlo::add<Tensor3D<int16_t, 2, 1, 2>>(s3, t3);
+    return stablehlo::add<Tensor3D<int16_t, 2, 1, 2>>(s3, t3);
   };
 
   EXPECT_THAT(lambda_3d(), Pointwise(Eq(), {1, 9, 10, -1}));
@@ -720,20 +724,20 @@ TEST(mhlo, add) {
   Tensor4D<int8_t, 2, 1, 2, 2> t4{-2, 8, 6, -10, -10, 11, 1, 1};
 
   auto lambda_4d = [&s4, &t4]() -> Tensor4D<int8_t, 2, 1, 2, 2> {
-    return mhlo::add<Tensor4D<int8_t, 2, 1, 2, 2>>(s4, t4);
+    return stablehlo::add<Tensor4D<int8_t, 2, 1, 2, 2>>(s4, t4);
   };
 
   EXPECT_THAT(lambda_4d(), Pointwise(Eq(), {1, 9, 10, -1, 0, 22, 1, 2}));
 }
 
-TEST(mhlo, atan2) {
-  EXPECT_NEAR(0.321751f, mhlo::atan2(1.0f, 3.0f), EPSILON);
+TEST(stablehlo, atan2) {
+  EXPECT_NEAR(0.321751f, stablehlo::atan2(1.0f, 3.0f), EPSILON);
 
   Tensor0D<float> s0{1.0f};
   Tensor0D<float> t0{3.0f};
 
   auto lambda_0d = [&s0, &t0]() -> Tensor0D<float> {
-    return mhlo::atan2<Tensor0D<float>>(s0, t0);
+    return stablehlo::atan2<Tensor0D<float>>(s0, t0);
   };
 
   EXPECT_THAT(lambda_0d(), Pointwise(FloatNear(EPSILON), {0.321751f}));
@@ -742,7 +746,7 @@ TEST(mhlo, atan2) {
   Tensor1D<float, 2> t1{3.0f, -0.5f};
 
   auto lambda_1d = [&s1, &t1]() -> Tensor1D<float, 2> {
-    return mhlo::atan2<Tensor1D<float, 2>>(s1, t1);
+    return stablehlo::atan2<Tensor1D<float, 2>>(s1, t1);
   };
 
   EXPECT_THAT(lambda_1d(),
@@ -752,7 +756,7 @@ TEST(mhlo, atan2) {
   Tensor2D<double, 2, 2> t2{3.0, -0.5, 0.5, 0.5};
 
   auto lambda_2d = [&s2, &t2]() -> Tensor2D<double, 2, 2> {
-    return mhlo::atan2<Tensor2D<double, 2, 2>>(s2, t2);
+    return stablehlo::atan2<Tensor2D<double, 2, 2>>(s2, t2);
   };
 
   EXPECT_THAT(lambda_2d(), Pointwise(FloatNear(EPSILON),
@@ -762,7 +766,7 @@ TEST(mhlo, atan2) {
   Tensor3D<double, 1, 2, 2> t3{3.0, -0.5, 0.5, 0.5};
 
   auto lambda_3d = [&s3, &t3]() -> Tensor3D<double, 1, 2, 2> {
-    return mhlo::atan2<Tensor3D<double, 1, 2, 2>>(s3, t3);
+    return stablehlo::atan2<Tensor3D<double, 1, 2, 2>>(s3, t3);
   };
 
   EXPECT_THAT(lambda_3d(), Pointwise(FloatNear(EPSILON),
@@ -772,7 +776,7 @@ TEST(mhlo, atan2) {
   Tensor4D<float, 1, 3, 1, 2> t4{3.0f, -0.5f, 0.5f, 0.5f, 0.0f, -M_PIf32};
 
   auto lambda_4d = [&s4, &t4]() -> Tensor4D<float, 1, 3, 1, 2> {
-    return mhlo::atan2<Tensor4D<float, 1, 3, 1, 2>>(s4, t4);
+    return stablehlo::atan2<Tensor4D<float, 1, 3, 1, 2>>(s4, t4);
   };
 
   EXPECT_THAT(lambda_4d(),
@@ -780,16 +784,16 @@ TEST(mhlo, atan2) {
                                              0.785398f, 1.570796f, M_PIf32}));
 }
 
-TEST(mhlo, div) {
-  EXPECT_EQ(-3, mhlo::div(-3, 1));
-  EXPECT_EQ(-6.75, mhlo::div(27.0, -4.0));
-  EXPECT_EQ(-6, mhlo::div<int>(27.0, -4.0));
+TEST(stablehlo, div) {
+  EXPECT_EQ(-3, stablehlo::div(-3, 1));
+  EXPECT_EQ(-6.75, stablehlo::div(27.0, -4.0));
+  EXPECT_EQ(-6, stablehlo::div<int>(27.0, -4.0));
 
   Tensor0D<int> s0{27};
   Tensor0D<int> t0{-4};
 
   auto lambda_0d = [&s0, &t0]() -> Tensor0D<int> {
-    return mhlo::div<Tensor0D<int>>(s0, t0);
+    return stablehlo::div<Tensor0D<int>>(s0, t0);
   };
 
   EXPECT_THAT(lambda_0d(), Pointwise(Eq(), {-6}));
@@ -798,7 +802,7 @@ TEST(mhlo, div) {
   Tensor1D<float, 2> t1{0.2f, -3.7f};
 
   auto lambda_1d = [&s1, &t1]() -> Tensor1D<float, 2> {
-    return mhlo::div<Tensor1D<float, 2>>(s1, t1);
+    return stablehlo::div<Tensor1D<float, 2>>(s1, t1);
   };
 
   EXPECT_THAT(lambda_1d(), Pointwise(FloatNear(EPSILON), {-6.5f, -0.6486f}));
@@ -807,7 +811,7 @@ TEST(mhlo, div) {
   Tensor2D<long, 2, 2> t2{-2, 2, 6, 7};
 
   auto lambda_2d = [&s2, &t2]() -> Tensor2D<long, 2, 2> {
-    return mhlo::div<Tensor2D<long, 2, 2>>(s2, t2);
+    return stablehlo::div<Tensor2D<long, 2, 2>>(s2, t2);
   };
 
   EXPECT_THAT(lambda_2d(), Pointwise(Eq(), {-1, 7, -5, -7}));
@@ -816,7 +820,7 @@ TEST(mhlo, div) {
   Tensor3D<int8_t, 2, 2, 1> t3{-2, 2, 6, 7};
 
   auto lambda_3d = [&s3, &t3]() -> Tensor3D<int8_t, 2, 2, 1> {
-    return mhlo::div<Tensor3D<int8_t, 2, 2, 1>>(s3, t3);
+    return stablehlo::div<Tensor3D<int8_t, 2, 2, 1>>(s3, t3);
   };
 
   EXPECT_THAT(lambda_3d(), Pointwise(Eq(), {-1, 7, -5, -7}));
@@ -825,20 +829,20 @@ TEST(mhlo, div) {
   Tensor4D<int16_t, 2, 1, 3, 1> t4{-2, 2, 6, 7, 8, -2};
 
   auto lambda_4d = [&s4, &t4]() -> Tensor4D<int16_t, 2, 1, 3, 1> {
-    return mhlo::div<Tensor4D<int16_t, 2, 1, 3, 1>>(s4, t4);
+    return stablehlo::div<Tensor4D<int16_t, 2, 1, 3, 1>>(s4, t4);
   };
 
   EXPECT_THAT(lambda_4d(), Pointwise(Eq(), {-1, 7, -5, -7, 2, 1}));
 }
 
-TEST(mhlo, max) {
-  EXPECT_EQ(3, mhlo::max(-1, 3));
+TEST(stablehlo, max) {
+  EXPECT_EQ(3, stablehlo::max(-1, 3));
 
   Tensor0D<int> s0{-3};
   Tensor0D<int> t0{8};
 
   auto lambda_0d = [&s0, &t0]() -> Tensor0D<int> {
-    return mhlo::max<Tensor0D<int>>(s0, t0);
+    return stablehlo::max<Tensor0D<int>>(s0, t0);
   };
 
   EXPECT_THAT(lambda_0d(), Pointwise(Eq(), {8}));
@@ -847,7 +851,7 @@ TEST(mhlo, max) {
   Tensor1D<float, 2> t1{0.2f, -3.7f};
 
   auto lambda_1d = [&s1, &t1]() -> Tensor1D<float, 2> {
-    return mhlo::max<Tensor1D<float, 2>>(s1, t1);
+    return stablehlo::max<Tensor1D<float, 2>>(s1, t1);
   };
 
   EXPECT_THAT(lambda_1d(), Pointwise(FloatEq(), {0.2f, 2.4f}));
@@ -856,20 +860,20 @@ TEST(mhlo, max) {
   Tensor2D<long, 2, 2> t2{-2, 8, 6, -10};
 
   auto lambda_2d = [&s2, &t2]() -> Tensor2D<long, 2, 2> {
-    return mhlo::max<Tensor2D<long, 2, 2>>(s2, t2);
+    return stablehlo::max<Tensor2D<long, 2, 2>>(s2, t2);
   };
 
   EXPECT_THAT(lambda_2d(), Pointwise(Eq(), {3, 8, 6, 9}));
 }
 
-TEST(mhlo, min) {
-  EXPECT_EQ(-1, mhlo::min(-1, 3));
+TEST(stablehlo, min) {
+  EXPECT_EQ(-1, stablehlo::min(-1, 3));
 
   Tensor0D<int> s0{-3};
   Tensor0D<int> t0{8};
 
   auto lambda_0d = [&s0, &t0]() -> Tensor0D<int> {
-    return mhlo::min<Tensor0D<int>>(s0, t0);
+    return stablehlo::min<Tensor0D<int>>(s0, t0);
   };
 
   EXPECT_THAT(lambda_0d(), Pointwise(Eq(), {-3}));
@@ -878,7 +882,7 @@ TEST(mhlo, min) {
   Tensor1D<float, 2> t1{0.2f, -3.7f};
 
   auto lambda_1d = [&s1, &t1]() -> Tensor1D<float, 2> {
-    return mhlo::min<Tensor1D<float, 2>>(s1, t1);
+    return stablehlo::min<Tensor1D<float, 2>>(s1, t1);
   };
 
   EXPECT_THAT(lambda_1d(), Pointwise(FloatEq(), {-1.3f, -3.7f}));
@@ -887,20 +891,20 @@ TEST(mhlo, min) {
   Tensor2D<long, 2, 2> t2{-2, 8, 6, -10};
 
   auto lambda_2d = [&s2, &t2]() -> Tensor2D<long, 2, 2> {
-    return mhlo::min<Tensor2D<long, 2, 2>>(s2, t2);
+    return stablehlo::min<Tensor2D<long, 2, 2>>(s2, t2);
   };
 
   EXPECT_THAT(lambda_2d(), Pointwise(Eq(), {-2, 1, 4, -10}));
 }
 
-TEST(mhlo, mul) {
-  EXPECT_EQ(-3, mhlo::mul(-1, 3));
+TEST(stablehlo, mul) {
+  EXPECT_EQ(-3, stablehlo::mul(-1, 3));
 
   Tensor0D<int> s0{-3};
   Tensor0D<int> t0{8};
 
   auto lambda_0d = [&s0, &t0]() -> Tensor0D<int> {
-    return mhlo::mul<Tensor0D<int>>(s0, t0);
+    return stablehlo::mul<Tensor0D<int>>(s0, t0);
   };
 
   EXPECT_THAT(lambda_0d(), Pointwise(Eq(), {-24}));
@@ -909,7 +913,7 @@ TEST(mhlo, mul) {
   Tensor1D<float, 2> t1{0.2f, -3.7f};
 
   auto lambda_1d = [&s1, &t1]() -> Tensor1D<float, 2> {
-    return mhlo::mul<Tensor1D<float, 2>>(s1, t1);
+    return stablehlo::mul<Tensor1D<float, 2>>(s1, t1);
   };
 
   EXPECT_THAT(lambda_1d(), Pointwise(FloatEq(), {-0.26f, -8.88f}));
@@ -918,20 +922,20 @@ TEST(mhlo, mul) {
   Tensor2D<long, 2, 2> t2{-2, 8, 6, -10};
 
   auto lambda_2d = [&s2, &t2]() -> Tensor2D<long, 2, 2> {
-    return mhlo::mul<Tensor2D<long, 2, 2>>(s2, t2);
+    return stablehlo::mul<Tensor2D<long, 2, 2>>(s2, t2);
   };
 
   EXPECT_THAT(lambda_2d(), Pointwise(Eq(), {-6, 8, 24, -90}));
 }
 
-TEST(mhlo, pow) {
-  EXPECT_EQ(9, mhlo::pow(3, 2));
+TEST(stablehlo, pow) {
+  EXPECT_EQ(9, stablehlo::pow(3, 2));
 
   Tensor0D<int> s0{2};
   Tensor0D<int> t0{4};
 
   auto lambda_0d = [&s0, &t0]() -> Tensor0D<int> {
-    return mhlo::pow<Tensor0D<int>>(s0, t0);
+    return stablehlo::pow<Tensor0D<int>>(s0, t0);
   };
 
   EXPECT_THAT(lambda_0d(), Pointwise(Eq(), {16}));
@@ -940,7 +944,7 @@ TEST(mhlo, pow) {
   Tensor1D<float, 2> t1{0.5f, -2.0f};
 
   auto lambda_1d = [&s1, &t1]() -> Tensor1D<float, 2> {
-    return mhlo::pow<Tensor1D<float, 2>>(s1, t1);
+    return stablehlo::pow<Tensor1D<float, 2>>(s1, t1);
   };
 
   EXPECT_THAT(lambda_1d(), Pointwise(FloatNear(EPSILON), {2.0f, 0.25f}));
@@ -949,20 +953,20 @@ TEST(mhlo, pow) {
   Tensor2D<long, 2, 2> t2{0, -1, 3, -2};
 
   auto lambda_2d = [&s2, &t2]() -> Tensor2D<long, 2, 2> {
-    return mhlo::pow<Tensor2D<long, 2, 2>>(s2, t2);
+    return stablehlo::pow<Tensor2D<long, 2, 2>>(s2, t2);
   };
 
   EXPECT_THAT(lambda_2d(), Pointwise(Eq(), {1, 1, 64, 0}));
 }
 
-TEST(mhlo, shift_left) {
-  EXPECT_EQ(16u, mhlo::shift_left(2u, 3u));
+TEST(stablehlo, shift_left) {
+  EXPECT_EQ(16u, stablehlo::shift_left(2u, 3u));
 
   Tensor0D<uint> s0{2};
   Tensor0D<uint> t0{8};
 
   auto lambda_0d = [&s0, &t0]() -> Tensor0D<uint> {
-    return mhlo::shift_left<Tensor0D<uint>>(s0, t0);
+    return stablehlo::shift_left<Tensor0D<uint>>(s0, t0);
   };
 
   EXPECT_THAT(lambda_0d(), Pointwise(Eq(), {512}));
@@ -971,7 +975,7 @@ TEST(mhlo, shift_left) {
   Tensor1D<uint8_t, 2> t1{2, 3};
 
   auto lambda_1d = [&s1, &t1]() -> Tensor1D<uint8_t, 2> {
-    return mhlo::shift_left<Tensor1D<uint8_t, 2>>(s1, t1);
+    return stablehlo::shift_left<Tensor1D<uint8_t, 2>>(s1, t1);
   };
 
   EXPECT_THAT(lambda_1d(), Pointwise(Eq(), {12, 0}));
@@ -980,20 +984,20 @@ TEST(mhlo, shift_left) {
   Tensor2D<uint64_t, 2, 2> t2{0, 1, 3, 4};
 
   auto lambda_2d = [&s2, &t2]() -> Tensor2D<uint64_t, 2, 2> {
-    return mhlo::shift_left<Tensor2D<uint64_t, 2, 2>>(s2, t2);
+    return stablehlo::shift_left<Tensor2D<uint64_t, 2, 2>>(s2, t2);
   };
 
   EXPECT_THAT(lambda_2d(), Pointwise(Eq(), {0, 4, 40, 160}));
 }
 
-TEST(mhlo, shift_right_logical) {
-  EXPECT_EQ(2u, mhlo::shift_right_logical(4u, 1u));
+TEST(stablehlo, shift_right_logical) {
+  EXPECT_EQ(2u, stablehlo::shift_right_logical(4u, 1u));
 
   Tensor0D<uint> s0{6};
   Tensor0D<uint> t0{2};
 
   auto lambda_0d = [&s0, &t0]() -> Tensor0D<uint> {
-    return mhlo::shift_right_logical<Tensor0D<uint>>(s0, t0);
+    return stablehlo::shift_right_logical<Tensor0D<uint>>(s0, t0);
   };
 
   EXPECT_THAT(lambda_0d(), Pointwise(Eq(), {1}));
@@ -1002,7 +1006,7 @@ TEST(mhlo, shift_right_logical) {
   Tensor1D<uint8_t, 2> t1{1, 3};
 
   auto lambda_1d = [&s1, &t1]() -> Tensor1D<uint8_t, 2> {
-    return mhlo::shift_right_logical<Tensor1D<uint8_t, 2>>(s1, t1);
+    return stablehlo::shift_right_logical<Tensor1D<uint8_t, 2>>(s1, t1);
   };
 
   EXPECT_THAT(lambda_1d(), Pointwise(Eq(), {8, 4}));
@@ -1011,20 +1015,20 @@ TEST(mhlo, shift_right_logical) {
   Tensor2D<uint64_t, 2, 2> t2{0, 1, 3, 2};
 
   auto lambda_2d = [&s2, &t2]() -> Tensor2D<uint64_t, 2, 2> {
-    return mhlo::shift_right_logical<Tensor2D<uint64_t, 2, 2>>(s2, t2);
+    return stablehlo::shift_right_logical<Tensor2D<uint64_t, 2, 2>>(s2, t2);
   };
 
   EXPECT_THAT(lambda_2d(), Pointwise(Eq(), {0, 1, 3, 2}));
 }
 
-TEST(mhlo, sub) {
-  EXPECT_EQ(-4, mhlo::sub(-1, 3));
+TEST(stablehlo, sub) {
+  EXPECT_EQ(-4, stablehlo::sub(-1, 3));
 
   Tensor0D<int> s0{-3};
   Tensor0D<int> t0{8};
 
   auto lambda_0d = [&s0, &t0]() -> Tensor0D<int> {
-    return mhlo::sub<Tensor0D<int>>(s0, t0);
+    return stablehlo::sub<Tensor0D<int>>(s0, t0);
   };
 
   EXPECT_THAT(lambda_0d(), Pointwise(Eq(), {-11}));
@@ -1033,7 +1037,7 @@ TEST(mhlo, sub) {
   Tensor1D<float, 2> t1{0.2f, -3.7f};
 
   auto lambda_1d = [&s1, &t1]() -> Tensor1D<float, 2> {
-    return mhlo::sub<Tensor1D<float, 2>>(s1, t1);
+    return stablehlo::sub<Tensor1D<float, 2>>(s1, t1);
   };
 
   EXPECT_THAT(lambda_1d(), Pointwise(FloatEq(), {-1.5f, 6.1f}));
@@ -1042,7 +1046,7 @@ TEST(mhlo, sub) {
   Tensor2D<long, 2, 2> t2{-2, 8, 6, -10};
 
   auto lambda_2d = [&s2, &t2]() -> Tensor2D<long, 2, 2> {
-    return mhlo::sub<Tensor2D<long, 2, 2>>(s2, t2);
+    return stablehlo::sub<Tensor2D<long, 2, 2>>(s2, t2);
   };
 
   EXPECT_THAT(lambda_2d(), Pointwise(Eq(), {5, -7, -2, 19}));
@@ -1050,14 +1054,14 @@ TEST(mhlo, sub) {
 
 // Binary logical elementwise ops
 
-TEST(mhlo, or) {
-  EXPECT_EQ(1, mhlo::logical_or(2, 3));
+TEST(stablehlo, or) {
+  EXPECT_EQ(1, stablehlo::logical_or(2, 3));
 
   Tensor0D<int> s0{2};
   Tensor0D<int> t0{8};
 
   auto lambda_0d = [&s0, &t0]() -> Tensor0D<int> {
-    return mhlo::logical_or<Tensor0D<int>>(s0, t0);
+    return stablehlo::logical_or<Tensor0D<int>>(s0, t0);
   };
 
   EXPECT_THAT(lambda_0d(), Pointwise(Eq(), {1}));
@@ -1066,7 +1070,7 @@ TEST(mhlo, or) {
   Tensor1D<int8_t, 2> t1{0, 0};
 
   auto lambda_1d = [&s1, &t1]() -> Tensor1D<int8_t, 2> {
-    return mhlo::logical_or<Tensor1D<int8_t, 2>>(s1, t1);
+    return stablehlo::logical_or<Tensor1D<int8_t, 2>>(s1, t1);
   };
 
   EXPECT_THAT(lambda_1d(), Pointwise(Eq(), {1, 0}));
@@ -1075,20 +1079,20 @@ TEST(mhlo, or) {
   Tensor2D<long, 2, 2> t2{0, 0, -2, -2};
 
   auto lambda_2d = [&s2, &t2]() -> Tensor2D<long, 2, 2> {
-    return mhlo::logical_or<Tensor2D<long, 2, 2>>(s2, t2);
+    return stablehlo::logical_or<Tensor2D<long, 2, 2>>(s2, t2);
   };
 
   EXPECT_THAT(lambda_2d(), Pointwise(Eq(), {0, 1, 1, 1}));
 }
 
-TEST(mhlo, xor) {
-  EXPECT_EQ(1, mhlo::logical_xor(2, 3));
+TEST(stablehlo, xor) {
+  EXPECT_EQ(1, stablehlo::logical_xor(2, 3));
 
   Tensor0D<int> s0{2};
   Tensor0D<int> t0{8};
 
   auto lambda_0d = [&s0, &t0]() -> Tensor0D<int> {
-    return mhlo::logical_xor<Tensor0D<int>>(s0, t0);
+    return stablehlo::logical_xor<Tensor0D<int>>(s0, t0);
   };
 
   EXPECT_THAT(lambda_0d(), Pointwise(Eq(), {1}));
@@ -1097,7 +1101,7 @@ TEST(mhlo, xor) {
   Tensor1D<int8_t, 2> t1{0, 0};
 
   auto lambda_1d = [&s1, &t1]() -> Tensor1D<int8_t, 2> {
-    return mhlo::logical_xor<Tensor1D<int8_t, 2>>(s1, t1);
+    return stablehlo::logical_xor<Tensor1D<int8_t, 2>>(s1, t1);
   };
 
   EXPECT_THAT(lambda_1d(), Pointwise(Eq(), {1, 0}));
@@ -1106,7 +1110,7 @@ TEST(mhlo, xor) {
   Tensor2D<long, 2, 2> t2{0, 0, -2, -2};
 
   auto lambda_2d = [&s2, &t2]() -> Tensor2D<long, 2, 2> {
-    return mhlo::logical_xor<Tensor2D<long, 2, 2>>(s2, t2);
+    return stablehlo::logical_xor<Tensor2D<long, 2, 2>>(s2, t2);
   };
 
   EXPECT_THAT(lambda_2d(), Pointwise(Eq(), {0, 1, 1, 1}));
@@ -1114,15 +1118,15 @@ TEST(mhlo, xor) {
 
 // Tuple ops
 
-TEST(mhlo, compare) {
-  auto lambda = []() { return mhlo::compare<int, std::less>(-1, 3); };
+TEST(stablehlo, compare) {
+  auto lambda = []() { return stablehlo::compare<int, std::less>(-1, 3); };
   EXPECT_EQ(true, lambda());
 
   Tensor0D<int> s0{-3};
   Tensor0D<int> t0{-8};
 
   auto lambda_0d = [&s0, &t0]() {
-    return mhlo::compare<Tensor0D<int>, std::less_equal>(s0, t0);
+    return stablehlo::compare<Tensor0D<int>, std::less_equal>(s0, t0);
   };
 
   EXPECT_THAT(lambda_0d(), Pointwise(Eq(), {false}));
@@ -1131,7 +1135,7 @@ TEST(mhlo, compare) {
   Tensor1D<float, 2> t1{0.2f, 2.4f};
 
   auto lambda_1d = [&s1, &t1]() {
-    return mhlo::compare<Tensor1D<float, 2>, std::equal_to>(s1, t1);
+    return stablehlo::compare<Tensor1D<float, 2>, std::equal_to>(s1, t1);
   };
 
   EXPECT_THAT(lambda_1d(), Pointwise(Eq(), {false, true}));
@@ -1140,7 +1144,7 @@ TEST(mhlo, compare) {
   Tensor2D<long, 2, 2> t2{-2, 1, 6, -10};
 
   auto lambda_2d = [&s2, &t2]() {
-    return mhlo::compare<Tensor2D<long, 2, 2>, std::greater_equal>(s2, t2);
+    return stablehlo::compare<Tensor2D<long, 2, 2>, std::greater_equal>(s2, t2);
   };
 
   EXPECT_THAT(lambda_2d(), Pointwise(Eq(), {true, true, false, true}));
@@ -1149,7 +1153,8 @@ TEST(mhlo, compare) {
   Tensor3D<long, 2, 1, 2> t3{-2, 1, 6, -10};
 
   auto lambda_3d = [&s3, &t3]() {
-    return mhlo::compare<Tensor3D<long, 2, 1, 2>, std::greater_equal>(s3, t3);
+    return stablehlo::compare<Tensor3D<long, 2, 1, 2>, std::greater_equal>(s3,
+                                                                           t3);
   };
 
   EXPECT_THAT(lambda_3d(), Pointwise(Eq(), {true, true, false, true}));
@@ -1158,7 +1163,8 @@ TEST(mhlo, compare) {
   Tensor4D<int, 2, 1, 2, 2> t4{-2, 1, 6, -10, 9, 13, 4, 10};
 
   auto lambda_4d = [&s4, &t4]() {
-    return mhlo::compare<Tensor4D<int, 2, 1, 2, 2>, std::greater_equal>(s4, t4);
+    return stablehlo::compare<Tensor4D<int, 2, 1, 2, 2>, std::greater_equal>(
+        s4, t4);
   };
 
   EXPECT_THAT(lambda_4d(), Pointwise(Eq(), {true, true, false, true, true,
@@ -1167,27 +1173,28 @@ TEST(mhlo, compare) {
 
 // Slice ops
 
-TEST(mhlo, slice) {
+TEST(stablehlo, slice) {
   // Slice Tensor1D
   Tensor1D<float, 5> s1{0.0f, 1.0f, 2.0f, 3.0f, 4.0f};
-  auto t1 =
-      mhlo::slice<Tensor1D<float, 2>, Tensor1D<float, 5>>(s1, {2}, {4}, {1});
+  auto t1 = stablehlo::slice<Tensor1D<float, 2>, Tensor1D<float, 5>>(s1, {2},
+                                                                     {4}, {1});
   EXPECT_THAT(t1, Pointwise(FloatEq(), {2.0f, 3.0f}));
 
-  auto t1_strided =
-      mhlo::slice<Tensor1D<float, 2>, Tensor1D<float, 5>>(s1, {1}, {4}, {2});
+  auto t1_strided = stablehlo::slice<Tensor1D<float, 2>, Tensor1D<float, 5>>(
+      s1, {1}, {4}, {2});
   EXPECT_THAT(t1_strided, Pointwise(FloatEq(), {1.0f, 3.0f}));
 
   // Slice Tensor2D
   Tensor2D<float, 4, 3> s2{0.0f, 1.0f, 2.0f, 3.0f, 4.0f,  5.0f,
                            6.0f, 7.0f, 8.0f, 9.0f, 10.0f, 11.0f};
-  auto t2 = mhlo::slice<Tensor2D<float, 2, 2>, Tensor2D<float, 4, 3>>(
+  auto t2 = stablehlo::slice<Tensor2D<float, 2, 2>, Tensor2D<float, 4, 3>>(
       s2, {2, 1}, {4, 3}, {1, 1});
 
   EXPECT_THAT(t2, Pointwise(FloatEq(), {7.0f, 8.0f, 10.0f, 11.0f}));
 
-  auto t2_strided = mhlo::slice<Tensor2D<float, 2, 2>, Tensor2D<float, 4, 3>>(
-      s2, {1, 0}, {4, 3}, {2, 2});
+  auto t2_strided =
+      stablehlo::slice<Tensor2D<float, 2, 2>, Tensor2D<float, 4, 3>>(
+          s2, {1, 0}, {4, 3}, {2, 2});
 
   EXPECT_THAT(t2_strided, Pointwise(FloatEq(), {3.0f, 5.0f, 9.0f, 11.0f}));
 
@@ -1196,18 +1203,19 @@ TEST(mhlo, slice) {
                               6.0f,  7.0f,  8.0f,  9.0f,  10.0f, 11.0f,
                               12.0f, 13.0f, 14.0f, 15.0f, 16.0f, 17.0f,
                               18.0f, 19.0f, 20.0f, 21.0f, 22.0f, 23.0f};
-  auto t3 = mhlo::slice<Tensor3D<float, 2, 2, 2>, Tensor3D<float, 4, 3, 2>>(
-      s3, {2, 1, 0}, {4, 3, 2}, {1, 1, 1});
+  auto t3 =
+      stablehlo::slice<Tensor3D<float, 2, 2, 2>, Tensor3D<float, 4, 3, 2>>(
+          s3, {2, 1, 0}, {4, 3, 2}, {1, 1, 1});
   EXPECT_THAT(t3, Pointwise(FloatEq(), {14.0f, 15.0f, 16.0f, 17.0f, 20.0f,
                                         21.0f, 22.0f, 23.0f}));
 
   auto t3_strided =
-      mhlo::slice<Tensor3D<float, 2, 2, 1>, Tensor3D<float, 4, 3, 2>>(
+      stablehlo::slice<Tensor3D<float, 2, 2, 1>, Tensor3D<float, 4, 3, 2>>(
           s3, {0, 1, 0}, {4, 3, 2}, {2, 1, 2});
   EXPECT_THAT(t3_strided, Pointwise(FloatEq(), {2.0f, 4.0f, 14.0f, 16.0f}));
 
   auto t3_strided2 =
-      mhlo::slice<Tensor3D<float, 1, 2, 1>, Tensor3D<float, 4, 3, 2>>(
+      stablehlo::slice<Tensor3D<float, 1, 2, 1>, Tensor3D<float, 4, 3, 2>>(
           s3, {0, 1, 0}, {2, 3, 2}, {2, 1, 2});
   EXPECT_THAT(t3_strided2, Pointwise(FloatEq(), {2.0f, 4.0f}));
 
@@ -1216,56 +1224,58 @@ TEST(mhlo, slice) {
                                  6.0f,  7.0f,  8.0f,  9.0f,  10.0f, 11.0f,
                                  12.0f, 13.0f, 14.0f, 15.0f, 16.0f, 17.0f,
                                  18.0f, 19.0f, 20.0f, 21.0f, 22.0f, 23.0f};
-  auto t4 =
-      mhlo::slice<Tensor4D<float, 2, 2, 1, 2>, Tensor4D<float, 4, 3, 1, 2>>(
-          s4, {2, 1, 0, 0}, {4, 3, 1, 2}, {1, 1, 1, 1});
+  auto t4 = stablehlo::slice<Tensor4D<float, 2, 2, 1, 2>,
+                             Tensor4D<float, 4, 3, 1, 2>>(
+      s4, {2, 1, 0, 0}, {4, 3, 1, 2}, {1, 1, 1, 1});
   EXPECT_THAT(t4, Pointwise(FloatEq(), {14.0f, 15.0f, 16.0f, 17.0f, 20.0f,
                                         21.0f, 22.0f, 23.0f}));
 
-  auto t4_2 =
-      mhlo::slice<Tensor4D<float, 4, 3, 1, 2>, Tensor4D<float, 4, 3, 1, 2>>(
-          s4, {0, 0, 0, 0}, {4, 3, 1, 2}, {1, 1, 1, 1});
+  auto t4_2 = stablehlo::slice<Tensor4D<float, 4, 3, 1, 2>,
+                               Tensor4D<float, 4, 3, 1, 2>>(
+      s4, {0, 0, 0, 0}, {4, 3, 1, 2}, {1, 1, 1, 1});
   EXPECT_THAT(t4_2, Pointwise(FloatEq(), s4));
 
-  auto t4_strided =
-      mhlo::slice<Tensor4D<float, 3, 2, 1, 1>, Tensor4D<float, 4, 3, 1, 2>>(
-          s4, {1, 0, 0, 0}, {4, 3, 1, 2}, {1, 2, 1, 2});
+  auto t4_strided = stablehlo::slice<Tensor4D<float, 3, 2, 1, 1>,
+                                     Tensor4D<float, 4, 3, 1, 2>>(
+      s4, {1, 0, 0, 0}, {4, 3, 1, 2}, {1, 2, 1, 2});
   EXPECT_THAT(t4_strided,
               Pointwise(FloatEq(), {6.0f, 10.0f, 12.0f, 16.0f, 18.0f, 22.0f}));
 
-  auto t4_strided_2 =
-      mhlo::slice<Tensor4D<float, 2, 1, 1, 1>, Tensor4D<float, 4, 3, 1, 2>>(
-          s4, {0, 2, 0, 0}, {4, 3, 1, 1}, {2, 1, 1, 1});
+  auto t4_strided_2 = stablehlo::slice<Tensor4D<float, 2, 1, 1, 1>,
+                                       Tensor4D<float, 4, 3, 1, 2>>(
+      s4, {0, 2, 0, 0}, {4, 3, 1, 1}, {2, 1, 1, 1});
   EXPECT_THAT(t4_strided_2, Pointwise(FloatEq(), {4.0f, 16.0f}));
 }
 
-TEST(mhlo, dynamic_slice) {
+TEST(stablehlo, dynamic_slice) {
   Tensor1D<float, 5> s1{0.0f, 1.0f, 2.0f, 3.0f, 4.0f};
-  auto t1 =
-      mhlo::dynamic_slice<Tensor1D<float, 2>, Tensor1D<float, 5>>(s1, {2}, {2});
+  auto t1 = stablehlo::dynamic_slice<Tensor1D<float, 2>, Tensor1D<float, 5>>(
+      s1, {2}, {2});
   EXPECT_THAT(t1, Pointwise(FloatEq(), {2.0f, 3.0f}));
 
   Tensor2D<float, 4, 3> s2{0.0f, 1.0f, 2.0f, 3.0f, 4.0f,  5.0f,
                            6.0f, 7.0f, 8.0f, 9.0f, 10.0f, 11.0f};
-  auto t2 = mhlo::dynamic_slice<Tensor2D<float, 2, 2>, Tensor2D<float, 4, 3>>(
-      s2, {2}, {1}, {2, 2});
+  auto t2 =
+      stablehlo::dynamic_slice<Tensor2D<float, 2, 2>, Tensor2D<float, 4, 3>>(
+          s2, {2}, {1}, {2, 2});
 
   EXPECT_THAT(t2, Pointwise(FloatEq(), {7.0f, 8.0f, 10.0f, 11.0f}));
 }
 
-TEST(mhlo, dynamic_update_slice) {
+TEST(stablehlo, dynamic_update_slice) {
   Tensor1D<float, 5> s1{0.0f, 1.0f, 2.0f, 3.0f, 4.0f};
   Tensor1D<float, 2> u1{5.0f, 6.0f};
-  auto t1 = mhlo::dynamic_update_slice<Tensor1D<float, 2>, Tensor1D<float, 5>>(
-      s1, u1, {2});
+  auto t1 =
+      stablehlo::dynamic_update_slice<Tensor1D<float, 2>, Tensor1D<float, 5>>(
+          s1, u1, {2});
   EXPECT_THAT(t1, Pointwise(FloatEq(), {0.0f, 1.0f, 5.0f, 6.0f, 4.0f}));
 
   Tensor2D<float, 4, 3> s2{0.0f, 1.0f, 2.0f, 3.0f, 4.0f,  5.0f,
                            6.0f, 7.0f, 8.0f, 9.0f, 10.0f, 11.0f};
   Tensor2D<float, 3, 2> u2{12.0f, 13.0f, 14.0f, 15.0f, 16.0f, 17.0f};
   auto t2 =
-      mhlo::dynamic_update_slice<Tensor2D<float, 3, 2>, Tensor2D<float, 4, 3>>(
-          s2, u2, {1}, {1});
+      stablehlo::dynamic_update_slice<Tensor2D<float, 3, 2>,
+                                      Tensor2D<float, 4, 3>>(s2, u2, {1}, {1});
 
   EXPECT_THAT(t2,
               Pointwise(FloatEq(), {0.0f, 1.0f, 2.0f, 3.0f, 12.0f, 13.0f, 6.0f,
@@ -1274,73 +1284,73 @@ TEST(mhlo, dynamic_update_slice) {
 
 // Other ops
 
-TEST(mhlo, batch_norm_inference) {
+TEST(stablehlo, batch_norm_inference) {
   Tensor<float, 4, 2> input{0.0f, 1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f};
   Tensor<float, 4, 2> expected_result{-3.0f, 2.0f,  1.0f, 6.0f,
                                       5.0f,  10.0f, 9.0f, 14.0f};
   Tensor<float, 4, 2> result =
-      mhlo::batch_norm_inference<Tensor<float, 4, 2>, Tensor<float, 2>>(
+      stablehlo::batch_norm_inference<Tensor<float, 4, 2>, Tensor<float, 2>>(
           input, {1.0f, 2.0f}, {1.0f, 2.0f}, {2.0f, 1.0f}, {0.249f, 0.999f},
           0.001f, 1);
 
   EXPECT_THAT(result, Pointwise(FloatNear(EPSILON), expected_result));
 }
 
-TEST(mhlo, bitcast_convert) {
+TEST(stablehlo, bitcast_convert) {
   uint8_t a = 128;
   int8_t b = -128;
-  EXPECT_EQ(b, mhlo::bitcast_convert<int8_t>(a));
+  EXPECT_EQ(b, stablehlo::bitcast_convert<int8_t>(a));
 
   Tensor0D<int16_t> t0{-1};
   auto lambda_0d = [&t0]() {
-    return mhlo::bitcast_convert<Tensor0D<uint16_t>>(t0);
+    return stablehlo::bitcast_convert<Tensor0D<uint16_t>>(t0);
   };
   EXPECT_THAT(lambda_0d(), Pointwise(Eq(), {65535}));
 
   Tensor1D<uint16_t, 2> t1{1, 2};
   auto lambda_1d = [&t1]() {
-    return mhlo::bitcast_convert<Tensor1D<int16_t, 2>>(t1);
+    return stablehlo::bitcast_convert<Tensor1D<int16_t, 2>>(t1);
   };
 
   EXPECT_THAT(lambda_1d(), Pointwise(Eq(), {1, 2}));
 
   Tensor2D<int8_t, 2, 2> t2{0, -4, 3, -12};
   auto lambda_2d = [&t2]() {
-    return mhlo::bitcast_convert<Tensor2D<uint8_t, 2, 2>>(t2);
+    return stablehlo::bitcast_convert<Tensor2D<uint8_t, 2, 2>>(t2);
   };
 
   EXPECT_THAT(lambda_2d(), Pointwise(DoubleEq(), {0, 252, 3, 244}));
 
   Tensor3D<int8_t, 2, 1, 2> t3{0, -4, 3, -12};
   auto lambda_3d = [&t3]() {
-    return mhlo::bitcast_convert<Tensor3D<uint8_t, 2, 1, 2>>(t3);
+    return stablehlo::bitcast_convert<Tensor3D<uint8_t, 2, 1, 2>>(t3);
   };
 
   EXPECT_THAT(lambda_3d(), Pointwise(DoubleEq(), {0, 252, 3, 244}));
 
   Tensor4D<int8_t, 2, 1, 2, 2> t4{0, -4, 3, -12, -11, 0, 2, -4};
   auto lambda_4d = [&t4]() {
-    return mhlo::bitcast_convert<Tensor4D<uint8_t, 2, 1, 2, 2>>(t4);
+    return stablehlo::bitcast_convert<Tensor4D<uint8_t, 2, 1, 2, 2>>(t4);
   };
 
   EXPECT_THAT(lambda_4d(),
               Pointwise(DoubleEq(), {0, 252, 3, 244, 245, 0, 2, 252}));
 }
 
-TEST(mhlo, broadcast_in_dim) {
+TEST(stablehlo, broadcast_in_dim) {
   Tensor0D<int> t0{1};
   Tensor1D<int64_t, 0> b0;
 
   { // 0D -> 1D
     using Dest = Tensor1D<int, 4>;
     Dest expected_result{1, 1, 1, 1};
-    Dest result = mhlo::broadcast_in_dim<Dest>(t0, b0);
+    Dest result = stablehlo::broadcast_in_dim<Dest>(t0, b0);
     EXPECT_THAT(result, Pointwise(Eq(), expected_result));
   }
   { // 0D -> 2D
     using Dest = Tensor2D<int, 2, 3>;
     Dest expected_result{1, 1, 1, 1, 1, 1};
-    Dest result = mhlo::broadcast_in_dim<Dest>(t0, b0);
+    Dest result = stablehlo::broadcast_in_dim<Dest>(t0, b0);
     EXPECT_THAT(result, Pointwise(Eq(), expected_result));
   }
 
@@ -1348,13 +1358,13 @@ TEST(mhlo, broadcast_in_dim) {
   { // 1D -> 2D
     using Dest = Tensor<int, 3, 2>;
     Dest expected_result{1, 2, 1, 2, 1, 2};
-    Dest result = mhlo::broadcast_in_dim<Dest>(t1, {1});
+    Dest result = stablehlo::broadcast_in_dim<Dest>(t1, {1});
     EXPECT_THAT(result, Pointwise(Eq(), expected_result));
   }
   { // 1D -> 2D
     using Dest = Tensor<int, 2, 3>;
     Dest expected_result{1, 1, 1, 2, 2, 2};
-    Dest result = mhlo::broadcast_in_dim<Dest>(t1, {0});
+    Dest result = stablehlo::broadcast_in_dim<Dest>(t1, {0});
     EXPECT_THAT(result, Pointwise(Eq(), expected_result));
   }
 
@@ -1362,7 +1372,7 @@ TEST(mhlo, broadcast_in_dim) {
   { // 2D transpose
     using Dest = Tensor<int, 3, 2>;
     Dest expected_result{1, 4, 2, 5, 3, 6};
-    Dest result = mhlo::broadcast_in_dim<Dest>(t2, {1, 0});
+    Dest result = stablehlo::broadcast_in_dim<Dest>(t2, {1, 0});
     EXPECT_THAT(result, Pointwise(Eq(), expected_result));
   }
 
@@ -1370,14 +1380,14 @@ TEST(mhlo, broadcast_in_dim) {
   { // 2D -> 3D
     using Dest = Tensor3D<float, 1, 2, 3>;
     Tensor1D<int64_t, 2> broadcast_dim{1, 2};
-    Dest result = mhlo::broadcast_in_dim<Dest>(t3, broadcast_dim);
+    Dest result = stablehlo::broadcast_in_dim<Dest>(t3, broadcast_dim);
     Dest expected_result{1.1, 1.2, 1.3, 1.1, 1.2, 1.3};
     EXPECT_THAT(result, Pointwise(Eq(), expected_result));
   }
   { // 2D -> 3D + transpose
     using Dest = Tensor3D<float, 1, 3, 2>;
     Tensor1D<int64_t, 2> broadcast_dim{2, 1};
-    Dest result = mhlo::broadcast_in_dim<Dest>(t3, broadcast_dim);
+    Dest result = stablehlo::broadcast_in_dim<Dest>(t3, broadcast_dim);
     Dest expected_result{1.1, 1.1, 1.2, 1.2, 1.3, 1.3};
     EXPECT_THAT(result, Pointwise(Eq(), expected_result));
   }
@@ -1385,7 +1395,7 @@ TEST(mhlo, broadcast_in_dim) {
   { // 2D -> 4D
     using Dest = Tensor4D<float, 1, 2, 2, 3>;
     Tensor1D<int64_t, 2> broadcast_dim{2, 3};
-    Dest result = mhlo::broadcast_in_dim<Dest>(t3, broadcast_dim);
+    Dest result = stablehlo::broadcast_in_dim<Dest>(t3, broadcast_dim);
     Dest expected_result{1.1, 1.2, 1.3, 1.1, 1.2, 1.3,
                          1.1, 1.2, 1.3, 1.1, 1.2, 1.3};
     EXPECT_THAT(result, Pointwise(Eq(), expected_result));
@@ -1398,7 +1408,7 @@ TEST(mhlo, broadcast_in_dim) {
 
     Tensor1D<int64_t, 3> broadcast_dim{1, 2, 3};
 
-    Dest result = mhlo::broadcast_in_dim<Dest>(t4, broadcast_dim);
+    Dest result = stablehlo::broadcast_in_dim<Dest>(t4, broadcast_dim);
     Dest expected_result{1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 2.1, 2.2,
                          2.3, 2.4, 2.5, 2.6, 1.1, 1.2, 1.3, 1.4,
                          1.5, 1.6, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6};
@@ -1406,12 +1416,12 @@ TEST(mhlo, broadcast_in_dim) {
   }
 }
 
-TEST(mhlo, clamp) {
+TEST(stablehlo, clamp) {
   Tensor<float, 2, 1> operand{-1.0f, 1.0f};
   Tensor<float, 2, 1> min{0.0f, 0.0f};
   Tensor<float, 2, 1> max{3.0f, 0.0f};
   Tensor<float, 2, 1> expected_result{0.0, 0.0f};
-  Tensor<float, 2, 1> result = mhlo::clamp(min, operand, max);
+  Tensor<float, 2, 1> result = stablehlo::clamp(min, operand, max);
 
   EXPECT_THAT(result, Pointwise(FloatEq(), expected_result));
 
@@ -1420,32 +1430,33 @@ TEST(mhlo, clamp) {
   Tensor<int32_t> min_b{2};
   Tensor<int32_t> max_b{5};
   Tensor<int32_t, 4, 2, 1> expected_result_b{2, 2, 2, 3, 4, 5, 5, 5};
-  Tensor<int32_t, 4, 2, 1> result_b = mhlo::clamp(min_b, operand_b, max_b);
+  Tensor<int32_t, 4, 2, 1> result_b = stablehlo::clamp(min_b, operand_b, max_b);
 
   EXPECT_THAT(result_b, Pointwise(Eq(), expected_result_b));
 }
 
-TEST(mhlo, concatenate) {
+TEST(stablehlo, concatenate) {
   Tensor1D<int, 1> t1{1};
   Tensor1D<int, 2> t2{2, 3};
   Tensor1D<int, 3> t3{4, 5, 6};
 
   auto lambda_1d_1 = [&t1]() -> Tensor1D<int, 1> {
-    return mhlo::concatenate<0, Tensor1D<int, 1>, Tensor1D<int, 1>>(t1);
+    return stablehlo::concatenate<0, Tensor1D<int, 1>, Tensor1D<int, 1>>(t1);
   };
 
   EXPECT_THAT(lambda_1d_1(), Pointwise(Eq(), {1}));
 
   auto lambda_1d_2 = [&t1, &t2]() -> Tensor1D<int, 3> {
-    return mhlo::concatenate<0, Tensor1D<int, 3>, Tensor1D<int, 1>,
-                             Tensor1D<int, 2>>(t1, t2);
+    return stablehlo::concatenate<0, Tensor1D<int, 3>, Tensor1D<int, 1>,
+                                  Tensor1D<int, 2>>(t1, t2);
   };
 
   EXPECT_THAT(lambda_1d_2(), Pointwise(Eq(), {1, 2, 3}));
 
   auto lambda_1d_3 = [&t1, &t2, &t3]() -> Tensor1D<int, 6> {
-    return mhlo::concatenate<0, Tensor1D<int, 6>, Tensor1D<int, 1>,
-                             Tensor1D<int, 2>, Tensor1D<int, 3>>(t1, t2, t3);
+    return stablehlo::concatenate<0, Tensor1D<int, 6>, Tensor1D<int, 1>,
+                                  Tensor1D<int, 2>, Tensor1D<int, 3>>(t1, t2,
+                                                                      t3);
   };
 
   EXPECT_THAT(lambda_1d_3(), Pointwise(Eq(), {1, 2, 3, 4, 5, 6}));
@@ -1455,26 +1466,29 @@ TEST(mhlo, concatenate) {
   Tensor2D<float, 3, 2> t6{7.0f, 8.0f, 9.0f, 10.0f, 11.0f, 12.0f};
 
   auto lambda_2d_2_row = [&t4, &t5]() -> Tensor2D<float, 3, 2> {
-    return mhlo::concatenate<0, Tensor2D<float, 3, 2>, Tensor2D<float, 1, 2>,
-                             Tensor2D<float, 2, 2>>(t4, t5);
+    return stablehlo::concatenate<0, Tensor2D<float, 3, 2>,
+                                  Tensor2D<float, 1, 2>, Tensor2D<float, 2, 2>>(
+        t4, t5);
   };
 
   EXPECT_THAT(lambda_2d_2_row(),
               Pointwise(FloatEq(), {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f}));
 
   auto lambda_2d_2_col = [&t4, &t5]() -> Tensor2D<float, 2, 3> {
-    Tensor2D<float, 2, 1> t4_reshape = mhlo::reshape<Tensor2D<float, 2, 1>>(t4);
-    return mhlo::concatenate<1, Tensor2D<float, 2, 3>, Tensor2D<float, 2, 1>,
-                             Tensor2D<float, 2, 2>>(t4_reshape, t5);
+    Tensor2D<float, 2, 1> t4_reshape =
+        stablehlo::reshape<Tensor2D<float, 2, 1>>(t4);
+    return stablehlo::concatenate<1, Tensor2D<float, 2, 3>,
+                                  Tensor2D<float, 2, 1>, Tensor2D<float, 2, 2>>(
+        t4_reshape, t5);
   };
 
   EXPECT_THAT(lambda_2d_2_col(),
               Pointwise(FloatEq(), {1.0f, 3.0f, 4.0f, 2.0f, 5.0f, 6.0f}));
 
   auto lambda_2d_3_row = [&t4, &t5, &t6]() -> Tensor2D<float, 6, 2> {
-    return mhlo::concatenate<0, Tensor2D<float, 6, 2>, Tensor2D<float, 1, 2>,
-                             Tensor2D<float, 2, 2>, Tensor2D<float, 3, 2>>(
-        t4, t5, t6);
+    return stablehlo::concatenate<0, Tensor2D<float, 6, 2>,
+                                  Tensor2D<float, 1, 2>, Tensor2D<float, 2, 2>,
+                                  Tensor2D<float, 3, 2>>(t4, t5, t6);
   };
 
   EXPECT_THAT(lambda_2d_3_row(),
@@ -1482,11 +1496,14 @@ TEST(mhlo, concatenate) {
                                     8.0f, 9.0f, 10.0f, 11.0f, 12.0f}));
 
   auto lambda_2d_3_col = [&t4, &t5, &t6]() -> Tensor2D<float, 2, 6> {
-    Tensor2D<float, 2, 1> t4_reshape = mhlo::reshape<Tensor2D<float, 2, 1>>(t4);
-    Tensor2D<float, 2, 3> t6_reshape = mhlo::reshape<Tensor2D<float, 2, 3>>(t6);
-    return mhlo::concatenate<1, Tensor2D<float, 2, 6>, Tensor2D<float, 2, 1>,
-                             Tensor2D<float, 2, 2>, Tensor2D<float, 2, 3>>(
-        t4_reshape, t5, t6_reshape);
+    Tensor2D<float, 2, 1> t4_reshape =
+        stablehlo::reshape<Tensor2D<float, 2, 1>>(t4);
+    Tensor2D<float, 2, 3> t6_reshape =
+        stablehlo::reshape<Tensor2D<float, 2, 3>>(t6);
+    return stablehlo::concatenate<1, Tensor2D<float, 2, 6>,
+                                  Tensor2D<float, 2, 1>, Tensor2D<float, 2, 2>,
+                                  Tensor2D<float, 2, 3>>(t4_reshape, t5,
+                                                         t6_reshape);
   };
 
   EXPECT_THAT(lambda_2d_3_col(),
@@ -1499,9 +1516,9 @@ TEST(mhlo, concatenate) {
   Tensor3D<float, 2, 2, 1> t9{9.0f, 10.0f, 11.0f, 12.0f};
 
   auto lambda_3d_422 = [&t7, &t8]() -> Tensor3D<float, 4, 2, 2> {
-    return mhlo::concatenate<0, Tensor3D<float, 4, 2, 2>,
-                             Tensor3D<float, 2, 2, 2>,
-                             Tensor3D<float, 2, 2, 2>>(t7, t8);
+    return stablehlo::concatenate<0, Tensor3D<float, 4, 2, 2>,
+                                  Tensor3D<float, 2, 2, 2>,
+                                  Tensor3D<float, 2, 2, 2>>(t7, t8);
   };
 
   EXPECT_THAT(lambda_3d_422(),
@@ -1510,9 +1527,9 @@ TEST(mhlo, concatenate) {
                          10.0f, 11.0f, 12.0f, 13.0f, 14.0f, 15.0f, 16.0f}));
 
   auto lambda_3d_242 = [&t7, &t8]() -> Tensor3D<float, 2, 4, 2> {
-    return mhlo::concatenate<1, Tensor3D<float, 2, 4, 2>,
-                             Tensor3D<float, 2, 2, 2>,
-                             Tensor3D<float, 2, 2, 2>>(t7, t8);
+    return stablehlo::concatenate<1, Tensor3D<float, 2, 4, 2>,
+                                  Tensor3D<float, 2, 2, 2>,
+                                  Tensor3D<float, 2, 2, 2>>(t7, t8);
   };
 
   EXPECT_THAT(lambda_3d_242(),
@@ -1521,9 +1538,9 @@ TEST(mhlo, concatenate) {
                          5.0f, 6.0f, 7.0f, 8.0f, 13.0f, 14.0f, 15.0f, 16.0f}));
 
   auto lambda_3d_223 = [&t7, &t9]() -> Tensor3D<float, 2, 2, 3> {
-    return mhlo::concatenate<2, Tensor3D<float, 2, 2, 3>,
-                             Tensor3D<float, 2, 2, 2>,
-                             Tensor3D<float, 2, 2, 1>>(t7, t9);
+    return stablehlo::concatenate<2, Tensor3D<float, 2, 2, 3>,
+                                  Tensor3D<float, 2, 2, 2>,
+                                  Tensor3D<float, 2, 2, 1>>(t7, t9);
   };
 
   EXPECT_THAT(lambda_3d_223(),
@@ -1540,9 +1557,9 @@ TEST(mhlo, concatenate) {
                                   37.0f, 38.0f, 39.0f, 40.0f};
 
   auto lambda_4d_4222 = [&t10, &t11]() -> Tensor4D<float, 4, 2, 2, 2> {
-    return mhlo::concatenate<0, Tensor4D<float, 4, 2, 2, 2>,
-                             Tensor4D<float, 2, 2, 2, 2>,
-                             Tensor4D<float, 2, 2, 2, 2>>(t10, t11);
+    return stablehlo::concatenate<0, Tensor4D<float, 4, 2, 2, 2>,
+                                  Tensor4D<float, 2, 2, 2, 2>,
+                                  Tensor4D<float, 2, 2, 2, 2>>(t10, t11);
   };
 
   EXPECT_THAT(
@@ -1554,9 +1571,9 @@ TEST(mhlo, concatenate) {
                  25.0f, 26.0f, 27.0f, 28.0f, 29.0f, 30.0f, 31.0f, 32.0f}));
 
   auto lambda_4d_2422 = [&t10, &t11]() -> Tensor4D<float, 2, 4, 2, 2> {
-    return mhlo::concatenate<1, Tensor4D<float, 2, 4, 2, 2>,
-                             Tensor4D<float, 2, 2, 2, 2>,
-                             Tensor4D<float, 2, 2, 2, 2>>(t10, t11);
+    return stablehlo::concatenate<1, Tensor4D<float, 2, 4, 2, 2>,
+                                  Tensor4D<float, 2, 2, 2, 2>,
+                                  Tensor4D<float, 2, 2, 2, 2>>(t10, t11);
   };
 
   EXPECT_THAT(
@@ -1568,9 +1585,9 @@ TEST(mhlo, concatenate) {
                  25.0f, 26.0f, 27.0f, 28.0f, 29.0f, 30.0f, 31.0f, 32.0f}));
 
   auto lambda_4d_2242 = [&t10, &t11]() -> Tensor4D<float, 2, 2, 4, 2> {
-    return mhlo::concatenate<2, Tensor4D<float, 2, 2, 4, 2>,
-                             Tensor4D<float, 2, 2, 2, 2>,
-                             Tensor4D<float, 2, 2, 2, 2>>(t10, t11);
+    return stablehlo::concatenate<2, Tensor4D<float, 2, 2, 4, 2>,
+                                  Tensor4D<float, 2, 2, 2, 2>,
+                                  Tensor4D<float, 2, 2, 2, 2>>(t10, t11);
   };
 
   EXPECT_THAT(
@@ -1582,9 +1599,9 @@ TEST(mhlo, concatenate) {
                  13.0f, 14.0f, 15.0f, 16.0f, 29.0f, 30.0f, 31.0f, 32.0f}));
 
   auto lambda_4d_2224 = [&t10, &t11]() -> Tensor4D<float, 2, 2, 2, 4> {
-    return mhlo::concatenate<3, Tensor4D<float, 2, 2, 2, 4>,
-                             Tensor4D<float, 2, 2, 2, 2>,
-                             Tensor4D<float, 2, 2, 2, 2>>(t10, t11);
+    return stablehlo::concatenate<3, Tensor4D<float, 2, 2, 2, 4>,
+                                  Tensor4D<float, 2, 2, 2, 2>,
+                                  Tensor4D<float, 2, 2, 2, 2>>(t10, t11);
   };
 
   EXPECT_THAT(
@@ -1596,9 +1613,9 @@ TEST(mhlo, concatenate) {
                  13.0f, 14.0f, 29.0f, 30.0f, 15.0f, 16.0f, 31.0f, 32.0f}));
 
   auto lambda_4d_2232 = [&t10, &t12]() -> Tensor4D<float, 2, 2, 3, 2> {
-    return mhlo::concatenate<2, Tensor4D<float, 2, 2, 3, 2>,
-                             Tensor4D<float, 2, 2, 2, 2>,
-                             Tensor4D<float, 2, 2, 1, 2>>(t10, t12);
+    return stablehlo::concatenate<2, Tensor4D<float, 2, 2, 3, 2>,
+                                  Tensor4D<float, 2, 2, 2, 2>,
+                                  Tensor4D<float, 2, 2, 1, 2>>(t10, t12);
   };
 
   EXPECT_THAT(lambda_4d_2232(),
@@ -1608,7 +1625,7 @@ TEST(mhlo, concatenate) {
                                     13.0f, 14.0f, 15.0f, 16.0f, 39.0f, 40.0f}));
 }
 
-TEST(mhlo, convolution) {
+TEST(stablehlo, convolution) {
   int64_t batch_group_count = 1;
   int64_t input_batch_dimension = 0;
   int64_t input_feature_dimension = 3;
@@ -1638,14 +1655,15 @@ TEST(mhlo, convolution) {
 
     Tensor2D<int64_t, 2, 2> padding{1, 1, 0, 1}; // {pt, pb, pl, pr}
     Tensor1D<int64_t, 2> window_strides{1, 1};
-    ResultType result = mhlo::convolution<ResultType, InputType, WeightType>(
-        input, weights, batch_group_count, input_batch_dimension,
-        input_feature_dimension, input_spatial_dimensions,
-        kernel_input_feature_dimension, kernel_output_feature_dimension,
-        kernel_spatial_dimensions, output_batch_dimension,
-        output_feature_dimension, output_spatial_dimensions,
-        feature_group_count, padding, lhs_dilation, rhs_dilation,
-        window_strides);
+    ResultType result =
+        stablehlo::convolution<ResultType, InputType, WeightType>(
+            input, weights, batch_group_count, input_batch_dimension,
+            input_feature_dimension, input_spatial_dimensions,
+            kernel_input_feature_dimension, kernel_output_feature_dimension,
+            kernel_spatial_dimensions, output_batch_dimension,
+            output_feature_dimension, output_spatial_dimensions,
+            feature_group_count, padding, lhs_dilation, rhs_dilation,
+            window_strides);
 
     EXPECT_THAT(result, Pointwise(FloatNear(EPSILON), expected_result));
   }
@@ -1667,20 +1685,21 @@ TEST(mhlo, convolution) {
 
     Tensor2D<int64_t, 2, 2> padding{0, 0, 0, 0}; // {pt, pb, pl, pr}
     Tensor1D<int64_t, 2> window_strides{2, 2};
-    ResultType result = mhlo::convolution<ResultType, InputType, WeightType>(
-        input, weights, batch_group_count, input_batch_dimension,
-        input_feature_dimension, input_spatial_dimensions,
-        kernel_input_feature_dimension, kernel_output_feature_dimension,
-        kernel_spatial_dimensions, output_batch_dimension,
-        output_feature_dimension, output_spatial_dimensions,
-        feature_group_count, padding, lhs_dilation, rhs_dilation,
-        window_strides);
+    ResultType result =
+        stablehlo::convolution<ResultType, InputType, WeightType>(
+            input, weights, batch_group_count, input_batch_dimension,
+            input_feature_dimension, input_spatial_dimensions,
+            kernel_input_feature_dimension, kernel_output_feature_dimension,
+            kernel_spatial_dimensions, output_batch_dimension,
+            output_feature_dimension, output_spatial_dimensions,
+            feature_group_count, padding, lhs_dilation, rhs_dilation,
+            window_strides);
 
     EXPECT_THAT(result, Pointwise(FloatNear(EPSILON), expected_result));
   }
 }
 
-TEST(mhlo, convolution_depthwise) {
+TEST(stablehlo, convolution_depthwise) {
   using InputType = Tensor4D<float, 1, 4, 5, 2>;
   using WeightType = Tensor4D<float, 2, 2, 1, 2>;
   using ResultType = Tensor4D<float, 1, 3, 4, 2>;
@@ -1708,7 +1727,7 @@ TEST(mhlo, convolution_depthwise) {
   Tensor1D<int64_t, 2> lhs_dilation{1, 1};
   Tensor1D<int64_t, 2> window_strides{1, 1};
 
-  ResultType result = mhlo::convolution<ResultType, InputType, WeightType>(
+  ResultType result = stablehlo::convolution<ResultType, InputType, WeightType>(
       input, weights, batch_group_count, input_batch_dimension,
       input_feature_dimension, input_spatial_dimensions,
       kernel_input_feature_dimension, kernel_output_feature_dimension,
@@ -1719,90 +1738,90 @@ TEST(mhlo, convolution_depthwise) {
   EXPECT_THAT(result, Pointwise(FloatNear(EPSILON), expected_result));
 }
 
-TEST(mhlo, DISABLED_convolution_grouped) {
+TEST(stablehlo, DISABLED_convolution_grouped) {
   // TODO implement test
 }
 
-TEST(mhlo, DISABLED_convolution_dilated) {
+TEST(stablehlo, DISABLED_convolution_dilated) {
   // TODO implement test
 }
 
-TEST(mhlo, dot) {
+TEST(stablehlo, dot) {
   Tensor2D<int, 2, 2> a2{1, 0, 0, 1};
   Tensor2D<int, 2, 2> b2{4, 1, 2, 2};
 
   auto lambda_2d = [&a2, &b2]() -> Tensor2D<int, 2, 2> {
-    return mhlo::dot<Tensor2D<int, 2, 2>>(a2, b2);
+    return stablehlo::dot<Tensor2D<int, 2, 2>>(a2, b2);
   };
 
   EXPECT_THAT(lambda_2d(), Pointwise(Eq(), {4, 1, 2, 2}));
 }
 
-TEST(mhlo, reshape) {
+TEST(stablehlo, reshape) {
   Tensor0D<int> s0{-3};
-  auto t0 = mhlo::reshape<Tensor1D<int, 1>>(s0);
-  auto t0_1 = mhlo::reshape<Tensor2D<int, 1, 1>>(s0);
+  auto t0 = stablehlo::reshape<Tensor1D<int, 1>>(s0);
+  auto t0_1 = stablehlo::reshape<Tensor2D<int, 1, 1>>(s0);
   EXPECT_THAT(t0, Pointwise(Eq(), {-3}));
   EXPECT_THAT(t0_1, Pointwise(Eq(), {-3}));
 
   Tensor1D<float, 2> s1{-1.3f, 2.4f};
-  auto t1 = mhlo::reshape<Tensor2D<float, 1, 2>>(s1);
+  auto t1 = stablehlo::reshape<Tensor2D<float, 1, 2>>(s1);
 
   EXPECT_THAT(t1, Pointwise(FloatEq(), {-1.3f, 2.4f}));
 
   Tensor2D<long, 2, 2> s2{3, 1, 4, 9};
-  auto t2 = mhlo::reshape<Tensor1D<long, 4>>(s2);
+  auto t2 = stablehlo::reshape<Tensor1D<long, 4>>(s2);
 
   EXPECT_THAT(t2, Pointwise(Eq(), {3, 1, 4, 9}));
 }
 
-TEST(mhlo, pad) {
+TEST(stablehlo, pad) {
   Tensor<int32_t, 2, 3> operand{1, 2, 3, 4, 5, 6};
   Tensor<int32_t> value{0};
 
   Tensor<int32_t, 3, 6> expected_result0{0, 1, 2, 3, 0, 0, 0, 4, 5,
                                          6, 0, 0, 0, 0, 0, 0, 0, 0};
-  Tensor<int32_t, 3, 6> result0 =
-      mhlo::pad<Tensor<int32_t, 3, 6>>(operand, value, {0, 1}, {1, 2}, {0, 0});
+  Tensor<int32_t, 3, 6> result0 = stablehlo::pad<Tensor<int32_t, 3, 6>>(
+      operand, value, {0, 1}, {1, 2}, {0, 0});
 
   EXPECT_THAT(result0, Pointwise(Eq(), expected_result0));
 
   Tensor<int32_t, 3, 5> expected_result1{1, 0, 2, 0, 3, 0, 0, 0,
                                          0, 0, 4, 0, 5, 0, 6};
-  Tensor<int32_t, 3, 5> result1 =
-      mhlo::pad<Tensor<int32_t, 3, 5>>(operand, value, {0, 0}, {0, 0}, {1, 1});
+  Tensor<int32_t, 3, 5> result1 = stablehlo::pad<Tensor<int32_t, 3, 5>>(
+      operand, value, {0, 0}, {0, 0}, {1, 1});
 
   EXPECT_THAT(result1, Pointwise(Eq(), expected_result1));
 
   Tensor<int32_t, 4, 8> expected_result2{0, 1, 0, 2, 0, 3, 0, 0, 0, 0, 0,
                                          0, 0, 0, 0, 0, 0, 4, 0, 5, 0, 6,
                                          0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-  Tensor<int32_t, 4, 8> result2 =
-      mhlo::pad<Tensor<int32_t, 4, 8>>(operand, value, {0, 1}, {1, 2}, {1, 1});
+  Tensor<int32_t, 4, 8> result2 = stablehlo::pad<Tensor<int32_t, 4, 8>>(
+      operand, value, {0, 1}, {1, 2}, {1, 1});
 
   EXPECT_THAT(result2, Pointwise(Eq(), expected_result2));
 }
 
 Tensor<int32_t> reduce_computation(Tensor<int32_t> a, Tensor<int32_t> b) {
-  Tensor<int32_t> v0 = mhlo::add(a, b);
+  Tensor<int32_t> v0 = stablehlo::add(a, b);
   return v0;
 }
 
 std::tuple<Tensor<int32_t>, Tensor<int32_t>>
 reduce_computation_tuple(Tensor<int32_t> reduction_a, Tensor<int32_t> next_a,
                          Tensor<int32_t> reduction_b, Tensor<int32_t> next_b) {
-  Tensor<int32_t> v0 = mhlo::add(reduction_a, next_a);
-  Tensor<int32_t> v1 = mhlo::min(reduction_b, next_b);
+  Tensor<int32_t> v0 = stablehlo::add(reduction_a, next_a);
+  Tensor<int32_t> v1 = stablehlo::min(reduction_b, next_b);
   return std::make_tuple(v0, v1);
 }
 
-TEST(mhlo, reduce) {
+TEST(stablehlo, reduce) {
   {
     Tensor<int32_t, 2, 3> x{1, 2, 3, 4, 5, 6};
     Tensor<int32_t> initValue{0};
 
     Tensor<int32_t, 3> expected_result{5, 7, 9};
-    Tensor<int32_t, 3> result = mhlo::reduce<Tensor<int32_t, 3>, 1>(
+    Tensor<int32_t, 3> result = stablehlo::reduce<Tensor<int32_t, 3>, 1>(
         x, initValue, {0}, reduce_computation);
 
     EXPECT_THAT(result, Pointwise(Eq(), expected_result));
@@ -1813,7 +1832,7 @@ TEST(mhlo, reduce) {
     Tensor<int32_t> initValue{0};
 
     Tensor<int32_t, 2> expected_result{6, 15};
-    Tensor<int32_t, 2> result = mhlo::reduce<Tensor<int32_t, 2>, 1>(
+    Tensor<int32_t, 2> result = stablehlo::reduce<Tensor<int32_t, 2>, 1>(
         x, initValue, {1}, reduce_computation);
 
     EXPECT_THAT(result, Pointwise(Eq(), expected_result));
@@ -1824,7 +1843,7 @@ TEST(mhlo, reduce) {
     Tensor<int32_t> initValue{0};
 
     Tensor<int32_t> expected_result{21};
-    Tensor<int32_t> result = mhlo::reduce<Tensor<int32_t>, 2>(
+    Tensor<int32_t> result = stablehlo::reduce<Tensor<int32_t>, 2>(
         x, initValue, {0, 1}, reduce_computation);
 
     EXPECT_THAT(result, Pointwise(Eq(), expected_result));
@@ -1836,7 +1855,7 @@ TEST(mhlo, reduce) {
     Tensor<int32_t> initValue{0};
 
     Tensor<int32_t, 2, 3> expected_result{4, 8, 12, 16, 20, 24};
-    Tensor<int32_t, 2, 3> result = mhlo::reduce<Tensor<int32_t, 2, 3>, 1>(
+    Tensor<int32_t, 2, 3> result = stablehlo::reduce<Tensor<int32_t, 2, 3>, 1>(
         x, initValue, {0}, reduce_computation);
 
     EXPECT_THAT(result, Pointwise(Eq(), expected_result));
@@ -1848,7 +1867,7 @@ TEST(mhlo, reduce) {
     Tensor<int32_t> initValue{0};
 
     Tensor<int32_t, 4, 3> expected_result{5, 7, 9, 5, 7, 9, 5, 7, 9, 5, 7, 9};
-    Tensor<int32_t, 4, 3> result = mhlo::reduce<Tensor<int32_t, 4, 3>, 1>(
+    Tensor<int32_t, 4, 3> result = stablehlo::reduce<Tensor<int32_t, 4, 3>, 1>(
         x, initValue, {1}, reduce_computation);
 
     EXPECT_THAT(result, Pointwise(Eq(), expected_result));
@@ -1860,7 +1879,7 @@ TEST(mhlo, reduce) {
     Tensor<int32_t> initValue{0};
 
     Tensor<int32_t, 4, 2> expected_result{6, 15, 6, 15, 6, 15, 6, 15};
-    Tensor<int32_t, 4, 2> result = mhlo::reduce<Tensor<int32_t, 4, 2>, 1>(
+    Tensor<int32_t, 4, 2> result = stablehlo::reduce<Tensor<int32_t, 4, 2>, 1>(
         x, initValue, {2}, reduce_computation);
 
     EXPECT_THAT(result, Pointwise(Eq(), expected_result));
@@ -1872,7 +1891,7 @@ TEST(mhlo, reduce) {
     Tensor<int32_t> initValue{0};
 
     Tensor<int32_t, 3> expected_result{20, 28, 36};
-    Tensor<int32_t, 3> result = mhlo::reduce<Tensor<int32_t, 3>, 2>(
+    Tensor<int32_t, 3> result = stablehlo::reduce<Tensor<int32_t, 3>, 2>(
         x, initValue, {0, 1}, reduce_computation);
 
     EXPECT_THAT(result, Pointwise(Eq(), expected_result));
@@ -1884,7 +1903,7 @@ TEST(mhlo, reduce) {
     Tensor<int32_t> initValue{0};
 
     Tensor<int32_t, 2> expected_result{24, 60};
-    Tensor<int32_t, 2> result = mhlo::reduce<Tensor<int32_t, 2>, 2>(
+    Tensor<int32_t, 2> result = stablehlo::reduce<Tensor<int32_t, 2>, 2>(
         x, initValue, {0, 2}, reduce_computation);
 
     EXPECT_THAT(result, Pointwise(Eq(), expected_result));
@@ -1896,7 +1915,7 @@ TEST(mhlo, reduce) {
     Tensor<int32_t> initValue{0};
 
     Tensor<int32_t, 4> expected_result{21, 21, 21, 21};
-    Tensor<int32_t, 4> result = mhlo::reduce<Tensor<int32_t, 4>, 2>(
+    Tensor<int32_t, 4> result = stablehlo::reduce<Tensor<int32_t, 4>, 2>(
         x, initValue, {1, 2}, reduce_computation);
 
     EXPECT_THAT(result, Pointwise(Eq(), expected_result));
@@ -1908,7 +1927,7 @@ TEST(mhlo, reduce) {
     Tensor<int32_t> initValue{0};
 
     Tensor<int32_t> expected_result{84};
-    Tensor<int32_t> result = mhlo::reduce<Tensor<int32_t>, 3>(
+    Tensor<int32_t> result = stablehlo::reduce<Tensor<int32_t>, 3>(
         x, initValue, {0, 1, 2}, reduce_computation);
 
     EXPECT_THAT(result, Pointwise(Eq(), expected_result));
@@ -1925,7 +1944,7 @@ TEST(mhlo, reduce) {
         {5, 7, 9}, {1, 2, 3}};
 
     std::tuple<Tensor<int32_t, 3>, Tensor<int32_t, 3>> result =
-        mhlo::reduce<Tensor<int32_t, 3>, Tensor<int32_t, 3>, 1>(
+        stablehlo::reduce<Tensor<int32_t, 3>, Tensor<int32_t, 3>, 1>(
             x1, x2, initValue1, initValue2, {0}, reduce_computation_tuple);
 
     EXPECT_THAT(std::get<0>(result),
@@ -1944,7 +1963,7 @@ TEST(mhlo, reduce) {
 
     std::tuple<Tensor<int32_t>, Tensor<int32_t>> expected_result{{84}, {1}};
     std::tuple<Tensor<int32_t>, Tensor<int32_t>> result =
-        mhlo::reduce<Tensor<int32_t>, Tensor<int32_t>, 3>(
+        stablehlo::reduce<Tensor<int32_t>, Tensor<int32_t>, 3>(
             x1, x2, initValue1, initValue2, {0, 1, 2},
             reduce_computation_tuple);
 
@@ -1955,51 +1974,55 @@ TEST(mhlo, reduce) {
   }
 }
 
-TEST(mhlo, reduce_window) {
+TEST(stablehlo, reduce_window) {
   Tensor<int32_t> c0{std::numeric_limits<int32_t>::min()};
   Tensor<int32_t, 4, 8> t0{1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11,
                            12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22,
                            23, 24, 25, 26, 27, 28, 29, 30, 31, 32};
 
   auto max = [](Tensor<int32_t> a, Tensor<int32_t> b) {
-    return mhlo::max(a, b);
+    return stablehlo::max(a, b);
   };
 
   Tensor<int32_t, 2, 4> expected_result0{10, 12, 14, 16, 26, 28, 30, 32};
-  Tensor<int32_t, 2, 4> result0 = mhlo::reduce_window<Tensor<int32_t, 2, 4>>(
-      t0, c0, {2, 2}, {2, 2}, {1, 1}, {1, 1}, {0, 0, 0, 0}, max);
+  Tensor<int32_t, 2, 4> result0 =
+      stablehlo::reduce_window<Tensor<int32_t, 2, 4>>(
+          t0, c0, {2, 2}, {2, 2}, {1, 1}, {1, 1}, {0, 0, 0, 0}, max);
 
   EXPECT_THAT(result0, Pointwise(Eq(), expected_result0));
 
   Tensor<int32_t, 3, 7> expected_result1{10, 11, 12, 13, 14, 15, 16,
                                          18, 19, 20, 21, 22, 23, 24,
                                          26, 27, 28, 29, 30, 31, 32};
-  Tensor<int32_t, 3, 7> result1 = mhlo::reduce_window<Tensor<int32_t, 3, 7>>(
-      t0, c0, {2, 2}, {1, 1}, {1, 1}, {1, 1}, {0, 0, 0, 0}, max);
+  Tensor<int32_t, 3, 7> result1 =
+      stablehlo::reduce_window<Tensor<int32_t, 3, 7>>(
+          t0, c0, {2, 2}, {1, 1}, {1, 1}, {1, 1}, {0, 0, 0, 0}, max);
 
   EXPECT_THAT(result1, Pointwise(Eq(), expected_result1));
 
-  auto min = [](Tensor<float> a, Tensor<float> b) { return mhlo::min(a, b); };
+  auto min = [](Tensor<float> a, Tensor<float> b) {
+    return stablehlo::min(a, b);
+  };
 
   Tensor<float> c1{std::numeric_limits<float>::max()};
   Tensor<float, 5> t1{10000.0f, 1000.0f, 100.0f, 10.0f, 1.0f};
 
   Tensor<float, 2> expected_result2{100.0f, 1.0f};
-  Tensor<float, 2> result2 = mhlo::reduce_window<Tensor<float, 2>>(
+  Tensor<float, 2> result2 = stablehlo::reduce_window<Tensor<float, 2>>(
       t1, c1, {3}, {2}, {1}, {1}, {0, 0}, min);
 
   EXPECT_THAT(result2, Pointwise(Eq(), expected_result2));
 
   Tensor<float, 3> expected_result3{1000.0f, 10.0f, 1.0f};
-  Tensor<float, 3> result3 = mhlo::reduce_window<Tensor<float, 3>>(
+  Tensor<float, 3> result3 = stablehlo::reduce_window<Tensor<float, 3>>(
       t1, c1, {3}, {2}, {1}, {1}, {1, 1}, min);
 
   EXPECT_THAT(result3, Pointwise(Eq(), expected_result3));
 }
 
-TEST(mhlo, select) {
-  EXPECT_EQ(-1, mhlo::select(true, -1, 3));
-  EXPECT_EQ(3, mhlo::select(false, -1, 3));
+TEST(stablehlo, select) {
+  EXPECT_EQ(-1, stablehlo::select(true, -1, 3));
+  EXPECT_EQ(3, stablehlo::select(false, -1, 3));
 
   {
     Tensor0D<int> s{-3};
@@ -2007,7 +2030,7 @@ TEST(mhlo, select) {
     Tensor0D<bool> p{true};
 
     Tensor0D<int> expected_result{-3};
-    Tensor0D<int> result = mhlo::select<Tensor0D<int>>(p, s, t);
+    Tensor0D<int> result = stablehlo::select<Tensor0D<int>>(p, s, t);
 
     EXPECT_THAT(result, Pointwise(Eq(), expected_result));
   }
@@ -2017,7 +2040,7 @@ TEST(mhlo, select) {
     Tensor1D<bool, 2> p{true, false};
 
     Tensor1D<float, 2> expected_result{-1.3f, -3.7f};
-    Tensor1D<float, 2> result = mhlo::select<Tensor1D<float, 2>>(p, s, t);
+    Tensor1D<float, 2> result = stablehlo::select<Tensor1D<float, 2>>(p, s, t);
 
     EXPECT_THAT(result, Pointwise(FloatEq(), expected_result));
   }
@@ -2027,7 +2050,7 @@ TEST(mhlo, select) {
     Tensor0D<bool> p{true};
 
     Tensor1D<float, 2> expected_result = s;
-    Tensor1D<float, 2> result = mhlo::select<Tensor1D<float, 2>>(p, s, t);
+    Tensor1D<float, 2> result = stablehlo::select<Tensor1D<float, 2>>(p, s, t);
 
     EXPECT_THAT(result, Pointwise(FloatEq(), expected_result));
   }
@@ -2037,7 +2060,8 @@ TEST(mhlo, select) {
     Tensor2D<bool, 2, 2> p{false, true, true, false};
 
     Tensor2D<long, 2, 2> expected_result{-2, 1, 4, -10};
-    Tensor2D<long, 2, 2> result = mhlo::select<Tensor2D<long, 2, 2>>(p, s, t);
+    Tensor2D<long, 2, 2> result =
+        stablehlo::select<Tensor2D<long, 2, 2>>(p, s, t);
 
     EXPECT_THAT(result, Pointwise(Eq(), expected_result));
   }
@@ -2047,7 +2071,8 @@ TEST(mhlo, select) {
     Tensor0D<bool> p{false};
 
     Tensor2D<long, 2, 2> expected_result = t;
-    Tensor2D<long, 2, 2> result = mhlo::select<Tensor2D<long, 2, 2>>(p, s, t);
+    Tensor2D<long, 2, 2> result =
+        stablehlo::select<Tensor2D<long, 2, 2>>(p, s, t);
 
     EXPECT_THAT(result, Pointwise(Eq(), expected_result));
   }

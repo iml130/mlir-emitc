@@ -7,7 +7,7 @@ set(EMITC_REF_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 set(EMITC_REF_SRCS
   ${EMITC_REF_INCLUDE_DIR}/emitc/arith.h
   ${EMITC_REF_INCLUDE_DIR}/emitc/core_ops.h
-  ${EMITC_REF_INCLUDE_DIR}/emitc/mhlo.h
+  ${EMITC_REF_INCLUDE_DIR}/emitc/stablehlo.h
   ${EMITC_REF_INCLUDE_DIR}/emitc/tensor.h
   ${EMITC_REF_INCLUDE_DIR}/emitc/tosa.h
   ${EMITC_REF_INCLUDE_DIR}/emitc/types.h

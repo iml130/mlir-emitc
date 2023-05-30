@@ -45,7 +45,8 @@ if not config.emitc_enable_hlo:
     config.excludes.extend(
         [
             "mhlo-to-emitc.mlir",
-            "MobileNetV2_FakeWeights_mhlo.mlir"
+            "MobileNetV2_FakeWeights_mhlo.mlir",
+            "stablehlo-to-emitc.mlir",
         ]
     )
 

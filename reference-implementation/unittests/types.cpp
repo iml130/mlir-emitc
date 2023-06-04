@@ -1,5 +1,6 @@
 // Copyright Fraunhofer-Gesellschaft zur Förderung der angewandten
 //           Forschung e.V.
+// Copyright Google LLC.
 //
 // Licensed under the Apache License v2.0 with LLVM Exceptions.
 // See https://llvm.org/LICENSE.txt for license information.
@@ -85,6 +86,18 @@ TEST(types, tensor_of_bool) {
   EXPECT_FALSE(t2(1, 0));
   EXPECT_TRUE(t2[3]);
   EXPECT_TRUE(t2(1, 1));
+}
+
+TEST(types, tensor_get) {
+  Tensor2D<int, 2, 2> t{1, 2, 3, 4};
+  int *data = t.get();
+
+  // Test that the linear layout of the data array corresponds to the
+  // row-major layout of the multidimensional tensor
+  EXPECT_EQ(data[2 * 0 + 0], t(0, 0));
+  EXPECT_EQ(data[2 * 0 + 1], t(0, 1));
+  EXPECT_EQ(data[2 * 1 + 0], t(1, 0));
+  EXPECT_EQ(data[2 * 1 + 1], t(1, 1));
 }
 
 TEST(types, default_constructor_0d) {

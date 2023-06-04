@@ -90,6 +90,8 @@ struct switch_t<case_t<B, T>> {
 };
 } // namespace detail
 
+/// The elements of a Tensor are stored contiguously in memory in a
+/// row-major layout.
 template <typename T, size_t... Shape>
 class Tensor {
 public:
@@ -103,6 +105,8 @@ public:
   Tensor(std::initializer_list<T> data) : data(data) {
     assert(data.size() == size());
   }
+
+  T *get() { return data.data(); }
 
   static constexpr size_t dim(size_t index) {
     assert(0 <= index && index < rank());

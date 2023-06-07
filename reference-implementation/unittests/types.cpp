@@ -89,15 +89,24 @@ TEST(types, tensor_of_bool) {
 }
 
 TEST(types, tensor_get) {
-  Tensor2D<int, 2, 2> t{1, 2, 3, 4};
-  int *data = t.get();
+  {
+    Tensor2D<int, 2, 2> t{1, 2, 3, 4};
+    int *data = t.get();
 
-  // Test that the linear layout of the data array corresponds to the
-  // row-major layout of the multidimensional tensor
-  EXPECT_EQ(data[2 * 0 + 0], t(0, 0));
-  EXPECT_EQ(data[2 * 0 + 1], t(0, 1));
-  EXPECT_EQ(data[2 * 1 + 0], t(1, 0));
-  EXPECT_EQ(data[2 * 1 + 1], t(1, 1));
+    // Test that the linear layout of the data array corresponds to the
+    // row-major layout of the multidimensional tensor
+    EXPECT_EQ(data[2 * 0 + 0], t(0, 0));
+    EXPECT_EQ(data[2 * 0 + 1], t(0, 1));
+    EXPECT_EQ(data[2 * 1 + 0], t(1, 0));
+    EXPECT_EQ(data[2 * 1 + 1], t(1, 1));
+  }
+  { // Test the correct handling of a tensor with type bool
+    Tensor1D<bool, 2> t{false, true};
+    bool *data = t.get();
+
+    EXPECT_EQ(data[0], t(0));
+    EXPECT_EQ(data[1], t(1));
+  }
 }
 
 TEST(types, default_constructor_0d) {

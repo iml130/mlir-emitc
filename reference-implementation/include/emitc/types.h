@@ -88,25 +88,53 @@ struct switch_t<case_t<B, T>> {
   static_assert(B, "None of the supplied conditions evaluate to true.");
   using type = T;
 };
+
+// Wrapper class to prevent use of the template specialization for
+// std::vector<bool> in the Tensor class
+template <typename T> class TypeWrapper {
+public:
+  TypeWrapper() = default;
+
+  TypeWrapper(const T &value) : value(value) {}
+
+  TypeWrapper<T> &operator=(const T &value) {
+    this->value = value;
+    return *this;
+  }
+
+  operator T &() { return value; }
+
+  constexpr operator const T &() const { return value; }
+
+private:
+  T value;
+};
 } // namespace detail
 
 /// The elements of a Tensor are stored contiguously in memory in a
 /// row-major layout.
 template <typename T, size_t... Shape>
 class Tensor {
+private:
+  using storage_type = detail::TypeWrapper<T>;
+
 public:
   using value_type = T;
-  using reference = typename std::vector<T>::reference;
-  using iterator = typename std::vector<T>::iterator;
-  using const_iterator = typename std::vector<T>::const_iterator;
+  static_assert(sizeof(T) == sizeof(storage_type),
+                "storage_type has a different size than the raw type T");
+  static_assert(std::is_standard_layout_v<storage_type>,
+                "Cannot access data from storage_type as T*");
+  using reference = typename std::vector<storage_type>::reference;
+  using iterator = typename std::vector<storage_type>::iterator;
+  using const_iterator = typename std::vector<storage_type>::const_iterator;
 
   Tensor() : data(size()) {}
 
-  Tensor(std::initializer_list<T> data) : data(data) {
+  Tensor(std::initializer_list<storage_type> data) : data(data) {
     assert(data.size() == size());
   }
 
-  T *get() { return data.data(); }
+  T *get() { return reinterpret_cast<T *>(data.data()); }
 
   static constexpr size_t dim(size_t index) {
     assert(0 <= index && index < rank());
@@ -189,7 +217,7 @@ public:
   }
 
 private:
-  std::vector<T> data;
+  std::vector<storage_type> data;
 };
 
 template <typename T>

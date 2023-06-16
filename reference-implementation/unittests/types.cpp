@@ -6,6 +6,8 @@
 // See https://llvm.org/LICENSE.txt for license information.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+#include <utility>
+
 #include "gmock/gmock.h"
 
 #include "emitc/types.h"
@@ -388,6 +390,72 @@ TEST(types, size_4d) {
   Tensor4D<int8_t, 1, 5, 6, 2> tensor2;
 
   EXPECT_EQ(60, tensor2.size());
+}
+
+TEST(types, iterator) {
+  Tensor<float>::iterator default_constructed;
+  Tensor<float>::iterator copy_constructed(default_constructed);
+  Tensor<float>::iterator copy_assigned = copy_constructed;
+  (void)copy_assigned;
+
+  Tensor<int32_t, 2> tensor{24, 42};
+  auto i = tensor.begin();
+  auto j = tensor.begin();
+  ++j;
+  EXPECT_EQ(*i, 24);
+  EXPECT_EQ(*j, 42);
+
+  std::swap(i, j);
+  EXPECT_EQ(*i, 42);
+  EXPECT_EQ(*j, 24);
+  std::swap(i, j);
+
+  EXPECT_TRUE(i == i);
+  EXPECT_FALSE(i == j);
+  EXPECT_TRUE(i != j);
+  EXPECT_FALSE(i != i);
+
+  auto k = tensor.begin();
+  EXPECT_EQ(*k, *i);
+  EXPECT_TRUE(k == i);
+  EXPECT_EQ(*k++, *i);
+  EXPECT_TRUE(k++ == j);
+  EXPECT_TRUE(k == tensor.end());
+
+  *i = 242;
+  EXPECT_EQ(*i, 242);
+  EXPECT_EQ(*i, *(tensor.begin()));
+}
+
+TEST(types, const_iterator) {
+  Tensor<float>::const_iterator default_constructed;
+  Tensor<float>::const_iterator copy_constructed(default_constructed);
+  Tensor<float>::const_iterator copy_assigned = copy_constructed;
+  (void)copy_assigned;
+
+  Tensor<int32_t, 2> const tensor{24, 42};
+  auto i = tensor.begin();
+  auto j = tensor.begin();
+  ++j;
+  EXPECT_EQ(*i, 24);
+  EXPECT_EQ(*j, 42);
+
+  std::swap(i, j);
+  EXPECT_EQ(*i, 42);
+  EXPECT_EQ(*j, 24);
+  std::swap(i, j);
+
+  EXPECT_TRUE(i == i);
+  EXPECT_FALSE(i == j);
+  EXPECT_TRUE(i != j);
+  EXPECT_FALSE(i != i);
+
+  auto k = tensor.begin();
+  EXPECT_EQ(*k, *i);
+  EXPECT_TRUE(k == i);
+  EXPECT_EQ(*k++, *i);
+  EXPECT_TRUE(k++ == j);
+  EXPECT_TRUE(k == tensor.end());
 }
 
 TEST(types, meta_get_element_type) {

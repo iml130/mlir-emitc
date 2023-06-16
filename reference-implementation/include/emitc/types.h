@@ -109,6 +109,52 @@ public:
 private:
   T value;
 };
+
+template <typename T, typename Iterator> class IteratorWrapper {
+public:
+  using iterator_category = std::forward_iterator_tag;
+  using value_type = T;
+  using difference_type = std::ptrdiff_t;
+  using pointer = T *;
+  using reference = T &;
+
+  IteratorWrapper() = default;
+
+  IteratorWrapper(const Iterator &it) : iterator(it) {}
+
+  reference operator*() const { return reinterpret_cast<reference>(*iterator); }
+
+  IteratorWrapper<T, Iterator> &operator++() {
+    ++iterator;
+    return *this;
+  }
+
+  IteratorWrapper<T, Iterator> operator++(int) {
+    IteratorWrapper<T, Iterator> result = *this;
+    ++iterator;
+    return result;
+  }
+
+  IteratorWrapper<T, Iterator> &operator+=(difference_type d) {
+    iterator += d;
+    return *this;
+  }
+
+  IteratorWrapper<T, Iterator> operator+(difference_type d) const {
+    return IteratorWrapper<T, Iterator>(iterator + d);
+  }
+
+  bool operator==(const IteratorWrapper &other) const {
+    return iterator == other.iterator;
+  }
+
+  bool operator!=(const IteratorWrapper &other) const {
+    return iterator != other.iterator;
+  }
+
+private:
+  Iterator iterator;
+};
 } // namespace detail
 
 /// The elements of a Tensor are stored contiguously in memory in a
@@ -124,9 +170,12 @@ public:
                 "storage_type has a different size than the raw type T");
   static_assert(std::is_standard_layout_v<storage_type>,
                 "Cannot access data from storage_type as T*");
-  using reference = typename std::vector<storage_type>::reference;
-  using iterator = typename std::vector<storage_type>::iterator;
-  using const_iterator = typename std::vector<storage_type>::const_iterator;
+  using iterator =
+      detail::IteratorWrapper<T, typename std::vector<storage_type>::iterator>;
+  using const_iterator = detail::IteratorWrapper<
+      const T, typename std::vector<storage_type>::const_iterator>;
+  using reference = typename iterator::reference;
+  using pointer = typename iterator::pointer;
 
   Tensor() : data(size()) {}
 
@@ -134,7 +183,7 @@ public:
     assert(data.size() == size());
   }
 
-  T *get() { return reinterpret_cast<T *>(data.data()); }
+  pointer get() { return reinterpret_cast<pointer>(data.data()); }
 
   static constexpr size_t dim(size_t index) {
     assert(0 <= index && index < rank());

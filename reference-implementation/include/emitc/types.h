@@ -91,7 +91,8 @@ struct switch_t<case_t<B, T>> {
 
 // Wrapper class to prevent use of the template specialization for
 // std::vector<bool> in the Tensor class
-template <typename T> class TypeWrapper {
+template <typename T>
+class TypeWrapper {
 public:
   TypeWrapper() = default;
 
@@ -110,7 +111,8 @@ private:
   T value;
 };
 
-template <typename T, typename Iterator> class IteratorWrapper {
+template <typename T, typename Iterator>
+class IteratorWrapper {
 public:
   using iterator_category = std::forward_iterator_tag;
   using value_type = T;

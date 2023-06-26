@@ -171,7 +171,7 @@ public:
   using value_type = T;
   static_assert(sizeof(T) == sizeof(storage_type),
                 "storage_type has a different size than the raw type T");
-  static_assert(std::is_standard_layout_v<storage_type>,
+  static_assert(std::is_standard_layout<storage_type>::value,
                 "Cannot access data from storage_type as T*");
   using iterator =
       detail::IteratorWrapper<T, typename std::vector<storage_type>::iterator>;

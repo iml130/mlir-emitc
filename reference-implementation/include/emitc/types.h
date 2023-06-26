@@ -17,6 +17,7 @@
 #include <cstddef>
 #include <functional>
 #include <numeric>
+#include <type_traits>
 #include <vector>
 
 #include "emitc/utility.h"

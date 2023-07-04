@@ -232,8 +232,8 @@ private:
 
     stablehlo::ComparisonDirection comparisonDirection =
         compareOp.getComparisonDirection();
-    Optional<StringRef> functionName =
-        StringSwitch<Optional<StringRef>>(
+    std::optional<StringRef> functionName =
+        StringSwitch<std::optional<StringRef>>(
             stringifyComparisonDirection(comparisonDirection))
             .Case("EQ", StringRef("std::equal_to"))
             .Case("NE", StringRef("std::not_equal_to"))

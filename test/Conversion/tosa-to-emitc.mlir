@@ -7,7 +7,7 @@
 // Data node ops
 
 func.func @test_const(%arg0 : index) -> tensor<4xi32> {
-    // CHECK: "emitc.constant"() {value = dense<[3, 0, 1, 2]> : tensor<4xi32>} : () -> tensor<4xi32>
+    // CHECK: "emitc.constant"() <{value = dense<[3, 0, 1, 2]> : tensor<4xi32>}> : () -> tensor<4xi32>
     %0 = "tosa.const"() {value = dense<[3, 0, 1, 2]> : tensor<4xi32>} : () -> tensor<4xi32>
     return %0 : tensor<4xi32>
 }
@@ -361,7 +361,7 @@ func.func @test_pad(%arg0: tensor<2x3xf32>, %arg1: tensor<2x2xi32>) -> tensor<3x
 }
 
 func.func @test_pad_explicit_value(%arg0: tensor<2x3xf32>, %arg1: tensor<2x2xi32>) -> tensor<3x6xf32> {
-  // CHECK: %0 = "emitc.constant"() {value = dense<3.140000e+00> : tensor<f32>} : () -> tensor<f32>
+  // CHECK: %0 = "emitc.constant"() <{value = dense<3.140000e+00> : tensor<f32>}> : () -> tensor<f32>
   %0 = "tosa.const"() {value = dense<3.14> : tensor<f32>} : () -> tensor<f32>
   // CHECK-NEXT: %1 = emitc.call "emitc::tosa::pad"(%arg0, %arg1, %0) {template_args = [tensor<3x6xf32>]} : (tensor<2x3xf32>, tensor<2x2xi32>, tensor<f32>) -> tensor<3x6xf32>
   %1 = "tosa.pad"(%arg0, %arg1, %0) : (tensor<2x3xf32>, tensor<2x2xi32>, tensor<f32>) -> tensor<3x6xf32>
@@ -381,7 +381,7 @@ func.func @test_tile(%arg0: tensor<1x3x1x4xf32>) -> tensor<2x3x3x8xf32> {
 }
 
 func.func @test_transpose(%arg0: tensor<13x21x3xf32>) -> tensor<3x13x21xf32> {
-  // CHECK: %0 = "emitc.constant"() {value = dense<[2, 0, 1]> : tensor<3xi32>} : () -> tensor<3xi32>
+  // CHECK: %0 = "emitc.constant"() <{value = dense<[2, 0, 1]> : tensor<3xi32>}> : () -> tensor<3xi32>
   %0 = "tosa.const"() {value = dense<[2, 0, 1]> : tensor<3xi32>} : () -> tensor<3xi32>
   // CHECK-NEXT: %1 = emitc.call "emitc::tosa::transpose"(%arg0, %0) {template_args = [tensor<3x13x21xf32>]} : (tensor<13x21x3xf32>, tensor<3xi32>) -> tensor<3x13x21xf32>
   %1 = "tosa.transpose"(%arg0, %0) : (tensor<13x21x3xf32>, tensor<3xi32>) -> tensor<3x13x21xf32>

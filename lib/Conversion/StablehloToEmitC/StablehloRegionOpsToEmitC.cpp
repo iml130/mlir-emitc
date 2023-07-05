@@ -66,7 +66,7 @@ struct ConvertStablehloRegionOpsToEmitCPass
                 .concat(Twine(count++))
                 .str();
 
-        Optional<func::FuncOp> outlinedFunc =
+        std::optional<func::FuncOp> outlinedFunc =
             outlineRegionImpl<stablehlo::ReduceOp>(op, funcName);
 
         if (!outlinedFunc.has_value()) {
@@ -90,7 +90,7 @@ struct ConvertStablehloRegionOpsToEmitCPass
                 .concat(Twine(count++))
                 .str();
 
-        Optional<func::FuncOp> outlinedFunc =
+        std::optional<func::FuncOp> outlinedFunc =
             outlineRegionImpl<stablehlo::ReduceWindowOp>(op, funcName);
 
         if (!outlinedFunc.has_value()) {
@@ -111,8 +111,8 @@ struct ConvertStablehloRegionOpsToEmitCPass
 
 private:
   template <typename OpType>
-  Optional<func::FuncOp> outlineRegionImpl(OpType &op,
-                                           const std::string &functionName) {
+  std::optional<func::FuncOp>
+  outlineRegionImpl(OpType &op, const std::string &functionName) {
     Location loc = op.getLoc();
     // Create a builder with no insertion point, insertion will happen
     // separately due to symbol table manipulation.

@@ -7,7 +7,7 @@
 // Nullary ops
 
 func.func @stablehlo_constant(%arg0: tensor<2xi32>) -> tensor<2xi32> {
-  // CHECK: "emitc.constant"() {value = dense<1> : tensor<2xi32>} : () -> tensor<2xi32>
+  // CHECK: "emitc.constant"() <{value = dense<1> : tensor<2xi32>}> : () -> tensor<2xi32>
   %0 = "stablehlo.constant"() {value = dense<1> : tensor<2xi32>} : () -> tensor<2xi32>
   return %0 : tensor<2xi32>
 }

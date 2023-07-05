@@ -10,7 +10,6 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "emitc/InitDialect.h"
 #include "emitc/InitPasses.h"
 #ifdef EMITC_BUILD_HLO
 #include "stablehlo/dialect/StablehloOps.h"
@@ -38,7 +37,6 @@ int main(int argc, char **argv) {
   registerAllDialects(registry);
   registerAllExtensions(registry);
   registerAllPasses();
-  registerEmitCDialect(registry);
   emitc::registerAllEmitCPasses();
 #ifdef EMITC_BUILD_HLO
   registry.insert<mlir::stablehlo::StablehloDialect>();

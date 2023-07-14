@@ -36,12 +36,14 @@ The table below shows the supported TOSA ops.
 | select                 | :heavy_check_mark: | |
 | **Other ops**
 | argmax                 | :heavy_check_mark: | |
+| avg_pool2d             | :white_check_mark: | Quantization and and acc_type not supported |
 | concat                 | :heavy_check_mark: | |
 | conv2d                 | :white_check_mark: | Quantization and dilation not supported |
 | depthwise_conv2d       | :white_check_mark: | Quantization and dilation not supported |
 | fully_connected        | :white_check_mark: | Quantization not supported |
 | gather                 | :heavy_check_mark: | |
 | matmul                 | :white_check_mark: | Quantization not supported |
+| max_pool2d             | :white_check_mark: | Quantization not supported |
 | reduce_all             | :heavy_check_mark: | |
 | reduce_any             | :heavy_check_mark: | |
 | reduce_max             | :heavy_check_mark: | |

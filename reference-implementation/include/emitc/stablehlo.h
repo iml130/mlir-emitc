@@ -650,6 +650,27 @@ inline Src select(typename replace_element_type<bool, Src>::type pred,
   return z;
 }
 
+// TransposeOp
+// Maps the perms dimension from Dest to Src.
+template <typename Dest, typename Src>
+inline Dest transpose(Src operand, Tensor1D<int64_t, Src::rank()> perms) {
+  static_assert(is_tensor<Src>::value, "Expected tensor argument");
+  static_assert(is_tensor<Dest>::value, "Expected tensor result");
+
+  // Since emitc::broadcast_in_dim maps the dimensions (argument
+  // "broadcast_dimensions") from Src to Dest and stablehlo::transpose maps the
+  // dimensions (argument "perms") from Dest to Src, we have to invert the
+  // mapping.
+  Tensor1D<int64_t, Src::rank()> broadcast_dimensions;
+  for (size_t i = 0; i < perms.size(); ++i) {
+    auto pos = std::find(perms.begin(), perms.end(), i);
+    assert(pos != std::end(perms));
+    int64_t index = std::distance(perms.begin(), pos);
+    broadcast_dimensions[i] = index;
+  }
+  return emitc::broadcast_in_dim<Dest>(operand, broadcast_dimensions);
+}
+
 // RngUniformOp
 template <typename Dest, typename T, size_t N>
 inline Dest rng_uniform(Tensor<T> low, Tensor<T> high,

@@ -57,3 +57,4 @@ The table below shows the supported StableHLO ops.
 | reduce_window         | :white_check_mark: | No support for dilation |
 | reshape               | :heavy_check_mark: | |
 | select                | :heavy_check_mark: | |
+| transpose             | :heavy_check_mark: | |

@@ -713,6 +713,82 @@ TEST(tosa, depthwise_conv2d) {
   }
 }
 
+TEST(tosa, max_pool2d) {
+  {
+    //              N IH IW C
+    Tensor4D<float, 1, 3, 3, 2> input{1.f,  2.f,  3.f,  4.f,  5.f,  6.f,
+                                      7.f,  8.f,  9.f,  10.f, 11.f, 12.f,
+                                      13.f, 14.f, 15.f, 16.f, 17.f, 18.f};
+    std::array<int64_t, 4> padding{0, 0, 0, 0};
+    std::array<int64_t, 2> stride{1, 1};
+    std::array<int64_t, 2> kernel{2, 2};
+
+    using ResultType = Tensor4D<float, 1, 2, 2, 2>; // N OH OW C
+    ResultType expected_result{9.f, 10.f, 11.f, 12.f, 15.f, 16.f, 17.f, 18.f};
+    ResultType result =
+        tosa::max_pool2d<ResultType>(input, padding, stride, kernel);
+
+    EXPECT_THAT(result, Pointwise(FloatNear(EPSILON), expected_result));
+  }
+  {
+    //              N IH IW C
+    Tensor4D<float, 2, 3, 4, 2> input{
+        1.f,  2.f,  3.f,  4.f,  5.f,  6.f,  7.f,  8.f,  9.f,  10.f, 11.f, 12.f,
+        13.f, 14.f, 15.f, 16.f, 17.f, 18.f, 19.f, 20.f, 21.f, 22.f, 23.f, 24.f,
+        25.f, 26.f, 27.f, 28.f, 29.f, 30.f, 31.f, 32.f, 33.f, 34.f, 35.f, 36.f,
+        37.f, 38.f, 39.f, 40.f, 41.f, 42.f, 43.f, 44.f, 45.f, 46.f, 47.f, 48.f};
+    std::array<int64_t, 4> padding{2, 1, 0, 2}; // {pt, pb, pl, pr}
+    std::array<int64_t, 2> stride{3, 2};        // {sy, sx}
+    std::array<int64_t, 2> kernel{3, 4};        // {ky, kx}
+
+    using ResultType = Tensor4D<float, 2, 2, 2, 2>; // N OH OW C
+    ResultType expected_result{7.f,  8.f,  7.f,  8.f,  23.f, 24.f, 23.f, 24.f,
+                               31.f, 32.f, 31.f, 32.f, 47.f, 48.f, 47.f, 48.f};
+    ResultType result =
+        tosa::max_pool2d<ResultType>(input, padding, stride, kernel);
+
+    EXPECT_THAT(result, Pointwise(FloatNear(EPSILON), expected_result));
+  }
+}
+
+TEST(tosa, avg_pool2d) {
+  {
+    //              N IH IW C
+    Tensor4D<float, 1, 3, 3, 2> input{1.f,  2.f,  3.f,  4.f,  5.f,  6.f,
+                                      7.f,  8.f,  9.f,  10.f, 11.f, 12.f,
+                                      13.f, 14.f, 15.f, 16.f, 17.f, 18.f};
+    std::array<int64_t, 4> padding{0, 0, 0, 0};
+    std::array<int64_t, 2> stride{1, 1};
+    std::array<int64_t, 2> kernel{2, 2};
+
+    using ResultType = Tensor4D<float, 1, 2, 2, 2>; // N OH OW C
+    ResultType expected_result{5.f, 6.f, 7.f, 8.f, 11.f, 12.f, 13.f, 14.f};
+    ResultType result =
+        tosa::avg_pool2d<ResultType>(input, padding, stride, kernel);
+
+    EXPECT_THAT(result, Pointwise(FloatNear(EPSILON), expected_result));
+  }
+  {
+    //              N IH IW C
+    Tensor4D<float, 2, 3, 4, 2> input{
+        1.f,  2.f,  3.f,  4.f,  5.f,  6.f,  7.f,  8.f,  9.f,  10.f, 11.f, 12.f,
+        13.f, 14.f, 15.f, 16.f, 17.f, 18.f, 19.f, 20.f, 21.f, 22.f, 23.f, 24.f,
+        25.f, 26.f, 27.f, 28.f, 29.f, 30.f, 31.f, 32.f, 33.f, 34.f, 35.f, 36.f,
+        37.f, 38.f, 39.f, 40.f, 41.f, 42.f, 43.f, 44.f, 45.f, 46.f, 47.f, 48.f};
+    std::array<int64_t, 4> padding{2, 1, 0, 2}; // {pt, pb, pl, pr}
+    std::array<int64_t, 2> stride{3, 2};        // {sy, sx}
+    std::array<int64_t, 2> kernel{3, 4};        // {ky, kx}
+
+    using ResultType = Tensor4D<float, 2, 2, 2, 2>; // N OH OW C
+    ResultType expected_result{4.f,  5.f,  6.f,  7.f,  16.f, 17.f, 18.f, 19.f,
+                               28.f, 29.f, 30.f, 31.f, 40.f, 41.f, 42.f, 43.f};
+    ResultType result =
+        tosa::avg_pool2d<ResultType>(input, padding, stride, kernel);
+
+    EXPECT_THAT(result, Pointwise(FloatNear(EPSILON), expected_result));
+  }
+}
+
 TEST(tosa, fully_connected) {
   using InputType = Tensor2D<float, 2, 5>;  // N CIN
   using WeightType = Tensor2D<float, 2, 5>; // COUT CIN

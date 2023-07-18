@@ -280,6 +280,18 @@ func.func @test_depthwise_conv2d(%arg0: tensor<1x4x5x2xf32>, %arg1: tensor<2x2x2
     return %0 : tensor<1x3x4x4xf32>
 }
 
+func.func @test_max_pool2d(%arg0: tensor<1x32x32x8xf32>) -> tensor<1x32x32x8xf32> {
+  // CHECK: emitc.call "emitc::tosa::max_pool2d"(%arg0) {args = [0 : index, dense<0> : tensor<4xi64>, dense<1> : tensor<2xi64>, dense<1> : tensor<2xi64>], template_args = [tensor<1x32x32x8xf32>]} : (tensor<1x32x32x8xf32>) -> tensor<1x32x32x8xf32>
+  %0 = "tosa.max_pool2d"(%arg0) {kernel = array<i64: 1, 1>, pad = array<i64: 0, 0, 0, 0>, stride = array<i64: 1, 1>} : (tensor<1x32x32x8xf32>) -> tensor<1x32x32x8xf32>
+  return %0 : tensor<1x32x32x8xf32>
+}
+
+func.func @test_avg_pool2d(%arg0: tensor<1x32x32x8xf32>) -> tensor<1x32x32x8xf32> {
+  // CHECK: emitc.call "emitc::tosa::avg_pool2d"(%arg0) {args = [0 : index, dense<[0, 1, 0, 1]> : tensor<4xi64>, dense<1> : tensor<2xi64>, dense<2> : tensor<2xi64>], template_args = [tensor<1x32x32x8xf32>]} : (tensor<1x32x32x8xf32>) -> tensor<1x32x32x8xf32>
+  %0 = "tosa.avg_pool2d"(%arg0) {acc_type = f32, kernel = array<i64: 2, 2>, pad = array<i64: 0, 1, 0, 1>, stride = array<i64: 1, 1>} : (tensor<1x32x32x8xf32>) -> tensor<1x32x32x8xf32>
+  return %0 : tensor<1x32x32x8xf32>
+}
+
 func.func @test_fully_connected(%arg0: tensor<14x19xf32>, %arg1: tensor<19x28xf32>, %arg2: tensor<28xf32>) -> tensor<14x28xf32> {
   // CHECK: emitc.call "emitc::tosa::fully_connected"(%arg0, %arg1, %arg2) {template_args = [tensor<14x28xf32>]} : (tensor<14x19xf32>, tensor<19x28xf32>, tensor<28xf32>) -> tensor<14x28xf32>
   %0 = "tosa.fully_connected"(%arg0, %arg1, %arg2) : (tensor<14x19xf32>, tensor<19x28xf32>, tensor<28xf32>) -> tensor<14x28xf32>

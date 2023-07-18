@@ -423,6 +423,38 @@ private:
   }
 };
 
+/// Convert `stablehlo.transpose` into an `emitc.call` operation.
+class TransposeOpConversion
+    : public OpConversionPattern<stablehlo::TransposeOp> {
+  using OpConversionPattern<stablehlo::TransposeOp>::OpConversionPattern;
+
+public:
+  TransposeOpConversion(MLIRContext *ctx)
+      : OpConversionPattern<stablehlo::TransposeOp>(ctx) {}
+
+private:
+  LogicalResult
+  matchAndRewrite(stablehlo::TransposeOp transposeOp, OpAdaptor adaptor,
+                  ConversionPatternRewriter &rewriter) const override {
+    StringAttr callee = rewriter.getStringAttr("emitc::stablehlo::transpose");
+
+    SmallVector<Attribute> arguments =
+        indexSequence(adaptor.getOperands().size(), transposeOp.getContext());
+
+    arguments.push_back(transposeOp.getPermutation());
+    ArrayAttr args = rewriter.getArrayAttr(arguments);
+
+    Type resultType = transposeOp.getResult().getType();
+    ArrayAttr templateArgs = rewriter.getArrayAttr({TypeAttr::get(resultType)});
+
+    rewriter.replaceOpWithNewOp<emitc::CallOp>(
+        transposeOp, transposeOp.getType(), callee, args, templateArgs,
+        adaptor.getOperands());
+
+    return success();
+  }
+};
+
 /// Convert `stablehlo.rng` into an `emitc.call` operation.
 class RngOpConversion : public OpConversionPattern<stablehlo::RngOp> {
 
@@ -552,6 +584,7 @@ void populateStablehloToEmitcPatterns(MLIRContext *ctx,
       /*explicitResultType=*/true);
   patterns.add<GenericOpConversion<stablehlo::SelectOp>>(
       ctx, "emitc::stablehlo::select");
+  patterns.add<TransposeOpConversion>(ctx);
 
   // Insert patterns for StableHLO RNG ops.
   patterns.add<RngOpConversion>(ctx);
@@ -630,7 +663,8 @@ struct ConvertStablehloToEmitCPass
                         stablehlo::DotOp,
                         stablehlo::PadOp,
                         stablehlo::ReshapeOp,
-                        stablehlo::SelectOp>();
+                        stablehlo::SelectOp,
+                        stablehlo::TransposeOp>();
 
     // StableHLO RNG ops.
     target.addIllegalOp<stablehlo::RngOp>();

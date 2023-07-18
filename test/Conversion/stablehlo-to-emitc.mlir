@@ -419,6 +419,12 @@ func.func @select_scalar_pred(%arg0: tensor<i1>, %arg1: tensor<2x3xi32>, %arg2: 
   return %0 : tensor<2x3xi32>
 }
 
+func.func @stablehlo_transpose(%arg0: tensor<2x3x4xf32>) -> tensor<4x3x2xf32> {
+  // CHECK: emitc.call "emitc::stablehlo::transpose"(%arg0) {args = [0 : index, dense<[2, 1, 0]> : tensor<3xi64>], template_args = [tensor<4x3x2xf32>]} : (tensor<2x3x4xf32>) -> tensor<4x3x2xf32>
+  %0 = "stablehlo.transpose"(%arg0) {permutation = dense<[2, 1, 0]> : tensor<3xi64>} : (tensor<2x3x4xf32>) -> tensor<4x3x2xf32>
+  return %0 : tensor<4x3x2xf32>
+}
+
 // RNG ops
 
 func.func @stablehlo_rng_uniform() -> () {

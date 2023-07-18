@@ -2068,4 +2068,61 @@ TEST(stablehlo, select) {
   }
 }
 
+TEST(stablehlo, transpose) {
+  {
+    Tensor0D<int32_t> operand{1};
+    Tensor1D<int64_t, 0> perms;
+
+    Tensor0D<int32_t> expected_result{1};
+    Tensor0D<int32_t> result =
+        stablehlo::transpose<Tensor0D<int32_t>>(operand, perms);
+
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+  {
+    Tensor1D<double, 2> operand{1., 2.};
+    Tensor1D<int64_t, 1> perms{0};
+
+    Tensor1D<double, 2> expected_result{1., 2.};
+    Tensor1D<double, 2> result =
+        stablehlo::transpose<Tensor1D<double, 2>>(operand, perms);
+
+    EXPECT_THAT(result, Pointwise(DoubleEq(), expected_result));
+  }
+  {
+    Tensor2D<int64_t, 2, 3> operand{1, 2, 3, 4, 5, 6};
+    Tensor1D<int64_t, 2> perms{1, 0};
+
+    Tensor2D<int64_t, 3, 2> expected_result{1, 4, 2, 5, 3, 6};
+    Tensor2D<int64_t, 3, 2> result =
+        stablehlo::transpose<Tensor2D<int64_t, 3, 2>>(operand, perms);
+
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+  {
+    Tensor3D<float, 2, 1, 2> operand{1.f, 2.f, 3.f, 4.f};
+    Tensor1D<int64_t, 3> perms{0, 1, 2};
+
+    Tensor3D<float, 2, 1, 2> expected_result{1.f, 2.f, 3.f, 4.f};
+    Tensor3D<float, 2, 1, 2> result =
+        stablehlo::transpose<Tensor3D<float, 2, 1, 2>>(operand, perms);
+
+    EXPECT_THAT(result, Pointwise(FloatEq(), expected_result));
+  }
+  {
+    Tensor4D<int32_t, 1, 2, 4, 3> operand{1,  2,  3,  4,  5,  6,  7,  8,
+                                          9,  10, 11, 12, 13, 14, 15, 16,
+                                          17, 18, 19, 20, 21, 22, 23, 24};
+    Tensor1D<int64_t, 4> perms{3, 1, 2, 0};
+
+    Tensor4D<int32_t, 3, 2, 4, 1> expected_result{1, 4, 7, 10, 13, 16, 19, 22,
+                                                  2, 5, 8, 11, 14, 17, 20, 23,
+                                                  3, 6, 9, 12, 15, 18, 21, 24};
+    Tensor4D<int32_t, 3, 2, 4, 1> result =
+        stablehlo::transpose<Tensor4D<int32_t, 3, 2, 4, 1>>(operand, perms);
+
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+}
+
 } // namespace

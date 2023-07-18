@@ -141,6 +141,46 @@ private:
   StringRef funcName;
 };
 
+/// Convert a common `tosa` pooling operation into an `emitc.call`
+/// operation.
+template <typename SrcOp, typename Adaptor = typename SrcOp::Adaptor>
+class GenericPoolOpConversion : public OpConversionPattern<SrcOp> {
+  using OpConversionPattern<SrcOp>::OpConversionPattern;
+
+public:
+  GenericPoolOpConversion(MLIRContext *ctx, StringRef funcName)
+      : OpConversionPattern<SrcOp>(ctx), funcName(funcName) {}
+
+private:
+  LogicalResult
+  matchAndRewrite(SrcOp poolOp, Adaptor adaptor,
+                  ConversionPatternRewriter &rewriter) const override {
+    StringAttr callee = rewriter.getStringAttr(funcName);
+
+    // TODO: average pool has an acc_type attribute.
+    // clang-format off
+    ArrayAttr args = rewriter.getArrayAttr({
+      rewriter.getIndexAttr(0),
+      getI64ElementsAttr(poolOp.getPad(), poolOp.getContext()),
+      getI64ElementsAttr(poolOp.getStride(), poolOp.getContext()),
+      getI64ElementsAttr(poolOp.getKernel(), poolOp.getContext()),
+    });
+    // clang-format on
+
+    ArrayAttr templateArgs =
+        rewriter.getArrayAttr({TypeAttr::get(poolOp.getResult().getType())});
+
+    // Create pool op.
+    rewriter.replaceOpWithNewOp<emitc::CallOp>(poolOp, poolOp.getType(), callee,
+                                               args, templateArgs,
+                                               adaptor.getOperands());
+
+    return success();
+  }
+
+  StringRef funcName;
+};
+
 /// Convert `tosa.fully_connected` into an `emitc.call` operation.
 class FullyConnectedOpConversion
     : public OpConversionPattern<tosa::FullyConnectedOp> {
@@ -830,6 +870,10 @@ void populateTosaToEmitcPatterns(MLIRContext *ctx,
                                                         "emitc::tosa::conv2d");
   patterns.add<GenericConvOpConversion<tosa::DepthwiseConv2DOp>>(
       ctx, "emitc::tosa::depthwise_conv2d");
+  patterns.add<GenericPoolOpConversion<tosa::AvgPool2dOp>>(
+      ctx, "emitc::tosa::avg_pool2d");
+  patterns.add<GenericPoolOpConversion<tosa::MaxPool2dOp>>(
+      ctx, "emitc::tosa::max_pool2d");
   patterns.add<FullyConnectedOpConversion>(ctx, "emitc::tosa::fully_connected");
   patterns.add<GenericOpConversion<tosa::GatherOp>>(
       ctx, "emitc::tosa::gather",
@@ -907,7 +951,9 @@ struct ConvertTosaToEmitCPass
     target.addIllegalOp<tosa::SelectOp>();
 
     // Other ops.
-    target.addIllegalOp<tosa::ConcatOp,
+    target.addIllegalOp<tosa::AvgPool2dOp,
+                        tosa::MaxPool2dOp,
+                        tosa::ConcatOp,
                         tosa::Conv2DOp,
                         tosa::DepthwiseConv2DOp,
                         tosa::FullyConnectedOp,

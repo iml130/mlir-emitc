@@ -1,3 +1,7 @@
+<!--
+SPDX-FileCopyrightText: Fraunhofer-Gesellschaft zur Förderung der angewandten Forschung e.V.
+SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+-->
 # MLIR-EmitC
 
 ![Build and test](https://github.com/iml130/mlir-emitc/workflows/Build%20and%20test/badge.svg)

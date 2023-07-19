@@ -1,3 +1,8 @@
+<!--
+SPDX-FileCopyrightText: Fraunhofer-Gesellschaft zur Förderung der angewandten Forschung e.V.
+SPDX-FileCopyrightText: Google LLC
+SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+-->
 # TOSA Op Coverage
 
 The table below shows the supported TOSA ops.

@@ -106,7 +106,11 @@ public:
     assert(data.size() == size());
   }
 
-  T *get() { return data.data(); }
+  T *get() {
+    static_assert(!std::is_same<T, bool>::value,
+                  "Method `get` not available for type `bool`");
+    return data.data();
+  }
 
   static constexpr size_t dim(size_t index) {
     assert(0 <= index && index < rank());

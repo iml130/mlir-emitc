@@ -1,5 +1,4 @@
-// Copyright Fraunhofer-Gesellschaft zur Förderung der angewandten
-//           Forschung e.V.
+// Copyright Fraunhofer-Gesellschaft zur Förderung der angewandten Forschung e.V.
 // Copyright Google LLC
 //
 // Licensed under the Apache License v2.0 with LLVM Exceptions.

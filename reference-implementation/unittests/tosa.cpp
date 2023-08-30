@@ -1096,29 +1096,54 @@ TEST(tosa, reduce_prod) {
 }
 
 TEST(tosa, reduce_sum) {
-  Tensor<int32_t, 2, 3> t0{1, 2, 3, 4, 5, 6};
-  Tensor<int32_t, 4, 2, 3> t1{1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6,
-                              1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6};
-  Tensor<int32_t, 3> expected_result0_0{5, 7, 9};
-  Tensor<int32_t, 2> expected_result0_1{6, 15};
-  Tensor<int32_t, 2, 3> expected_result1_0{4, 8, 12, 16, 20, 24};
-  Tensor<int32_t, 4, 3> expected_result1_1{5, 7, 9, 5, 7, 9, 5, 7, 9, 5, 7, 9};
-  Tensor<int32_t, 4, 2> expected_result1_2{6, 15, 6, 15, 6, 15, 6, 15};
+  {
+    Tensor<int32_t, 2, 3> input{1, 2, 3, 4, 5, 6};
+    int64_t dimension = 0;
+    Tensor<int32_t, 3> expected_result{5, 7, 9};
+    Tensor<int32_t, 3> result =
+        tosa::reduce_sum<Tensor<int32_t, 3>>(input, dimension);
 
-  Tensor<int32_t, 3> result0_0 = tosa::reduce_sum<Tensor<int32_t, 3>>(t0, 0);
-  Tensor<int32_t, 2> result0_1 = tosa::reduce_sum<Tensor<int32_t, 2>>(t0, 1);
-  Tensor<int32_t, 2, 3> result1_0 =
-      tosa::reduce_sum<Tensor<int32_t, 2, 3>>(t1, 0);
-  Tensor<int32_t, 4, 3> result1_1 =
-      tosa::reduce_sum<Tensor<int32_t, 4, 3>>(t1, 1);
-  Tensor<int32_t, 4, 2> result1_2 =
-      tosa::reduce_sum<Tensor<int32_t, 4, 2>>(t1, 2);
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+  {
+    Tensor<int32_t, 2, 3> input{1, 2, 3, 4, 5, 6};
+    int64_t dimension = 1;
+    Tensor<int32_t, 2> expected_result{6, 15};
+    Tensor<int32_t, 2> result =
+        tosa::reduce_sum<Tensor<int32_t, 2>>(input, dimension);
 
-  EXPECT_THAT(result0_0, Pointwise(Eq(), expected_result0_0));
-  EXPECT_THAT(result0_1, Pointwise(Eq(), expected_result0_1));
-  EXPECT_THAT(result1_0, Pointwise(Eq(), expected_result1_0));
-  EXPECT_THAT(result1_1, Pointwise(Eq(), expected_result1_1));
-  EXPECT_THAT(result1_2, Pointwise(Eq(), expected_result1_2));
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+  {
+    Tensor<int32_t, 4, 2, 3> input{1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6,
+                                   1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6};
+    int64_t dimension = 0;
+    Tensor<int32_t, 2, 3> expected_result{4, 8, 12, 16, 20, 24};
+    Tensor<int32_t, 2, 3> result =
+        tosa::reduce_sum<Tensor<int32_t, 2, 3>>(input, dimension);
+
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+  {
+    Tensor<int32_t, 4, 2, 3> input{1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6,
+                                   1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6};
+    int64_t dimension = 1;
+    Tensor<int32_t, 4, 3> expected_result{5, 7, 9, 5, 7, 9, 5, 7, 9, 5, 7, 9};
+    Tensor<int32_t, 4, 3> result =
+        tosa::reduce_sum<Tensor<int32_t, 4, 3>>(input, dimension);
+
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+  {
+    Tensor<int32_t, 4, 2, 3> input{1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6,
+                                   1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6};
+    int64_t dimension = 2;
+    Tensor<int32_t, 4, 2> expected_result{6, 15, 6, 15, 6, 15, 6, 15};
+    Tensor<int32_t, 4, 2> result =
+        tosa::reduce_sum<Tensor<int32_t, 4, 2>>(input, dimension);
+
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
 }
 
 TEST(tosa, reshape) {

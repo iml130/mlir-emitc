@@ -1140,40 +1140,68 @@ TEST(tosa, reshape) {
 }
 
 TEST(tosa, slice) {
-  // Slice Tensor1D
-  Tensor1D<float, 5> s1{0.0f, 1.0f, 2.0f, 3.0f, 4.0f};
-  auto t1 = tosa::slice<Tensor1D<float, 2>>(s1, {2}, {2});
-  EXPECT_THAT(t1, Pointwise(FloatEq(), {2.0f, 3.0f}));
+  {
+    Tensor1D<float, 5> x{0.0f, 1.0f, 2.0f, 3.0f, 4.0f};
+    Tensor<int64_t, 1> start_indices = {2};
+    Tensor<int64_t, 1> slice_sizes = {2};
+    Tensor1D<float, 2> result =
+        tosa::slice<Tensor1D<float, 2>>(x, start_indices, slice_sizes);
+    Tensor1D<float, 2> expected_result = {2.0f, 3.0f};
 
-  // Slice Tensor2D
-  Tensor2D<float, 4, 3> s2{0.0f, 1.0f, 2.0f, 3.0f, 4.0f,  5.0f,
-                           6.0f, 7.0f, 8.0f, 9.0f, 10.0f, 11.0f};
-  auto t2 = tosa::slice<Tensor2D<float, 2, 2>>(s2, {2, 1}, {2, 2});
+    EXPECT_THAT(expected_result, Pointwise(FloatEq(), result));
+  }
+  {
+    Tensor2D<float, 4, 3> x{0.0f, 1.0f, 2.0f, 3.0f, 4.0f,  5.0f,
+                            6.0f, 7.0f, 8.0f, 9.0f, 10.0f, 11.0f};
+    Tensor<int64_t, 2> start_indices = {2, 1};
+    Tensor<int64_t, 2> slice_sizes = {2, 2};
+    Tensor2D<float, 2, 2> result =
+        tosa::slice<Tensor2D<float, 2, 2>>(x, start_indices, slice_sizes);
+    Tensor2D<float, 2, 2> expected_result = {7.0f, 8.0f, 10.0f, 11.0f};
 
-  EXPECT_THAT(t2, Pointwise(FloatEq(), {7.0f, 8.0f, 10.0f, 11.0f}));
+    EXPECT_THAT(result, Pointwise(FloatEq(), expected_result));
+  }
+  {
+    Tensor3D<float, 4, 3, 2> x{0.0f,  1.0f,  2.0f,  3.0f,  4.0f,  5.0f,
+                               6.0f,  7.0f,  8.0f,  9.0f,  10.0f, 11.0f,
+                               12.0f, 13.0f, 14.0f, 15.0f, 16.0f, 17.0f,
+                               18.0f, 19.0f, 20.0f, 21.0f, 22.0f, 23.0f};
+    Tensor<int64_t, 3> start_indices = {2, 1, 0};
+    Tensor<int64_t, 3> slice_sizes = {2, 2, 2};
+    Tensor3D<float, 2, 2, 2> result =
+        tosa::slice<Tensor3D<float, 2, 2, 2>>(x, start_indices, slice_sizes);
+    Tensor3D<float, 2, 2, 2> expected_result = {14.0f, 15.0f, 16.0f, 17.0f,
+                                                20.0f, 21.0f, 22.0f, 23.0f};
 
-  // Slice Tensor3D
-  Tensor3D<float, 4, 3, 2> s3{0.0f,  1.0f,  2.0f,  3.0f,  4.0f,  5.0f,
-                              6.0f,  7.0f,  8.0f,  9.0f,  10.0f, 11.0f,
-                              12.0f, 13.0f, 14.0f, 15.0f, 16.0f, 17.0f,
-                              18.0f, 19.0f, 20.0f, 21.0f, 22.0f, 23.0f};
-  auto t3 = tosa::slice<Tensor3D<float, 2, 2, 2>>(s3, {2, 1, 0}, {2, 2, 2});
-  EXPECT_THAT(t3, Pointwise(FloatEq(), {14.0f, 15.0f, 16.0f, 17.0f, 20.0f,
-                                        21.0f, 22.0f, 23.0f}));
+    EXPECT_THAT(result, Pointwise(FloatEq(), expected_result));
+  }
+  {
+    Tensor4D<float, 4, 3, 1, 2> x{0.0f,  1.0f,  2.0f,  3.0f,  4.0f,  5.0f,
+                                  6.0f,  7.0f,  8.0f,  9.0f,  10.0f, 11.0f,
+                                  12.0f, 13.0f, 14.0f, 15.0f, 16.0f, 17.0f,
+                                  18.0f, 19.0f, 20.0f, 21.0f, 22.0f, 23.0f};
+    Tensor<int64_t, 4> start_indices = {2, 1, 0, 0};
+    Tensor<int64_t, 4> slice_sizes = {2, 2, 1, 2};
+    Tensor4D<float, 2, 2, 1, 2> result =
+        tosa::slice<Tensor4D<float, 2, 2, 1, 2>>(x, start_indices, slice_sizes);
+    Tensor4D<float, 2, 2, 1, 2> expected_result = {14.0f, 15.0f, 16.0f, 17.0f,
+                                                   20.0f, 21.0f, 22.0f, 23.0f};
 
-  // Slice Tensor4D
-  Tensor4D<float, 4, 3, 1, 2> s4{0.0f,  1.0f,  2.0f,  3.0f,  4.0f,  5.0f,
-                                 6.0f,  7.0f,  8.0f,  9.0f,  10.0f, 11.0f,
-                                 12.0f, 13.0f, 14.0f, 15.0f, 16.0f, 17.0f,
-                                 18.0f, 19.0f, 20.0f, 21.0f, 22.0f, 23.0f};
-  auto t4 =
-      tosa::slice<Tensor4D<float, 2, 2, 1, 2>>(s4, {2, 1, 0, 0}, {2, 2, 1, 2});
-  EXPECT_THAT(t4, Pointwise(FloatEq(), {14.0f, 15.0f, 16.0f, 17.0f, 20.0f,
-                                        21.0f, 22.0f, 23.0f}));
+    EXPECT_THAT(result, Pointwise(FloatEq(), expected_result));
+  }
+  {
+    Tensor4D<float, 4, 3, 1, 2> x{0.0f,  1.0f,  2.0f,  3.0f,  4.0f,  5.0f,
+                                  6.0f,  7.0f,  8.0f,  9.0f,  10.0f, 11.0f,
+                                  12.0f, 13.0f, 14.0f, 15.0f, 16.0f, 17.0f,
+                                  18.0f, 19.0f, 20.0f, 21.0f, 22.0f, 23.0f};
+    Tensor<int64_t, 4> start_indices = {0, 0, 0, 0};
+    Tensor<int64_t, 4> slice_sizes = {4, 3, 1, 2};
+    Tensor4D<float, 4, 3, 1, 2> result =
+        tosa::slice<Tensor4D<float, 4, 3, 1, 2>>(x, start_indices, slice_sizes);
+    Tensor4D<float, 4, 3, 1, 2> expected_result = x;
 
-  auto t4_2 =
-      tosa::slice<Tensor4D<float, 4, 3, 1, 2>>(s4, {0, 0, 0, 0}, {4, 3, 1, 2});
-  EXPECT_THAT(t4_2, Pointwise(FloatEq(), s4));
+    EXPECT_THAT(result, Pointwise(FloatEq(), expected_result));
+  }
 }
 
 TEST(tosa, pad) {

@@ -411,12 +411,75 @@ TEST(tosa, equal) {
 }
 
 TEST(tosa, greater_equal) {
-  Tensor3D<int32_t, 2, 2, 1> s0{3, 2, -1, -5};
-  Tensor3D<int32_t, 2, 2, 1> t0{3, -2, 0, -3};
-  Tensor3D<bool, 2, 2, 1> expected_result{true, true, false, false};
-  Tensor3D<bool, 2, 2, 1> result =
-      tosa::greater_equal<Tensor<bool, 2, 2, 1>>(s0, t0);
-  EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  {
+    Tensor0D<int32_t> x{0};
+    Tensor0D<int32_t> y{0};
+    Tensor0D<bool> expected_result{true};
+    Tensor0D<bool> result = tosa::greater_equal<Tensor0D<bool>>(x, y);
+
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+  {
+    Tensor1D<float, 2> x{0.1f, 0.1f};
+    Tensor1D<float, 2> y{-0.1f, 0.1f};
+    Tensor1D<bool, 2> expected_result{true, true};
+    Tensor1D<bool, 2> result = tosa::greater_equal<Tensor1D<bool, 2>>(x, y);
+
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+  {
+    Tensor2D<double, 2, 2> x{1., 1., -1., 0.1};
+    Tensor2D<double, 2, 2> y{1., 0., 1., 0.11};
+    Tensor2D<bool, 2, 2> expected_result{true, true, false, false};
+    Tensor2D<bool, 2, 2> result =
+        tosa::greater_equal<Tensor2D<bool, 2, 2>>(x, y);
+
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+  {
+    Tensor3D<int32_t, 1, 3, 2> x{std::numeric_limits<int32_t>::min(),
+                                 std::numeric_limits<int32_t>::min(),
+                                 std::numeric_limits<int32_t>::max(),
+                                 std::numeric_limits<int32_t>::max(),
+                                 -1,
+                                 0};
+    Tensor3D<int32_t, 1, 3, 2> y{std::numeric_limits<int32_t>::max(),
+                                 std::numeric_limits<int32_t>::min(),
+                                 std::numeric_limits<int32_t>::max(),
+                                 std::numeric_limits<int32_t>::min(),
+                                 std::numeric_limits<int32_t>::max(),
+                                 -2};
+    Tensor3D<bool, 1, 3, 2> expected_result{false, true,  true,
+                                            true,  false, true};
+    Tensor3D<bool, 1, 3, 2> result =
+        tosa::greater_equal<Tensor3D<bool, 1, 3, 2>>(x, y);
+
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+  {
+    Tensor4D<float, 2, 1, 2, 2> x{std::numeric_limits<float>::quiet_NaN(),
+                                  std::numeric_limits<float>::infinity(),
+                                  std::numeric_limits<float>::quiet_NaN(),
+                                  0.f,
+                                  std::numeric_limits<float>::infinity(),
+                                  std::numeric_limits<float>::infinity(),
+                                  std::numeric_limits<float>::min(),
+                                  std::numeric_limits<float>::min()};
+    Tensor4D<float, 2, 1, 2, 2> y{0.f,
+                                  std::numeric_limits<float>::quiet_NaN(),
+                                  std::numeric_limits<float>::quiet_NaN(),
+                                  -0.f,
+                                  -std::numeric_limits<float>::infinity(),
+                                  std::numeric_limits<float>::infinity(),
+                                  std::numeric_limits<float>::max(),
+                                  std::numeric_limits<float>::min()};
+    Tensor4D<bool, 2, 1, 2, 2> expected_result{false, false, false, true,
+                                               true,  true,  false, true};
+    Tensor4D<bool, 2, 1, 2, 2> result =
+        tosa::greater_equal<Tensor4D<bool, 2, 1, 2, 2>>(x, y);
+
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
 }
 
 TEST(tosa, logical_left_shift) {

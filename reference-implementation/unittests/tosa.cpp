@@ -483,11 +483,49 @@ TEST(tosa, greater_equal) {
 }
 
 TEST(tosa, logical_left_shift) {
-  Tensor1D<int16_t, 4> s0{0b1, 0b1, -0b1, 0b101};
-  Tensor1D<int16_t, 4> t0{0, 1, 1, 2};
-  Tensor1D<int16_t, 4> expected_result{0b1, 0b10, -0b10, 0b10100};
-  Tensor1D<int16_t, 4> result = tosa::logical_left_shift(s0, t0);
-  EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  {
+    Tensor0D<int8_t> x{0b1110010};
+    Tensor0D<int8_t> y{6};
+    Tensor0D<int8_t> expected_result{-0x80};
+    Tensor0D<int8_t> result = tosa::logical_left_shift(x, y);
+
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+  {
+    Tensor1D<int16_t, 4> x{0, 0, 0x7fff, 0x7fff};
+    Tensor1D<int16_t, 4> y{0, 15, 0, 15};
+    Tensor1D<int16_t, 4> expected_result{0, 0, 0x7FFF, -0x8000};
+    Tensor1D<int16_t, 4> result = tosa::logical_left_shift(x, y);
+
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+  {
+    Tensor2D<int32_t, 2, 2> x{0b1, 0b1, -0b1, 0b101};
+    Tensor2D<int32_t, 2, 2> y{0, 1, 1, 2};
+    Tensor2D<int32_t, 2, 2> expected_result{0b1, 0b10, -0b10, 0b10100};
+    Tensor2D<int32_t, 2, 2> result = tosa::logical_left_shift(x, y);
+
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+  {
+    Tensor3D<int8_t, 1, 3, 2> x{0x7f, 0x7f, -0x80, -0x80, 0x7e, -0x7f};
+    Tensor3D<int8_t, 1, 3, 2> y{0, 5, 0, 1, 5, 6};
+    Tensor3D<int8_t, 1, 3, 2> expected_result{0x7F, -0x20, -0x80,
+                                              0,    -0x40, 0x40};
+    Tensor3D<int8_t, 1, 3, 2> result = tosa::logical_left_shift(x, y);
+
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+  {
+    Tensor4D<int16_t, 2, 1, 2, 2> x{0x7fff, -0x8000, 0,     0x7fff,
+                                    -1,     0b10,    -0b11, 0b100};
+    Tensor4D<int16_t, 2, 1, 2, 2> y{7, 6, 5, 4, 3, 2, 1, 0};
+    Tensor4D<int16_t, 2, 1, 2, 2> expected_result{
+        -0x80, 0, 0, -0x10, -0b1000, 0b1000, -0b110, 0b100};
+    Tensor4D<int16_t, 2, 1, 2, 2> result = tosa::logical_left_shift(x, y);
+
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
 }
 
 TEST(tosa, mul) { //....

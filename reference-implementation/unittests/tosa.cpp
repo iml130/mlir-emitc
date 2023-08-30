@@ -1122,21 +1122,33 @@ TEST(tosa, reduce_sum) {
 }
 
 TEST(tosa, reshape) {
-  Tensor2D<int, 1, 2> t0 = {1, 2};
-  Tensor3D<int, 1, 1, 2> s0 = tosa::reshape<Tensor3D<int, 1, 1, 2>>(t0);
-  EXPECT_THAT(s0, Pointwise(Eq(), t0));
+  {
+    Tensor2D<int, 1, 2> x = {1, 2};
+    Tensor3D<int, 1, 1, 2> result = tosa::reshape<Tensor3D<int, 1, 1, 2>>(x);
 
-  Tensor3D<int, 2, 1, 2> t1 = {1, 2, 3, 4};
-  Tensor3D<int, 1, 2, 2> s1 = tosa::reshape<Tensor3D<int, 1, 2, 2>>(t1);
-  EXPECT_THAT(s1, Pointwise(Eq(), t1));
+    EXPECT_THAT(result, Pointwise(Eq(), x));
+  }
 
-  Tensor1D<int, 10> t2 = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
-  Tensor2D<int, 2, 5> s2 = tosa::reshape<Tensor2D<int, 2, 5>>(t2);
-  EXPECT_THAT(s2, Pointwise(Eq(), t2));
+  {
+    Tensor3D<int, 2, 1, 2> x = {1, 2, 3, 4};
+    Tensor3D<int, 1, 2, 2> result = tosa::reshape<Tensor3D<int, 1, 2, 2>>(x);
 
-  Tensor3D<int, 2, 2, 2> t3 = {1, 2, 3, 4, 5, 6, 7, 8};
-  Tensor1D<int, 8> s3 = tosa::reshape<Tensor1D<int, 8>>(t3);
-  EXPECT_THAT(s3, Pointwise(Eq(), t3));
+    EXPECT_THAT(result, Pointwise(Eq(), x));
+  }
+
+  {
+    Tensor1D<int, 10> x = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+    Tensor2D<int, 2, 5> result = tosa::reshape<Tensor2D<int, 2, 5>>(x);
+
+    EXPECT_THAT(result, Pointwise(Eq(), x));
+  }
+
+  {
+    Tensor3D<int, 2, 2, 2> x = {1, 2, 3, 4, 5, 6, 7, 8};
+    Tensor1D<int, 8> result = tosa::reshape<Tensor1D<int, 8>>(x);
+
+    EXPECT_THAT(result, Pointwise(Eq(), x));
+  }
 }
 
 TEST(tosa, slice) {

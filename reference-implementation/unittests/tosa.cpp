@@ -296,19 +296,46 @@ TEST(tosa, rescale) {
 // Binary elementwise ops
 TEST(tosa, arithmetic_right_shift) {
   {
-    Tensor1D<int16_t, 5> in1{0b10, 0b10, -0b10, 0b1, -0b1};
-    Tensor1D<int16_t, 5> in2{0, 1, 1, 1, 1};
-    bool round = false;
-    Tensor1D<int16_t, 5> expected_result{0b10, 0b1, -0b1, 0b0, -0b1};
-    Tensor1D<int16_t, 5> result = tosa::arithmetic_right_shift(in1, in2, round);
+    Tensor0D<int32_t> x{0};
+    Tensor0D<int32_t> y{31};
+    bool round = true;
+    Tensor0D<int32_t> expected_result{0};
+    Tensor0D<int32_t> result = tosa::arithmetic_right_shift(x, y, round);
     EXPECT_THAT(result, Pointwise(Eq(), expected_result));
   }
   {
-    Tensor1D<int16_t, 4> in1{0b1, 0b1, 0b10, 0b110};
-    Tensor1D<int16_t, 4> in2{0, 1, 1, 2};
+    Tensor1D<int16_t, 2> x{0, 0};
+    Tensor1D<int16_t, 2> y{0, 15};
+    bool round = false;
+    Tensor1D<int16_t, 2> expected_result{0, 0};
+    Tensor1D<int16_t, 2> result = tosa::arithmetic_right_shift(x, y, round);
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+  {
+    Tensor2D<int32_t, 2, 2> x{0b1, 0b1, 0b10, 0b110};
+    Tensor2D<int32_t, 2, 2> y{0, 1, 1, 2};
     bool round = true;
-    Tensor1D<int16_t, 4> expected_result{0b1, 0b1, 0b1, 0b10};
-    Tensor1D<int16_t, 4> result = tosa::arithmetic_right_shift(in1, in2, round);
+    Tensor2D<int32_t, 2, 2> expected_result{0b1, 0b1, 0b1, 0b10};
+    Tensor2D<int32_t, 2, 2> result = tosa::arithmetic_right_shift(x, y, round);
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+  {
+    Tensor3D<int8_t, 1, 3, 2> x{0x7f, 0x7f, -0x80, -0x80, 0x7e, -0x7f};
+    Tensor3D<int8_t, 1, 3, 2> y{0, 7, 0, 7, 6, 6};
+    bool round = false;
+    Tensor3D<int8_t, 1, 3, 2> expected_result{0x7F, 0, -0x80, -1, 1, -2};
+    Tensor3D<int8_t, 1, 3, 2> result =
+        tosa::arithmetic_right_shift(x, y, round);
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+  {
+    Tensor4D<int16_t, 2, 1, 2, 2> x{0x7fff, -0x8000, 0, 0x7fff, -1, 2, -3, 4};
+    Tensor4D<int16_t, 2, 1, 2, 2> y{7, 6, 5, 4, 3, 2, 1, 0};
+    bool round = true;
+    Tensor4D<int16_t, 2, 1, 2, 2> expected_result{256, -512, 0,  2048,
+                                                  0,   1,    -1, 4};
+    Tensor4D<int16_t, 2, 1, 2, 2> result =
+        tosa::arithmetic_right_shift(x, y, round);
     EXPECT_THAT(result, Pointwise(Eq(), expected_result));
   }
 }
@@ -338,7 +365,7 @@ TEST(tosa, logical_left_shift) {
   EXPECT_THAT(result, Pointwise(Eq(), expected_result));
 }
 
-TEST(tosa, mul) {
+TEST(tosa, mul) { //....
   // no shift
   Tensor2D<long, 2, 2> s0{3, 1, 4, 9};
   Tensor2D<long, 2, 2> t0{-2, 8, 6, -10};

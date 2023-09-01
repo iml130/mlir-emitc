@@ -1,2 +1,2 @@
-tensorflow==2.12.0
+tf-nightly==2.15.0.dev20230828
 wrapt==1.14.1

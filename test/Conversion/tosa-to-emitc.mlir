@@ -259,8 +259,8 @@ func.func @test_select_broadcast_all_elements(%arg0: tensor<12x6x1xi1>, %arg1: t
 // Other ops
 
 func.func @test_concat(%arg0: tensor<13x21x3xf32>, %arg1: tensor<13x21x3xf32>, %arg2: tensor<13x21x3xf32>, %arg3: tensor<13x21x3xf32>) -> tensor<52x21x3xf32> {
-  // CHECK: %0 = emitc.call "emitc::tosa::concat"(%arg0, %arg1, %arg2, %arg3) {template_args = [0, tensor<52x21x3xf32>]} : (tensor<13x21x3xf32>, tensor<13x21x3xf32>, tensor<13x21x3xf32>, tensor<13x21x3xf32>) -> tensor<52x21x3xf32>
-  %0 = "tosa.concat"(%arg0, %arg1, %arg2, %arg3) {axis = 0} : (tensor<13x21x3xf32>, tensor<13x21x3xf32>, tensor<13x21x3xf32>, tensor<13x21x3xf32>) -> tensor<52x21x3xf32>
+  // CHECK: %0 = emitc.call "emitc::tosa::concat"(%arg0, %arg1, %arg2, %arg3) {template_args = [0 : i32, tensor<52x21x3xf32>]} : (tensor<13x21x3xf32>, tensor<13x21x3xf32>, tensor<13x21x3xf32>, tensor<13x21x3xf32>) -> tensor<52x21x3xf32>
+  %0 = "tosa.concat"(%arg0, %arg1, %arg2, %arg3) {axis = 0 : i32} : (tensor<13x21x3xf32>, tensor<13x21x3xf32>, tensor<13x21x3xf32>, tensor<13x21x3xf32>) -> tensor<52x21x3xf32>
   return %0 : tensor<52x21x3xf32>
 }
 
@@ -311,52 +311,52 @@ func.func @test_matmul(%arg0: tensor<1x14x19xf32>, %arg1: tensor<1x19x28xf32>) -
 }
 
 func.func @test_argmax(%arg0: tensor<13x21x3xi32>) -> tensor<21x3xi32> {
-  // CHECK: %0 = emitc.call "emitc::tosa::argmax"(%arg0) {args = [0 : index, 0], template_args = [tensor<21x3xi32>, tensor<13x21x3xi32>]} : (tensor<13x21x3xi32>) -> tensor<21x3xi32>
-  %0 = "tosa.argmax"(%arg0) {axis = 0 : i64} : (tensor<13x21x3xi32>) -> tensor<21x3xi32>
+  // CHECK: %0 = emitc.call "emitc::tosa::argmax"(%arg0) {args = [0 : index, 0 : i32], template_args = [tensor<21x3xi32>, tensor<13x21x3xi32>]} : (tensor<13x21x3xi32>) -> tensor<21x3xi32>
+  %0 = "tosa.argmax"(%arg0) {axis = 0 : i32} : (tensor<13x21x3xi32>) -> tensor<21x3xi32>
   return %0 : tensor<21x3xi32>
 }
 
 // Reduce ops
 
 func.func @test_reduce_all(%arg0: tensor<13x21x3xi1>) -> tensor<1x21x3xi1> {
-  // CHECK: %0 = emitc.call "emitc::tosa::reduce_all"(%arg0) {args = [0 : index, 0], template_args = [tensor<21x3xi1>, tensor<13x21x3xi1>]} : (tensor<13x21x3xi1>) -> tensor<21x3xi1>
+  // CHECK: %0 = emitc.call "emitc::tosa::reduce_all"(%arg0) {args = [0 : index, 0 : i32], template_args = [tensor<21x3xi1>, tensor<13x21x3xi1>]} : (tensor<13x21x3xi1>) -> tensor<21x3xi1>
   // CHECK: %1 = emitc.call "emitc::tosa::reshape"(%0) {template_args = [tensor<1x21x3xi1>]} : (tensor<21x3xi1>) -> tensor<1x21x3xi1>
-  %0 = "tosa.reduce_all"(%arg0) {axis = 0 : i64} : (tensor<13x21x3xi1>) -> tensor<1x21x3xi1>
+  %0 = "tosa.reduce_all"(%arg0) {axis = 0 : i32} : (tensor<13x21x3xi1>) -> tensor<1x21x3xi1>
   return %0 : tensor<1x21x3xi1>
 }
 
 func.func @test_reduce_any(%arg0: tensor<13x21x3xi1>) -> tensor<13x1x3xi1> {
-  // CHECK: %0 = emitc.call "emitc::tosa::reduce_any"(%arg0) {args = [0 : index, 1], template_args = [tensor<13x3xi1>, tensor<13x21x3xi1>]} : (tensor<13x21x3xi1>) -> tensor<13x3xi1>
+  // CHECK: %0 = emitc.call "emitc::tosa::reduce_any"(%arg0) {args = [0 : index, 1 : i32], template_args = [tensor<13x3xi1>, tensor<13x21x3xi1>]} : (tensor<13x21x3xi1>) -> tensor<13x3xi1>
   // %1 = emitc.call "emitc::tosa::reshape"(%0) {template_args = [tensor<13x1x3xi1>]} : (tensor<13x3xi1>) -> tensor<13x1x3xi1>
-  %0 = "tosa.reduce_any"(%arg0) {axis = 1 : i64} : (tensor<13x21x3xi1>) -> tensor<13x1x3xi1>
+  %0 = "tosa.reduce_any"(%arg0) {axis = 1 : i32} : (tensor<13x21x3xi1>) -> tensor<13x1x3xi1>
   return %0 : tensor<13x1x3xi1>
 }
 
 func.func @test_reduce_max(%arg0: tensor<13x21x3xf32>) -> tensor<1x21x3xf32> {
-  // CHECK: %0 = emitc.call "emitc::tosa::reduce_max"(%arg0) {args = [0 : index, 0], template_args = [tensor<21x3xf32>, tensor<13x21x3xf32>]} : (tensor<13x21x3xf32>) -> tensor<21x3xf32>
+  // CHECK: %0 = emitc.call "emitc::tosa::reduce_max"(%arg0) {args = [0 : index, 0 : i32], template_args = [tensor<21x3xf32>, tensor<13x21x3xf32>]} : (tensor<13x21x3xf32>) -> tensor<21x3xf32>
   // CHECK: %1 = emitc.call "emitc::tosa::reshape"(%0) {template_args = [tensor<1x21x3xf32>]} : (tensor<21x3xf32>) -> tensor<1x21x3xf32>
-  %0 = "tosa.reduce_max"(%arg0) {axis = 0 : i64} : (tensor<13x21x3xf32>) -> tensor<1x21x3xf32>
+  %0 = "tosa.reduce_max"(%arg0) {axis = 0 : i32} : (tensor<13x21x3xf32>) -> tensor<1x21x3xf32>
   return %0 : tensor<1x21x3xf32>
 }
 
 func.func @test_reduce_min(%arg0: tensor<13x21x3xf32>) -> tensor<13x1x3xf32> {
-  // CHECK: %0 = emitc.call "emitc::tosa::reduce_min"(%arg0) {args = [0 : index, 1], template_args = [tensor<13x3xf32>, tensor<13x21x3xf32>]} : (tensor<13x21x3xf32>) -> tensor<13x3xf32>
+  // CHECK: %0 = emitc.call "emitc::tosa::reduce_min"(%arg0) {args = [0 : index, 1 : i32], template_args = [tensor<13x3xf32>, tensor<13x21x3xf32>]} : (tensor<13x21x3xf32>) -> tensor<13x3xf32>
   // CHECK: %1 = emitc.call "emitc::tosa::reshape"(%0) {template_args = [tensor<13x1x3xf32>]} : (tensor<13x3xf32>) -> tensor<13x1x3xf32>
-  %0 = "tosa.reduce_min"(%arg0) {axis = 1 : i64} : (tensor<13x21x3xf32>) -> tensor<13x1x3xf32>
+  %0 = "tosa.reduce_min"(%arg0) {axis = 1 : i32} : (tensor<13x21x3xf32>) -> tensor<13x1x3xf32>
   return %0 : tensor<13x1x3xf32>
 }
 
 func.func @test_reduce_prod(%arg0: tensor<13x21x3xf32>) -> tensor<1x21x3xf32> {
-  // CHECK: %0 = emitc.call "emitc::tosa::reduce_prod"(%arg0) {args = [0 : index, 0], template_args = [tensor<21x3xf32>, tensor<13x21x3xf32>]} : (tensor<13x21x3xf32>) -> tensor<21x3xf32>
+  // CHECK: %0 = emitc.call "emitc::tosa::reduce_prod"(%arg0) {args = [0 : index, 0 : i32], template_args = [tensor<21x3xf32>, tensor<13x21x3xf32>]} : (tensor<13x21x3xf32>) -> tensor<21x3xf32>
   // CHECK: %1 = emitc.call "emitc::tosa::reshape"(%0) {template_args = [tensor<1x21x3xf32>]} : (tensor<21x3xf32>) -> tensor<1x21x3xf32>
-  %0 = "tosa.reduce_prod"(%arg0) {axis = 0 : i64} : (tensor<13x21x3xf32>) -> tensor<1x21x3xf32>
+  %0 = "tosa.reduce_prod"(%arg0) {axis = 0 : i32} : (tensor<13x21x3xf32>) -> tensor<1x21x3xf32>
   return %0 : tensor<1x21x3xf32>
 }
 
 func.func @test_reduce_sum(%arg0: tensor<13x21x3xf32>) -> tensor<13x1x3xf32> {
-  // CHECK: %0 = emitc.call "emitc::tosa::reduce_sum"(%arg0) {args = [0 : index, 1], template_args = [tensor<13x3xf32>, tensor<13x21x3xf32>]} : (tensor<13x21x3xf32>) -> tensor<13x3xf32>
+  // CHECK: %0 = emitc.call "emitc::tosa::reduce_sum"(%arg0) {args = [0 : index, 1 : i32], template_args = [tensor<13x3xf32>, tensor<13x21x3xf32>]} : (tensor<13x21x3xf32>) -> tensor<13x3xf32>
   // CHECK: %1 = emitc.call "emitc::tosa::reshape"(%0) {template_args = [tensor<13x1x3xf32>]} : (tensor<13x3xf32>) -> tensor<13x1x3xf32>
-  %0 = "tosa.reduce_sum"(%arg0) {axis = 1 : i64} : (tensor<13x21x3xf32>) -> tensor<13x1x3xf32>
+  %0 = "tosa.reduce_sum"(%arg0) {axis = 1 : i32} : (tensor<13x21x3xf32>) -> tensor<13x1x3xf32>
   return %0 : tensor<13x1x3xf32>
 }
 

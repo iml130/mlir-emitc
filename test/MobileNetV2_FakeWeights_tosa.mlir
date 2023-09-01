@@ -716,8 +716,8 @@ module attributes {tf.versions = {bad_consumers = [], min_consumer = 12 : i32, p
     %712 = "tosa.reshape"(%56) {new_shape = array<i64: 1, 1, 1, 1280>} : (tensor<1280xf32>) -> tensor<1x1x1x1280xf32>
     %713 = "tosa.add"(%711, %712) : (tensor<1x7x7x1280xf32>, tensor<1x1x1x1280xf32>) -> tensor<1x7x7x1280xf32>
     %714 = "tosa.clamp"(%713) {max_fp = 6.000000e+00 : f32, max_int = 6 : i64, min_fp = 0.000000e+00 : f32, min_int = 0 : i64} : (tensor<1x7x7x1280xf32>) -> tensor<1x7x7x1280xf32>
-    %715 = "tosa.reduce_sum"(%714) {axis = 1 : i64} : (tensor<1x7x7x1280xf32>) -> tensor<1x1x7x1280xf32>
-    %716 = "tosa.reduce_sum"(%715) {axis = 2 : i64} : (tensor<1x1x7x1280xf32>) -> tensor<1x1x1x1280xf32>
+    %715 = "tosa.reduce_sum"(%714) {axis = 1 : i32} : (tensor<1x7x7x1280xf32>) -> tensor<1x1x7x1280xf32>
+    %716 = "tosa.reduce_sum"(%715) {axis = 2 : i32} : (tensor<1x1x7x1280xf32>) -> tensor<1x1x1x1280xf32>
     %717 = "tosa.reshape"(%716) {new_shape = array<i64: 1, 1280>} : (tensor<1x1x1x1280xf32>) -> tensor<1x1280xf32>
     %718 = "tosa.reshape"(%0) {new_shape = array<i64: 1, 1>} : (tensor<f32>) -> tensor<1x1xf32>
     %719 = "tosa.mul"(%717, %718) {shift = 0 : i32} : (tensor<1x1280xf32>, tensor<1x1xf32>) -> tensor<1x1280xf32>
@@ -728,7 +728,7 @@ module attributes {tf.versions = {bad_consumers = [], min_consumer = 12 : i32, p
     %724 = "tosa.reshape"(%58) {new_shape = array<i64: 1, 1000>} : (tensor<1000xf32>) -> tensor<1x1000xf32>
     %725 = "tosa.add"(%723, %724) : (tensor<1x1000xf32>, tensor<1x1000xf32>) -> tensor<1x1000xf32>
     %726 = "tosa.exp"(%725) : (tensor<1x1000xf32>) -> tensor<1x1000xf32>
-    %727 = "tosa.reduce_sum"(%726) {axis = 1 : i64} : (tensor<1x1000xf32>) -> tensor<1x1xf32>
+    %727 = "tosa.reduce_sum"(%726) {axis = 1 : i32} : (tensor<1x1000xf32>) -> tensor<1x1xf32>
     %728 = "tosa.reciprocal"(%727) : (tensor<1x1xf32>) -> tensor<1x1xf32>
     %729 = "tosa.mul"(%726, %728) {shift = 0 : i32} : (tensor<1x1000xf32>, tensor<1x1xf32>) -> tensor<1x1000xf32>
     return %729 : tensor<1x1000xf32>

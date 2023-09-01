@@ -528,7 +528,7 @@ TEST(tosa, logical_left_shift) {
   }
 }
 
-TEST(tosa, mul) { //....
+TEST(tosa, mul) {
   // no shift
   Tensor2D<long, 2, 2> s0{3, 1, 4, 9};
   Tensor2D<long, 2, 2> t0{-2, 8, 6, -10};

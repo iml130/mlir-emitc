@@ -296,46 +296,236 @@ TEST(tosa, rescale) {
 // Binary elementwise ops
 TEST(tosa, arithmetic_right_shift) {
   {
-    Tensor1D<int16_t, 5> in1{0b10, 0b10, -0b10, 0b1, -0b1};
-    Tensor1D<int16_t, 5> in2{0, 1, 1, 1, 1};
-    bool round = false;
-    Tensor1D<int16_t, 5> expected_result{0b10, 0b1, -0b1, 0b0, -0b1};
-    Tensor1D<int16_t, 5> result = tosa::arithmetic_right_shift(in1, in2, round);
+    Tensor0D<int32_t> x{0};
+    Tensor0D<int32_t> y{31};
+    bool round = true;
+    Tensor0D<int32_t> expected_result{0};
+    Tensor0D<int32_t> result = tosa::arithmetic_right_shift(x, y, round);
     EXPECT_THAT(result, Pointwise(Eq(), expected_result));
   }
   {
-    Tensor1D<int16_t, 4> in1{0b1, 0b1, 0b10, 0b110};
-    Tensor1D<int16_t, 4> in2{0, 1, 1, 2};
+    Tensor1D<int16_t, 2> x{0, 0};
+    Tensor1D<int16_t, 2> y{0, 15};
+    bool round = false;
+    Tensor1D<int16_t, 2> expected_result{0, 0};
+    Tensor1D<int16_t, 2> result = tosa::arithmetic_right_shift(x, y, round);
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+  {
+    Tensor2D<int32_t, 2, 2> x{0b1, 0b1, 0b10, 0b110};
+    Tensor2D<int32_t, 2, 2> y{0, 1, 1, 2};
     bool round = true;
-    Tensor1D<int16_t, 4> expected_result{0b1, 0b1, 0b1, 0b10};
-    Tensor1D<int16_t, 4> result = tosa::arithmetic_right_shift(in1, in2, round);
+    Tensor2D<int32_t, 2, 2> expected_result{0b1, 0b1, 0b1, 0b10};
+    Tensor2D<int32_t, 2, 2> result = tosa::arithmetic_right_shift(x, y, round);
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+  {
+    Tensor3D<int8_t, 1, 3, 2> x{0x7f, 0x7f, -0x80, -0x80, 0x7e, -0x7f};
+    Tensor3D<int8_t, 1, 3, 2> y{0, 7, 0, 7, 6, 6};
+    bool round = false;
+    Tensor3D<int8_t, 1, 3, 2> expected_result{0x7F, 0, -0x80, -1, 1, -2};
+    Tensor3D<int8_t, 1, 3, 2> result =
+        tosa::arithmetic_right_shift(x, y, round);
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+  {
+    Tensor4D<int16_t, 2, 1, 2, 2> x{0x7fff, -0x8000, 0, 0x7fff, -1, 2, -3, 4};
+    Tensor4D<int16_t, 2, 1, 2, 2> y{7, 6, 5, 4, 3, 2, 1, 0};
+    bool round = true;
+    Tensor4D<int16_t, 2, 1, 2, 2> expected_result{256, -512, 0,  2048,
+                                                  0,   1,    -1, 4};
+    Tensor4D<int16_t, 2, 1, 2, 2> result =
+        tosa::arithmetic_right_shift(x, y, round);
     EXPECT_THAT(result, Pointwise(Eq(), expected_result));
   }
 }
 
 TEST(tosa, equal) {
-  Tensor2D<int32_t, 2, 2> s0{3, 2, -1, 0};
-  Tensor2D<int32_t, 2, 2> t0{3, -2, 0, 0};
-  Tensor2D<bool, 2, 2> expected_result{true, false, false, true};
-  Tensor2D<bool, 2, 2> result = tosa::equal<Tensor<bool, 2, 2>>(s0, t0);
-  EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  {
+    Tensor0D<int32_t> x{0};
+    Tensor0D<int32_t> y{0};
+    Tensor0D<bool> expected_result{true};
+    Tensor0D<bool> result = tosa::equal<Tensor0D<bool>>(x, y);
+
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+  {
+    Tensor1D<float, 2> x{0.1f, 0.1f};
+    Tensor1D<float, 2> y{-0.1f, 0.1f};
+    Tensor1D<bool, 2> expected_result{false, true};
+    Tensor1D<bool, 2> result = tosa::equal<Tensor1D<bool, 2>>(x, y);
+
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+  {
+    Tensor2D<double, 2, 2> x{1., 1., 1., 0.1};
+    Tensor2D<double, 2, 2> y{1., 0., -1., 0.11};
+    Tensor2D<bool, 2, 2> expected_result{true, false, false, false};
+    Tensor2D<bool, 2, 2> result = tosa::equal<Tensor2D<bool, 2, 2>>(x, y);
+
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+  {
+    Tensor3D<int32_t, 1, 3, 2> x{std::numeric_limits<int32_t>::min(),
+                                 std::numeric_limits<int32_t>::min(),
+                                 std::numeric_limits<int32_t>::max(),
+                                 std::numeric_limits<int32_t>::max(),
+                                 -1,
+                                 -1};
+    Tensor3D<int32_t, 1, 3, 2> y{std::numeric_limits<int32_t>::max(),
+                                 std::numeric_limits<int32_t>::min(),
+                                 std::numeric_limits<int32_t>::max(),
+                                 std::numeric_limits<int32_t>::min(),
+                                 std::numeric_limits<int32_t>::max(),
+                                 0};
+    Tensor3D<bool, 1, 3, 2> expected_result{false, true,  true,
+                                            false, false, false};
+    Tensor3D<bool, 1, 3, 2> result = tosa::equal<Tensor3D<bool, 1, 3, 2>>(x, y);
+
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+  {
+    Tensor4D<float, 2, 1, 2, 2> x{std::numeric_limits<float>::quiet_NaN(),
+                                  std::numeric_limits<float>::infinity(),
+                                  std::numeric_limits<float>::quiet_NaN(),
+                                  0.f,
+                                  std::numeric_limits<float>::infinity(),
+                                  std::numeric_limits<float>::infinity(),
+                                  std::numeric_limits<float>::min(),
+                                  std::numeric_limits<float>::min()};
+    Tensor4D<float, 2, 1, 2, 2> y{0.f,
+                                  std::numeric_limits<float>::quiet_NaN(),
+                                  std::numeric_limits<float>::quiet_NaN(),
+                                  -0.f,
+                                  -std::numeric_limits<float>::infinity(),
+                                  std::numeric_limits<float>::infinity(),
+                                  std::numeric_limits<float>::max(),
+                                  std::numeric_limits<float>::min()};
+    Tensor4D<bool, 2, 1, 2, 2> expected_result{false, false, false, true,
+                                               false, true,  false, true};
+    Tensor4D<bool, 2, 1, 2, 2> result =
+        tosa::equal<Tensor4D<bool, 2, 1, 2, 2>>(x, y);
+
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
 }
 
 TEST(tosa, greater_equal) {
-  Tensor3D<int32_t, 2, 2, 1> s0{3, 2, -1, -5};
-  Tensor3D<int32_t, 2, 2, 1> t0{3, -2, 0, -3};
-  Tensor3D<bool, 2, 2, 1> expected_result{true, true, false, false};
-  Tensor3D<bool, 2, 2, 1> result =
-      tosa::greater_equal<Tensor<bool, 2, 2, 1>>(s0, t0);
-  EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  {
+    Tensor0D<int32_t> x{0};
+    Tensor0D<int32_t> y{0};
+    Tensor0D<bool> expected_result{true};
+    Tensor0D<bool> result = tosa::greater_equal<Tensor0D<bool>>(x, y);
+
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+  {
+    Tensor1D<float, 2> x{0.1f, 0.1f};
+    Tensor1D<float, 2> y{-0.1f, 0.1f};
+    Tensor1D<bool, 2> expected_result{true, true};
+    Tensor1D<bool, 2> result = tosa::greater_equal<Tensor1D<bool, 2>>(x, y);
+
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+  {
+    Tensor2D<double, 2, 2> x{1., 1., -1., 0.1};
+    Tensor2D<double, 2, 2> y{1., 0., 1., 0.11};
+    Tensor2D<bool, 2, 2> expected_result{true, true, false, false};
+    Tensor2D<bool, 2, 2> result =
+        tosa::greater_equal<Tensor2D<bool, 2, 2>>(x, y);
+
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+  {
+    Tensor3D<int32_t, 1, 3, 2> x{std::numeric_limits<int32_t>::min(),
+                                 std::numeric_limits<int32_t>::min(),
+                                 std::numeric_limits<int32_t>::max(),
+                                 std::numeric_limits<int32_t>::max(),
+                                 -1,
+                                 0};
+    Tensor3D<int32_t, 1, 3, 2> y{std::numeric_limits<int32_t>::max(),
+                                 std::numeric_limits<int32_t>::min(),
+                                 std::numeric_limits<int32_t>::max(),
+                                 std::numeric_limits<int32_t>::min(),
+                                 std::numeric_limits<int32_t>::max(),
+                                 -2};
+    Tensor3D<bool, 1, 3, 2> expected_result{false, true,  true,
+                                            true,  false, true};
+    Tensor3D<bool, 1, 3, 2> result =
+        tosa::greater_equal<Tensor3D<bool, 1, 3, 2>>(x, y);
+
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+  {
+    Tensor4D<float, 2, 1, 2, 2> x{std::numeric_limits<float>::quiet_NaN(),
+                                  std::numeric_limits<float>::infinity(),
+                                  std::numeric_limits<float>::quiet_NaN(),
+                                  0.f,
+                                  std::numeric_limits<float>::infinity(),
+                                  std::numeric_limits<float>::infinity(),
+                                  std::numeric_limits<float>::min(),
+                                  std::numeric_limits<float>::min()};
+    Tensor4D<float, 2, 1, 2, 2> y{0.f,
+                                  std::numeric_limits<float>::quiet_NaN(),
+                                  std::numeric_limits<float>::quiet_NaN(),
+                                  -0.f,
+                                  -std::numeric_limits<float>::infinity(),
+                                  std::numeric_limits<float>::infinity(),
+                                  std::numeric_limits<float>::max(),
+                                  std::numeric_limits<float>::min()};
+    Tensor4D<bool, 2, 1, 2, 2> expected_result{false, false, false, true,
+                                               true,  true,  false, true};
+    Tensor4D<bool, 2, 1, 2, 2> result =
+        tosa::greater_equal<Tensor4D<bool, 2, 1, 2, 2>>(x, y);
+
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
 }
 
 TEST(tosa, logical_left_shift) {
-  Tensor1D<int16_t, 4> s0{0b1, 0b1, -0b1, 0b101};
-  Tensor1D<int16_t, 4> t0{0, 1, 1, 2};
-  Tensor1D<int16_t, 4> expected_result{0b1, 0b10, -0b10, 0b10100};
-  Tensor1D<int16_t, 4> result = tosa::logical_left_shift(s0, t0);
-  EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  {
+    Tensor0D<int8_t> x{0b1110010};
+    Tensor0D<int8_t> y{6};
+    Tensor0D<int8_t> expected_result{-0x80};
+    Tensor0D<int8_t> result = tosa::logical_left_shift(x, y);
+
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+  {
+    Tensor1D<int16_t, 4> x{0, 0, 0x7fff, 0x7fff};
+    Tensor1D<int16_t, 4> y{0, 15, 0, 15};
+    Tensor1D<int16_t, 4> expected_result{0, 0, 0x7FFF, -0x8000};
+    Tensor1D<int16_t, 4> result = tosa::logical_left_shift(x, y);
+
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+  {
+    Tensor2D<int32_t, 2, 2> x{0b1, 0b1, -0b1, 0b101};
+    Tensor2D<int32_t, 2, 2> y{0, 1, 1, 2};
+    Tensor2D<int32_t, 2, 2> expected_result{0b1, 0b10, -0b10, 0b10100};
+    Tensor2D<int32_t, 2, 2> result = tosa::logical_left_shift(x, y);
+
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+  {
+    Tensor3D<int8_t, 1, 3, 2> x{0x7f, 0x7f, -0x80, -0x80, 0x7e, -0x7f};
+    Tensor3D<int8_t, 1, 3, 2> y{0, 5, 0, 1, 5, 6};
+    Tensor3D<int8_t, 1, 3, 2> expected_result{0x7F, -0x20, -0x80,
+                                              0,    -0x40, 0x40};
+    Tensor3D<int8_t, 1, 3, 2> result = tosa::logical_left_shift(x, y);
+
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+  {
+    Tensor4D<int16_t, 2, 1, 2, 2> x{0x7fff, -0x8000, 0,     0x7fff,
+                                    -1,     0b10,    -0b11, 0b100};
+    Tensor4D<int16_t, 2, 1, 2, 2> y{7, 6, 5, 4, 3, 2, 1, 0};
+    Tensor4D<int16_t, 2, 1, 2, 2> expected_result{
+        -0x80, 0, 0, -0x10, -0b1000, 0b1000, -0b110, 0b100};
+    Tensor4D<int16_t, 2, 1, 2, 2> result = tosa::logical_left_shift(x, y);
+
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
 }
 
 TEST(tosa, mul) {
@@ -944,84 +1134,149 @@ TEST(tosa, reduce_prod) {
 }
 
 TEST(tosa, reduce_sum) {
-  Tensor<int32_t, 2, 3> t0{1, 2, 3, 4, 5, 6};
-  Tensor<int32_t, 4, 2, 3> t1{1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6,
-                              1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6};
-  Tensor<int32_t, 3> expected_result0_0{5, 7, 9};
-  Tensor<int32_t, 2> expected_result0_1{6, 15};
-  Tensor<int32_t, 2, 3> expected_result1_0{4, 8, 12, 16, 20, 24};
-  Tensor<int32_t, 4, 3> expected_result1_1{5, 7, 9, 5, 7, 9, 5, 7, 9, 5, 7, 9};
-  Tensor<int32_t, 4, 2> expected_result1_2{6, 15, 6, 15, 6, 15, 6, 15};
+  {
+    Tensor<int32_t, 2, 3> input{1, 2, 3, 4, 5, 6};
+    int64_t dimension = 0;
+    Tensor<int32_t, 3> expected_result{5, 7, 9};
+    Tensor<int32_t, 3> result =
+        tosa::reduce_sum<Tensor<int32_t, 3>>(input, dimension);
 
-  Tensor<int32_t, 3> result0_0 = tosa::reduce_sum<Tensor<int32_t, 3>>(t0, 0);
-  Tensor<int32_t, 2> result0_1 = tosa::reduce_sum<Tensor<int32_t, 2>>(t0, 1);
-  Tensor<int32_t, 2, 3> result1_0 =
-      tosa::reduce_sum<Tensor<int32_t, 2, 3>>(t1, 0);
-  Tensor<int32_t, 4, 3> result1_1 =
-      tosa::reduce_sum<Tensor<int32_t, 4, 3>>(t1, 1);
-  Tensor<int32_t, 4, 2> result1_2 =
-      tosa::reduce_sum<Tensor<int32_t, 4, 2>>(t1, 2);
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+  {
+    Tensor<int32_t, 2, 3> input{1, 2, 3, 4, 5, 6};
+    int64_t dimension = 1;
+    Tensor<int32_t, 2> expected_result{6, 15};
+    Tensor<int32_t, 2> result =
+        tosa::reduce_sum<Tensor<int32_t, 2>>(input, dimension);
 
-  EXPECT_THAT(result0_0, Pointwise(Eq(), expected_result0_0));
-  EXPECT_THAT(result0_1, Pointwise(Eq(), expected_result0_1));
-  EXPECT_THAT(result1_0, Pointwise(Eq(), expected_result1_0));
-  EXPECT_THAT(result1_1, Pointwise(Eq(), expected_result1_1));
-  EXPECT_THAT(result1_2, Pointwise(Eq(), expected_result1_2));
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+  {
+    Tensor<int32_t, 4, 2, 3> input{1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6,
+                                   1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6};
+    int64_t dimension = 0;
+    Tensor<int32_t, 2, 3> expected_result{4, 8, 12, 16, 20, 24};
+    Tensor<int32_t, 2, 3> result =
+        tosa::reduce_sum<Tensor<int32_t, 2, 3>>(input, dimension);
+
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+  {
+    Tensor<int32_t, 4, 2, 3> input{1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6,
+                                   1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6};
+    int64_t dimension = 1;
+    Tensor<int32_t, 4, 3> expected_result{5, 7, 9, 5, 7, 9, 5, 7, 9, 5, 7, 9};
+    Tensor<int32_t, 4, 3> result =
+        tosa::reduce_sum<Tensor<int32_t, 4, 3>>(input, dimension);
+
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
+  {
+    Tensor<int32_t, 4, 2, 3> input{1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6,
+                                   1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6};
+    int64_t dimension = 2;
+    Tensor<int32_t, 4, 2> expected_result{6, 15, 6, 15, 6, 15, 6, 15};
+    Tensor<int32_t, 4, 2> result =
+        tosa::reduce_sum<Tensor<int32_t, 4, 2>>(input, dimension);
+
+    EXPECT_THAT(result, Pointwise(Eq(), expected_result));
+  }
 }
 
 TEST(tosa, reshape) {
-  Tensor2D<int, 1, 2> t0 = {1, 2};
-  Tensor3D<int, 1, 1, 2> s0 = tosa::reshape<Tensor3D<int, 1, 1, 2>>(t0);
-  EXPECT_THAT(s0, Pointwise(Eq(), t0));
+  {
+    Tensor2D<int, 1, 2> x = {1, 2};
+    Tensor3D<int, 1, 1, 2> result = tosa::reshape<Tensor3D<int, 1, 1, 2>>(x);
 
-  Tensor3D<int, 2, 1, 2> t1 = {1, 2, 3, 4};
-  Tensor3D<int, 1, 2, 2> s1 = tosa::reshape<Tensor3D<int, 1, 2, 2>>(t1);
-  EXPECT_THAT(s1, Pointwise(Eq(), t1));
+    EXPECT_THAT(result, Pointwise(Eq(), x));
+  }
 
-  Tensor1D<int, 10> t2 = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
-  Tensor2D<int, 2, 5> s2 = tosa::reshape<Tensor2D<int, 2, 5>>(t2);
-  EXPECT_THAT(s2, Pointwise(Eq(), t2));
+  {
+    Tensor3D<int, 2, 1, 2> x = {1, 2, 3, 4};
+    Tensor3D<int, 1, 2, 2> result = tosa::reshape<Tensor3D<int, 1, 2, 2>>(x);
 
-  Tensor3D<int, 2, 2, 2> t3 = {1, 2, 3, 4, 5, 6, 7, 8};
-  Tensor1D<int, 8> s3 = tosa::reshape<Tensor1D<int, 8>>(t3);
-  EXPECT_THAT(s3, Pointwise(Eq(), t3));
+    EXPECT_THAT(result, Pointwise(Eq(), x));
+  }
+
+  {
+    Tensor1D<int, 10> x = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+    Tensor2D<int, 2, 5> result = tosa::reshape<Tensor2D<int, 2, 5>>(x);
+
+    EXPECT_THAT(result, Pointwise(Eq(), x));
+  }
+
+  {
+    Tensor3D<int, 2, 2, 2> x = {1, 2, 3, 4, 5, 6, 7, 8};
+    Tensor1D<int, 8> result = tosa::reshape<Tensor1D<int, 8>>(x);
+
+    EXPECT_THAT(result, Pointwise(Eq(), x));
+  }
 }
 
 TEST(tosa, slice) {
-  // Slice Tensor1D
-  Tensor1D<float, 5> s1{0.0f, 1.0f, 2.0f, 3.0f, 4.0f};
-  auto t1 = tosa::slice<Tensor1D<float, 2>>(s1, {2}, {2});
-  EXPECT_THAT(t1, Pointwise(FloatEq(), {2.0f, 3.0f}));
+  {
+    Tensor1D<float, 5> x{0.0f, 1.0f, 2.0f, 3.0f, 4.0f};
+    Tensor<int64_t, 1> start_indices = {2};
+    Tensor<int64_t, 1> slice_sizes = {2};
+    Tensor1D<float, 2> result =
+        tosa::slice<Tensor1D<float, 2>>(x, start_indices, slice_sizes);
+    Tensor1D<float, 2> expected_result = {2.0f, 3.0f};
 
-  // Slice Tensor2D
-  Tensor2D<float, 4, 3> s2{0.0f, 1.0f, 2.0f, 3.0f, 4.0f,  5.0f,
-                           6.0f, 7.0f, 8.0f, 9.0f, 10.0f, 11.0f};
-  auto t2 = tosa::slice<Tensor2D<float, 2, 2>>(s2, {2, 1}, {2, 2});
+    EXPECT_THAT(expected_result, Pointwise(FloatEq(), result));
+  }
+  {
+    Tensor2D<float, 4, 3> x{0.0f, 1.0f, 2.0f, 3.0f, 4.0f,  5.0f,
+                            6.0f, 7.0f, 8.0f, 9.0f, 10.0f, 11.0f};
+    Tensor<int64_t, 2> start_indices = {2, 1};
+    Tensor<int64_t, 2> slice_sizes = {2, 2};
+    Tensor2D<float, 2, 2> result =
+        tosa::slice<Tensor2D<float, 2, 2>>(x, start_indices, slice_sizes);
+    Tensor2D<float, 2, 2> expected_result = {7.0f, 8.0f, 10.0f, 11.0f};
 
-  EXPECT_THAT(t2, Pointwise(FloatEq(), {7.0f, 8.0f, 10.0f, 11.0f}));
+    EXPECT_THAT(result, Pointwise(FloatEq(), expected_result));
+  }
+  {
+    Tensor3D<float, 4, 3, 2> x{0.0f,  1.0f,  2.0f,  3.0f,  4.0f,  5.0f,
+                               6.0f,  7.0f,  8.0f,  9.0f,  10.0f, 11.0f,
+                               12.0f, 13.0f, 14.0f, 15.0f, 16.0f, 17.0f,
+                               18.0f, 19.0f, 20.0f, 21.0f, 22.0f, 23.0f};
+    Tensor<int64_t, 3> start_indices = {2, 1, 0};
+    Tensor<int64_t, 3> slice_sizes = {2, 2, 2};
+    Tensor3D<float, 2, 2, 2> result =
+        tosa::slice<Tensor3D<float, 2, 2, 2>>(x, start_indices, slice_sizes);
+    Tensor3D<float, 2, 2, 2> expected_result = {14.0f, 15.0f, 16.0f, 17.0f,
+                                                20.0f, 21.0f, 22.0f, 23.0f};
 
-  // Slice Tensor3D
-  Tensor3D<float, 4, 3, 2> s3{0.0f,  1.0f,  2.0f,  3.0f,  4.0f,  5.0f,
-                              6.0f,  7.0f,  8.0f,  9.0f,  10.0f, 11.0f,
-                              12.0f, 13.0f, 14.0f, 15.0f, 16.0f, 17.0f,
-                              18.0f, 19.0f, 20.0f, 21.0f, 22.0f, 23.0f};
-  auto t3 = tosa::slice<Tensor3D<float, 2, 2, 2>>(s3, {2, 1, 0}, {2, 2, 2});
-  EXPECT_THAT(t3, Pointwise(FloatEq(), {14.0f, 15.0f, 16.0f, 17.0f, 20.0f,
-                                        21.0f, 22.0f, 23.0f}));
+    EXPECT_THAT(result, Pointwise(FloatEq(), expected_result));
+  }
+  {
+    Tensor4D<float, 4, 3, 1, 2> x{0.0f,  1.0f,  2.0f,  3.0f,  4.0f,  5.0f,
+                                  6.0f,  7.0f,  8.0f,  9.0f,  10.0f, 11.0f,
+                                  12.0f, 13.0f, 14.0f, 15.0f, 16.0f, 17.0f,
+                                  18.0f, 19.0f, 20.0f, 21.0f, 22.0f, 23.0f};
+    Tensor<int64_t, 4> start_indices = {2, 1, 0, 0};
+    Tensor<int64_t, 4> slice_sizes = {2, 2, 1, 2};
+    Tensor4D<float, 2, 2, 1, 2> result =
+        tosa::slice<Tensor4D<float, 2, 2, 1, 2>>(x, start_indices, slice_sizes);
+    Tensor4D<float, 2, 2, 1, 2> expected_result = {14.0f, 15.0f, 16.0f, 17.0f,
+                                                   20.0f, 21.0f, 22.0f, 23.0f};
 
-  // Slice Tensor4D
-  Tensor4D<float, 4, 3, 1, 2> s4{0.0f,  1.0f,  2.0f,  3.0f,  4.0f,  5.0f,
-                                 6.0f,  7.0f,  8.0f,  9.0f,  10.0f, 11.0f,
-                                 12.0f, 13.0f, 14.0f, 15.0f, 16.0f, 17.0f,
-                                 18.0f, 19.0f, 20.0f, 21.0f, 22.0f, 23.0f};
-  auto t4 =
-      tosa::slice<Tensor4D<float, 2, 2, 1, 2>>(s4, {2, 1, 0, 0}, {2, 2, 1, 2});
-  EXPECT_THAT(t4, Pointwise(FloatEq(), {14.0f, 15.0f, 16.0f, 17.0f, 20.0f,
-                                        21.0f, 22.0f, 23.0f}));
+    EXPECT_THAT(result, Pointwise(FloatEq(), expected_result));
+  }
+  {
+    Tensor4D<float, 4, 3, 1, 2> x{0.0f,  1.0f,  2.0f,  3.0f,  4.0f,  5.0f,
+                                  6.0f,  7.0f,  8.0f,  9.0f,  10.0f, 11.0f,
+                                  12.0f, 13.0f, 14.0f, 15.0f, 16.0f, 17.0f,
+                                  18.0f, 19.0f, 20.0f, 21.0f, 22.0f, 23.0f};
+    Tensor<int64_t, 4> start_indices = {0, 0, 0, 0};
+    Tensor<int64_t, 4> slice_sizes = {4, 3, 1, 2};
+    Tensor4D<float, 4, 3, 1, 2> result =
+        tosa::slice<Tensor4D<float, 4, 3, 1, 2>>(x, start_indices, slice_sizes);
+    Tensor4D<float, 4, 3, 1, 2> expected_result = x;
 
-  auto t4_2 =
-      tosa::slice<Tensor4D<float, 4, 3, 1, 2>>(s4, {0, 0, 0, 0}, {4, 3, 1, 2});
-  EXPECT_THAT(t4_2, Pointwise(FloatEq(), s4));
+    EXPECT_THAT(result, Pointwise(FloatEq(), expected_result));
+  }
 }
 
 TEST(tosa, pad) {

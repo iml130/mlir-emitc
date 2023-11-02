@@ -32,7 +32,7 @@ def generate_examples(model, count: int, seed: int, batch_size: int):
 
         dtype = model_input.dtype
 
-        if dtype == np.float32:
+        if dtype == "float32":
             return np.random.uniform(low=0.0, high=1.0,
                                      size=shape).astype(np.float32)
         else:

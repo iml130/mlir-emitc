@@ -4,10 +4,10 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 -->
 # SCF Op Coverage
 
-The table below shows the supported SCF ops.
+The table below shows the SCF ops, supported via `--convert-scf-to-emitc` **upstream** conversions.
 
 | op                    | supported          | comment |
 | :-------------------- |:------------------:| :------ |
-| for                   | :white_check_mark: | via `emitc-translate` |
-| if                    | :white_check_mark: | via `emitc-translate` |
-| yield                 | :white_check_mark: | via `emitc-translate` |
+| for                   | :heavy_check_mark: | |
+| if                    | :heavy_check_mark: | |
+| yield                 | :white_check_mark: | only as part of lowering `for` and `if` ops |

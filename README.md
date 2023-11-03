@@ -73,6 +73,7 @@ The `emitc-opt` tool supports the following options:
 
 | option                                     |                                                                          |
 | :----------------------------------------- |:------------------------------------------------------------------------ |
+| `--convert-scf-to-emitc`                   | Convert SCF dialect to EmitC dialect, maintaining structured control flow|
 | `--convert-stablehlo-region-ops-to-emitc ` | Convert StableHLO operations containing regions to EmitC dialect.        |
 | `--convert-stablehlo-to-emitc `            | Convert from StableHLO dialect to EmitC dialect.                         |
 | `--convert-arith-to-emitc `                | Convert arith dialect to EmitC dialect, replacing IndexCastOp.           |

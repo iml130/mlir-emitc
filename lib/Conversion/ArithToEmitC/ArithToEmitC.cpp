@@ -25,7 +25,7 @@ using namespace mlir::emitc;
 
 namespace {
 
-// Convert `arith.index_cast` into an `emitc.call` operation.
+// Convert `arith.index_cast` into an `emitc.call_opaque` operation.
 class IndexCastOpConversion : public OpConversionPattern<arith::IndexCastOp> {
   using OpConversionPattern<arith::IndexCastOp>::OpConversionPattern;
 
@@ -43,7 +43,7 @@ private:
     Type resultType = indexCastOp.getResult().getType();
     ArrayAttr templateArgs = rewriter.getArrayAttr({TypeAttr::get(resultType)});
 
-    rewriter.replaceOpWithNewOp<emitc::CallOp>(
+    rewriter.replaceOpWithNewOp<emitc::CallOpaqueOp>(
         indexCastOp, indexCastOp.getType(), callee, args, templateArgs,
         adaptor.getOperands());
 

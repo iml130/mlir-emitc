@@ -181,9 +181,9 @@ private:
 
     ArrayAttr templateArgs = ArrayAttr::get(ctx, templateArguments);
 
-    emitc::CallOp callOp = builder.create<emitc::CallOp>(
+    emitc::CallOpaqueOp callOpaqueOp = builder.create<emitc::CallOpaqueOp>(
         op.getLoc(), op.getResultTypes(), callee, args, templateArgs, operands);
-    op.replaceAllUsesWith(callOp);
+    op.replaceAllUsesWith(callOpaqueOp);
     op.erase();
     return success();
   }
@@ -217,9 +217,9 @@ private:
     ArrayAttr templateArgs =
         ArrayAttr::get(ctx, {TypeAttr::get(op.getResult(0).getType())});
 
-    emitc::CallOp callOp = builder.create<emitc::CallOp>(
+    emitc::CallOpaqueOp callOpaqueOp = builder.create<emitc::CallOpaqueOp>(
         op.getLoc(), op.getType(0), callee, args, templateArgs, operands);
-    op.replaceAllUsesWith(callOp);
+    op.replaceAllUsesWith(callOpaqueOp);
     op.erase();
     return success();
   }

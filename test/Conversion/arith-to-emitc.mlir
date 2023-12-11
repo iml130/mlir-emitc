@@ -12,9 +12,9 @@ func.func @arith_index_cast(%arg0: tensor<index>, %arg1: tensor<2xi32>, %arg2: t
   return %1 : tensor<2xindex>
 }
 // CHECK-LABEL: func @arith_index_cast
-//  CHECK-NEXT: emitc.call "emitc::arith::index_cast"(%arg0) {template_args = [tensor<i32>]} : (tensor<index>) -> tensor<i32>
-//  CHECK-NEXT: emitc.call "emitc::arith::index_cast"(%arg1) {template_args = [tensor<2xindex>]} : (tensor<2xi32>) -> tensor<2xindex>
-//  CHECK-NEXT: emitc.call "emitc::arith::index_cast"(%arg2) {template_args = [tensor<2x2xindex>]} : (tensor<2x2xi32>) -> tensor<2x2xindex>
+//  CHECK-NEXT: emitc.call_opaque "emitc::arith::index_cast"(%arg0) {template_args = [tensor<i32>]} : (tensor<index>) -> tensor<i32>
+//  CHECK-NEXT: emitc.call_opaque "emitc::arith::index_cast"(%arg1) {template_args = [tensor<2xindex>]} : (tensor<2xi32>) -> tensor<2xindex>
+//  CHECK-NEXT: emitc.call_opaque "emitc::arith::index_cast"(%arg2) {template_args = [tensor<2x2xindex>]} : (tensor<2x2xi32>) -> tensor<2x2xindex>
 
 // CPP-LABEL: Tensor<size_t, 2> arith_index_cast(Tensor<size_t> v1, Tensor<int32_t, 2> v2, Tensor<int32_t, 2, 2> v3)
 //  CPP-NEXT: emitc::arith::index_cast<Tensor<int32_t>>(v1)

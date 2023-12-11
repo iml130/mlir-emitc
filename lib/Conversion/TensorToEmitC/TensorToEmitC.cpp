@@ -25,7 +25,7 @@ using namespace mlir::emitc;
 
 namespace {
 
-/// Convert `tensor.extract` into an `emitc.call` operation.
+/// Convert `tensor.extract` into an `emitc.call_opaque` operation.
 class ExtractOpConversion : public OpConversionPattern<tensor::ExtractOp> {
   using OpConversionPattern<tensor::ExtractOp>::OpConversionPattern;
 
@@ -47,7 +47,7 @@ private:
     ArrayAttr args;
     ArrayAttr templateArgs;
 
-    rewriter.replaceOpWithNewOp<emitc::CallOp>(
+    rewriter.replaceOpWithNewOp<emitc::CallOpaqueOp>(
         indexCastOp, indexCastOp.getType(), callee, args, templateArgs,
         adaptor.getOperands());
 
@@ -55,7 +55,7 @@ private:
   }
 };
 
-/// Convert `tensor.splat` into an `emitc.call` operation.
+/// Convert `tensor.splat` into an `emitc.call_opaque` operation.
 class SplatOpConversion : public OpConversionPattern<tensor::SplatOp> {
   using OpConversionPattern<tensor::SplatOp>::OpConversionPattern;
 
@@ -73,9 +73,9 @@ private:
     Type resultType = splatOp.getResult().getType();
     ArrayAttr templateArgs = rewriter.getArrayAttr({TypeAttr::get(resultType)});
 
-    rewriter.replaceOpWithNewOp<emitc::CallOp>(splatOp, splatOp.getType(),
-                                               callee, args, templateArgs,
-                                               adaptor.getOperands());
+    rewriter.replaceOpWithNewOp<emitc::CallOpaqueOp>(splatOp, splatOp.getType(),
+                                                     callee, args, templateArgs,
+                                                     adaptor.getOperands());
 
     return success();
   }

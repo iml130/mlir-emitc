@@ -56,7 +56,8 @@ public:
   }
 };
 
-/// Convert `stablehlo.batch_norm_inference` into an `emitc.call` operation.
+/// Convert `stablehlo.batch_norm_inference` into an `emitc.call_opaque`
+/// operation.
 class BatchNormInferenceOpConversion
     : public OpConversionPattern<stablehlo::BatchNormInferenceOp> {
 
@@ -83,7 +84,7 @@ private:
         {TypeAttr::get(batchNormInferenceOp.getResult().getType()),
          TypeAttr::get(adaptor.getScale().getType())});
 
-    rewriter.replaceOpWithNewOp<emitc::CallOp>(
+    rewriter.replaceOpWithNewOp<emitc::CallOpaqueOp>(
         batchNormInferenceOp, batchNormInferenceOp.getType(), callee, args,
         templateArgs, adaptor.getOperands());
 
@@ -91,7 +92,7 @@ private:
   }
 };
 
-/// Convert `stablehlo.broadcast_in_dim` into an `emitc.call` operation.
+/// Convert `stablehlo.broadcast_in_dim` into an `emitc.call_opaque` operation.
 class BroadcastInDimOpConversion
     : public OpConversionPattern<stablehlo::BroadcastInDimOp> {
 
@@ -116,7 +117,7 @@ private:
     ArrayAttr templateArgs = rewriter.getArrayAttr(
         {TypeAttr::get(broadcastInDimOp.getResult().getType())});
 
-    rewriter.replaceOpWithNewOp<emitc::CallOp>(
+    rewriter.replaceOpWithNewOp<emitc::CallOpaqueOp>(
         broadcastInDimOp, broadcastInDimOp.getType(), callee, args,
         templateArgs, adaptor.getOperands());
 
@@ -124,7 +125,7 @@ private:
   }
 };
 
-/// Convert `stablehlo.concatenate` into an `emitc.call` operation.
+/// Convert `stablehlo.concatenate` into an `emitc.call_opaque` operation.
 class ConcatenateOpConversion
     : public OpConversionPattern<stablehlo::ConcatenateOp> {
 
@@ -144,7 +145,7 @@ private:
         {rewriter.getI64IntegerAttr(concatenateOp.getDimension()),
          TypeAttr::get(concatenateOp.getResult().getType())});
 
-    rewriter.replaceOpWithNewOp<emitc::CallOp>(
+    rewriter.replaceOpWithNewOp<emitc::CallOpaqueOp>(
         concatenateOp, concatenateOp.getType(), callee, args, templateArgs,
         adaptor.getOperands());
 
@@ -152,7 +153,7 @@ private:
   }
 };
 
-/// Convert `stablehlo.convolution` into an `emitc.call` operation.
+/// Convert `stablehlo.convolution` into an `emitc.call_opaque` operation.
 class ConvOpConversion : public OpConversionPattern<stablehlo::ConvolutionOp> {
 
 public:
@@ -206,15 +207,15 @@ private:
                                TypeAttr::get(adaptor.getLhs().getType()),
                                TypeAttr::get(adaptor.getRhs().getType())});
 
-    rewriter.replaceOpWithNewOp<emitc::CallOp>(convOp, convOp.getType(), callee,
-                                               args, templateArgs,
-                                               adaptor.getOperands());
+    rewriter.replaceOpWithNewOp<emitc::CallOpaqueOp>(convOp, convOp.getType(),
+                                                     callee, args, templateArgs,
+                                                     adaptor.getOperands());
 
     return success();
   }
 };
 
-/// Convert `stablehlo.compare` into an `emitc.call` operation.
+/// Convert `stablehlo.compare` into an `emitc.call_opaque` operation.
 class CompareOpConversion : public OpConversionPattern<stablehlo::CompareOp> {
   using OpConversionPattern<stablehlo::CompareOp>::OpConversionPattern;
 
@@ -252,15 +253,15 @@ private:
         {TypeAttr::get(elementType),
          emitc::OpaqueAttr::get(ctx, functionName.value())});
 
-    rewriter.replaceOpWithNewOp<emitc::CallOp>(compareOp, compareOp.getType(),
-                                               callee, args, templateArgs,
-                                               adaptor.getOperands());
+    rewriter.replaceOpWithNewOp<emitc::CallOpaqueOp>(
+        compareOp, compareOp.getType(), callee, args, templateArgs,
+        adaptor.getOperands());
 
     return success();
   }
 };
 
-/// Convert `stablehlo.get_tuple_element` into an `emitc.call` operation.
+/// Convert `stablehlo.get_tuple_element` into an `emitc.call_opaque` operation.
 class GetTupleElementOpConversion
     : public OpConversionPattern<stablehlo::GetTupleElementOp> {
   using OpConversionPattern<stablehlo::GetTupleElementOp>::OpConversionPattern;
@@ -282,7 +283,7 @@ private:
     ArrayAttr templateArgs = rewriter.getArrayAttr(
         {IntegerAttr::get(rewriter.getIntegerType(32), index)});
 
-    rewriter.replaceOpWithNewOp<emitc::CallOp>(
+    rewriter.replaceOpWithNewOp<emitc::CallOpaqueOp>(
         getTupleElementOp, getTupleElementOp.getType(), callee, args,
         templateArgs, adaptor.getOperands());
 
@@ -290,7 +291,7 @@ private:
   }
 };
 
-/// Convert `stablehlo.slice` into an `emitc.call` operation.
+/// Convert `stablehlo.slice` into an `emitc.call_opaque` operation.
 class SliceOpConversion : public OpConversionPattern<stablehlo::SliceOp> {
   using OpConversionPattern<stablehlo::SliceOp>::OpConversionPattern;
 
@@ -316,15 +317,15 @@ private:
     ArrayAttr templateArgs =
         rewriter.getArrayAttr({TypeAttr::get(sliceOp.getResult().getType())});
 
-    rewriter.replaceOpWithNewOp<emitc::CallOp>(sliceOp, sliceOp.getType(),
-                                               callee, args, templateArgs,
-                                               adaptor.getOperands());
+    rewriter.replaceOpWithNewOp<emitc::CallOpaqueOp>(sliceOp, sliceOp.getType(),
+                                                     callee, args, templateArgs,
+                                                     adaptor.getOperands());
 
     return success();
   }
 };
 
-/// Convert `stablehlo.dynamic_slice` into an `emitc.call` operation.
+/// Convert `stablehlo.dynamic_slice` into an `emitc.call_opaque` operation.
 class DynamicSliceOpConversion
     : public OpConversionPattern<stablehlo::DynamicSliceOp> {
   using OpConversionPattern<stablehlo::DynamicSliceOp>::OpConversionPattern;
@@ -350,7 +351,7 @@ private:
     ArrayAttr templateArgs = rewriter.getArrayAttr(
         {TypeAttr::get(dynamicSliceOp.getResult().getType())});
 
-    rewriter.replaceOpWithNewOp<emitc::CallOp>(
+    rewriter.replaceOpWithNewOp<emitc::CallOpaqueOp>(
         dynamicSliceOp, dynamicSliceOp.getType(), callee, args, templateArgs,
         adaptor.getOperands());
 
@@ -358,7 +359,8 @@ private:
   }
 };
 
-/// Convert `stablehlo.dynamic_update_slice` into an `emitc.call` operation.
+/// Convert `stablehlo.dynamic_update_slice` into an `emitc.call_opaque`
+/// operation.
 class DynamicUpdateSliceOpConversion
     : public OpConversionPattern<stablehlo::DynamicUpdateSliceOp> {
   using OpConversionPattern<
@@ -381,7 +383,7 @@ private:
     ArrayAttr templateArgs =
         rewriter.getArrayAttr({TypeAttr::get(adaptor.getUpdate().getType())});
 
-    rewriter.replaceOpWithNewOp<emitc::CallOp>(
+    rewriter.replaceOpWithNewOp<emitc::CallOpaqueOp>(
         dynamicUpdateSliceOp, dynamicUpdateSliceOp.getType(), callee, args,
         templateArgs, adaptor.getOperands());
 
@@ -389,7 +391,7 @@ private:
   }
 };
 
-/// Convert `stablehlo.pad` into an `emitc.call` operation.
+/// Convert `stablehlo.pad` into an `emitc.call_opaque` operation.
 class PadOpConversion : public OpConversionPattern<stablehlo::PadOp> {
   using OpConversionPattern<stablehlo::PadOp>::OpConversionPattern;
 
@@ -415,15 +417,15 @@ private:
     Type resultType = padOp.getResult().getType();
     ArrayAttr templateArgs = rewriter.getArrayAttr({TypeAttr::get(resultType)});
 
-    rewriter.replaceOpWithNewOp<emitc::CallOp>(padOp, padOp.getType(), callee,
-                                               args, templateArgs,
-                                               adaptor.getOperands());
+    rewriter.replaceOpWithNewOp<emitc::CallOpaqueOp>(padOp, padOp.getType(),
+                                                     callee, args, templateArgs,
+                                                     adaptor.getOperands());
 
     return success();
   }
 };
 
-/// Convert `stablehlo.transpose` into an `emitc.call` operation.
+/// Convert `stablehlo.transpose` into an `emitc.call_opaque` operation.
 class TransposeOpConversion
     : public OpConversionPattern<stablehlo::TransposeOp> {
   using OpConversionPattern<stablehlo::TransposeOp>::OpConversionPattern;
@@ -447,7 +449,7 @@ private:
     Type resultType = transposeOp.getResult().getType();
     ArrayAttr templateArgs = rewriter.getArrayAttr({TypeAttr::get(resultType)});
 
-    rewriter.replaceOpWithNewOp<emitc::CallOp>(
+    rewriter.replaceOpWithNewOp<emitc::CallOpaqueOp>(
         transposeOp, transposeOp.getType(), callee, args, templateArgs,
         adaptor.getOperands());
 
@@ -455,7 +457,7 @@ private:
   }
 };
 
-/// Convert `stablehlo.rng` into an `emitc.call` operation.
+/// Convert `stablehlo.rng` into an `emitc.call_opaque` operation.
 class RngOpConversion : public OpConversionPattern<stablehlo::RngOp> {
 
 public:
@@ -478,9 +480,9 @@ private:
     ArrayAttr templateArgs =
         rewriter.getArrayAttr({TypeAttr::get(rngOp.getType())});
 
-    rewriter.replaceOpWithNewOp<emitc::CallOp>(rngOp, rngOp.getType(), callee,
-                                               args, templateArgs,
-                                               adaptor.getOperands());
+    rewriter.replaceOpWithNewOp<emitc::CallOpaqueOp>(rngOp, rngOp.getType(),
+                                                     callee, args, templateArgs,
+                                                     adaptor.getOperands());
 
     return success();
   }

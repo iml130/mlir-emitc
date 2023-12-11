@@ -44,8 +44,7 @@ config.excludes = ['Inputs', 'Examples', 'CMakeLists.txt', 'README.txt', 'LICENS
 if not config.emitc_enable_hlo:
     config.excludes.extend(
         [
-            "mhlo-to-emitc.mlir",
-            "MobileNetV2_FakeWeights_mhlo.mlir",
+            "MobileNetV2_FakeWeights_stablehlo.mlir",
             "stablehlo-to-emitc.mlir",
         ]
     )

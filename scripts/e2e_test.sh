@@ -21,7 +21,7 @@ if [[ $# -ne 7 ]] ; then
   echo "Both a keras and a tensorflow saved model is supported."
   echo 
   echo "This script expects a python version in the PATH with a recent version of tensorflow installed."
-  echo "Tested with python 3.8.10 and tf-nightly 2.10.0.dev20220519"
+  echo "Tested with python 3.10.12 and tf-nightly 2.16.0.dev20231102"
 
   exit 1
 fi
@@ -59,6 +59,8 @@ python optimize_tf_dialect.py "$OUTPUT_DIR"/model_tf.mlir "$OUTPUT_DIR"/model_tf
 
 echo "Converting tf dialect to stablehlo dialect"
 python tf_to_hlo_dialect.py --hlo-dialect stablehlo "$OUTPUT_DIR"/model_tf_opt.mlir "$OUTPUT_DIR"/model_stablehlo.mlir
+
+"$EMITC_OPT" --canonicalize --inline --symbol-dce "$OUTPUT_DIR"/model_stablehlo.mlir > "$OUTPUT_DIR"/model_canon.mlir
 
 echo "Fixing function name"
 FUNCTION_NAME=$(grep -oe "@[^(]*" "$OUTPUT_DIR"/model_canon.mlir)

@@ -16,9 +16,9 @@ func.func @std_extract_element(%arg0: tensor<i32>, %arg1: tensor<2xi32> ) -> () 
 // CHECK-LABEL: func @std_extract_element
 //  CHECK-NEXT: constant 0 : index
 //  CHECK-NEXT: constant 1 : index
-//  CHECK-NEXT: emitc.call "emitc::tensor::extract"(%arg0) : (tensor<i32>) -> i32
-//  CHECK-NEXT: emitc.call "emitc::tensor::extract"(%arg1, %c0) : (tensor<2xi32>, index) -> i32
-//  CHECK-NEXT: emitc.call "emitc::tensor::extract"(%arg1, %c1) : (tensor<2xi32>, index) -> i32
+//  CHECK-NEXT: emitc.call_opaque "emitc::tensor::extract"(%arg0) : (tensor<i32>) -> i32
+//  CHECK-NEXT: emitc.call_opaque "emitc::tensor::extract"(%arg1, %c0) : (tensor<2xi32>, index) -> i32
+//  CHECK-NEXT: emitc.call_opaque "emitc::tensor::extract"(%arg1, %c1) : (tensor<2xi32>, index) -> i32
 
 // CPP-LABEL: void std_extract_element(Tensor<int32_t> v1, Tensor<int32_t, 2> v2)
 //  CPP-NEXT: size_t v3 = 0;
@@ -32,7 +32,7 @@ func.func @splat_op(%s : f32) -> tensor<8xf32> {
   return %t : tensor<8xf32>
 }
 // CHECK-LABEL: func @splat_op
-//  CHECK-NEXT: emitc.call "emitc::tensor::splat"(%arg0) {template_args = [tensor<8xf32>]} : (f32) -> tensor<8xf32>
+//  CHECK-NEXT: emitc.call_opaque "emitc::tensor::splat"(%arg0) {template_args = [tensor<8xf32>]} : (f32) -> tensor<8xf32>
 
 // CPP-LABEL: Tensor<float, 8> splat_op(float v1)
 //  CPP-NEXT: emitc::tensor::splat<Tensor<float, 8>>(v1)

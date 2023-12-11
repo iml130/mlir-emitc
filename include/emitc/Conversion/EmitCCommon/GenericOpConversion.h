@@ -18,7 +18,7 @@ namespace {
 using namespace mlir;
 using namespace mlir::emitc;
 
-/// Convert a common operation into an `emitc.call` operation.
+/// Convert a common operation into an `emitc.call_opaque` operation.
 template <typename SrcOp, typename Adaptor = typename SrcOp::Adaptor>
 class GenericOpConversion : public OpConversionPattern<SrcOp> {
   using OpConversionPattern<SrcOp>::OpConversionPattern;
@@ -57,9 +57,9 @@ private:
       templateArgs = ArrayAttr::get(srcOp.getContext(), templateArguments);
     }
 
-    rewriter.replaceOpWithNewOp<emitc::CallOp>(srcOp, srcOp.getType(), callee,
-                                               args, templateArgs,
-                                               adaptor.getOperands());
+    rewriter.replaceOpWithNewOp<emitc::CallOpaqueOp>(srcOp, srcOp.getType(),
+                                                     callee, args, templateArgs,
+                                                     adaptor.getOperands());
 
     return success();
   }

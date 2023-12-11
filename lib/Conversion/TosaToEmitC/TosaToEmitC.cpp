@@ -42,7 +42,7 @@ SmallVector<Attribute, 2> indexSequence(int64_t n, MLIRContext *ctx) {
       }));
 }
 
-/// Convert `tosa.concat` into an `emitc.call` operation.
+/// Convert `tosa.concat` into an `emitc.call_opaque` operation.
 class ConcatOpConversion : public OpConversionPattern<tosa::ConcatOp> {
 
 public:
@@ -61,9 +61,9 @@ private:
         rewriter.getArrayAttr({concatOp.getAxisAttr(),
                                TypeAttr::get(concatOp.getResult().getType())});
 
-    rewriter.replaceOpWithNewOp<emitc::CallOp>(concatOp, concatOp.getType(),
-                                               callee, args, templateArgs,
-                                               adaptor.getOperands());
+    rewriter.replaceOpWithNewOp<emitc::CallOpaqueOp>(
+        concatOp, concatOp.getType(), callee, args, templateArgs,
+        adaptor.getOperands());
 
     return success();
   }
@@ -82,7 +82,7 @@ public:
   }
 };
 
-/// Convert a common `tosa` convolution operation into an `emitc.call`
+/// Convert a common `tosa` convolution operation into an `emitc.call_opaque`
 /// operation.
 template <typename SrcOp, typename Adaptor = typename SrcOp::Adaptor>
 class GenericConvOpConversion : public OpConversionPattern<SrcOp> {
@@ -125,9 +125,9 @@ private:
         rewriter.getArrayAttr({TypeAttr::get(convOp.getResult().getType())});
 
     // Create conv op.
-    auto emitcConvOp =
-        rewriter.create<emitc::CallOp>(convOp->getLoc(), convOp.getType(),
-                                       callee, args, templateArgs, operands);
+    auto emitcConvOp = rewriter.create<emitc::CallOpaqueOp>(
+        convOp->getLoc(), convOp.getType(), callee, args, templateArgs,
+        operands);
 
     auto output = emitcConvOp.getResult(0);
     auto tosaAddOp = rewriter.create<tosa::AddOp>(
@@ -141,7 +141,7 @@ private:
   StringRef funcName;
 };
 
-/// Convert a common `tosa` pooling operation into an `emitc.call`
+/// Convert a common `tosa` pooling operation into an `emitc.call_opaque`
 /// operation.
 template <typename SrcOp, typename Adaptor = typename SrcOp::Adaptor>
 class GenericPoolOpConversion : public OpConversionPattern<SrcOp> {
@@ -171,9 +171,9 @@ private:
         rewriter.getArrayAttr({TypeAttr::get(poolOp.getResult().getType())});
 
     // Create pool op.
-    rewriter.replaceOpWithNewOp<emitc::CallOp>(poolOp, poolOp.getType(), callee,
-                                               args, templateArgs,
-                                               adaptor.getOperands());
+    rewriter.replaceOpWithNewOp<emitc::CallOpaqueOp>(poolOp, poolOp.getType(),
+                                                     callee, args, templateArgs,
+                                                     adaptor.getOperands());
 
     return success();
   }
@@ -181,7 +181,7 @@ private:
   StringRef funcName;
 };
 
-/// Convert `tosa.fully_connected` into an `emitc.call` operation.
+/// Convert `tosa.fully_connected` into an `emitc.call_opaque` operation.
 class FullyConnectedOpConversion
     : public OpConversionPattern<tosa::FullyConnectedOp> {
   using OpConversionPattern<tosa::FullyConnectedOp>::OpConversionPattern;
@@ -208,14 +208,14 @@ private:
     ArrayAttr templateArgs =
         ArrayAttr::get(fullyConnectedOp.getContext(), {TypeAttr::get(type)});
 
-    rewriter.replaceOpWithNewOp<emitc::CallOp>(fullyConnectedOp, type, callee,
-                                               args, templateArgs,
-                                               adaptor.getOperands());
+    rewriter.replaceOpWithNewOp<emitc::CallOpaqueOp>(fullyConnectedOp, type,
+                                                     callee, args, templateArgs,
+                                                     adaptor.getOperands());
     return success();
   }
 };
 
-/// Convert `tosa.matmul` into an `emitc.call` operation.
+/// Convert `tosa.matmul` into an `emitc.call_opaque` operation.
 class MatMulOpConversion : public OpConversionPattern<tosa::MatMulOp> {
   using OpConversionPattern<tosa::MatMulOp>::OpConversionPattern;
 
@@ -238,14 +238,14 @@ private:
     ArrayAttr args;
     ArrayAttr templateArgs;
 
-    rewriter.replaceOpWithNewOp<emitc::CallOp>(matMulOp, matMulOp.getType(),
-                                               callee, args, templateArgs,
-                                               adaptor.getOperands());
+    rewriter.replaceOpWithNewOp<emitc::CallOpaqueOp>(
+        matMulOp, matMulOp.getType(), callee, args, templateArgs,
+        adaptor.getOperands());
     return success();
   }
 };
 
-/// Convert `tosa.clamp` into an `emitc.call` operation.
+/// Convert `tosa.clamp` into an `emitc.call_opaque` operation.
 class ClampOpConversion : public OpConversionPattern<tosa::ClampOp> {
   using OpConversionPattern<tosa::ClampOp>::OpConversionPattern;
 
@@ -289,15 +289,15 @@ private:
     ArrayAttr args = rewriter.getArrayAttr(arguments);
     ArrayAttr templateArgs;
 
-    rewriter.replaceOpWithNewOp<emitc::CallOp>(clampOp, clampOp.getType(),
-                                               callee, args, templateArgs,
-                                               adaptor.getOperands());
+    rewriter.replaceOpWithNewOp<emitc::CallOpaqueOp>(clampOp, clampOp.getType(),
+                                                     callee, args, templateArgs,
+                                                     adaptor.getOperands());
 
     return success();
   }
 };
 
-/// Convert `tosa.negate` into an `emitc.call` operation.
+/// Convert `tosa.negate` into an `emitc.call_opaque` operation.
 class NegateOpConversion : public OpConversionPattern<tosa::NegateOp> {
   using OpConversionPattern<tosa::NegateOp>::OpConversionPattern;
 
@@ -320,14 +320,14 @@ private:
     ArrayAttr args;
     ArrayAttr templateArgs;
 
-    rewriter.replaceOpWithNewOp<emitc::CallOp>(negateOp, negateOp.getType(),
-                                               callee, args, templateArgs,
-                                               adaptor.getOperands());
+    rewriter.replaceOpWithNewOp<emitc::CallOpaqueOp>(
+        negateOp, negateOp.getType(), callee, args, templateArgs,
+        adaptor.getOperands());
     return success();
   }
 };
 
-/// Convert `tosa.rescale` into an `emitc.call` operation.
+/// Convert `tosa.rescale` into an `emitc.call_opaque` operation.
 class RescaleOpConversion : public OpConversionPattern<tosa::RescaleOp> {
   using OpConversionPattern<tosa::RescaleOp>::OpConversionPattern;
 
@@ -360,15 +360,15 @@ private:
         rewriter.getI32IntegerAttr(rescaleOp.getMultiplierAttr().size());
     ArrayAttr templateArgs = rewriter.getArrayAttr({resultType, arraySize});
 
-    rewriter.replaceOpWithNewOp<emitc::CallOp>(rescaleOp, rescaleOp.getType(),
-                                               callee, args, templateArgs,
-                                               adaptor.getOperands());
+    rewriter.replaceOpWithNewOp<emitc::CallOpaqueOp>(
+        rescaleOp, rescaleOp.getType(), callee, args, templateArgs,
+        adaptor.getOperands());
 
     return success();
   }
 };
 
-/// Convert `tosa.rsqrt` into an `emitc.call` operation.
+/// Convert `tosa.rsqrt` into an `emitc.call_opaque` operation.
 class RsqrtOpConversion : public OpConversionPattern<tosa::RsqrtOp> {
   using OpConversionPattern<tosa::RsqrtOp>::OpConversionPattern;
 
@@ -387,7 +387,7 @@ private:
     StringRef sqrtFuncName = "emitc::sqrt";
     StringAttr sqrtCallee = rewriter.getStringAttr(sqrtFuncName);
 
-    auto sqrtEmitCOp = rewriter.create<emitc::CallOp>(
+    auto sqrtEmitCOp = rewriter.create<emitc::CallOpaqueOp>(
         rsqrtOp.getLoc(), rsqrtOp.getType(), sqrtCallee, args, templateArgs,
         adaptor.getOperands());
 
@@ -395,7 +395,7 @@ private:
     StringRef reciprocalFuncName = "emitc::tosa::reciprocal";
     StringAttr reciprocalCallee = rewriter.getStringAttr(reciprocalFuncName);
 
-    auto reciprocalOp = rewriter.create<emitc::CallOp>(
+    auto reciprocalOp = rewriter.create<emitc::CallOpaqueOp>(
         sqrtEmitCOp.getLoc(), rsqrtOp.getType(), reciprocalCallee, args,
         templateArgs, sqrtEmitCOp.getResults());
 
@@ -452,7 +452,7 @@ createBroadcastOpIfNeeded(SrcOp &srcOp, Adaptor adaptor,
       ArrayAttr templateBroadcastArgs =
           rewriter.getArrayAttr({TypeAttr::get(newBroadcastType)});
 
-      auto broadcastArg = rewriter.create<emitc::CallOp>(
+      auto broadcastArg = rewriter.create<emitc::CallOpaqueOp>(
           srcOp->getLoc(), newBroadcastType, broadcastCallee, broadcastArgs,
           templateBroadcastArgs, operand);
       // Replace the original operand with the result of the broadcast_in_dim
@@ -466,7 +466,7 @@ createBroadcastOpIfNeeded(SrcOp &srcOp, Adaptor adaptor,
   return broadcastedOperands;
 }
 
-/// Convert a common, broadcastable `tosa` operation into an `emitc.call`
+/// Convert a common, broadcastable `tosa` operation into an `emitc.call_opaque`
 /// operation.
 template <typename SrcOp, typename Adaptor = typename SrcOp::Adaptor>
 class CallOpBroadcastableConversion : public OpConversionPattern<SrcOp> {
@@ -509,7 +509,7 @@ private:
     SmallVector<Value, 2> broadcastedOperands =
         createBroadcastOpIfNeeded(srcOp, adaptor, rewriter);
 
-    rewriter.replaceOpWithNewOp<emitc::CallOp>(
+    rewriter.replaceOpWithNewOp<emitc::CallOpaqueOp>(
         srcOp, srcOp.getType(), callee, args, templateArgs,
         ValueRange({broadcastedOperands[0], broadcastedOperands[1]}));
 
@@ -523,7 +523,7 @@ private:
   bool explicitOperandTypes;
 };
 
-/// Convert `tosa.mul` into an `emitc.call` operation.
+/// Convert `tosa.mul` into an `emitc.call_opaque` operation.
 class MulOpConversion : public OpConversionPattern<tosa::MulOp> {
   using OpConversionPattern<tosa::MulOp>::OpConversionPattern;
 
@@ -555,7 +555,7 @@ private:
     SmallVector<Value, 2> broadcastedOperands =
         createBroadcastOpIfNeeded(mulOp, adaptor, rewriter);
 
-    rewriter.replaceOpWithNewOp<emitc::CallOp>(
+    rewriter.replaceOpWithNewOp<emitc::CallOpaqueOp>(
         mulOp, mulOp.getType(), callee, args, templateArgs,
         ValueRange({broadcastedOperands[0], broadcastedOperands[1]}));
 
@@ -563,7 +563,7 @@ private:
   }
 };
 
-/// Convert `tosa.arithmetic_right_shift` into an `emitc.call` operation.
+/// Convert `tosa.arithmetic_right_shift` into an `emitc.call_opaque` operation.
 class ArithmeticRightShiftOpConversion
     : public OpConversionPattern<tosa::ArithmeticRightShiftOp> {
   using OpConversionPattern<tosa::ArithmeticRightShiftOp>::OpConversionPattern;
@@ -595,7 +595,7 @@ private:
     SmallVector<Value, 2> broadcastedOperands =
         createBroadcastOpIfNeeded(arithmeticRightShiftOp, adaptor, rewriter);
 
-    rewriter.replaceOpWithNewOp<emitc::CallOp>(
+    rewriter.replaceOpWithNewOp<emitc::CallOpaqueOp>(
         arithmeticRightShiftOp, arithmeticRightShiftOp.getType(), callee, args,
         templateArgs,
         ValueRange({broadcastedOperands[0], broadcastedOperands[1]}));
@@ -604,7 +604,7 @@ private:
   }
 };
 
-/// Convert `tosa.select` into an `emitc.call` operation.
+/// Convert `tosa.select` into an `emitc.call_opaque` operation.
 class SelectOpConversion : public OpConversionPattern<tosa::SelectOp> {
   using OpConversionPattern<tosa::SelectOp>::OpConversionPattern;
 
@@ -625,15 +625,15 @@ private:
     SmallVector<Value, 3> broadcastedOperands =
         createBroadcastOpIfNeeded(selectOp, adaptor, rewriter);
 
-    rewriter.replaceOpWithNewOp<emitc::CallOp>(selectOp, selectOp.getType(),
-                                               callee, args, templateArgs,
-                                               broadcastedOperands);
+    rewriter.replaceOpWithNewOp<emitc::CallOpaqueOp>(
+        selectOp, selectOp.getType(), callee, args, templateArgs,
+        broadcastedOperands);
 
     return success();
   }
 };
 
-/// Convert `tosa.reduce_*` into an `emitc.call` operation.
+/// Convert `tosa.reduce_*` into an `emitc.call_opaque` operation.
 template <typename SrcOp, typename Adaptor = typename SrcOp::Adaptor>
 class ReduceOpConversion : public OpConversionPattern<SrcOp> {
   using OpConversionPattern<SrcOp>::OpConversionPattern;
@@ -680,7 +680,7 @@ private:
           rewriter.getArrayAttr({TypeAttr::get(newOutputType),
                                  TypeAttr::get(reduceOp.getInput().getType())});
 
-      auto emitcReduceOp = rewriter.create<emitc::CallOp>(
+      auto emitcReduceOp = rewriter.create<emitc::CallOpaqueOp>(
           reduceOp.getLoc(), newOutputType, callee, args, templateArgs,
           adaptor.getOperands());
 
@@ -699,9 +699,9 @@ private:
       ArrayAttr templateArgs =
           rewriter.getArrayAttr({TypeAttr::get(reduceOp.getType()),
                                  TypeAttr::get(reduceOp.getInput().getType())});
-      rewriter.replaceOpWithNewOp<emitc::CallOp>(reduceOp, reduceOp.getType(),
-                                                 callee, args, templateArgs,
-                                                 adaptor.getOperands());
+      rewriter.replaceOpWithNewOp<emitc::CallOpaqueOp>(
+          reduceOp, reduceOp.getType(), callee, args, templateArgs,
+          adaptor.getOperands());
     }
 
     return success();
@@ -711,7 +711,7 @@ private:
   bool keepDims;
 };
 
-/// Convert `tosa.pad` into an `emitc.call` operation.
+/// Convert `tosa.pad` into an `emitc.call_opaque` operation.
 class PadOpConversion : public OpConversionPattern<tosa::PadOp> {
   using OpConversionPattern<tosa::PadOp>::OpConversionPattern;
 
@@ -736,15 +736,15 @@ private:
     Type resultType = padOp.getOutput().getType();
     ArrayAttr templateArgs = rewriter.getArrayAttr({TypeAttr::get(resultType)});
 
-    rewriter.replaceOpWithNewOp<emitc::CallOp>(padOp, padOp.getType(), callee,
-                                               args, templateArgs,
-                                               adaptor.getOperands());
+    rewriter.replaceOpWithNewOp<emitc::CallOpaqueOp>(padOp, padOp.getType(),
+                                                     callee, args, templateArgs,
+                                                     adaptor.getOperands());
 
     return success();
   }
 };
 
-/// Convert `tosa.slice` into an `emitc.call` operation.
+/// Convert `tosa.slice` into an `emitc.call_opaque` operation.
 class SliceOpConversion : public OpConversionPattern<tosa::SliceOp> {
   using OpConversionPattern<tosa::SliceOp>::OpConversionPattern;
 
@@ -769,15 +769,15 @@ private:
     Type resultType = sliceOp.getOutput().getType();
     ArrayAttr templateArgs = rewriter.getArrayAttr({TypeAttr::get(resultType)});
 
-    rewriter.replaceOpWithNewOp<emitc::CallOp>(sliceOp, sliceOp.getType(),
-                                               callee, args, templateArgs,
-                                               adaptor.getOperands());
+    rewriter.replaceOpWithNewOp<emitc::CallOpaqueOp>(sliceOp, sliceOp.getType(),
+                                                     callee, args, templateArgs,
+                                                     adaptor.getOperands());
 
     return success();
   }
 };
 
-/// Convert `tosa.tile` into an `emitc.call` operation.
+/// Convert `tosa.tile` into an `emitc.call_opaque` operation.
 class TileOpConversion : public OpConversionPattern<tosa::TileOp> {
   using OpConversionPattern<tosa::TileOp>::OpConversionPattern;
 
@@ -808,9 +808,9 @@ private:
     Type resultType = tileOp.getOutput().getType();
     ArrayAttr templateArgs = rewriter.getArrayAttr({TypeAttr::get(resultType)});
 
-    rewriter.replaceOpWithNewOp<emitc::CallOp>(tileOp, tileOp.getType(), callee,
-                                               args, templateArgs,
-                                               adaptor.getOperands());
+    rewriter.replaceOpWithNewOp<emitc::CallOpaqueOp>(tileOp, tileOp.getType(),
+                                                     callee, args, templateArgs,
+                                                     adaptor.getOperands());
     return success();
   }
 };

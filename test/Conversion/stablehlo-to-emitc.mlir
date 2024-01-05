@@ -244,9 +244,9 @@ func.func @stablehlo_compare(%arg0: tensor<4xi32>, %arg1: tensor<4xi32>) -> tens
 
 func.func @stablehlo_slice(%arg0: tensor<12xi32>, %arg1: tensor<8x7xi32>) -> tensor<4x3xi32> {
   // CHECK: emitc.call_opaque "emitc::stablehlo::slice"(%arg0) {args = [0 : index, dense<0> : tensor<1xi64>, dense<1> : tensor<1xi64>, dense<1> : tensor<1xi64>], template_args = [tensor<1xi32>]} : (tensor<12xi32>) -> tensor<1xi32>
-  %0 = "stablehlo.slice"(%arg0) {limit_indices = dense<1> : tensor<1xi64>, start_indices = dense<0> : tensor<1xi64>, strides = dense<1> : tensor<1xi64>} : (tensor<12xi32>) -> tensor<1xi32>
+  %0 = "stablehlo.slice"(%arg0) {limit_indices = array<i64: 1>, start_indices = array<i64: 0>, strides = array<i64: 1>} : (tensor<12xi32>) -> tensor<1xi32>
   // CHECK: emitc.call_opaque "emitc::stablehlo::slice"(%arg1) {args = [0 : index, dense<0> : tensor<2xi64>, dense<[4, 3]> : tensor<2xi64>, dense<1> : tensor<2xi64>], template_args = [tensor<4x3xi32>]} : (tensor<8x7xi32>) -> tensor<4x3xi32>
-  %1 = "stablehlo.slice"(%arg1) {limit_indices = dense<[4, 3]> : tensor<2xi64>, start_indices = dense<0> : tensor<2xi64>, strides = dense<1> : tensor<2xi64>} : (tensor<8x7xi32>) -> tensor<4x3xi32>
+  %1 = "stablehlo.slice"(%arg1) {limit_indices = array<i64: 4, 3 >, start_indices = array<i64: 0, 0>, strides = array<i64: 1, 1>} : (tensor<8x7xi32>) -> tensor<4x3xi32>
   return %1 : tensor<4x3xi32>
 }
 
@@ -254,9 +254,9 @@ func.func @stablehlo_dynamic_slice(%arg0: tensor<12xi32>, %arg1: tensor<8x7xi32>
   %cst = "arith.constant"() {value = dense<1> : tensor<i64>} : () -> tensor<i64>
   %cst_0 = "arith.constant"() {value = dense<3> : tensor<i64>} : () -> tensor<i64>
   // CHECK: emitc.call_opaque "emitc::stablehlo::dynamic_slice"(%arg0, %cst) {args = [0 : index, 1 : index, dense<4> : tensor<1xi64>], template_args = [tensor<4xi32>]} : (tensor<12xi32>, tensor<i64>) -> tensor<4xi32>
-  %0 = "stablehlo.dynamic_slice"(%arg0, %cst) {slice_sizes = dense<4> : tensor<1xi64>} : (tensor<12xi32>, tensor<i64>) -> tensor<4xi32>
+  %0 = "stablehlo.dynamic_slice"(%arg0, %cst) {slice_sizes = array<i64: 4>} : (tensor<12xi32>, tensor<i64>) -> tensor<4xi32>
   // CHECK: emitc.call_opaque "emitc::stablehlo::dynamic_slice"(%arg1, %cst, %cst_0) {args = [0 : index, 1 : index, 2 : index, dense<[4, 2]> : tensor<2xi64>], template_args = [tensor<4x2xi32>]} : (tensor<8x7xi32>, tensor<i64>, tensor<i64>) -> tensor<4x2xi32>
-  %1 = "stablehlo.dynamic_slice"(%arg1, %cst, %cst_0) {slice_sizes = dense<[4, 2]> : tensor<2xi64>} : (tensor<8x7xi32>, tensor<i64>, tensor<i64>) -> tensor<4x2xi32>
+  %1 = "stablehlo.dynamic_slice"(%arg1, %cst, %cst_0) {slice_sizes = array<i64: 4, 2>} : (tensor<8x7xi32>, tensor<i64>, tensor<i64>) -> tensor<4x2xi32>
   return
 }
 
@@ -348,9 +348,9 @@ func.func @stablehlo_dot(%arg0: tensor<512x512xf32>) -> tensor<512x512xf32> {
 func.func @stablehlo_pad(%arg0: tensor<2x3xf32>, %arg1: tensor<f32>) -> tensor<4x7xf32> {
   // CHECK: emitc.call_opaque "emitc::stablehlo::pad"(%arg0, %arg1) {args = [0 : index, 1 : index, dense<-1> : tensor<2xi64>, dense<1> : tensor<2xi64>, dense<2> : tensor<2xi64>], template_args = [tensor<4x7xf32>]} : (tensor<2x3xf32>, tensor<f32>) -> tensor<4x7xf32>
   %0 = "stablehlo.pad"(%arg0, %arg1) {
-    edge_padding_low = dense<-1> : tensor<2xi64>,
-    edge_padding_high = dense<1> : tensor<2xi64>,
-    interior_padding = dense<2> : tensor<2xi64>
+    edge_padding_low = array<i64: -1, -1>,
+    edge_padding_high = array<i64: 1, 1>,
+    interior_padding = array<i64: 2, 2 >
   } : (tensor<2x3xf32>, tensor<f32>) -> tensor<4x7xf32>
   return %0 : tensor<4x7xf32>
 }
@@ -421,7 +421,7 @@ func.func @select_scalar_pred(%arg0: tensor<i1>, %arg1: tensor<2x3xi32>, %arg2: 
 
 func.func @stablehlo_transpose(%arg0: tensor<2x3x4xf32>) -> tensor<4x3x2xf32> {
   // CHECK: emitc.call_opaque "emitc::stablehlo::transpose"(%arg0) {args = [0 : index, dense<[2, 1, 0]> : tensor<3xi64>], template_args = [tensor<4x3x2xf32>]} : (tensor<2x3x4xf32>) -> tensor<4x3x2xf32>
-  %0 = "stablehlo.transpose"(%arg0) {permutation = dense<[2, 1, 0]> : tensor<3xi64>} : (tensor<2x3x4xf32>) -> tensor<4x3x2xf32>
+  %0 = "stablehlo.transpose"(%arg0) {permutation = array<i64: 2, 1, 0>} : (tensor<2x3x4xf32>) -> tensor<4x3x2xf32>
   return %0 : tensor<4x3x2xf32>
 }
 

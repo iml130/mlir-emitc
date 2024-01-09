@@ -118,7 +118,7 @@ private:
     SmallVector<Attribute, 2> arguments = indexSequence(
         adaptor.getOperands().size(), broadcastInDimOp.getContext());
 
-    arguments.push_back(broadcastInDimOp.getBroadcastDimensions());
+    arguments.push_back(broadcastInDimOp.getBroadcastDimensionsAttr());
 
     ArrayAttr args = rewriter.getArrayAttr(arguments);
 

@@ -36,6 +36,14 @@ DenseIntElementsAttr i64ElementsAttr(int64_t value, size_t count,
   return DenseIntElementsAttr::get(ty, values);
 }
 
+DenseIntElementsAttr getI64ElementsAttr(const ArrayRef<long> values,
+                                        MLIRContext *ctx) {
+  RankedTensorType ty = RankedTensorType::get(
+      {static_cast<int64_t>(values.size())}, IntegerType::get(ctx, 64));
+
+  return DenseIntElementsAttr::get(ty, values);
+}
+
 SmallVector<Attribute, 2> indexSequence(int64_t n, MLIRContext *ctx) {
   return llvm::to_vector<2>(
       llvm::map_range(llvm::seq<int64_t>(0, n), [&ctx](int64_t i) -> Attribute {
@@ -309,11 +317,15 @@ private:
     SmallVector<Attribute, 2> arguments =
         indexSequence(adaptor.getOperands().size(), sliceOp.getContext());
 
-    arguments.push_back(sliceOp.getStartIndices());
-    arguments.push_back(sliceOp.getLimitIndices());
-    arguments.push_back(sliceOp.getStrides());
+    arguments.push_back(getI64ElementsAttr(sliceOp.getStartIndicesAttr(),
+                                           sliceOp.getContext()));
+    arguments.push_back(getI64ElementsAttr(sliceOp.getLimitIndicesAttr(),
+                                           sliceOp.getContext()));
+    arguments.push_back(
+        getI64ElementsAttr(sliceOp.getStridesAttr(), sliceOp.getContext()));
 
     ArrayAttr args = rewriter.getArrayAttr(arguments);
+
     ArrayAttr templateArgs =
         rewriter.getArrayAttr({TypeAttr::get(sliceOp.getResult().getType())});
 
@@ -344,7 +356,8 @@ private:
     SmallVector<Attribute, 2> arguments = indexSequence(
         adaptor.getOperands().size(), dynamicSliceOp.getContext());
 
-    arguments.push_back(dynamicSliceOp.getSliceSizes());
+    arguments.push_back(getI64ElementsAttr(dynamicSliceOp.getSliceSizesAttr(),
+                                           dynamicSliceOp.getContext()));
 
     ArrayAttr args = rewriter.getArrayAttr(arguments);
 
@@ -408,9 +421,12 @@ private:
     SmallVector<Attribute, 2> arguments =
         indexSequence(adaptor.getOperands().size(), padOp.getContext());
 
-    arguments.push_back(padOp.getEdgePaddingLow());
-    arguments.push_back(padOp.getEdgePaddingHigh());
-    arguments.push_back(padOp.getInteriorPadding());
+    arguments.push_back(
+        getI64ElementsAttr(padOp.getEdgePaddingLowAttr(), padOp.getContext()));
+    arguments.push_back(
+        getI64ElementsAttr(padOp.getEdgePaddingHighAttr(), padOp.getContext()));
+    arguments.push_back(
+        getI64ElementsAttr(padOp.getInteriorPaddingAttr(), padOp.getContext()));
 
     ArrayAttr args = rewriter.getArrayAttr(arguments);
 
@@ -443,7 +459,8 @@ private:
     SmallVector<Attribute> arguments =
         indexSequence(adaptor.getOperands().size(), transposeOp.getContext());
 
-    arguments.push_back(transposeOp.getPermutation());
+    arguments.push_back(getI64ElementsAttr(transposeOp.getPermutationAttr(),
+                                           transposeOp.getContext()));
     ArrayAttr args = rewriter.getArrayAttr(arguments);
 
     Type resultType = transposeOp.getResult().getType();

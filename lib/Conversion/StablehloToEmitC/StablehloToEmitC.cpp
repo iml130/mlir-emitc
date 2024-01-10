@@ -118,7 +118,8 @@ private:
     SmallVector<Attribute, 2> arguments = indexSequence(
         adaptor.getOperands().size(), broadcastInDimOp.getContext());
 
-    arguments.push_back(broadcastInDimOp.getBroadcastDimensionsAttr());
+    arguments.push_back(
+        rewriter.getI64TensorAttr(broadcastInDimOp.getBroadcastDimensions()));
 
     ArrayAttr args = rewriter.getArrayAttr(arguments);
 

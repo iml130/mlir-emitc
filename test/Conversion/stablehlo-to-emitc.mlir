@@ -289,7 +289,7 @@ func.func @stablehlo_bitcast_convert(%arg0: tensor<ui32>) -> tensor<i32> {
 
 func.func @stablehlo_broadcast_in_dim(%arg0: tensor<i32>) -> tensor<3xi32> {
   // CHECK: emitc.call_opaque "emitc::stablehlo::broadcast_in_dim"(%arg0) {args = [0 : index, dense<> : tensor<0xi64>], template_args = [tensor<3xi32>]} : (tensor<i32>) -> tensor<3xi32>
-  %0 = "stablehlo.broadcast_in_dim"(%arg0) {broadcast_dimensions = dense<> : tensor<0xi64>} : (tensor<i32>) -> tensor<3xi32>
+  %0 = "stablehlo.broadcast_in_dim"(%arg0) {broadcast_dimensions = array<i64>} : (tensor<i32>) -> tensor<3xi32>
   return %0 : tensor<3xi32>
 }
 

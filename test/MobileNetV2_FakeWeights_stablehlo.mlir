@@ -213,7 +213,7 @@ module attributes {tf.versions = {bad_consumers = [], min_consumer = 12 : i32, p
       %210 = stablehlo.maximum %arg1, %arg2 : tensor<f32>
       "stablehlo.return"(%210) : (tensor<f32>) -> ()
     }) {dimensions = dense<1> : tensor<1xi64>} : (tensor<1x1000xf32>, tensor<f32>) -> tensor<1xf32>
-    %204 = "stablehlo.broadcast_in_dim"(%203) {broadcast_dimensions = dense<0> : tensor<1xi64>} : (tensor<1xf32>) -> tensor<1x1000xf32>
+    %204 = "stablehlo.broadcast_in_dim"(%203) {broadcast_dimensions = array<i64: 0>} : (tensor<1xf32>) -> tensor<1x1000xf32>
     %205 = stablehlo.subtract %202, %204 : tensor<1x1000xf32>
     %206 = "stablehlo.exponential"(%205) : (tensor<1x1000xf32>) -> tensor<1x1000xf32>
     %207 = "stablehlo.reduce"(%206, %43) ( {
@@ -221,7 +221,7 @@ module attributes {tf.versions = {bad_consumers = [], min_consumer = 12 : i32, p
       %210 = stablehlo.add %arg1, %arg2 : tensor<f32>
       "stablehlo.return"(%210) : (tensor<f32>) -> ()
     }) {dimensions = dense<1> : tensor<1xi64>} : (tensor<1x1000xf32>, tensor<f32>) -> tensor<1xf32>
-    %208 = "stablehlo.broadcast_in_dim"(%207) {broadcast_dimensions = dense<0> : tensor<1xi64>} : (tensor<1xf32>) -> tensor<1x1000xf32>
+    %208 = "stablehlo.broadcast_in_dim"(%207) {broadcast_dimensions = array<i64: 0>} : (tensor<1xf32>) -> tensor<1x1000xf32>
     %209 = stablehlo.divide %206, %208 : tensor<1x1000xf32>
     return %209 : tensor<1x1000xf32>
   }

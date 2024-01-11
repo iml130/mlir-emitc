@@ -27,15 +27,6 @@ using namespace mlir::emitc;
 namespace {
 
 /// Common functions.
-/// Adopted from mlir-hlo.
-DenseIntElementsAttr i64ElementsAttr(int64_t value, size_t count,
-                                     MLIRContext *ctx) {
-  RankedTensorType ty = RankedTensorType::get({static_cast<int64_t>(count)},
-                                              IntegerType::get(ctx, 64));
-  SmallVector<int64_t, 4> values(count, value);
-  return DenseIntElementsAttr::get(ty, values);
-}
-
 SmallVector<Attribute, 2> indexSequence(int64_t n, MLIRContext *ctx) {
   return llvm::to_vector<2>(
       llvm::map_range(llvm::seq<int64_t>(0, n), [&ctx](int64_t i) -> Attribute {
@@ -202,14 +193,14 @@ private:
 
     size_t dim = op.getResult(0).getType().cast<RankedTensorType>().getRank();
     arguments.push_back(op.getWindowDimensions());
-    arguments.push_back(
-        op.getWindowStrides().value_or(i64ElementsAttr(1, dim, ctx)));
-    arguments.push_back(
-        op.getBaseDilations().value_or(i64ElementsAttr(1, dim, ctx)));
-    arguments.push_back(
-        op.getBaseDilations().value_or(i64ElementsAttr(1, dim, ctx)));
-    arguments.push_back(
-        op.getPadding().value_or(i64ElementsAttr(0, 2 * dim, ctx)));
+    arguments.push_back(op.getWindowStrides().value_or(
+        builder.getI64TensorAttr(SmallVector<int64_t>(dim, 1))));
+    arguments.push_back(op.getBaseDilations().value_or(
+        builder.getI64TensorAttr(SmallVector<int64_t>(dim, 1))));
+    arguments.push_back(op.getBaseDilations().value_or(
+        builder.getI64TensorAttr(SmallVector<int64_t>(dim, 1))));
+    arguments.push_back(op.getPadding().value_or(
+        builder.getI64TensorAttr(SmallVector<int64_t>(2 * dim, 0))));
     arguments.push_back(SymbolRefAttr::get(ctx, funcOp.getName()));
 
     ArrayAttr args = ArrayAttr::get(ctx, arguments);

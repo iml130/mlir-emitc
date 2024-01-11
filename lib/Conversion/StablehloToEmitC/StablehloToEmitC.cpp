@@ -27,23 +27,6 @@ using namespace mlir::emitc;
 namespace {
 
 /// Common functions.
-/// Adopted from mlir-hlo.
-DenseIntElementsAttr i64ElementsAttr(int64_t value, size_t count,
-                                     MLIRContext *ctx) {
-  RankedTensorType ty = RankedTensorType::get({static_cast<int64_t>(count)},
-                                              IntegerType::get(ctx, 64));
-  SmallVector<int64_t, 4> values(count, value);
-  return DenseIntElementsAttr::get(ty, values);
-}
-
-DenseIntElementsAttr getI64ElementsAttr(const ArrayRef<long> values,
-                                        MLIRContext *ctx) {
-  RankedTensorType ty = RankedTensorType::get(
-      {static_cast<int64_t>(values.size())}, IntegerType::get(ctx, 64));
-
-  return DenseIntElementsAttr::get(ty, values);
-}
-
 SmallVector<Attribute, 2> indexSequence(int64_t n, MLIRContext *ctx) {
   return llvm::to_vector<2>(
       llvm::map_range(llvm::seq<int64_t>(0, n), [&ctx](int64_t i) -> Attribute {
@@ -172,7 +155,6 @@ private:
   LogicalResult
   matchAndRewrite(stablehlo::ConvolutionOp convOp, OpAdaptor adaptor,
                   ConversionPatternRewriter &rewriter) const override {
-    auto *ctx = convOp.getContext();
 
     StringRef funcName = "emitc::stablehlo::convolution";
     StringAttr callee = rewriter.getStringAttr(funcName);
@@ -201,14 +183,14 @@ private:
         convOp.getDimensionNumbers().getOutputSpatialDimensions()));
     arguments.push_back(convOp.getFeatureGroupCountAttr());
 
-    arguments.push_back(
-        convOp.getPadding().value_or(i64ElementsAttr(0, 2, ctx)));
-    arguments.push_back(
-        convOp.getLhsDilation().value_or(i64ElementsAttr(1, 2, ctx)));
-    arguments.push_back(
-        convOp.getRhsDilation().value_or(i64ElementsAttr(1, 2, ctx)));
-    arguments.push_back(
-        convOp.getWindowStrides().value_or(i64ElementsAttr(1, 2, ctx)));
+    arguments.push_back(convOp.getPadding().value_or(
+        rewriter.getI64TensorAttr(SmallVector<int64_t>(2, 0))));
+    arguments.push_back(convOp.getLhsDilation().value_or(
+        rewriter.getI64TensorAttr(SmallVector<int64_t>(2, 1))));
+    arguments.push_back(convOp.getRhsDilation().value_or(
+        rewriter.getI64TensorAttr(SmallVector<int64_t>(2, 1))));
+    arguments.push_back(convOp.getWindowStrides().value_or(
+        rewriter.getI64TensorAttr(SmallVector<int64_t>(2, 1))));
 
     ArrayAttr args = rewriter.getArrayAttr(arguments);
     ArrayAttr templateArgs =
@@ -318,12 +300,11 @@ private:
     SmallVector<Attribute, 2> arguments =
         indexSequence(adaptor.getOperands().size(), sliceOp.getContext());
 
-    arguments.push_back(getI64ElementsAttr(sliceOp.getStartIndicesAttr(),
-                                           sliceOp.getContext()));
-    arguments.push_back(getI64ElementsAttr(sliceOp.getLimitIndicesAttr(),
-                                           sliceOp.getContext()));
     arguments.push_back(
-        getI64ElementsAttr(sliceOp.getStridesAttr(), sliceOp.getContext()));
+        rewriter.getI64TensorAttr(sliceOp.getStartIndicesAttr()));
+    arguments.push_back(
+        rewriter.getI64TensorAttr(sliceOp.getLimitIndicesAttr()));
+    arguments.push_back(rewriter.getI64TensorAttr(sliceOp.getStridesAttr()));
 
     ArrayAttr args = rewriter.getArrayAttr(arguments);
 
@@ -357,8 +338,8 @@ private:
     SmallVector<Attribute, 2> arguments = indexSequence(
         adaptor.getOperands().size(), dynamicSliceOp.getContext());
 
-    arguments.push_back(getI64ElementsAttr(dynamicSliceOp.getSliceSizesAttr(),
-                                           dynamicSliceOp.getContext()));
+    arguments.push_back(
+        rewriter.getI64TensorAttr(dynamicSliceOp.getSliceSizesAttr()));
 
     ArrayAttr args = rewriter.getArrayAttr(arguments);
 
@@ -423,11 +404,11 @@ private:
         indexSequence(adaptor.getOperands().size(), padOp.getContext());
 
     arguments.push_back(
-        getI64ElementsAttr(padOp.getEdgePaddingLowAttr(), padOp.getContext()));
+        rewriter.getI64TensorAttr(padOp.getEdgePaddingLowAttr()));
     arguments.push_back(
-        getI64ElementsAttr(padOp.getEdgePaddingHighAttr(), padOp.getContext()));
+        rewriter.getI64TensorAttr(padOp.getEdgePaddingHighAttr()));
     arguments.push_back(
-        getI64ElementsAttr(padOp.getInteriorPaddingAttr(), padOp.getContext()));
+        rewriter.getI64TensorAttr(padOp.getInteriorPaddingAttr()));
 
     ArrayAttr args = rewriter.getArrayAttr(arguments);
 
@@ -460,8 +441,8 @@ private:
     SmallVector<Attribute> arguments =
         indexSequence(adaptor.getOperands().size(), transposeOp.getContext());
 
-    arguments.push_back(getI64ElementsAttr(transposeOp.getPermutationAttr(),
-                                           transposeOp.getContext()));
+    arguments.push_back(
+        rewriter.getI64TensorAttr(transposeOp.getPermutationAttr()));
     ArrayAttr args = rewriter.getArrayAttr(arguments);
 
     Type resultType = transposeOp.getResult().getType();

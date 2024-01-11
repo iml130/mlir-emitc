@@ -27,14 +27,6 @@ using namespace mlir::emitc;
 namespace {
 
 /// Common functions.
-DenseIntElementsAttr getI64ElementsAttr(const ArrayRef<long> values,
-                                        MLIRContext *ctx) {
-  RankedTensorType ty = RankedTensorType::get(
-      {static_cast<int64_t>(values.size())}, IntegerType::get(ctx, 64));
-
-  return DenseIntElementsAttr::get(ty, values);
-}
-
 SmallVector<Attribute, 2> indexSequence(int64_t n, MLIRContext *ctx) {
   return llvm::to_vector<2>(
       llvm::map_range(llvm::seq<int64_t>(0, n), [&ctx](int64_t i) -> Attribute {
@@ -115,9 +107,9 @@ private:
     ArrayAttr args = rewriter.getArrayAttr({
       rewriter.getIndexAttr(0),
       rewriter.getIndexAttr(1),
-      getI64ElementsAttr(convOp.getPad(), convOp.getContext()),
-      getI64ElementsAttr(convOp.getStride(), convOp.getContext()),
-      getI64ElementsAttr(convOp.getDilation(), convOp.getContext()),
+      rewriter.getI64TensorAttr(convOp.getPad()),
+      rewriter.getI64TensorAttr(convOp.getStride()),
+      rewriter.getI64TensorAttr(convOp.getDilation()),
     });
     // clang-format on
 
@@ -161,9 +153,9 @@ private:
     // clang-format off
     ArrayAttr args = rewriter.getArrayAttr({
       rewriter.getIndexAttr(0),
-      getI64ElementsAttr(poolOp.getPad(), poolOp.getContext()),
-      getI64ElementsAttr(poolOp.getStride(), poolOp.getContext()),
-      getI64ElementsAttr(poolOp.getKernel(), poolOp.getContext()),
+      rewriter.getI64TensorAttr(poolOp.getPad()),
+      rewriter.getI64TensorAttr(poolOp.getStride()),
+      rewriter.getI64TensorAttr(poolOp.getKernel()),
     });
     // clang-format on
 

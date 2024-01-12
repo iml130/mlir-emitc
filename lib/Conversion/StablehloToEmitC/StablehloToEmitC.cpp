@@ -182,15 +182,14 @@ private:
     arguments.push_back(rewriter.getI64TensorAttr(
         convOp.getDimensionNumbers().getOutputSpatialDimensions()));
     arguments.push_back(convOp.getFeatureGroupCountAttr());
-
     arguments.push_back(convOp.getPadding().value_or(
         rewriter.getI64TensorAttr(SmallVector<int64_t>(2, 0))));
-    arguments.push_back(convOp.getLhsDilation().value_or(
-        rewriter.getI64TensorAttr(SmallVector<int64_t>(2, 1))));
-    arguments.push_back(convOp.getRhsDilation().value_or(
-        rewriter.getI64TensorAttr(SmallVector<int64_t>(2, 1))));
-    arguments.push_back(convOp.getWindowStrides().value_or(
-        rewriter.getI64TensorAttr(SmallVector<int64_t>(2, 1))));
+    arguments.push_back(rewriter.getI64TensorAttr(
+        convOp.getLhsDilation().value_or((SmallVector<int64_t>(2, 1)))));
+    arguments.push_back(rewriter.getI64TensorAttr(
+        convOp.getRhsDilation().value_or((SmallVector<int64_t>(2, 1)))));
+    arguments.push_back(rewriter.getI64TensorAttr(
+        convOp.getWindowStrides().value_or((SmallVector<int64_t>(2, 1)))));
 
     ArrayAttr args = rewriter.getArrayAttr(arguments);
     ArrayAttr templateArgs =

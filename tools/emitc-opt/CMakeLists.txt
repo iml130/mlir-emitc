@@ -40,7 +40,7 @@ set(LIBS
   MLIRArithToEmitC
   MLIRTensorToEmitC
   MLIRTosaToEmitC
-  MLIREmitCTransforms
+  MLIREmitCTransformsLocal
   MLIREmitCPipelines
   ${HLO_LIBS}
   )

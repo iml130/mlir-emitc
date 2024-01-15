@@ -156,7 +156,7 @@ private:
     SmallVector<Attribute, 2> arguments =
         indexSequence(operands.size(), op.getContext());
 
-    arguments.push_back(op.getDimensions());
+    arguments.push_back(builder.getI64TensorAttr(op.getDimensions()));
     arguments.push_back(SymbolRefAttr::get(ctx, funcOp.getName()));
 
     ArrayAttr args = ArrayAttr::get(ctx, arguments);
@@ -192,13 +192,13 @@ private:
     SmallVector<Attribute, 2> arguments = indexSequence(operands.size(), ctx);
 
     size_t dim = op.getResult(0).getType().cast<RankedTensorType>().getRank();
-    arguments.push_back(op.getWindowDimensions());
-    arguments.push_back(op.getWindowStrides().value_or(
-        builder.getI64TensorAttr(SmallVector<int64_t>(dim, 1))));
-    arguments.push_back(op.getBaseDilations().value_or(
-        builder.getI64TensorAttr(SmallVector<int64_t>(dim, 1))));
-    arguments.push_back(op.getBaseDilations().value_or(
-        builder.getI64TensorAttr(SmallVector<int64_t>(dim, 1))));
+    arguments.push_back(builder.getI64TensorAttr(op.getWindowDimensions()));
+    arguments.push_back(builder.getI64TensorAttr(
+        op.getWindowStrides().value_or(SmallVector<int64_t>(dim, 1))));
+    arguments.push_back(builder.getI64TensorAttr(
+        op.getBaseDilations().value_or(SmallVector<int64_t>(dim, 1))));
+    arguments.push_back(builder.getI64TensorAttr(
+        op.getBaseDilations().value_or(SmallVector<int64_t>(dim, 1))));
     arguments.push_back(op.getPadding().value_or(
         builder.getI64TensorAttr(SmallVector<int64_t>(2 * dim, 0))));
     arguments.push_back(SymbolRefAttr::get(ctx, funcOp.getName()));

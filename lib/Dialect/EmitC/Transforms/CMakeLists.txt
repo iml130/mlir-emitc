@@ -1,4 +1,4 @@
-add_mlir_library(MLIREmitCTransforms
+add_mlir_library(MLIREmitCTransformsLocal
   InsertIncludes.cpp
 
   DEPENDS

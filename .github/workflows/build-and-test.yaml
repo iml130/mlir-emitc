@@ -12,7 +12,7 @@ env:
   EMITC: emitc
   LLVM: llvm
   E2E: emitc-e2e
-  E2E_VERSION: 2
+  E2E_VERSION: 3
 
 jobs:
   build-llvm:

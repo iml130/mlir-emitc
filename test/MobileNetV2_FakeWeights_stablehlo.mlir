@@ -204,7 +204,7 @@ module attributes {tf.versions = {bad_consumers = [], min_consumer = 12 : i32, p
     ^bb0(%arg1: tensor<f32>, %arg2: tensor<f32>):  // no predecessors
       %210 = stablehlo.add %arg1, %arg2 : tensor<f32>
       "stablehlo.return"(%210) : (tensor<f32>) -> ()
-    }) {dimensions = dense<[1, 2]> : tensor<2xi64>} : (tensor<1x7x7x1280xf32>, tensor<f32>) -> tensor<1x1280xf32>
+    }) {dimensions = array<i64: 1, 2>} : (tensor<1x7x7x1280xf32>, tensor<f32>) -> tensor<1x1280xf32>
     %200 = stablehlo.divide %199, %1 : tensor<1x1280xf32>
     %201 = "stablehlo.dot"(%200, %9) : (tensor<1x1280xf32>, tensor<1280x1000xf32>) -> tensor<1x1000xf32>
     %202 = stablehlo.add %201, %0 : tensor<1x1000xf32>
@@ -212,7 +212,7 @@ module attributes {tf.versions = {bad_consumers = [], min_consumer = 12 : i32, p
     ^bb0(%arg1: tensor<f32>, %arg2: tensor<f32>):  // no predecessors
       %210 = stablehlo.maximum %arg1, %arg2 : tensor<f32>
       "stablehlo.return"(%210) : (tensor<f32>) -> ()
-    }) {dimensions = dense<1> : tensor<1xi64>} : (tensor<1x1000xf32>, tensor<f32>) -> tensor<1xf32>
+    }) {dimensions = array<i64: 1>} : (tensor<1x1000xf32>, tensor<f32>) -> tensor<1xf32>
     %204 = "stablehlo.broadcast_in_dim"(%203) {broadcast_dimensions = array<i64: 0>} : (tensor<1xf32>) -> tensor<1x1000xf32>
     %205 = stablehlo.subtract %202, %204 : tensor<1x1000xf32>
     %206 = "stablehlo.exponential"(%205) : (tensor<1x1000xf32>) -> tensor<1x1000xf32>
@@ -220,7 +220,7 @@ module attributes {tf.versions = {bad_consumers = [], min_consumer = 12 : i32, p
     ^bb0(%arg1: tensor<f32>, %arg2: tensor<f32>):  // no predecessors
       %210 = stablehlo.add %arg1, %arg2 : tensor<f32>
       "stablehlo.return"(%210) : (tensor<f32>) -> ()
-    }) {dimensions = dense<1> : tensor<1xi64>} : (tensor<1x1000xf32>, tensor<f32>) -> tensor<1xf32>
+    }) {dimensions = array<i64: 1>} : (tensor<1x1000xf32>, tensor<f32>) -> tensor<1xf32>
     %208 = "stablehlo.broadcast_in_dim"(%207) {broadcast_dimensions = array<i64: 0>} : (tensor<1xf32>) -> tensor<1x1000xf32>
     %209 = stablehlo.divide %206, %208 : tensor<1x1000xf32>
     return %209 : tensor<1x1000xf32>

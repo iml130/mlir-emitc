@@ -333,8 +333,8 @@ func.func @stablehlo_conv(%arg0: tensor<3x2x4x3xf32>, %arg1 : tensor<2x2x3x4xf32
     >,
     feature_group_count = 1 : i64,
     padding = dense<[[0, 1], [0, 1]]> : tensor<2x2xi64>,
-    rhs_dilation = dense<[1, 2]> : tensor<2xi64>,
-    window_strides = dense<[2, 1]> : tensor<2xi64>
+    rhs_dilation = array<i64: 1, 2>,
+    window_strides = array<i64: 2, 1>
   } : (tensor<2x2x3x4xf32>, tensor<3x2x4x3xf32>) -> tensor<2x1x2x3xf32>
   return %out : tensor<2x1x2x3xf32>
 }
@@ -369,14 +369,14 @@ func.func @stablehlo_reduce(%arg0 : tensor<2x1000xf32>, %arg1 : tensor<f32>, %ar
     ^bb0(%arg4: tensor<f32>, %arg5: tensor<f32>):
       %1 = stablehlo.add %arg4, %arg5 : tensor<f32>
       "stablehlo.return"(%1) : (tensor<f32>) -> ()
-    }) {dimensions = dense<1> : tensor<1xi64>} : (tensor<2x1000xf32>, tensor<f32>) -> tensor<2xf32>
+    }) {dimensions = array<i64: 1>} : (tensor<2x1000xf32>, tensor<f32>) -> tensor<2xf32>
   
   // CHECK: emitc.call_opaque "emitc::stablehlo::reduce"(%arg2, %arg3) {args = [0 : index, 1 : index, dense<1> : tensor<1xi64>, @stablehlo_reduce_lambda_1], template_args = [tensor<2xi32>, 1]} : (tensor<2x1000xi32>, tensor<i32>) -> tensor<2xi32>
   %1 = "stablehlo.reduce"(%arg2, %arg3) ({
     ^bb0(%arg4: tensor<i32>, %arg5: tensor<i32>):
       %2 = stablehlo.maximum %arg4, %arg5 : tensor<i32>
       "stablehlo.return"(%2) : (tensor<i32>) -> ()
-    }) {dimensions = dense<1> : tensor<1xi64>} : (tensor<2x1000xi32>, tensor<i32>) -> tensor<2xi32>
+    }) {dimensions = array<i64: 1>} : (tensor<2x1000xi32>, tensor<i32>) -> tensor<2xi32>
   
   // CHECK: emitc.call_opaque "emitc::stablehlo::reduce"(%arg0, %arg2, %arg1, %arg3) {args = [0 : index, 1 : index, 2 : index, 3 : index, dense<1> : tensor<1xi64>, @stablehlo_reduce_lambda_2], template_args = [tensor<2xf32>, tensor<2xi32>, 1]} : (tensor<2x1000xf32>, tensor<2x1000xi32>, tensor<f32>, tensor<i32>) -> (tensor<2xf32>, tensor<2xi32>)
   %2:2 = stablehlo.reduce(%arg0 init: %arg1), (%arg2 init: %arg3) across dimensions = [1] : (tensor<2x1000xf32>, tensor<2x1000xi32>, tensor<f32>, tensor<i32>) -> (tensor<2xf32>, tensor<2xi32>)
@@ -397,7 +397,7 @@ func.func @stablehlo_reduce_window(%arg0 : tensor<2x114x114x64xf32>, %arg1 : ten
     ^bb0(%arg2: tensor<f32>, %arg3: tensor<f32>):  // no predecessors
       %516 = stablehlo.maximum %arg2, %arg3 : tensor<f32>
       "stablehlo.return"(%516) : (tensor<f32>) -> ()
-    }) {window_dimensions = dense<[1, 3, 3, 1]> : tensor<4xi64>, window_strides = dense<[1, 2, 2, 1]> : tensor<4xi64>} : (tensor<2x114x114x64xf32>, tensor<f32>) -> tensor<2x56x56x64xf32>
+    }) {window_dimensions = array<i64: 1, 3, 3, 1>, window_strides = array<i64: 1, 2, 2, 1>} : (tensor<2x114x114x64xf32>, tensor<f32>) -> tensor<2x56x56x64xf32>
   
   return %0 : tensor<2x56x56x64xf32>
 }

@@ -23,7 +23,7 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
     - name: Checkout EmitC
-      uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
+      uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
       with:
         path: ${{ env.EMITC }}
         submodules: 'true'
@@ -35,14 +35,14 @@ jobs:
 
     - name: Cache LLVM
       id: cache-llvm
-      uses: actions/cache@58c146cc91c5b9e778e71775dfe9bf1442ad9a12 # v3.2.3
+      uses: actions/cache@13aacd865c20de90d75de3b17ebe84f7a17d57d2 # v4.0.0
       with:
         path: ${{ env.LLVM }}
         key: ${{ runner.os }}-llvm-22.04-install-${{ env.llvm_hash }}
 
     - name: Checkout LLVM
       if: steps.cache-llvm.outputs.cache-hit != 'true'
-      uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
+      uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
       with:
         repository: llvm/llvm-project
         path: ${{ env.LLVM }}
@@ -74,14 +74,14 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
     - name: Checkout EmitC
-      uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
+      uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
       with:
         path: ${{ env.EMITC }}
         submodules: 'false'
 
     - name: Cache e2e
       id: cache-e2e
-      uses: actions/cache@58c146cc91c5b9e778e71775dfe9bf1442ad9a12 # v3.2.3
+      uses: actions/cache@13aacd865c20de90d75de3b17ebe84f7a17d57d2 # v4.0.0
       with:
         path: ${{ env.E2E }}
         key: ${{ runner.os }}-e2e-${{ hashFiles('emitc/scripts/*.py', 'emitc/scripts/requirements.txt', 'emitc/scripts/e2e*.sh') }}-${{ env.E2E_VERSION }}
@@ -118,7 +118,7 @@ jobs:
       run: sudo apt-get install -y libeigen3-dev
 
     - name: Checkout EmitC
-      uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
+      uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
       with:
         path: ${{ env.EMITC }}
         submodules: 'true'
@@ -130,7 +130,7 @@ jobs:
 
     - name: Cache LLVM
       id: cache-llvm
-      uses: actions/cache@58c146cc91c5b9e778e71775dfe9bf1442ad9a12 # v3.2.3
+      uses: actions/cache@13aacd865c20de90d75de3b17ebe84f7a17d57d2 # v4.0.0
       with:
         path: ${{ env.LLVM }}
         key: ${{ runner.os }}-llvm-22.04-install-${{ env.llvm_hash }}
@@ -168,7 +168,7 @@ jobs:
       run: sudo apt-get install -y libeigen3-dev
 
     - name: Checkout EmitC
-      uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
+      uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
       with:
         path: ${{ env.EMITC }}
         submodules: 'true'
@@ -180,7 +180,7 @@ jobs:
 
     - name: Cache LLVM
       id: cache-llvm
-      uses: actions/cache@58c146cc91c5b9e778e71775dfe9bf1442ad9a12 # v3.2.3
+      uses: actions/cache@13aacd865c20de90d75de3b17ebe84f7a17d57d2 # v4.0.0
       with:
         path: ${{ env.LLVM }}
         key: ${{ runner.os }}-llvm-22.04-install-${{ env.llvm_hash }}
@@ -207,7 +207,7 @@ jobs:
         ./reference-implementation/unittests/MLIREmitCEigenTests
 
     - name: Cache e2e
-      uses: actions/cache@58c146cc91c5b9e778e71775dfe9bf1442ad9a12 # v3.2.3
+      uses: actions/cache@13aacd865c20de90d75de3b17ebe84f7a17d57d2 # v4.0.0
       with:
         path: ${{ env.E2E }}
         key: ${{ runner.os }}-e2e-${{ hashFiles('emitc/scripts/*.py', 'emitc/scripts/requirements.txt', 'emitc/scripts/e2e*.sh') }}-${{ env.E2E_VERSION }}
@@ -281,7 +281,7 @@ jobs:
       run: echo "$GITHUB_WORKSPACE/${LLVM}/install/bin" >> $GITHUB_PATH
 
     - name: Checkout EmitC
-      uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
+      uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
       with:
         path: ${{ env.EMITC }}
         submodules: 'true'
@@ -293,7 +293,7 @@ jobs:
 
     - name: Cache LLVM
       id: cache-llvm
-      uses: actions/cache@58c146cc91c5b9e778e71775dfe9bf1442ad9a12 # v3.2.3
+      uses: actions/cache@13aacd865c20de90d75de3b17ebe84f7a17d57d2 # v4.0.0
       with:
         path: ${{ env.LLVM }}
         key: ${{ runner.os }}-llvm-22.04-install-${{ env.llvm_hash }}

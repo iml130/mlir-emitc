@@ -8,6 +8,9 @@ name: Lint
 
 on: [pull_request]
 
+permissions:
+  contents: read
+
 jobs:
 
 # Forked from

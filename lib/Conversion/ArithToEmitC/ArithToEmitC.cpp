@@ -10,6 +10,7 @@
 //
 //===----------------------------------------------------------------------===//
 
+#include "mlir/Conversion/ArithToEmitC/ArithToEmitC.h"
 #include "mlir/Dialect/Arith/IR/Arith.h"
 #include "mlir/Dialect/EmitC/IR/EmitC.h"
 #include "mlir/IR/BuiltinOps.h"
@@ -71,7 +72,12 @@ struct ConvertArithToEmitCPass
     target.addIllegalOp<arith::IndexCastOp>();
 
     RewritePatternSet patterns(&getContext());
+
+    TypeConverter typeConverter;
+    typeConverter.addConversion([](Type type) { return type; });
+
     populateArithToEmitcPatterns(&getContext(), patterns);
+    populateArithToEmitCPatterns(typeConverter, patterns);
 
     if (failed(applyPartialConversion(getOperation(), target,
                                       std::move(patterns))))

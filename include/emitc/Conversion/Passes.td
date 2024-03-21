@@ -23,8 +23,8 @@ def ConvertStablehloToEmitC : Pass<"convert-stablehlo-to-emitc", "func::FuncOp">
   let dependentDialects = ["EmitCDialect"];
 }
 
-def ConvertArithToEmitC : Pass<"convert-arith-to-emitc", "func::FuncOp"> {
-  let summary = "Convert arith dialect to EmitC dialect, replacing IndexCastOp.";
+def ConvertArithToEmitC : Pass<"convert-arith-to-emitc-ext", "func::FuncOp"> {
+  let summary = "Convert arith dialect to EmitC dialect (extended).";
   let constructor = "createConvertArithToEmitCPass()";
   let dependentDialects = ["EmitCDialect"];
 }

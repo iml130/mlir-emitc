@@ -1,6 +1,6 @@
-// RUN: emitc-opt -convert-arith-to-emitc %s | FileCheck %s
-// RUN: emitc-opt -convert-arith-to-emitc %s | emitc-translate --mlir-to-cpp | FileCheck %s -check-prefix=CPP
-// RUN: emitc-opt -insert-emitc-arith-include -convert-arith-to-emitc %s | FileCheck %s --check-prefixes=CHECK,CHECK-INCLUDE
+// RUN: emitc-opt -convert-arith-to-emitc-ext %s | FileCheck %s
+// RUN: emitc-opt -convert-arith-to-emitc-ext %s | emitc-translate --mlir-to-cpp | FileCheck %s -check-prefix=CPP
+// RUN: emitc-opt -insert-emitc-arith-include -convert-arith-to-emitc-ext %s | FileCheck %s --check-prefixes=CHECK,CHECK-INCLUDE
 // RUN: emitc-opt -arith-to-emitc-pipeline %s | FileCheck %s --check-prefixes=CHECK,CHECK-INCLUDE
 
 // CHECK-INCLUDE: emitc.include "emitc/arith.h"

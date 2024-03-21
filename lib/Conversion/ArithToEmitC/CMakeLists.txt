@@ -1,4 +1,4 @@
-add_mlir_library(MLIRArithToEmitC
+add_mlir_library(MLIRArithToEmitCExt
   ArithToEmitC.cpp
 
   DEPENDS

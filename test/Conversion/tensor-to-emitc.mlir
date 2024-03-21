@@ -6,19 +6,19 @@
 // CHECK-INCLUDE: emitc.include "emitc/tensor.h"
 
 func.func @std_extract_element(%arg0: tensor<i32>, %arg1: tensor<2xi32> ) -> () {
-  %0 = arith.constant 0 : index
-  %1 = arith.constant 1 : index
+  %0 = "emitc.constant"() {value = 0 : index} : () -> index
+  %1 = "emitc.constant"() {value = 1 : index} : () -> index
   %2 = tensor.extract %arg0[] : tensor<i32>
   %3 = tensor.extract %arg1[%0] : tensor<2xi32>
   %4 = tensor.extract %arg1[%1] : tensor<2xi32>
   return 
 }
 // CHECK-LABEL: func @std_extract_element
-//  CHECK-NEXT: constant 0 : index
-//  CHECK-NEXT: constant 1 : index
+//  CHECK-NEXT: "emitc.constant"() <{value = 0 : index}> : () -> index
+//  CHECK-NEXT: "emitc.constant"() <{value = 1 : index}> : () -> index
 //  CHECK-NEXT: emitc.call_opaque "emitc::tensor::extract"(%arg0) : (tensor<i32>) -> i32
-//  CHECK-NEXT: emitc.call_opaque "emitc::tensor::extract"(%arg1, %c0) : (tensor<2xi32>, index) -> i32
-//  CHECK-NEXT: emitc.call_opaque "emitc::tensor::extract"(%arg1, %c1) : (tensor<2xi32>, index) -> i32
+//  CHECK-NEXT: emitc.call_opaque "emitc::tensor::extract"(%arg1, %0) : (tensor<2xi32>, index) -> i32
+//  CHECK-NEXT: emitc.call_opaque "emitc::tensor::extract"(%arg1, %1) : (tensor<2xi32>, index) -> i32
 
 // CPP-LABEL: void std_extract_element(Tensor<int32_t> v1, Tensor<int32_t, 2> v2)
 //  CPP-NEXT: size_t v3 = 0;

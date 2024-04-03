@@ -552,7 +552,7 @@ TEST(tosa, mul) {
   Tensor2D<int32_t, 2, 2> t2{1, 2, 3, 4};
 
   auto lambda_1d_int_shift = [&s2, &t2]() -> Tensor2D<int32_t, 2, 2> {
-    int32_t shift{2};
+    int8_t shift{2};
     return tosa::mul(s2, t2, shift);
   };
 

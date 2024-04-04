@@ -105,7 +105,7 @@ inline Src reciprocal(Src x) {
 template <typename Dest, size_t Dim, typename Src>
 inline Dest rescale(Src x, typename get_element_type<Src>::type in_zp,
                     typename get_element_type<Dest>::type out_zp,
-                    Tensor1D<int32_t, Dim> mult, Tensor1D<int32_t, Dim> shift,
+                    Tensor1D<int32_t, Dim> mult, Tensor1D<int8_t, Dim> shift,
                     bool scale32, bool double_round, bool per_channel) {
   using ET_Dest = typename get_element_type<Dest>::type;
   using Dest_I32 = typename replace_element_type<int32_t, Dest>::type;

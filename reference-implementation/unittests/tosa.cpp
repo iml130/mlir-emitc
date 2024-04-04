@@ -225,7 +225,7 @@ TEST(tosa, rescale) {
     int8_t in_zp = 10;
     int16_t out_zp = 0;
     Tensor1D<int32_t, 1> mult{10000};
-    Tensor1D<int32_t, 1> shift{5};
+    Tensor1D<int8_t, 1> shift{5};
     bool scale32 = false;
     bool double_round = false;
     bool per_channel = false;
@@ -241,7 +241,7 @@ TEST(tosa, rescale) {
     int32_t in_zp = 0;
     int8_t out_zp = 0;
     Tensor1D<int32_t, 3> mult{150, 100, 50};
-    Tensor1D<int32_t, 3> shift{13, 14, 15};
+    Tensor1D<int8_t, 3> shift{13, 14, 15};
     bool scale32 = false;
     bool double_round = false;
     bool per_channel = true;
@@ -258,7 +258,7 @@ TEST(tosa, rescale) {
     int64_t in_zp = 0;
     uint8_t out_zp = 100;
     Tensor1D<int32_t, 1> mult{100};
-    Tensor1D<int32_t, 1> shift{14};
+    Tensor1D<int8_t, 1> shift{14};
     bool scale32 = false;
     bool double_round = false;
     bool per_channel = false;
@@ -278,7 +278,7 @@ TEST(tosa, rescale) {
     int64_t in_zp = 0;
     int32_t out_zp = 0;
     Tensor1D<int32_t, 1> mult{2147483647};
-    Tensor1D<int32_t, 1> shift{32};
+    Tensor1D<int8_t, 1> shift{32};
     bool scale32 = true;
     bool double_round = true;
     bool per_channel = false;

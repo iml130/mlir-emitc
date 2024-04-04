@@ -646,7 +646,7 @@ namespace {
 // Common reduce function used by specialized TOSA reduce ops.
 template <typename Dest, typename Src, typename Computation>
 inline Dest reduce(Src operand, typename get_element_type<Src>::type initValue,
-                   int64_t dimension, Computation computation) {
+                   int32_t dimension, Computation computation) {
   static_assert(is_tensor<Src>::value, "Expected tensor argument");
   static_assert(is_tensor<Dest>::value, "Expected tensor result");
 
@@ -688,7 +688,7 @@ inline Dest reduce(Src operand, typename get_element_type<Src>::type initValue,
 
 // ArgMaxOp
 template <typename Dest, typename Src>
-inline Dest argmax(Src operand, int64_t dimension) {
+inline Dest argmax(Src operand, int32_t dimension) {
   static_assert(is_tensor<Src>::value, "Expected tensor argument");
   static_assert(is_tensor<Dest>::value, "Expected tensor result");
 
@@ -732,7 +732,7 @@ inline Dest argmax(Src operand, int64_t dimension) {
 
 // ReduceAllOp
 template <typename Dest, typename Src>
-inline Dest reduce_all(Src input, int64_t dimension) {
+inline Dest reduce_all(Src input, int32_t dimension) {
   // ReduceAllOp takes only tensors with datatype bool according to the
   // TOSA specifications.
   using ET_Src = typename get_element_type<Src>::type;
@@ -750,7 +750,7 @@ inline Dest reduce_all(Src input, int64_t dimension) {
 
 // ReduceAnyOp
 template <typename Dest, typename Src>
-inline Dest reduce_any(Src input, int64_t dimension) {
+inline Dest reduce_any(Src input, int32_t dimension) {
   // ReduceAnyOp takes only tensors with datatype bool according to the
   // TOSA specifications.
   using ET_Src = typename get_element_type<Src>::type;
@@ -768,7 +768,7 @@ inline Dest reduce_any(Src input, int64_t dimension) {
 
 // ReduceMaxOp
 template <typename Dest, typename Src>
-inline Dest reduce_max(Src input, int64_t dimension) {
+inline Dest reduce_max(Src input, int32_t dimension) {
   using ET_Src = typename get_element_type<Src>::type;
 
   auto f =
@@ -780,7 +780,7 @@ inline Dest reduce_max(Src input, int64_t dimension) {
 
 // ReduceMinOp
 template <typename Dest, typename Src>
-inline Dest reduce_min(Src input, int64_t dimension) {
+inline Dest reduce_min(Src input, int32_t dimension) {
   using ET_Src = typename get_element_type<Src>::type;
 
   auto f =
@@ -792,7 +792,7 @@ inline Dest reduce_min(Src input, int64_t dimension) {
 
 // ReduceProdOp
 template <typename Dest, typename Src>
-inline Dest reduce_prod(Src input, int64_t dimension) {
+inline Dest reduce_prod(Src input, int32_t dimension) {
   using ET_Src = typename get_element_type<Src>::type;
 
   return tosa::reduce<Dest, Src>(input, 1, dimension,
@@ -801,7 +801,7 @@ inline Dest reduce_prod(Src input, int64_t dimension) {
 
 // ReduceSumOp
 template <typename Dest, typename Src>
-inline Dest reduce_sum(Src input, int64_t dimension) {
+inline Dest reduce_sum(Src input, int32_t dimension) {
   using ET_Src = typename get_element_type<Src>::type;
 
   return tosa::reduce<Dest, Src>(input, 0, dimension, std::plus<ET_Src>{});

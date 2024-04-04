@@ -1136,7 +1136,7 @@ TEST(tosa, reduce_prod) {
 TEST(tosa, reduce_sum) {
   {
     Tensor<int32_t, 2, 3> input{1, 2, 3, 4, 5, 6};
-    int64_t dimension = 0;
+    int32_t dimension = 0;
     Tensor<int32_t, 3> expected_result{5, 7, 9};
     Tensor<int32_t, 3> result =
         tosa::reduce_sum<Tensor<int32_t, 3>>(input, dimension);
@@ -1145,7 +1145,7 @@ TEST(tosa, reduce_sum) {
   }
   {
     Tensor<int32_t, 2, 3> input{1, 2, 3, 4, 5, 6};
-    int64_t dimension = 1;
+    int32_t dimension = 1;
     Tensor<int32_t, 2> expected_result{6, 15};
     Tensor<int32_t, 2> result =
         tosa::reduce_sum<Tensor<int32_t, 2>>(input, dimension);
@@ -1155,7 +1155,7 @@ TEST(tosa, reduce_sum) {
   {
     Tensor<int32_t, 4, 2, 3> input{1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6,
                                    1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6};
-    int64_t dimension = 0;
+    int32_t dimension = 0;
     Tensor<int32_t, 2, 3> expected_result{4, 8, 12, 16, 20, 24};
     Tensor<int32_t, 2, 3> result =
         tosa::reduce_sum<Tensor<int32_t, 2, 3>>(input, dimension);
@@ -1165,7 +1165,7 @@ TEST(tosa, reduce_sum) {
   {
     Tensor<int32_t, 4, 2, 3> input{1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6,
                                    1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6};
-    int64_t dimension = 1;
+    int32_t dimension = 1;
     Tensor<int32_t, 4, 3> expected_result{5, 7, 9, 5, 7, 9, 5, 7, 9, 5, 7, 9};
     Tensor<int32_t, 4, 3> result =
         tosa::reduce_sum<Tensor<int32_t, 4, 3>>(input, dimension);
@@ -1175,7 +1175,7 @@ TEST(tosa, reduce_sum) {
   {
     Tensor<int32_t, 4, 2, 3> input{1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6,
                                    1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6};
-    int64_t dimension = 2;
+    int32_t dimension = 2;
     Tensor<int32_t, 4, 2> expected_result{6, 15, 6, 15, 6, 15, 6, 15};
     Tensor<int32_t, 4, 2> result =
         tosa::reduce_sum<Tensor<int32_t, 4, 2>>(input, dimension);

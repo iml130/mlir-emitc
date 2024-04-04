@@ -217,7 +217,7 @@ inline Src minimum(Src x, Src y) {
 }
 
 template <typename Src, IsTensorOfType<Src, int32_t> = true>
-inline Src mul(Src x, Src y, const int32_t shift) {
+inline Src mul(Src x, Src y, const int8_t shift) {
   // Adopted from
   // https://git.mlplatform.org/tosa/reference_model.git/tree/reference_model/src/ops/ewise_binary.cc?id=df8626976df6c779bb30df9c5ceef689462109c0#n436
   if (shift > 0) {

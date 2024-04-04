@@ -39,6 +39,7 @@ jobs:
       with:
         path: ${{ env.LLVM }}
         key: ${{ runner.os }}-llvm-22.04-install-${{ env.llvm_hash }}
+        lookup-only: 'true'
 
     - name: Checkout LLVM
       if: steps.cache-llvm.outputs.cache-hit != 'true'
@@ -85,6 +86,7 @@ jobs:
       with:
         path: ${{ env.E2E }}
         key: ${{ runner.os }}-e2e-${{ hashFiles('emitc/scripts/*.py', 'emitc/scripts/requirements.txt', 'emitc/scripts/e2e*.sh') }}-${{ env.E2E_VERSION }}
+        lookup-only: 'true'
 
     - name: Install TensorFlow
       if: steps.cache-e2e.outputs.cache-hit != 'true'

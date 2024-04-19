@@ -261,14 +261,14 @@ private:
     // the min/max attribute type match the operand's element type and it's bit
     // width.
     auto elementType =
-        adaptor.getInput().getType().cast<RankedTensorType>().getElementType();
-    if (elementType.isa<IntegerType>()) {
+        cast<RankedTensorType>(adaptor.getInput().getType()).getElementType();
+    if (isa<IntegerType>(elementType)) {
       // Change the {min,max}_int type to the element type of the operand.
       auto minInt = clampOp.getMinInt();
       auto maxInt = clampOp.getMaxInt();
       arguments.push_back(IntegerAttr::get(elementType, minInt));
       arguments.push_back(IntegerAttr::get(elementType, maxInt));
-    } else if (elementType.isa<FloatType>()) {
+    } else if (isa<FloatType>(elementType)) {
       // Change the {min,max}_fp type to the element type of the operand.
       auto minFp = clampOp.getMinFpAttr().getValueAsDouble();
       auto maxFp = clampOp.getMaxFpAttr().getValueAsDouble();
@@ -412,8 +412,8 @@ createBroadcastOpIfNeeded(SrcOp &srcOp, Adaptor adaptor,
   StringAttr broadcastCallee = rewriter.getStringAttr(broadcastFuncName);
 
   Value output = srcOp.getResult();
-  auto opOutputShape = output.getType().cast<RankedTensorType>().getShape();
-  auto opOutputRank = output.getType().cast<RankedTensorType>().getRank();
+  auto opOutputShape = cast<RankedTensorType>(output.getType()).getShape();
+  auto opOutputRank = cast<RankedTensorType>(output.getType()).getRank();
   SmallVector<Value> broadcastedOperands;
 
   for (auto operand : adaptor.getOperands()) {
@@ -652,7 +652,7 @@ private:
       // not keep reduced dimensions.
       Value output = reduceOp.getResult();
       RankedTensorType reducedOutputType =
-          output.getType().cast<RankedTensorType>();
+          cast<RankedTensorType>(output.getType());
 
       SmallVector<int64_t> newReducedOutputShape;
 
@@ -678,7 +678,7 @@ private:
 
       // Create tosa.reshape op.
       SmallVector<int64_t> newShapeAttr_;
-      for (auto dim : output.getType().cast<RankedTensorType>().getShape()) {
+      for (auto dim : cast<RankedTensorType>(output.getType()).getShape()) {
         newShapeAttr_.push_back(dim);
       };
 
@@ -782,7 +782,7 @@ private:
                   ConversionPatternRewriter &rewriter) const override {
     StringAttr callee = rewriter.getStringAttr("emitc::tosa::tile");
     auto inputShape =
-        adaptor.getInput1().getType().cast<RankedTensorType>().getShape();
+        cast<RankedTensorType>(adaptor.getInput1().getType()).getShape();
     for (int64_t i = 0, e = inputShape.size(); i < e; i++) {
       if (inputShape[i] > std::numeric_limits<int>::max()) {
         return tileOp.emitError("tosa.tile with dimensions larger than the "

@@ -191,7 +191,7 @@ private:
 
     SmallVector<Attribute, 2> arguments = indexSequence(operands.size(), ctx);
 
-    size_t dim = op.getResult(0).getType().cast<RankedTensorType>().getRank();
+    size_t dim = cast<RankedTensorType>(op.getResult(0).getType()).getRank();
     arguments.push_back(builder.getI64TensorAttr(op.getWindowDimensions()));
     arguments.push_back(builder.getI64TensorAttr(
         op.getWindowStrides().value_or(SmallVector<int64_t>(dim, 1))));

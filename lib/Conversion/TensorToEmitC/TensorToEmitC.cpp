@@ -40,7 +40,7 @@ private:
     StringAttr callee = rewriter.getStringAttr("emitc::tensor::extract");
 
     Type elementType = indexCastOp.getType();
-    if (auto tensorType = elementType.dyn_cast<TensorType>()) {
+    if (auto tensorType = dyn_cast<TensorType>(elementType)) {
       elementType = tensorType.getElementType();
     }
 

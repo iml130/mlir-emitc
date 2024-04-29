@@ -299,11 +299,9 @@ private:
     SmallVector<Attribute, 2> arguments =
         indexSequence(adaptor.getOperands().size(), sliceOp.getContext());
 
-    arguments.push_back(
-        rewriter.getI64TensorAttr(sliceOp.getStartIndicesAttr()));
-    arguments.push_back(
-        rewriter.getI64TensorAttr(sliceOp.getLimitIndicesAttr()));
-    arguments.push_back(rewriter.getI64TensorAttr(sliceOp.getStridesAttr()));
+    arguments.push_back(rewriter.getI64TensorAttr(sliceOp.getStartIndices()));
+    arguments.push_back(rewriter.getI64TensorAttr(sliceOp.getLimitIndices()));
+    arguments.push_back(rewriter.getI64TensorAttr(sliceOp.getStrides()));
 
     ArrayAttr args = rewriter.getArrayAttr(arguments);
 
@@ -338,7 +336,7 @@ private:
         adaptor.getOperands().size(), dynamicSliceOp.getContext());
 
     arguments.push_back(
-        rewriter.getI64TensorAttr(dynamicSliceOp.getSliceSizesAttr()));
+        rewriter.getI64TensorAttr(dynamicSliceOp.getSliceSizes()));
 
     ArrayAttr args = rewriter.getArrayAttr(arguments);
 
@@ -402,12 +400,9 @@ private:
     SmallVector<Attribute, 2> arguments =
         indexSequence(adaptor.getOperands().size(), padOp.getContext());
 
-    arguments.push_back(
-        rewriter.getI64TensorAttr(padOp.getEdgePaddingLowAttr()));
-    arguments.push_back(
-        rewriter.getI64TensorAttr(padOp.getEdgePaddingHighAttr()));
-    arguments.push_back(
-        rewriter.getI64TensorAttr(padOp.getInteriorPaddingAttr()));
+    arguments.push_back(rewriter.getI64TensorAttr(padOp.getEdgePaddingLow()));
+    arguments.push_back(rewriter.getI64TensorAttr(padOp.getEdgePaddingHigh()));
+    arguments.push_back(rewriter.getI64TensorAttr(padOp.getInteriorPadding()));
 
     ArrayAttr args = rewriter.getArrayAttr(arguments);
 
@@ -441,7 +436,7 @@ private:
         indexSequence(adaptor.getOperands().size(), transposeOp.getContext());
 
     arguments.push_back(
-        rewriter.getI64TensorAttr(transposeOp.getPermutationAttr()));
+        rewriter.getI64TensorAttr(transposeOp.getPermutation()));
     ArrayAttr args = rewriter.getArrayAttr(arguments);
 
     Type resultType = transposeOp.getResult().getType();

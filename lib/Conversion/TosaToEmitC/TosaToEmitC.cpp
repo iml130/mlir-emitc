@@ -417,8 +417,7 @@ createBroadcastOpIfNeeded(SrcOp &srcOp, Adaptor adaptor,
   SmallVector<Value> broadcastedOperands;
 
   for (auto operand : adaptor.getOperands()) {
-    RankedTensorType operandTensor =
-        operand.getType().template cast<RankedTensorType>();
+    RankedTensorType operandTensor = cast<RankedTensorType>(operand.getType());
     auto operandShape = operandTensor.getShape();
     auto operandRank = operandTensor.getRank();
 

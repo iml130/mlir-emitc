@@ -94,11 +94,7 @@ inline Src negate(Src x) {
 // ReciprocalOp
 template <typename Src>
 inline Src reciprocal(Src x) {
-  using ET_Src = typename get_element_type<Src>::type;
-
-  auto f = [](ET_Src element) { return (static_cast<ET_Src>(1.0) / element); };
-
-  return unary<Src>(x, f);
+  return emitc::rsqrt(x);
 }
 
 // RescaleOp

@@ -481,6 +481,43 @@ private:
   }
 };
 
+/// Convert `stablehlo.rsqrt` into an `emitc.call_opaque` operation.
+class RsqrtOpConversion : public OpConversionPattern<stablehlo::RsqrtOp> {
+  using OpConversionPattern<stablehlo::RsqrtOp>::OpConversionPattern;
+
+public:
+  RsqrtOpConversion(MLIRContext *ctx)
+      : OpConversionPattern<stablehlo::RsqrtOp>(ctx) {}
+
+private:
+  LogicalResult
+  matchAndRewrite(stablehlo::RsqrtOp rsqrtOp, OpAdaptor adaptor,
+                  ConversionPatternRewriter &rewriter) const override {
+    ArrayAttr args;
+    ArrayAttr templateArgs;
+
+    // Create sqrt op.
+    StringRef sqrtFuncName = "emitc::sqrt";
+    StringAttr sqrtCallee = rewriter.getStringAttr(sqrtFuncName);
+
+    auto sqrtEmitCOp = rewriter.create<emitc::CallOpaqueOp>(
+        rsqrtOp.getLoc(), rsqrtOp.getType(), sqrtCallee, args, templateArgs,
+        adaptor.getOperands());
+
+    // Create reciprocal op.
+    StringRef reciprocalFuncName = "emitc::stablehlo::rsqrt";
+    StringAttr reciprocalCallee = rewriter.getStringAttr(reciprocalFuncName);
+
+    auto reciprocalOp = rewriter.create<emitc::CallOpaqueOp>(
+        sqrtEmitCOp.getLoc(), rsqrtOp.getType(), reciprocalCallee, args,
+        templateArgs, sqrtEmitCOp.getResults());
+
+    rewriter.replaceOp(rsqrtOp, reciprocalOp.getResults());
+
+    return success();
+  }
+};
+
 } // namespace
 
 void populateStablehloToEmitcPatterns(MLIRContext *ctx,
@@ -518,6 +555,8 @@ void populateStablehloToEmitcPatterns(MLIRContext *ctx,
                                                        "emitc::stablehlo::sin");
   patterns.add<GenericOpConversion<stablehlo::SqrtOp>>(
       ctx, "emitc::stablehlo::sqrt");
+  patterns.add<GenericOpConversion<stablehlo::RsqrtOp>>(
+      ctx, "emitc::stablehlo::rsqrt");
   patterns.add<GenericOpConversion<stablehlo::TanhOp>>(
       ctx, "emitc::stablehlo::tanh");
 
@@ -616,6 +655,7 @@ struct ConvertStablehloToEmitCPass
                         stablehlo::RoundOp,
                         stablehlo::SineOp,
                         stablehlo::SqrtOp,
+                        stablehlo::RsqrtOp,
                         stablehlo::TanhOp>();
 
     // StableHLO binary elementwise ops.

@@ -170,6 +170,12 @@ inline Src sqrt(Src x) {
   return emitc::sqrt<Src>(x);
 }
 
+// RsqrtOp
+template <typename Src>
+inline Src rsqrt(Src x) {
+  return emitc::rsqrt<Src>(x);
+}
+
 // TanhOp
 template <typename Src>
 inline Src tanh(Src x) {

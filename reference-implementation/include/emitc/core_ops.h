@@ -44,6 +44,16 @@ inline Src ceil(Src x) {
   return unary<Src>(x, f);
 }
 
+// RsqrtOp
+template <typename Src>
+inline Src rsqrt(Src x) {
+  using ET_Src = typename get_element_type<Src>::type;
+
+  auto f = [](ET_Src element) { return (static_cast<ET_Src>(1.0) / element); };
+
+  return unary<Src>(x, f);
+}
+
 // ConvertOp
 template <typename Dest, typename Src>
 inline Dest convert(Src x) {

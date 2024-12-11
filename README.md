@@ -6,6 +6,15 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 ![Build and test](https://github.com/iml130/mlir-emitc/workflows/Build%20and%20test/badge.svg)
 
+> [!WARNING]
+> The code provided in this repository is no longer maintained and superseded by code available in upstream MLIR. 
+
+> [!NOTE]  
+> We encourage to use upstream MLIR lowering passes instead of the TOSA and StableHLO to EmitC conversions provided here.
+> Lowering via multiple dialects and hence using different abstraction levels, allows to reuse different optimization passes.
+> Furthermore, the generated C and C++ code depends on the standard libraries without requiring additional header files, whereas code generated with the the conversions in this repositories requires a header-only reference implementation.
+> For missing features, we highly encourage to consider extending the upstream dialect and conversions.
+
 MLIR-EmitC provides a way to translate ML models into C++ code. The repository
 contains scripts and tools to translate Keras and TensorFlow models into the
 [TOSA](https://mlir.llvm.org/docs/Dialects/TOSA/) and
